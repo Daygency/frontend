@@ -1,12 +1,13 @@
 import { StatusBar } from "expo-status-bar";
 import { Text, View } from "react-native";
+import Navigation from "./navigations/Navigation";
 
 const App = () => {
   return (
-    <View>
+    <>
       <StatusBar style="dark" />
-      <Text style={{ fontSize: 30 }}>Daygency</Text>
-    </View>
+      <Navigation />
+    </>
   );
 };
 
