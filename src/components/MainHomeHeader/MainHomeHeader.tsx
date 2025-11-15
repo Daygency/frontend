@@ -28,10 +28,10 @@ const MainHomeHeader = () => {
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
+    gap: 10,
   },
   iconButton: {
     flexShrink: 0,
