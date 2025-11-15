@@ -9,6 +9,7 @@ import Section from "../components/Section/Section";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BLACK, MAIN, WHITE } from "../color";
 import SupplierList from "../components/SupplierList/SupplierList";
+import ShadowCardButton from "../components/ShadowCardButton/ShadowCardButton";
 
 const MainHomeScreen = () => {
   const navigation = useNavigation();
@@ -29,6 +30,13 @@ const MainHomeScreen = () => {
       <CategoryNavBar />
       <ImageScrollView styles={{ container: { marginBottom: 14 } }} />
       <SupplierList />
+      <View style={styles.shadowCardContainer}>
+        <ShadowCardButton>
+          <View>
+            <Text>text1</Text>
+          </View>
+        </ShadowCardButton>
+      </View>
     </View>
   );
 };
@@ -68,6 +76,10 @@ const styles = StyleSheet.create({
     left: 8,
     // height: "100%",
     justifyContent: "center",
+  },
+  shadowCardContainer: {
+    width: "100%",
+    paddingHorizontal: 12,
   },
 });
 
