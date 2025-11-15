@@ -52,6 +52,7 @@ const defaultStyles = StyleSheet.create({
   contentContainer: {
     alignItems: "center",
     gap: 5,
+    marginHorizontal: 5,
   },
   imageContainer: {
     height: 196,
