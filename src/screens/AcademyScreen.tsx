@@ -1,8 +1,13 @@
 import { ScrollView, StyleSheet, View } from "react-native";
+import { useState } from "react";
 import { WHITE } from "../color";
 import AcademyCard from "../components/AcademyCard/AcademyCard";
+import FilterDropdown from "../components/FilterDropdown/FilterDropdown";
 
 const AcademyScreen = () => {
+  const [sortBy, setSortBy] = useState<string>("스크랩수순");
+
+  const sortOptions = ["스크랩수순", "추천수순", "가나다순"];
   // Sample data with images
   const academyWithImages = {
     title: "반포음악학원",
@@ -28,6 +33,22 @@ const AcademyScreen = () => {
 
   return (
     <View style={styles.container}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterContainer}
+        nestedScrollEnabled={true}
+        directionalLockEnabled={true}
+        scrollEventThrottle={16}
+        bounces={false}
+      >
+        <FilterDropdown
+          label="정렬"
+          options={sortOptions}
+          selectedValue={sortBy}
+          onSelect={setSortBy}
+        />
+      </ScrollView>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.cardWrapper}>
           <AcademyCard
@@ -55,8 +76,15 @@ const AcademyScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: WHITE,
+  },
+  filterContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 0,
+    gap: 8,
   },
   scrollContent: {
     paddingHorizontal: 12,

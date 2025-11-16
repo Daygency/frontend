@@ -1,8 +1,13 @@
 import { ScrollView, StyleSheet, View } from "react-native";
+import { useState } from "react";
 import { WHITE } from "../color";
 import AgencyCard from "../components/AgencyCard/AgencyCard";
+import FilterDropdown from "../components/FilterDropdown/FilterDropdown";
 
 const AgencyScreen = () => {
+  const [sortBy, setSortBy] = useState<string>("추천수순");
+
+  const sortOptions = ["추천수순", "협업자순", "활동자순", "스크랩수순"];
   // Sample data with images
   const agencyWithImages = {
     title: "MY아트기획",
@@ -30,6 +35,22 @@ const AgencyScreen = () => {
 
   return (
     <View style={styles.container}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterContainer}
+        nestedScrollEnabled={true}
+        directionalLockEnabled={true}
+        scrollEventThrottle={16}
+        bounces={false}
+      >
+        <FilterDropdown
+          label="정렬"
+          options={sortOptions}
+          selectedValue={sortBy}
+          onSelect={setSortBy}
+        />
+      </ScrollView>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.cardWrapper}>
           <AgencyCard
@@ -59,8 +80,15 @@ const AgencyScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    // flex: 1,
     backgroundColor: WHITE,
+  },
+  filterContainer: {
+    flexDirection: "row",
+    paddingHorizontal: 12,
+    paddingTop: 12,
+    paddingBottom: 0,
+    gap: 8,
   },
   scrollContent: {
     paddingHorizontal: 12,
