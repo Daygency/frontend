@@ -1,12 +1,14 @@
 import { StatusBar } from "expo-status-bar";
 import { Text, View } from "react-native";
+import Navigation from "./navigations/Navigation";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 const App = () => {
   return (
-    <View>
+    <SafeAreaProvider>
       <StatusBar style="dark" />
-      <Text style={{ fontSize: 30 }}>Daygency</Text>
-    </View>
+      <Navigation />
+    </SafeAreaProvider>
   );
 };
 
