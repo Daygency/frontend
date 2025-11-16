@@ -9,7 +9,6 @@ import AllContentScene from "../components/AllContentScene/AllContentScene";
 import { WHITE } from "../color";
 import { CategoryList } from "../constants/categories";
 import AnnouncementScreen from "./AnnouncementScreen";
-import PerformanceNewsScreen from "./PerformanceNewsScreen";
 import ArtistScreen from "./ArtistScreen";
 import VenueScreen from "./VenueScreen";
 import AgencyScreen from "./AgencyScreen";
@@ -25,8 +24,7 @@ const MainHomeScreen = () => {
  
   const renderScene = SceneMap({
     전체: AllContentScene,
-    공고: AnnouncementScreen,
-    공연소식: PerformanceNewsScreen,
+    모집공고: AnnouncementScreen,
     예술가: ArtistScreen,
     공연장: VenueScreen,
     기획사: AgencyScreen,
