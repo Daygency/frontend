@@ -13,9 +13,12 @@ interface Styles {
 
 interface ImageScrollViewProp {
   styles: Styles;
+  width: number;
+  height: number;
+  gap: number;
 }
 
-const ImageScrollView = ({ styles }: ImageScrollViewProp) => {
+const ImageScrollView = ({ styles, width, height, gap }: ImageScrollViewProp) => {
   const imageLinkList = [
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
@@ -27,12 +30,12 @@ const ImageScrollView = ({ styles }: ImageScrollViewProp) => {
   return (
     <ScrollView
       horizontal
-      style={[defaultStyles.container, styles.container]}
-      contentContainerStyle={defaultStyles.contentContainer}
+      style={[defaultStyles.container, styles.container,  { height: height }]}
+      contentContainerStyle={{gap: gap}}
       showsHorizontalScrollIndicator={false}
     >
       {imageLinkList.map((imageLink, index) => (
-        <Pressable key={index} style={defaultStyles.imageContainer}>
+        <Pressable key={index} style={{width: width, height: height}}>
           <Image
             source={{ uri: imageLink }}
             style={defaultStyles.image}
@@ -46,18 +49,18 @@ const ImageScrollView = ({ styles }: ImageScrollViewProp) => {
 
 const defaultStyles = StyleSheet.create({
   container: {
-    height: 196,
     flexGrow: 0,
+    paddingHorizontal: 12,
   },
   contentContainer: {
-    alignItems: "center",
-    gap: 5,
+    // alignItems: "center",
+    // gap: 5,
     marginHorizontal: 5,
   },
-  imageContainer: {
-    height: 196,
-    width: 339,
-  },
+  // imageContainer: {
+  //   // height: 183,
+  //   width: 339,
+  // },
   image: {
     borderRadius: 10,
     height: "100%",

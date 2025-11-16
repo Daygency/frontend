@@ -20,6 +20,7 @@ const CategoryNavBar = () => {
       horizontal
       showsHorizontalScrollIndicator={false}
       style={styles.container}
+      contentContainerStyle={styles.contentContainer}
       bounces={false}
     >
       {CategoryList.map((category) => (
@@ -36,6 +37,7 @@ const CategoryNavBar = () => {
               styles.text,
               selectedCategory === category && styles.textSelected,
             ]}
+            numberOfLines={1}
           >
             {category}
           </Text>
@@ -51,12 +53,17 @@ const styles = StyleSheet.create({
     flexGrow: 0,
     paddingBottom: 6,
   },
+  contentContainer: {
+    alignItems: "center",
+  },
   button: {
     paddingHorizontal: 22,
     paddingVertical: 13,
     justifyContent: "center",
+    alignItems: "center",
     borderBottomWidth: 1,
     borderColor: GRAY.DEFAULT,
+    minHeight: 42,
   },
   buttonSelected: {
     borderBottomWidth: 1,
@@ -66,6 +73,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#717182",
     fontWeight: "500",
+    includeFontPadding: false,
+    textAlignVertical: "center",
   },
   textSelected: {
     fontWeight: "600",
