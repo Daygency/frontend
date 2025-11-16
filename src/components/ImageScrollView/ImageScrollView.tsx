@@ -16,10 +16,11 @@ interface ImageScrollViewProp {
   width: number;
   height: number;
   gap: number;
+  images?: string[];
 }
 
-const ImageScrollView = ({ styles, width, height, gap }: ImageScrollViewProp) => {
-  const imageLinkList = [
+const ImageScrollView = ({ styles, width, height, gap, images }: ImageScrollViewProp) => {
+  const imageLinkList = images || [
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
