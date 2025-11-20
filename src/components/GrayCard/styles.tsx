@@ -1,12 +1,14 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY } from "../../color";
+import { BLACK, GRAY, RED } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: GRAY.DEFAULT,
+    backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 10,
     padding: 15,
     gap: 10,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM,
   },
   item: {
     flexDirection: "row",
@@ -14,24 +16,33 @@ const styles = StyleSheet.create({
   },
   boardName: {
     fontSize: 14,
-    fontWeight: "600",
+    lineHeight: 20,
+    letterSpacing: 0.3,
+    fontWeight: "500",
     color: BLACK,
   },
   spacer: {
     width: 10,
   },
+  latestPostWrap: {
+    position: "relative",
+  },
   latestPost: {
-    fontSize: 14,
+    fontSize: 13,
+    lineHeight: 20,
+    letterSpacing: 0.3,
     fontWeight: "400",
     color: BLACK,
     flex: 1,
   },
   newDot: {
-    width: 6,
-    height: 6,
+    position: "absolute",
+    top: 3,
+    right: -5,
+    width: 4,
+    height: 4,
     borderRadius: 3,
-    backgroundColor: "#FF0000",
-    marginLeft: 4,
+    backgroundColor: RED.DARK,
   },
 });
 

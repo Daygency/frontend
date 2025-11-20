@@ -29,7 +29,7 @@ const AllContentScene = ({ onPressAnnouncementMore }: AllContentSceneProps) => {
       </Section>
       <Section title="공연소식" styles={{ content: { paddingHorizontal: 0 } }}>
         <ImageScrollView
-          styles={{ container: { marginBottom: 14 } }}
+          styles={{ container: {} }}
           width={138}
           height={193}
           gap={14}
@@ -52,6 +52,7 @@ const AllContentScene = ({ onPressAnnouncementMore }: AllContentSceneProps) => {
             {
               boardName: "학원 운영",
               latestPost: "학원을 운영하려고 하는데 도움이 필요합니다!",
+              hasNew: true,
             },
             {
               boardName: "학원·연습실 매매",

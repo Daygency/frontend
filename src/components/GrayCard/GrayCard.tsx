@@ -19,8 +19,10 @@ const GrayCard = ({ items }: GrayCardProps) => {
         <View key={index} style={styles.item}>
           <Text style={styles.boardName}>{item.boardName}</Text>
           <View style={styles.spacer} />
-          <Text style={styles.latestPost}>{item.latestPost}</Text>
-          {item.hasNew && <View style={styles.newDot} />}
+          <View style={styles.latestPostWrap}>
+            <Text style={styles.latestPost}>{item.latestPost}</Text>
+            {item.hasNew && <View style={styles.newDot} />}
+          </View>
         </View>
       ))}
     </View>
