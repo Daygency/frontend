@@ -74,60 +74,64 @@ const AnnouncementScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterContainer}
-        nestedScrollEnabled={true}
-        directionalLockEnabled={true}
-        scrollEventThrottle={16}
-        bounces={false}
-      >
-        <FilterDropdown
-          label="모집 상태"
-          options={recruitmentStatusOptions}
-          selectedValue={recruitmentStatus}
-          onSelect={setRecruitmentStatus}
-        />
-        <FilterDropdown
-          label="공고 유형"
-          options={announcementTypeOptions}
-          selectedValue={announcementType}
-          onSelect={setAnnouncementType}
-        />
-        <FilterDropdown
-          label="모집 전공"
-          options={recruitmentMajorOptions}
-          selectedValue={recruitmentMajor}
-          onSelect={setRecruitmentMajor}
-        />
-        <FilterDropdown
-          label="정렬"
-          options={sortOptions}
-          selectedValue={sortBy}
-          onSelect={setSortBy}
-        />
-      </ScrollView>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {announcements.map((announcement, index) => (
-          <View key={index} style={styles.cardWrapper}>
-            <AnnouncementCard
-              title={announcement.title}
-              type={announcement.type}
-              status={announcement.status}
-              daysLeft={announcement.daysLeft}
-              onPress={() => {
-                navigation.navigate(HomeRoutes.ANNOUNCEMENT_DETAIL, {
-                  title: announcement.title,
-                  type: announcement.type,
-                  status: announcement.status,
-                  daysLeft: announcement.daysLeft,
-                });
-              }}
-            />
-          </View>
-        ))}
-      </ScrollView>
+      <View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}
+          nestedScrollEnabled={true}
+          directionalLockEnabled={true}
+          scrollEventThrottle={16}
+          bounces={false}
+        >
+          <FilterDropdown
+            label="모집 상태"
+            options={recruitmentStatusOptions}
+            selectedValue={recruitmentStatus}
+            onSelect={setRecruitmentStatus}
+          />
+          <FilterDropdown
+            label="공고 유형"
+            options={announcementTypeOptions}
+            selectedValue={announcementType}
+            onSelect={setAnnouncementType}
+          />
+          <FilterDropdown
+            label="모집 전공"
+            options={recruitmentMajorOptions}
+            selectedValue={recruitmentMajor}
+            onSelect={setRecruitmentMajor}
+          />
+          <FilterDropdown
+            label="정렬"
+            options={sortOptions}
+            selectedValue={sortBy}
+            onSelect={setSortBy}
+          />
+        </ScrollView>
+      </View>
+      <View style={styles.scrollContentWrapper}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          {announcements.map((announcement, index) => (
+            <View key={index} style={styles.cardWrapper}>
+              <AnnouncementCard
+                title={announcement.title}
+                type={announcement.type}
+                status={announcement.status}
+                daysLeft={announcement.daysLeft}
+                onPress={() => {
+                  navigation.navigate(HomeRoutes.ANNOUNCEMENT_DETAIL, {
+                    title: announcement.title,
+                    type: announcement.type,
+                    status: announcement.status,
+                    daysLeft: announcement.daysLeft,
+                  });
+                }}
+              />
+            </View>
+          ))}
+        </ScrollView>
+      </View>
     </View>
   );
 };

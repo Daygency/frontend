@@ -12,7 +12,7 @@ interface ArtistCardProps {
 
 const ArtistCard = ({ name, category, bookmarkCount }: ArtistCardProps) => {
   return (
-    <ShadowCardButton>
+    <ShadowCardButton styles={{container: {borderRadius: 15, paddingVertical: 12, paddingHorizontal: 16}}}>
       <View style={styles.container}>
         {/* Avatar */}
         <View style={styles.avatarContainer}>
