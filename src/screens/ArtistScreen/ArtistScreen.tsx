@@ -27,39 +27,43 @@ const ArtistScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterContainer}
-        nestedScrollEnabled={true}
-        directionalLockEnabled={true}
-        scrollEventThrottle={16}
-        bounces={false}
-      >
-        <FilterDropdown
-          label="전공"
-          options={majorOptions}
-          selectedValue={major}
-          onSelect={setMajor}
-        />
-        <FilterDropdown
-          label="정렬"
-          options={sortOptions}
-          selectedValue={sortBy}
-          onSelect={setSortBy}
-        />
-      </ScrollView>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.cardWrapper}>
-          <ArtistCard name="김연주" category="현악" bookmarkCount={20} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <ArtistCard name="김연주" category="현악" bookmarkCount={20} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <ArtistCard name="김연주" category="현악" bookmarkCount={20} />
-        </View>
-      </ScrollView>
+      <View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}
+          nestedScrollEnabled={true}
+          directionalLockEnabled={true}
+          scrollEventThrottle={16}
+          bounces={false}
+        >
+          <FilterDropdown
+            label="전공"
+            options={majorOptions}
+            selectedValue={major}
+            onSelect={setMajor}
+          />
+          <FilterDropdown
+            label="정렬"
+            options={sortOptions}
+            selectedValue={sortBy}
+            onSelect={setSortBy}
+          />
+        </ScrollView>
+      </View>
+      <View style={styles.scrollContentWrapper}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.cardWrapper}>
+            <ArtistCard name="김연주" category="현악" bookmarkCount={20} />
+          </View>
+          <View style={styles.cardWrapper}>
+            <ArtistCard name="김연주" category="현악" bookmarkCount={20} />
+          </View>
+          <View style={styles.cardWrapper}>
+            <ArtistCard name="김연주" category="현악" bookmarkCount={20} />
+          </View>
+        </ScrollView>
+      </View>
     </View>
   );
 };

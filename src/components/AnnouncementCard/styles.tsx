@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   },
   statusTag: {
     backgroundColor: WHITE,
-    borderRadius: 4,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
     paddingHorizontal: 10,
@@ -39,6 +39,8 @@ const styles = StyleSheet.create({
   },
   statusTagText: {
     fontSize: 12,
+    lineHeight: 13,
+    letterSpacing: 0.24,
     color: BLACK,
     fontWeight: "400",
   },
