@@ -1,7 +1,7 @@
 import { StyleSheet, View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
-import { TabView, SceneMap } from "react-native-tab-view";
+import { TabView } from "react-native-tab-view";
 import MainHomeHeader from "../components/MainHomeHeader/MainHomeHeader";
 import MainHomeTopBar from "../components/MainHomeTopBar/MainHomeTopBar";
 import CategoryTabBar from "../components/CategoryTabBar/CategoryTabBar";
@@ -21,15 +21,36 @@ const MainHomeScreen = () => {
   const [routes] = useState(
     CategoryList.map((category) => ({ key: category, title: category }))
   );
- 
-  const renderScene = SceneMap({
-    전체: AllContentScene,
-    모집공고: AnnouncementScreen,
-    예술가: ArtistScreen,
-    공연장: VenueScreen,
-    기획사: AgencyScreen,
-    학원: AcademyScreen,
-  });
+
+  const handleRouteChange = (key: string) => {
+    const targetIndex = routes.findIndex((route) => route.key === key);
+    if (targetIndex !== -1) {
+      setIndex(targetIndex);
+    }
+  };
+
+  const renderScene = ({ route }: { route: { key: string } }) => {
+    switch (route.key) {
+      case "전체":
+        return (
+          <AllContentScene
+            onPressAnnouncementMore={() => handleRouteChange("모집공고")}
+          />
+        );
+      case "모집공고":
+        return <AnnouncementScreen />;
+      case "예술가":
+        return <ArtistScreen />;
+      case "공연장":
+        return <VenueScreen />;
+      case "기획사":
+        return <AgencyScreen />;
+      case "학원":
+        return <AcademyScreen />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <View style={[styles.container, { paddingTop: top + 20 }]}>

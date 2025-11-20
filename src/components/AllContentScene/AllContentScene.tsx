@@ -6,7 +6,11 @@ import AnnouncementCard from "../AnnouncementCard/AnnouncementCard";
 import GrayCard from "../GrayCard/GrayCard";
 import EventScheduleCard from "../EventScheduleCard/EventScheduleCard";
 
-const AllContentScene = () => {
+interface AllContentSceneProps {
+  onPressAnnouncementMore?: () => void;
+}
+
+const AllContentScene = ({ onPressAnnouncementMore }: AllContentSceneProps) => {
   return (
     <ScrollView>
       <ImageScrollView
@@ -16,7 +20,7 @@ const AllContentScene = () => {
         gap={5}
       />
       <SupplierList />
-      <Section title="모집공고" onPressMore={() => {}}>
+      <Section title="모집공고" onPressMore={onPressAnnouncementMore}>
         <AnnouncementCard title="제목1" />
         <AnnouncementCard title="제목2" />
         <AnnouncementCard title="제목3" />

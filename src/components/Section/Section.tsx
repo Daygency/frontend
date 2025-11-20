@@ -6,6 +6,7 @@ import {
   StyleProp,
   ViewStyle,
   TextStyle,
+  Pressable,
 } from "react-native";
 import { ReactNode } from "react";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
@@ -34,7 +35,13 @@ export default function Section({
   return (
     <View style={[defaultStyles.container, styles?.container]}>
       <View style={[defaultStyles.header, styles?.header]}>
-        <Text style={[defaultStyles.title, styles?.title]}>{title}</Text>
+        {onPressMore ? (
+          <Pressable onPress={onPressMore}>
+            <Text style={[defaultStyles.title, styles?.title]}>{title}</Text>
+          </Pressable>
+        ) : (
+          <Text style={[defaultStyles.title, styles?.title]}>{title}</Text>
+        )}
         {onPressMore && (
           <TouchableOpacity onPress={onPressMore}>
             <View style={defaultStyles.moreContainer}>
