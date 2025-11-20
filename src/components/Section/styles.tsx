@@ -1,8 +1,9 @@
 import { StyleSheet } from "react-native";
+import { GRAY } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 20,
     width: "100%",
   },
   header: {
@@ -13,8 +14,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12 + 8, // 기존 12씩 + 양쪽 4만큼 해서 콘텐츠보다 더 안쪽에 위치하도록 함
   },
   title: {
-    fontSize: 20,
-    fontWeight: "bold",
+    marginLeft: 4,
+    fontSize: 19,
+    lineHeight: 27,
+    letterSpacing: -0.32,
+    fontWeight: "600",
   },
   moreContainer: {
     flexDirection: "row",
@@ -22,10 +26,14 @@ const styles = StyleSheet.create({
   },
   more: {
     fontSize: 13,
-    color: "#888",
+    lineHeight: 20,
+    letterSpacing: 0.3,
+    fontWeight: 400,
+    color: GRAY.DARK,
   },
   moreIcon: {},
   content: {
+    marginTop: 5,
     gap: 5,
     paddingHorizontal: 12,
   },

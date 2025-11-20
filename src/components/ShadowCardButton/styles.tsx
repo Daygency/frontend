@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     borderColor: GRAY.MEDIUM,
     paddingHorizontal: 15,
-    paddingVertical: 15,
+    paddingVertical: 12,
   },
   shadow: {
     shadowColor: MAIN.DEFAULT,

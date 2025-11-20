@@ -8,19 +8,23 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   eventTitle: {
-    fontSize: 16,
+    fontSize: 14,
+    lineHeight: 24,
+    letterSpacing: 0.3,
     color: BLACK,
-    fontWeight: "400",
+    fontWeight: "500",
   },
   dateBadge: {
     backgroundColor: BLACK,
     borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
   },
   dateBadgeText: {
     color: WHITE,
-    fontSize: 12,
+    fontSize: 11,
+    lineHeight: 13,
+    letterSpacing: 0.24,
     fontWeight: "500",
   },
 });

@@ -36,7 +36,7 @@ const ImageScrollView = ({ styles, width, height, gap, images }: ImageScrollView
       showsHorizontalScrollIndicator={false}
     >
       {imageLinkList.map((imageLink, index) => (
-        <Pressable key={index} style={{width: width, height: height}}>
+        <Pressable key={index} style={{width: width, height: height, marginRight: index === imageLinkList.length -1 ? 12 : 0}}>
           <Image
             source={{ uri: imageLink }}
             style={defaultStyles.image}
