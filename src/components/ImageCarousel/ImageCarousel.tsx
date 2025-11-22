@@ -2,7 +2,6 @@ import { useRef } from "react";
 import {
   Dimensions,
   Image,
-  StyleSheet,
   View,
 } from "react-native";
 import { useSharedValue } from "react-native-reanimated";
@@ -10,6 +9,7 @@ import Carousel, {
   ICarouselInstance,
   Pagination,
 } from "react-native-reanimated-carousel";
+import styles from "./styles";
 
 interface ImageCarouselProps {
   width: number;
@@ -41,11 +41,11 @@ const ImageCarousel = ({ width, height, gap, images }: ImageCarouselProps) => {
   const data = images || imageLinkList;
 
   return (
-    <View style={defaultStyles.container}>
-      <View style={defaultStyles.carouselWrapper}>
+    <View style={styles.container}>
+      <View style={styles.carouselWrapper}>
         <Carousel
           ref={ref}
-          style={defaultStyles.carouselContainer}
+          style={styles.carouselContainer}
           width={WIDTH}
           height={height}
           scrollAnimationDuration={1000}
@@ -54,16 +54,16 @@ const ImageCarousel = ({ width, height, gap, images }: ImageCarouselProps) => {
           }}
           data={data}
           renderItem={({ item }) => (
-            <View style={[defaultStyles.imageWrapper, { paddingHorizontal: gap }]}>
+            <View style={[styles.imageWrapper, { paddingHorizontal: gap }]}>
               <Image
                 source={{ uri: item }}
-                style={defaultStyles.image}
+                style={styles.image}
                 resizeMode="cover"
               />
             </View>
           )}
         />
-        {/* <View style={defaultStyles.paginationContainer}>
+        {/* <View style={styles.paginationContainer}>
           <Pagination.Basic
             progress={progress}
             data={data}
@@ -90,38 +90,5 @@ const ImageCarousel = ({ width, height, gap, images }: ImageCarouselProps) => {
     </View>
   );
 };
-
-const defaultStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  carouselWrapper: {
-    width: "100%",
-    position: "relative",
-  },
-  carouselContainer: {
-    flexGrow: 0,
-  },
-  imageWrapper: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  image: {
-    borderRadius: 10,
-    height: "100%",
-    width: "100%",
-  },
-  paginationContainer: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    alignItems: "center",
-    justifyContent: "center",
-    zIndex: 10,
-  },
-});
 
 export default ImageCarousel;

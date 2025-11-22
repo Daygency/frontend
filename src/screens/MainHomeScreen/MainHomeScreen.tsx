@@ -1,18 +1,18 @@
-import { StyleSheet, View, useWindowDimensions } from "react-native";
+import { View, useWindowDimensions } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import { TabView } from "react-native-tab-view";
-import MainHomeHeader from "../components/MainHomeHeader/MainHomeHeader";
-import MainHomeTopBar from "../components/MainHomeTopBar/MainHomeTopBar";
-import CategoryTabBar from "../components/CategoryTabBar/CategoryTabBar";
-import AllContentScene from "../components/AllContentScene/AllContentScene";
-import { WHITE } from "../color";
-import { CategoryList } from "../constants/categories";
-import AnnouncementScreen from "./AnnouncementScreen";
-import ArtistScreen from "./ArtistScreen";
-import VenueScreen from "./VenueScreen";
-import AgencyScreen from "./AgencyScreen";
-import AcademyScreen from "./AcademyScreen";
+import MainHomeHeader from "../../components/MainHomeHeader/MainHomeHeader";
+import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
+import CategoryTabBar from "../../components/CategoryTabBar/CategoryTabBar";
+import AllContentScene from "../../components/AllContentScene/AllContentScene";
+import { CategoryList } from "../../constants/categories";
+import styles from "./styles";
+import AnnouncementScreen from "../AnnouncementScreen/AnnouncementScreen";
+import ArtistScreen from "../ArtistScreen/ArtistScreen";
+import VenueScreen from "../VenueScreen/VenueScreen";
+import AgencyScreen from "../AgencyScreen/AgencyScreen";
+import AcademyScreen from "../AcademyScreen/AcademyScreen";
 
 const MainHomeScreen = () => {
   const { top } = useSafeAreaInsets();
@@ -68,14 +68,5 @@ const MainHomeScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: WHITE,
-  },
-  tabView: {
-    flex: 1,
-  },
-});
-
 export default MainHomeScreen;
+

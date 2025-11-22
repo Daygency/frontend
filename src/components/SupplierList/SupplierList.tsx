@@ -2,11 +2,10 @@ import {
   Image,
   Pressable,
   ScrollView,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
-import { MAIN } from "../../color";
+import styles from "./styles";
 
 const SupplierList = () => {
   const supplierlist = [
@@ -21,40 +20,18 @@ const SupplierList = () => {
   return (
     <ScrollView
       horizontal
-      style={defaultStyles.conatiner}
-      contentContainerStyle={defaultStyles.contentContainer}
+      style={styles.conatiner}
+      contentContainerStyle={styles.contentContainer}
       showsHorizontalScrollIndicator={false}
     >
       {supplierlist.map((title, index) => (
-        <Pressable key={index} style={defaultStyles.itemContainer}>
-          <View style={defaultStyles.icon}></View>
-          <Text style={defaultStyles.title}>{title}</Text>
+        <Pressable key={index} style={styles.itemContainer}>
+          <View style={styles.icon}></View>
+          <Text style={styles.title}>{title}</Text>
         </Pressable>
       ))}
     </ScrollView>
   );
 };
-
-const defaultStyles = StyleSheet.create({
-  conatiner: {
-    flexGrow: 0,
-    marginBottom: 17,
-  },
-  contentContainer: {
-    justifyContent: "center",
-    gap: 13,
-    paddingHorizontal: 16,
-  },
-  itemContainer: {
-    alignItems: "center",
-  },
-  icon: {
-    backgroundColor: MAIN.DEFAULT,
-    width: 55,
-    height: 55,
-    borderRadius: 8,
-  },
-  title: { lineHeight: 16, fontSize: 11, fontWeight: "400" },
-});
 
 export default SupplierList;

@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { ContentRoutes } from "./routes";
-import MainHomeScreen from "../screens/MainHomeScreen";
-import ActivityScreen from "../screens/ActivityScreen";
-import PaymentScreen from "../screens/PaymentScreen";
-import ChatScreen from "../screens/ChatScreen";
-import LoungeScreen from "../screens/LoungeScreen";
+import MainHomeScreen from "../screens/MainHomeScreen/MainHomeScreen";
+import ActivityScreen from "../screens/ActivityScreen/ActivityScreen";
+import PaymentScreen from "../screens/PaymentScreen/PaymentScreen";
+import ChatScreen from "../screens/ChatScreen/ChatScreen";
+import LoungeScreen from "../screens/LoungeScreen/LoungeScreen";
 
 const Tab = createBottomTabNavigator();
 

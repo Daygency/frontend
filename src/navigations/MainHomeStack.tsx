@@ -1,6 +1,6 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { HomeRoutes } from "./routes";
-import MainHomeScreen from "../screens/MainHomeScreen";
+import MainHomeScreen from "../screens/MainHomeScreen/MainHomeScreen";
 import { WHITE } from "../color";
 
 const Stack = createNativeStackNavigator();
