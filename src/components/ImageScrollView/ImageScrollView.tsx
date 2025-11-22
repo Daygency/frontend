@@ -3,9 +3,9 @@ import {
   Pressable,
   ScrollView,
   StyleProp,
-  StyleSheet,
   ViewStyle,
 } from "react-native";
+import defaultStyles from "./styles";
 
 interface Styles {
   container?: StyleProp<ViewStyle>;
@@ -31,7 +31,7 @@ const ImageScrollView = ({ styles, width, height, gap, images }: ImageScrollView
   return (
     <ScrollView
       horizontal
-      style={[defaultStyles.container, styles.container,  { height: height }]}
+      style={[defaultStyles.container, styles?.container,  { height: height }]}
       contentContainerStyle={{gap: gap}}
       showsHorizontalScrollIndicator={false}
     >
@@ -47,26 +47,5 @@ const ImageScrollView = ({ styles, width, height, gap, images }: ImageScrollView
     </ScrollView>
   );
 };
-
-const defaultStyles = StyleSheet.create({
-  container: {
-    flexGrow: 0,
-    paddingHorizontal: 12,
-  },
-  contentContainer: {
-    // alignItems: "center",
-    // gap: 5,
-    marginHorizontal: 5,
-  },
-  // imageContainer: {
-  //   // height: 183,
-  //   width: 339,
-  // },
-  image: {
-    borderRadius: 10,
-    height: "100%",
-    width: "100%",
-  },
-});
 
 export default ImageScrollView;

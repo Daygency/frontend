@@ -1,7 +1,8 @@
-import { Pressable, StyleSheet, View } from "react-native";
+import { Pressable, View } from "react-native";
 import SearchInput from "../SearchInput/SearchInput";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MAIN } from "../../color";
+import styles from "./styles";
 
 const MainHomeHeader = () => {
   return (
@@ -24,18 +25,5 @@ const MainHomeHeader = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    paddingHorizontal: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  iconButton: {
-    flexShrink: 0,
-  },
-});
 
 export default MainHomeHeader;

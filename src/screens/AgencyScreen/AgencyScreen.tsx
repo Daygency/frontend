@@ -1,8 +1,8 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useState } from "react";
-import { WHITE } from "../color";
-import AgencyCard from "../components/AgencyCard/AgencyCard";
-import FilterDropdown from "../components/FilterDropdown/FilterDropdown";
+import AgencyCard from "../../components/AgencyCard/AgencyCard";
+import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
+import styles from "./styles";
 
 const AgencyScreen = () => {
   const [sortBy, setSortBy] = useState<string>("추천수순");
@@ -77,28 +77,6 @@ const AgencyScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    // flex: 1,
-    backgroundColor: WHITE,
-  },
-  filterContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 0,
-    gap: 8,
-  },
-  scrollContent: {
-    paddingHorizontal: 12,
-    paddingTop: 5,
-    paddingBottom: 5,
-  },
-  cardWrapper: {
-    marginBottom: 5,
-  },
-});
 
 export default AgencyScreen;
 

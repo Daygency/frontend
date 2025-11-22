@@ -1,8 +1,8 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useState } from "react";
-import { WHITE } from "../color";
-import AnnouncementCard from "../components/AnnouncementCard/AnnouncementCard";
-import FilterDropdown from "../components/FilterDropdown/FilterDropdown";
+import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
+import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
+import styles from "./styles";
 
 const AnnouncementScreen = () => {
   const [recruitmentStatus, setRecruitmentStatus] = useState<string | undefined>();
@@ -118,28 +118,6 @@ const AnnouncementScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    // flex: 1,
-    backgroundColor: WHITE,
-  },
-  filterContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 0,
-    gap: 8,
-  },
-  scrollContent: {
-    paddingHorizontal: 12,
-    paddingTop: 0,
-    paddingBottom: 5,
-  },
-  cardWrapper: {
-    marginBottom: 5,
-  },
-});
 
 export default AnnouncementScreen;
 

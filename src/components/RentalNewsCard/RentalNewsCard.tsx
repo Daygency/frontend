@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
-import { BLACK, GRAY } from "../../color";
+import styles from "./styles";
 
 interface RentalNewsCardProps {
   title: string;
@@ -25,32 +25,6 @@ const RentalNewsCard = ({
     </ShadowCardButton>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 8,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: BLACK,
-  },
-  infoContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  venueName: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: GRAY.DARK,
-  },
-  date: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: GRAY.DARK,
-  },
-});
 
 export default RentalNewsCard;
 

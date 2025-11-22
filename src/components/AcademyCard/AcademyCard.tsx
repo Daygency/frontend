@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ImageScrollView from "../ImageScrollView/ImageScrollView";
-import { BLACK, GRAY } from "../../color";
+import { BLACK } from "../../color";
+import styles from "./styles";
 
 interface AcademyCardProps {
   title: string;
@@ -74,71 +75,4 @@ const AcademyCard = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    gap: 12,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
-  titleContainer: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: BLACK,
-    marginBottom: 4,
-  },
-  likesContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  likesText: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: BLACK,
-  },
-  bookmarkContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    marginLeft: 12,
-  },
-  bookmarkCount: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: BLACK,
-    marginTop: 4,
-  },
-  imageSection: {
-    marginVertical: 8,
-  },
-  operatingHours: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: BLACK,
-  },
-  tagsContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 6,
-  },
-  tag: {
-    backgroundColor: GRAY.DEFAULT,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-  },
-  tagText: {
-    fontSize: 12,
-    fontWeight: "400",
-    color: BLACK,
-  },
-});
-
 export default AcademyCard;
-

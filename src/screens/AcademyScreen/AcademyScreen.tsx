@@ -1,8 +1,8 @@
-import { ScrollView, StyleSheet, View } from "react-native";
+import { ScrollView, View } from "react-native";
 import { useState } from "react";
-import { WHITE } from "../color";
-import AcademyCard from "../components/AcademyCard/AcademyCard";
-import FilterDropdown from "../components/FilterDropdown/FilterDropdown";
+import AcademyCard from "../../components/AcademyCard/AcademyCard";
+import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
+import styles from "./styles";
 
 const AcademyScreen = () => {
   const [sortBy, setSortBy] = useState<string>("스크랩수순");
@@ -73,28 +73,6 @@ const AcademyScreen = () => {
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    // flex: 1,
-    backgroundColor: WHITE,
-  },
-  filterContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 12,
-    paddingTop: 12,
-    paddingBottom: 0,
-    gap: 8,
-  },
-  scrollContent: {
-    paddingHorizontal: 12,
-    paddingTop: 5,
-    paddingBottom: 5,
-  },
-  cardWrapper: {
-    marginBottom: 5,
-  },
-});
 
 export default AcademyScreen;
 
