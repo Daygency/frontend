@@ -4,8 +4,7 @@ import styles from "./styles";
 
 const CategoryList = [
   "전체",
-  "공고",
-  "공연소식",
+  "모집공고",
   "예술가",
   "공연장",
   "기획사",
@@ -41,7 +40,7 @@ const CategoryNavBar = () => {
           >
             {category}
           </Text>
-        </Pressable>
+        </Pressable> 
       ))}
     </ScrollView>
   );

@@ -13,6 +13,7 @@ import ArtistScreen from "../ArtistScreen/ArtistScreen";
 import VenueScreen from "../VenueScreen/VenueScreen";
 import AgencyScreen from "../AgencyScreen/AgencyScreen";
 import AcademyScreen from "../AcademyScreen/AcademyScreen";
+import { useNavigation } from "@react-navigation/native";
 
 const MainHomeScreen = () => {
   const { top } = useSafeAreaInsets();
@@ -21,6 +22,7 @@ const MainHomeScreen = () => {
   const [routes] = useState(
     CategoryList.map((category) => ({ key: category, title: category }))
   );
+  const navigation = useNavigation();
 
   const handleRouteChange = (key: string) => {
     const targetIndex = routes.findIndex((route) => route.key === key);
@@ -69,4 +71,3 @@ const MainHomeScreen = () => {
 };
 
 export default MainHomeScreen;
-

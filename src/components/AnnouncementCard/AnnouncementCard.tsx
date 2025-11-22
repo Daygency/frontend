@@ -7,6 +7,7 @@ interface AnnouncementCardProps {
   type?: string;
   status?: string;
   daysLeft?: number;
+  onPress?: () => void;
 }
 
 const AnnouncementCard = ({
@@ -14,9 +15,10 @@ const AnnouncementCard = ({
   type = "콩쿨(경연)",
   status = "모집중",
   daysLeft = 20,
+  onPress,
 }: AnnouncementCardProps) => {
   return (
-    <ShadowCardButton>
+    <ShadowCardButton onPress={onPress}>
       <View style={styles.container}>
         <View style={styles.header}>
           <View style={styles.tagsContainer}>

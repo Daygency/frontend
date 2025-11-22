@@ -1,6 +1,6 @@
 export const HomeRoutes = {
   MAIN_HOME: "MainHome",
-  SEARCH: "Search",
+  ANNOUNCEMENT_DETAIL: "AnnouncementDetail"
 } as const;
 
 export const ContentRoutes = {

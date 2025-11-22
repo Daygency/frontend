@@ -1,10 +1,28 @@
 import { ScrollView, View } from "react-native";
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
 import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
+import { HomeRoutes } from "../../navigations/routes";
 import styles from "./styles";
 
+type AnnouncementDetailParams = {
+  title: string;
+  type: string;
+  status: string;
+  daysLeft: number;
+};
+
+type MainHomeStackParamList = {
+  MainHome: undefined;
+  AnnouncementDetail: AnnouncementDetailParams;
+};
+
+type NavigationProp = NativeStackNavigationProp<MainHomeStackParamList>;
+
 const AnnouncementScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
   const [recruitmentStatus, setRecruitmentStatus] = useState<string | undefined>();
   const [announcementType, setAnnouncementType] = useState<string | undefined>();
   const [recruitmentMajor, setRecruitmentMajor] = useState<string | undefined>();
@@ -37,6 +55,22 @@ const AnnouncementScreen = () => {
     "기타",
   ];
   const sortOptions = ["최신순", "스크랩수순"];
+
+  const announcements = [
+    { title: "교향악단 바이올린 객원단원 채용", type: "오디션(연주자 모집)", status: "모집중", daysLeft: 20 },
+    { title: "교향악단 바이올린 객원단원 채용", type: "콩쿨(경연)", status: "모집중", daysLeft: 20 },
+    { title: "교향악단 바이올린 객원단원 채용", type: "입시평가회", status: "모집중", daysLeft: 20 },
+    { title: "2025 서울 국제 피아노 콩쿨 모집", type: "콩쿨(경연)", status: "모집중", daysLeft: 15 },
+    { title: "오케스트라 단원 모집 공고", type: "오디션", status: "모집중", daysLeft: 8 },
+    { title: "뮤지컬 배우 오디션", type: "오디션", status: "모집중", daysLeft: 22 },
+    { title: "재즈 밴드 멤버 모집", type: "밴드", status: "모집중", daysLeft: 5 },
+    { title: "합창단 단원 모집", type: "합창", status: "모집중", daysLeft: 30 },
+    { title: "바이올린 마스터클래스 참가자 모집", type: "마스터클래스", status: "모집중", daysLeft: 12 },
+    { title: "플루트 연주자 모집", type: "오디션", status: "모집중", daysLeft: 18 },
+    { title: "드럼 연주자 모집", type: "밴드", status: "모집중", daysLeft: 7 },
+    { title: "첼로 연주자 모집", type: "오디션", status: "모집중", daysLeft: 25 },
+    { title: "클래식 기타 콩쿨", type: "콩쿨(경연)", status: "모집중", daysLeft: 10 },
+  ];
 
   return (
     <View style={styles.container}>
@@ -75,45 +109,24 @@ const AnnouncementScreen = () => {
         />
       </ScrollView>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="교향악단 바이올린 객원단원 채용" type="오디션(연주자 모집)" status="모집중" daysLeft={20} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="교향악단 바이올린 객원단원 채용" type="콩쿨(경연)" status="모집중" daysLeft={20} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="교향악단 바이올린 객원단원 채용" type="입시평가회" status="모집중" daysLeft={20} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="2025 서울 국제 피아노 콩쿨 모집" type="콩쿨(경연)" status="모집중" daysLeft={15} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="오케스트라 단원 모집 공고" type="오디션" status="모집중" daysLeft={8} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="뮤지컬 배우 오디션" type="오디션" status="모집중" daysLeft={22} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="재즈 밴드 멤버 모집" type="밴드" status="모집중" daysLeft={5} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="합창단 단원 모집" type="합창" status="모집중" daysLeft={30} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="바이올린 마스터클래스 참가자 모집" type="마스터클래스" status="모집중" daysLeft={12} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="플루트 연주자 모집" type="오디션" status="모집중" daysLeft={18} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="드럼 연주자 모집" type="밴드" status="모집중" daysLeft={7} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="첼로 연주자 모집" type="오디션" status="모집중" daysLeft={25} />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AnnouncementCard title="클래식 기타 콩쿨" type="콩쿨(경연)" status="모집중" daysLeft={10} />
-        </View>
+        {announcements.map((announcement, index) => (
+          <View key={index} style={styles.cardWrapper}>
+            <AnnouncementCard
+              title={announcement.title}
+              type={announcement.type}
+              status={announcement.status}
+              daysLeft={announcement.daysLeft}
+              onPress={() => {
+                navigation.navigate(HomeRoutes.ANNOUNCEMENT_DETAIL, {
+                  title: announcement.title,
+                  type: announcement.type,
+                  status: announcement.status,
+                  daysLeft: announcement.daysLeft,
+                });
+              }}
+            />
+          </View>
+        ))}
       </ScrollView>
     </View>
   );

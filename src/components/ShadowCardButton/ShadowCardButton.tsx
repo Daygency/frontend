@@ -15,12 +15,14 @@ interface Styles {
 type ShadowCardButtonProp = {
   children: React.ReactNode;
   styles?: Styles;
+  onPress?: () => void;
 };
 
-const ShadowCardButton = ({ children, styles }: ShadowCardButtonProp) => {
+const ShadowCardButton = ({ children, styles, onPress }: ShadowCardButtonProp) => {
   return (
     <Pressable
       style={[defaultStyles.container, defaultStyles.shadow, styles?.container]}
+      onPress={onPress}
     >
       {children}
     </Pressable>
