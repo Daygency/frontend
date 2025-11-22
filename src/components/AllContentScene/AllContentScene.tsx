@@ -1,30 +1,33 @@
-import { ScrollView } from "react-native";
+import { ScrollView, View } from "react-native";
 import ImageScrollView from "../ImageScrollView/ImageScrollView";
 import Section from "../Section/Section";
 import SupplierList from "../SupplierList/SupplierList";
 import AnnouncementCard from "../AnnouncementCard/AnnouncementCard";
 import GrayCard from "../GrayCard/GrayCard";
 import EventScheduleCard from "../EventScheduleCard/EventScheduleCard";
+import ImageCarousel from "../ImageCarousel/ImageCarousel";
 
-const AllContentScene = () => {
+interface AllContentSceneProps {
+  onPressAnnouncementMore?: () => void;
+}
+
+const AllContentScene = ({ onPressAnnouncementMore }: AllContentSceneProps) => {
   return (
     <ScrollView>
-      <ImageScrollView
+      {/* <ImageScrollView
         styles={{ container: { marginBottom: 14 } }}
         width={339}
         height={183}
         gap={5}
-      />
+      /> */}
+      <ImageCarousel width={339} height={183} gap={5} />
       <SupplierList />
-      <Section title="모집공고" onPressMore={() => {}}>
+      <Section title="모집공고" onPressMore={onPressAnnouncementMore}>
         <AnnouncementCard title="제목1" />
         <AnnouncementCard title="제목2" />
         <AnnouncementCard title="제목3" />
       </Section>
-      <Section
-        title="공연소식"
-        styles={{ content: { paddingHorizontal: 0 } }}
-      >
+      <Section title="공연소식" styles={{ content: { paddingHorizontal: 0 } }}>
         <ImageScrollView
           styles={{ container: { marginBottom: 14 } }}
           width={138}
@@ -67,4 +70,3 @@ const AllContentScene = () => {
 };
 
 export default AllContentScene;
-

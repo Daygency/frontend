@@ -13,7 +13,6 @@ const ContentTab = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        
       }}
     >
       <Tab.Screen name={ContentRoutes.HOME} component={MainHomeScreen} />

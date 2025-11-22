@@ -1,5 +1,15 @@
-import { View, Text, TouchableOpacity, StyleSheet, StyleProp, ViewStyle, TextStyle } from "react-native";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+  Pressable,
+} from "react-native";
 import { ReactNode } from "react";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
 interface Styles {
   container?: StyleProp<ViewStyle>;
@@ -25,14 +35,28 @@ export default function Section({
   return (
     <View style={[defaultStyles.container, styles?.container]}>
       <View style={[defaultStyles.header, styles?.header]}>
-        <Text style={[defaultStyles.title, styles?.title]}>{title}</Text>
+        {onPressMore ? (
+          <Pressable onPress={onPressMore}>
+            <Text style={[defaultStyles.title, styles?.title]}>{title}</Text>
+          </Pressable>
+        ) : (
+          <Text style={[defaultStyles.title, styles?.title]}>{title}</Text>
+        )}
         {onPressMore && (
           <TouchableOpacity onPress={onPressMore}>
-            <Text style={[defaultStyles.more, styles?.more]}>더 보기 ›</Text>
+            <View style={defaultStyles.moreContainer}>
+              <Text style={[defaultStyles.more, styles?.more]}>더 보기</Text>
+              <MaterialIcons
+                styles={defaultStyles.moreIcon}
+                name="navigate-next"
+                size={24}
+                color="black"
+              />
+            </View>
           </TouchableOpacity>
         )}
       </View>
-      <View style={[defaultStyles.content, styles?.content] }>{children}</View>
+      <View style={[defaultStyles.content, styles?.content]}>{children}</View>
     </View>
   );
 }
@@ -53,10 +77,15 @@ const defaultStyles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "bold",
   },
+  moreContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   more: {
     fontSize: 13,
     color: "#888",
   },
+  moreIcon: {},
   content: {
     gap: 5,
     paddingHorizontal: 12,
