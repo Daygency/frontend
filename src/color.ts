@@ -7,7 +7,9 @@ export const GRAY = {
   MEDIUM_2: "#E6E6E6",
   DARK_1: "#D9D9D9",
   DARK_2: "#888",
+  MEDIUM_100: "#A0A0A0",
   DARK: "#717182",
+  DARK_100: "#575757",
 };
 export const RED = {
   DEFAULT: "#EC1313",
