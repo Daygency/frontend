@@ -7,13 +7,13 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useState } from "react";
 import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
 import HR from "../../components/HR/HR";
 import ShadowCardButton from "../../components/ShadowCardButton/ShadowCardButton";
 import { GRAY } from "../../color";
 import RoundButton from "../../components/RoundButton/RoundButton";
+import { RootRoutes } from "../../navigations/routes";
 
 export type AnnouncementDetailParams = {
   title: string;
@@ -22,14 +22,14 @@ export type AnnouncementDetailParams = {
   daysLeft: number;
 };
 
-type MainHomeStackParamList = {
-  MainHome: undefined;
+type RootStackParamList = {
+  ContentTab: undefined;
   AnnouncementDetail: AnnouncementDetailParams;
 };
 
 type AnnouncementDetailRouteProp = RouteProp<
-  MainHomeStackParamList,
-  "AnnouncementDetail"
+  RootStackParamList,
+  typeof RootRoutes.ANNOUNCEMENT_DETAIL
 >;
 
 const AnnouncementDetailScreen = () => {

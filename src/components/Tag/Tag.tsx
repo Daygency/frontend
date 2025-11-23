@@ -57,3 +57,5 @@ const Tag = ({ text, variant = "type", borderColor }: TagProps) => {
 
 export default Tag;
 
+
+
