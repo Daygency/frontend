@@ -6,12 +6,13 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useState } from "react";
 import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
 import HR from "../../components/HR/HR";
 import ShadowCardButton from "../../components/ShadowCardButton/ShadowCardButton";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import RoundButton from "../../components/RoundButton/RoundButton";
 import { RootRoutes } from "../../navigations/routes";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -26,6 +27,7 @@ export type AnnouncementDetailParams = {
 type RootStackParamList = {
   ContentTab: undefined;
   AnnouncementDetail: AnnouncementDetailParams;
+  Application: AnnouncementDetailParams;
 };
 
 type AnnouncementDetailRouteProp = RouteProp<
@@ -35,6 +37,8 @@ type AnnouncementDetailRouteProp = RouteProp<
 
 const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { title, type, status, daysLeft } = route.params;
   const { width: screenWidth } = useWindowDimensions();
   const [imageHeights, setImageHeights] = useState<{ [key: number]: number }>(
@@ -120,6 +124,14 @@ const AnnouncementDetailScreen = () => {
             bottom: 10,
             alignItems: "center",
             justifyContent: "center",
+          }}
+          onPress={() => {
+            navigation.navigate(RootRoutes.APPLICATION, {
+              title,
+              type,
+              status,
+              daysLeft,
+            });
           }}
         >
           <Text style={{ color: WHITE, fontSize: 16, fontWeight: "600" }}>
