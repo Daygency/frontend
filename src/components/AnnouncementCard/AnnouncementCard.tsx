@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
+import Tag from "../Tag/Tag";
 import styles from "./styles";
 
 interface AnnouncementCardProps {
@@ -25,6 +26,12 @@ const AnnouncementCard = ({
           <View style={styles.countdownBadge}>
             <Text style={styles.countdownText}>D-{daysLeft}</Text>
           </View>
+          <View style={styles.tagsContainer}>
+            <Tag text={type} variant="type" />
+            <Tag text={status} variant="status" />
+
+          </View>
+          <Tag text={`D-${daysLeft}`} variant="countdown" />
         </View>
         <View style={styles.tagsContainer}>
           <View style={styles.typeTag}>

@@ -19,4 +19,5 @@ export const BLUE = {
 };
 export const MAIN = {
   DEFAULT: "#1F2A44",
+  LIGHT: "#B0B7C9",
 };
