@@ -44,7 +44,6 @@ const AnnouncementDetailScreen = () => {
     "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
     "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
   ];
-  const { bottom } = useSafeAreaInsets();
 
   const handleImageLoad = (index: number, event: any) => {
     const { width, height } = event.nativeEvent.source;

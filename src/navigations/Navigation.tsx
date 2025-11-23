@@ -59,6 +59,38 @@ const Navigation = () => {
                 />
               </Pressable>
             ),
+            headerRight: () => (
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 16,
+                  marginRight: 16,
+                }}
+              >
+                <Pressable hitSlop={10}>
+                  <MaterialCommunityIcons
+                    name="bookmark-outline"
+                    size={24}
+                    color="#000"
+                  />
+                </Pressable>
+                <Pressable hitSlop={10}>
+                  <MaterialCommunityIcons
+                    name="share-variant"
+                    size={24}
+                    color="#000"
+                  />
+                </Pressable>
+                <Pressable hitSlop={10}>
+                  <MaterialCommunityIcons
+                    name="dots-vertical"
+                    size={24}
+                    color="#000"
+                  />
+                </Pressable>
+              </View>
+            ),
           })}
         />
       </Stack.Navigator>
