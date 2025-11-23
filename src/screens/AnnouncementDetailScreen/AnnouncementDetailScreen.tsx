@@ -11,9 +11,10 @@ import { useState } from "react";
 import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
 import HR from "../../components/HR/HR";
 import ShadowCardButton from "../../components/ShadowCardButton/ShadowCardButton";
-import { GRAY } from "../../color";
+import { GRAY, MAIN, WHITE } from "../../color";
 import RoundButton from "../../components/RoundButton/RoundButton";
 import { RootRoutes } from "../../navigations/routes";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export type AnnouncementDetailParams = {
   title: string;
@@ -43,6 +44,7 @@ const AnnouncementDetailScreen = () => {
     "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
     "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
   ];
+  const { bottom } = useSafeAreaInsets();
 
   const handleImageLoad = (index: number, event: any) => {
     const { width, height } = event.nativeEvent.source;
@@ -53,8 +55,8 @@ const AnnouncementDetailScreen = () => {
   };
 
   return (
-    <>
-      <ScrollView>
+    <View style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
         <AnnouncementBox
           title={title}
           type={type}
@@ -100,7 +102,33 @@ const AnnouncementDetailScreen = () => {
           </View>
         </ShadowCardButton>
       </ScrollView>
-    </>
+      <View
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingHorizontal: 16,
+          paddingVertical: 20,
+          backgroundColor: WHITE,
+        }}
+      >
+        <Pressable
+          style={{
+            backgroundColor: MAIN.DEFAULT,
+            borderRadius: 16,
+            paddingVertical: 16,
+            bottom: 10,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          <Text style={{ color: WHITE, fontSize: 16, fontWeight: "600" }}>
+            지원서 작성하기
+          </Text>
+        </Pressable>
+      </View>
+    </View>
   );
 };
 
