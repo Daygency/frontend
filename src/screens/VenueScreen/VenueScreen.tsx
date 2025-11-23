@@ -3,11 +3,14 @@ import { useState } from "react";
 import VenueCard from "../../components/VenueCard/VenueCard";
 import RentalNewsCard from "../../components/RentalNewsCard/RentalNewsCard";
 import styles from "./styles";
+import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
 
 type TabType = "info" | "news";
 
 const VenueScreen = () => {
   const [selectedTab, setSelectedTab] = useState<TabType>("info");
+  const [sortBy, setSortBy] = useState<string>("추천수순");
+  const sortOptions = ["스크랩수순", "가나다순"];
 
   const renderContent = () => {
     if (selectedTab === "info") {
@@ -102,7 +105,24 @@ const VenueScreen = () => {
           </Text>
         </Pressable>
       </View>
-
+      <View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}
+          nestedScrollEnabled={true}
+          directionalLockEnabled={true}
+          scrollEventThrottle={16}
+          bounces={false}
+        >
+          <FilterDropdown
+            label="정렬"
+            options={sortOptions}
+            selectedValue={sortBy}
+            onSelect={setSortBy}
+          />
+        </ScrollView>
+      </View>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         {renderContent()}
       </ScrollView>

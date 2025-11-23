@@ -14,7 +14,7 @@ const RentalNewsCard = ({
   date,
 }: RentalNewsCardProps) => {
   return (
-    <ShadowCardButton>
+    <ShadowCardButton styles={{container: {paddingTop: 16, paddingBottom: 17, paddingHorizontal: 16}}}>
       <View style={styles.container}>
         <Text style={styles.title}>{title}</Text>
         <View style={styles.infoContainer}>

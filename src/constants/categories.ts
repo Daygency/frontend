@@ -4,6 +4,5 @@ export const CategoryList = [
   "예술가",
   "공연장",
   "기획사",
-  "학원",
 ] as const;
 

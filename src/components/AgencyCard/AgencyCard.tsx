@@ -68,9 +68,9 @@ const AgencyCard = ({
       {hasImages && (
         <View style={styles.imageSection}>
           <ImageScrollView
-            styles={{ container: { paddingHorizontal: 0 } }}
-            width={100}
-            height={100}
+            styles={{ container: { paddingHorizontal: 12 } }}
+            width={161}
+            height={147}
             gap={8}
             images={images}
           />

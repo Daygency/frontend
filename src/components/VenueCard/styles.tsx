@@ -1,11 +1,14 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY } from "../../color";
+import { BLACK, BLUE, GRAY, MAIN } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
-    gap: 12,
+    marginHorizontal: -12,
+    borderBottomWidth: 1,
+    borderBottomColor: GRAY.MEDIUM_2,
   },
   header: {
+    marginHorizontal: 12,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
@@ -14,43 +17,54 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   title: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: BLACK,
+    marginTop: 5,
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "500",
+    color: MAIN.DEFAULT,
     marginBottom: 4,
   },
   address: {
-    fontSize: 14,
+    fontSize: 13,
+    lineHeight: 20,
     fontWeight: "400",
     color: GRAY.DARK,
   },
   bookmarkContainer: {
+    marginTop: 5,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 12,
   },
   bookmarkCount: {
-    fontSize: 14,
+    fontSize: 12,
+    lineHeight: 13,
     fontWeight: "400",
     color: BLACK,
-    marginTop: 4,
+    marginTop: 1,
+    opacity: 0.6,
   },
   imageSection: {
-    marginVertical: 8,
+    marginTop: 5,
+    marginBottom: 10,
   },
   tagsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 6,
+    marginRight: 12,
+    marginBottom: 10,
+    marginLeft: 16,
+    gap: 8,
   },
   tag: {
-    backgroundColor: GRAY.DEFAULT,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    backgroundColor: BLUE.LIGHT_1,
+    borderRadius: 2,
+    paddingHorizontal: 5,
+    paddingVertical: 1,
   },
   tagText: {
     fontSize: 12,
+    lineHeight: 18,
     fontWeight: "400",
     color: BLACK,
   },

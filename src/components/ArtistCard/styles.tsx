@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "500",
-    color: BLACK,
+    color: MAIN.DEFAULT,
     marginBottom: 5,
   },
   category: {

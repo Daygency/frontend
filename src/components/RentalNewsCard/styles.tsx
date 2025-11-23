@@ -1,14 +1,15 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY } from "../../color";
+import { GRAY, MAIN } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
-    gap: 8,
+    gap: 3,
   },
   title: {
     fontSize: 16,
-    fontWeight: "600",
-    color: BLACK,
+    lineHeight: 24,
+    fontWeight: "500",
+    color: MAIN.DEFAULT,
   },
   infoContainer: {
     flexDirection: "row",
@@ -16,12 +17,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   venueName: {
-    fontSize: 14,
+    fontSize: 13,
+    lineHeight: 20,
     fontWeight: "400",
     color: GRAY.DARK,
   },
   date: {
-    fontSize: 14,
+    fontSize: 13,
+    lineHeight: 20,
     fontWeight: "400",
     color: GRAY.DARK,
   },

@@ -21,7 +21,7 @@ const AllContentScene = ({ onPressAnnouncementMore }: AllContentSceneProps) => {
         gap={5}
       /> */}
       <ImageCarousel width={339} height={183} gap={5} />
-      <SupplierList />
+      {/* <SupplierList /> */}
       <Section title="모집공고" onPressMore={onPressAnnouncementMore}>
         <AnnouncementCard title="제목1" />
         <AnnouncementCard title="제목2" />
@@ -31,8 +31,9 @@ const AllContentScene = ({ onPressAnnouncementMore }: AllContentSceneProps) => {
         <ImageScrollView
           styles={{ container: {} }}
           width={138}
-          height={193}
+          height={264}
           gap={14}
+          type="withText"
         />
       </Section>
       <Section title="커뮤니티" onPressMore={() => {}}>

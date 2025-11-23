@@ -35,45 +35,91 @@ const AgencyScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterContainer}
-        nestedScrollEnabled={true}
-        directionalLockEnabled={true}
-        scrollEventThrottle={16}
-        bounces={false}
-      >
-        <FilterDropdown
-          label="정렬"
-          options={sortOptions}
-          selectedValue={sortBy}
-          onSelect={setSortBy}
-        />
-      </ScrollView>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <View style={styles.cardWrapper}>
-          <AgencyCard
-            title={agencyWithImages.title}
-            likes={agencyWithImages.likes}
-            rating={agencyWithImages.rating}
-            calendarCount={agencyWithImages.calendarCount}
-            bookmarkCount={agencyWithImages.bookmarkCount}
-            tags={agencyWithImages.tags}
-            images={agencyWithImages.images}
+      <View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}
+          nestedScrollEnabled={true}
+          directionalLockEnabled={true}
+          scrollEventThrottle={16}
+          bounces={false}
+        >
+          <FilterDropdown
+            label="정렬"
+            options={sortOptions}
+            selectedValue={sortBy}
+            onSelect={setSortBy}
           />
-        </View>
-        <View style={styles.cardWrapper}>
-          <AgencyCard
-            title={agencyWithoutImages.title}
-            likes={agencyWithoutImages.likes}
-            rating={agencyWithoutImages.rating}
-            calendarCount={agencyWithoutImages.calendarCount}
-            bookmarkCount={agencyWithoutImages.bookmarkCount}
-            tags={agencyWithoutImages.tags}
-          />
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </View>
+      <View style={styles.scrollContentWrapper}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
+          <View style={styles.cardWrapper}>
+            <AgencyCard
+              title={agencyWithImages.title}
+              likes={agencyWithImages.likes}
+              rating={agencyWithImages.rating}
+              calendarCount={agencyWithImages.calendarCount}
+              bookmarkCount={agencyWithImages.bookmarkCount}
+              tags={agencyWithImages.tags}
+              images={agencyWithImages.images}
+            />
+          </View>
+          <View style={styles.cardWrapper}>
+            <AgencyCard
+              title={agencyWithoutImages.title}
+              likes={agencyWithoutImages.likes}
+              rating={agencyWithoutImages.rating}
+              calendarCount={agencyWithoutImages.calendarCount}
+              bookmarkCount={agencyWithoutImages.bookmarkCount}
+              tags={agencyWithoutImages.tags}
+            />
+          </View>
+          <View style={styles.cardWrapper}>
+            <AgencyCard
+              title={agencyWithImages.title}
+              likes={agencyWithImages.likes}
+              rating={agencyWithImages.rating}
+              calendarCount={agencyWithImages.calendarCount}
+              bookmarkCount={agencyWithImages.bookmarkCount}
+              tags={agencyWithImages.tags}
+              images={agencyWithImages.images}
+            />
+          </View>
+          <View style={styles.cardWrapper}>
+            <AgencyCard
+              title={agencyWithoutImages.title}
+              likes={agencyWithoutImages.likes}
+              rating={agencyWithoutImages.rating}
+              calendarCount={agencyWithoutImages.calendarCount}
+              bookmarkCount={agencyWithoutImages.bookmarkCount}
+              tags={agencyWithoutImages.tags}
+            />
+          </View>
+          <View style={styles.cardWrapper}>
+            <AgencyCard
+              title={agencyWithImages.title}
+              likes={agencyWithImages.likes}
+              rating={agencyWithImages.rating}
+              calendarCount={agencyWithImages.calendarCount}
+              bookmarkCount={agencyWithImages.bookmarkCount}
+              tags={agencyWithImages.tags}
+              images={agencyWithImages.images}
+            />
+          </View>
+          <View style={styles.cardWrapper}>
+            <AgencyCard
+              title={agencyWithoutImages.title}
+              likes={agencyWithoutImages.likes}
+              rating={agencyWithoutImages.rating}
+              calendarCount={agencyWithoutImages.calendarCount}
+              bookmarkCount={agencyWithoutImages.bookmarkCount}
+              tags={agencyWithoutImages.tags}
+            />
+          </View>
+        </ScrollView>
+      </View>
     </View>
   );
 };

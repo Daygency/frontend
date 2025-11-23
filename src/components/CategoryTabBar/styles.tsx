@@ -5,7 +5,6 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: WHITE,
     height: 48,
-    paddingBottom: 6,
     borderBottomWidth: 0,
     elevation: 0,
     shadowOpacity: 0,
@@ -22,14 +21,15 @@ const styles = StyleSheet.create({
     minHeight: 42,
   },
   tabLabel: {
-    fontSize: 14,
+    fontSize: 15,
+    lineHeight: 20,
     color: GRAY.DARK,
     fontWeight: "500",
     includeFontPadding: false,
     textAlignVertical: "center",
   },
   tabLabelSelected: {
-    fontWeight: "600",
+    color: MAIN.DEFAULT,
   },
 });
 
