@@ -10,13 +10,15 @@ const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: "row",
     paddingHorizontal: 12,
-    paddingVertical: 13,
+    paddingTop: 13,
+    paddingBottom: 9,
     gap: 8,
   },
   scrollContentWrapper: {
     flex: 1,
   },
   scrollContent: {
+    marginTop: 4,
     paddingHorizontal: 12,
     // 네비게이션 바 높이만큼 paddingBottom 지정해주세요
     paddingBottom: 5,

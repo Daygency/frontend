@@ -10,7 +10,7 @@ const MainHomeTopBar = () => {
       <Logo size={24} />
       <Pressable style={styles.portfolioButton}>
         <View style={styles.icon}>
-          <MaterialCommunityIcons name="account" size={18} color={WHITE} />
+          <MaterialCommunityIcons name="account" size={17} color={WHITE} />
         </View>
         <Text style={styles.portfolioTitle}>{"내 포트폴리오"}</Text>
       </Pressable>

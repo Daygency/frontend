@@ -47,8 +47,6 @@ const MainHomeScreen = () => {
         return <VenueScreen />;
       case "기획사":
         return <AgencyScreen />;
-      case "학원":
-        return <AcademyScreen />;
       default:
         return null;
     }

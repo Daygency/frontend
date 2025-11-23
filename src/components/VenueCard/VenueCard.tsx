@@ -38,10 +38,10 @@ const VenueCard = ({
       {/* Image Scroll Section */}
       <View style={styles.imageSection}>
         <ImageScrollView
-          styles={{ container: { paddingHorizontal: 0 } }}
-          width={100}
-          height={100}
-          gap={8}
+          styles={{ container: { paddingHorizontal: 12 } }}
+          width={160}
+          height={147}
+          gap={5}
         />
       </View>
 

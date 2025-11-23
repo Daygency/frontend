@@ -9,6 +9,7 @@ const SearchInput = () => {
       <TextInput
         style={styles.input}
         placeholder="오늘, 어떤 무대를 찾고 계신가요?"
+        placeholderTextColor={GRAY.DARK}
       />
       <View style={styles.icon}>
         <MaterialCommunityIcons name={"magnify"} size={20} color={GRAY.DARK} />

@@ -26,17 +26,25 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 14,
-    fontWeight: "500",
+    lineHeight: 20,
+    fontWeight: "400",
     color: GRAY.DARK,
   },
   tabTextActive: {
-    fontWeight: "600",
+    fontWeight: "500",
     color: MAIN.DEFAULT,
   },
-  scrollContent: {
+  filterContainer: {
+    flexDirection: "row",
     paddingHorizontal: 12,
-    paddingTop: 5,
-    paddingBottom: 5,
+    paddingTop: 9,
+    paddingBottom: 8,
+    gap: 8,
+  },
+  scrollContent: {
+    marginTop: 4,
+    paddingHorizontal: 12,
+    paddingBottom: 9,
   },
   cardWrapper: {
     marginBottom: 5,

@@ -14,6 +14,7 @@ const MainHomeHeader = () => {
           size={23}
           color={MAIN.DEFAULT}
         />
+        <View style={styles.dotNew} />
       </Pressable>
       <Pressable style={styles.iconButton}>
         <MaterialCommunityIcons
