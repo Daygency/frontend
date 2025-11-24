@@ -9,6 +9,7 @@ import {
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useState } from "react";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
 import HR from "../../components/HR/HR";
 import ShadowCardButton from "../../components/ShadowCardButton/ShadowCardButton";
@@ -69,7 +70,7 @@ const AnnouncementDetailScreen = () => {
         <ShadowCardButton>
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <RoundButton size={40} />
-            <Text>김 프로듀서</Text>
+            <Text>김프로듀서</Text>
           </View>
           <HR
             text=""
@@ -78,6 +79,58 @@ const AnnouncementDetailScreen = () => {
               line: { borderBottomColor: GRAY.MEDIUM },
             }}
           />
+          <View style={{ marginTop: 12, gap: 12 }}>
+            {/* 마감일 */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <MaterialCommunityIcons
+                name="calendar-outline"
+                size={20}
+                color={BLACK}
+              />
+              <Text style={{ fontSize: 14, color: BLACK }}>마감일: 2025.09.06</Text>
+            </View>
+            {/* 예정일 */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <MaterialCommunityIcons
+                name="calendar-outline"
+                size={20}
+                color={BLACK}
+              />
+              <Text style={{ fontSize: 14, color: BLACK }}>예정일: 2025.10.08</Text>
+            </View>
+            {/* 예정 시간 */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <MaterialCommunityIcons name="clock-outline" size={20} color={BLACK} />
+              <Text style={{ fontSize: 14, color: BLACK }}>예정 시간: 14:30</Text>
+            </View>
+            {/* 장소 */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <MaterialCommunityIcons
+                name="map-marker-outline"
+                size={20}
+                color={BLACK}
+              />
+              <Text style={{ fontSize: 14, color: BLACK }}>
+                장소: 세종문화회관 대극장
+              </Text>
+            </View>
+            {/* 상태 */}
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+              <View
+                style={{
+                  width: 20,
+                  height: 20,
+                  borderRadius: 10,
+                  backgroundColor: "#4CAF50",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <MaterialCommunityIcons name="check" size={14} color={WHITE} />
+              </View>
+              <Text style={{ fontSize: 14, color: BLACK }}>모집 중</Text>
+            </View>
+          </View>
         </ShadowCardButton>
         <ShadowCardButton
           styles={{ container: { marginTop: 15, padding: 16 } }}
