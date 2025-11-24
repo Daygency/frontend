@@ -23,13 +23,12 @@ const AnnouncementCard = ({
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
-          <View style={styles.countdownBadge}>
+          {/* <View style={styles.countdownBadge}>
             <Text style={styles.countdownText}>D-{daysLeft}</Text>
-          </View>
+          </View> */}
           <View style={styles.tagsContainer}>
-            <Tag text={type} variant="type" />
-            <Tag text={status} variant="status" />
-
+            {/* <Tag text={type} variant="type" /> */}
+            {/* <Tag text={status} variant="status" /> */}
           </View>
           <Tag text={`D-${daysLeft}`} variant="countdown" />
         </View>
