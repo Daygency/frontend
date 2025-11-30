@@ -7,6 +7,7 @@ import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import styles from "./styles";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,19 +26,8 @@ const Navigation = () => {
           component={AnnouncementDetailScreen}
           options={({ navigation }) => ({
             headerTitle: () => (
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginLeft: 25,
-                }}
-              >
-                <Text
-                  style={{ fontSize: 17, fontWeight: "bold", marginLeft: -10 }}
-                >
-                  모집 공고 상세
-                </Text>
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>모집 공고 상세</Text>
               </View>
             ),
             headerShadowVisible: false,
@@ -51,7 +41,7 @@ const Navigation = () => {
                   }
                 }}
                 hitSlop={10}
-                style={{ marginLeft: 10 }}
+                style={styles.leftIcon}
               >
                 <MaterialCommunityIcons
                   name="chevron-left"
@@ -61,32 +51,25 @@ const Navigation = () => {
               </Pressable>
             ),
             headerRight: () => (
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  gap: 16,
-                  marginRight: 16,
-                }}
-              >
+              <View style={styles.rightItemsWrap}>
                 <Pressable hitSlop={10}>
                   <MaterialCommunityIcons
                     name="bookmark-outline"
-                    size={24}
+                    size={21}
                     color="#000"
                   />
                 </Pressable>
                 <Pressable hitSlop={10}>
                   <MaterialCommunityIcons
                     name="share-variant"
-                    size={24}
+                    size={21}
                     color="#000"
                   />
                 </Pressable>
                 <Pressable hitSlop={10}>
                   <MaterialCommunityIcons
                     name="dots-vertical"
-                    size={24}
+                    size={21}
                     color="#000"
                   />
                 </Pressable>
@@ -99,19 +82,8 @@ const Navigation = () => {
           component={ApplicationScreen}
           options={({ navigation }) => ({
             headerTitle: () => (
-              <View
-                style={{
-                  flex: 1,
-                  flexDirection: "row",
-                  alignItems: "center",
-                  marginLeft: 25,
-                }}
-              >
-                <Text
-                  style={{ fontSize: 17, fontWeight: "bold", marginLeft: -10 }}
-                >
-                  지원하기
-                </Text>
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>지원하기</Text>
               </View>
             ),
             headerShadowVisible: false,
@@ -125,7 +97,7 @@ const Navigation = () => {
                   }
                 }}
                 hitSlop={10}
-                style={{ marginLeft: 10 }}
+                style={styles.leftIcon}
               >
                 <MaterialCommunityIcons
                   name="chevron-left"

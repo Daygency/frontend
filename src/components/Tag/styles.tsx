@@ -4,14 +4,15 @@ import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 const styles = StyleSheet.create({
   tag: {
     borderRadius: 6,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingHorizontal: 10,
   },
   typeTag: {
-    backgroundColor: GRAY.DEFAULT,
+    backgroundColor: GRAY.DARK_1,
   },
   typeTagText: {
     fontSize: 12,
+    lineHeight: 21,
+    letterSpacing: 0.24,
     color: BLACK,
     fontWeight: "400",
   },
@@ -22,6 +23,8 @@ const styles = StyleSheet.create({
   },
   statusTagText: {
     fontSize: 12,
+    lineHeight: 21,
+    letterSpacing: 0.24,
     color: BLACK,
     fontWeight: "400",
   },
@@ -30,6 +33,8 @@ const styles = StyleSheet.create({
   },
   countdownTagText: {
     fontSize: 12,
+    lineHeight: 21,
+    letterSpacing: 0.24,
     color: WHITE,
     fontWeight: "500",
   },

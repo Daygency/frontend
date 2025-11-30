@@ -2,7 +2,7 @@ import { Text, View } from "react-native";
 import Tag from "../Tag/Tag";
 import styles from "./styles";
 import { AnnouncementDetailParams } from "../../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
-import { BLACK, GRAY, MAIN } from "../../color";
+import { GRAY, MAIN } from "../../color";
 
 const AnnouncementBox = ({
   title,
@@ -16,8 +16,8 @@ const AnnouncementBox = ({
 
       <View style={styles.header}>
         <View style={styles.tagsContainer}>
-          <Tag text={type} variant="type" borderColor={GRAY.DEFAULT} />
-          <Tag text={status} variant="status" borderColor={GRAY.DEFAULT} />
+          <Tag text={type} variant="type" borderColor={GRAY.DARK_1} />
+          <Tag text={status} variant="status" borderColor={GRAY.MEDIUM_2} />
           <Tag
             text={`D-${daysLeft}`}
             variant="countdown"

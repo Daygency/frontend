@@ -19,8 +19,8 @@ const Form = ({ isRequired, title, example, children }: FormProps) => {
         {isRequired && (
           <Foundation
             name="asterisk"
-            size={10}
-            color={RED}
+            size={8}
+            color={RED.DARK}
             style={styles.asterisk}
           />
         )}

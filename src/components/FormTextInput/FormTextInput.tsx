@@ -1,4 +1,4 @@
-import { TextInput } from "react-native";
+import { Platform, TextInput } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
 import styles from "./styles";
 
@@ -14,7 +14,15 @@ const FormTextInput = ({
   onChangeText,
 }: FormTextInputProps) => {
   return (
-    <ShadowCardButton>
+    <ShadowCardButton
+      styles={{
+        container: {
+          borderRadius: 12,
+          paddingVertical: Platform.OS === "ios" ? 15 : 1,
+          height: Platform.OS === "ios" ? 46 : 46,
+        },
+      }}
+    >
       <TextInput
         placeholder={placeholder}
         style={styles.input}

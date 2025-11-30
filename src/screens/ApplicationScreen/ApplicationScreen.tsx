@@ -9,6 +9,7 @@ import Form from "../../components/Form/Form";
 import FormTextInput from "../../components/FormTextInput/FormTextInput";
 import FormDropdownInput from "../../components/FormDropdownInput/FormDropdownInput";
 import { BLACK, MAIN, WHITE } from "../../color";
+import styles from "./styles";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -48,91 +49,66 @@ const ApplicationScreen = () => {
   return (
     <View style={{ flex: 1, backgroundColor: WHITE }}>
       <ScrollView
-        contentContainerStyle={{ paddingBottom: 80, paddingHorizontal: 12 }}
+        contentContainerStyle={{ paddingBottom: 80 }}
       >
-        {/* <AnnouncementBox
+        <AnnouncementBox
           title={title}
           type={type}
           status={status}
           daysLeft={daysLeft}
-        /> */}
-        <Text
-          style={{
-            marginVertical: 16,
-            marginHorizontal: 20,
-            fontSize: 20,
-            fontWeight: "600",
-          }}
-        >
-          {title}
-        </Text>
-        <View>
-          <Form title="이름" isRequired={true}>
-            <FormTextInput placeholder="이름을 입력하세요" />
-          </Form>
-        </View>
-        <View style={{ marginTop: 15 }}>
-          <Form title="생년" isRequired={true}>
-            <FormTextInput placeholder="YYYY" />
-          </Form>
-        </View>
-        <View style={{ marginTop: 15 }}>
-          <Form
-            title="전공"
-            isRequired={true}
-            example="ex. 건반악기, 현악, 성악, 작곡, 무용, 실용"
-          >
-            <FormDropdownInput
-              placeholder="전공을 선택하세요"
-              data={majorOptions}
-              value={selectedMajor}
-              onChange={(item) => setSelectedMajor(item.value)}
-            />
-          </Form>
-        </View>
-        <View style={{ marginTop: 15 }}>
-          <Form title="학력(소속학교/학년)" isRequired={true}>
-            <FormTextInput
-              placeholder="소속학교를 입력하세요"
-              value={schoolName}
-              onChangeText={setSchoolName}
-            />
-            <FormDropdownInput
-              placeholder="학년을 선택하세요"
-              data={gradeOptions}
-              value={selectedGrade}
-              onChange={(item) => setSelectedGrade(item.value)}
-            />
-          </Form>
+        />
+        <View style={{ paddingHorizontal: 12, paddingVertical: 15, }}>
+          <View>
+            <Form title="이름" isRequired={true}>
+              <FormTextInput placeholder="이름을 입력하세요" />
+            </Form>
+          </View>
+          <View style={{ marginTop: 15 }}>
+            <Form title="생년" isRequired={true}>
+              <FormTextInput placeholder="YYYY" />
+            </Form>
+          </View>
+          <View style={{ marginTop: 15 }}>
+            <Form
+              title="전공"
+              isRequired={true}
+              example="ex. 건반악기, 현악, 성악, 작곡, 무용, 실용"
+            >
+              <FormDropdownInput
+                placeholder="전공을 선택하세요"
+                data={majorOptions}
+                value={selectedMajor}
+                onChange={(item) => setSelectedMajor(item.value)}
+              />
+            </Form>
+          </View>
+          <View style={{ marginTop: 15 }}>
+            <Form title="학력(소속학교/학년)" isRequired={true}>
+              <FormTextInput
+                placeholder="소속학교를 입력하세요"
+                value={schoolName}
+                onChangeText={setSchoolName}
+              />
+              <FormDropdownInput
+                placeholder="학년을 선택하세요"
+                data={gradeOptions}
+                value={selectedGrade}
+                onChange={(item) => setSelectedGrade(item.value)}
+              />
+            </Form>
+          </View>
         </View>
       </ScrollView>
       <View
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          paddingHorizontal: 16,
-          paddingVertical: 20,
-          backgroundColor: WHITE,
-        }}
+        style={styles.applyContainer}
       >
         <Pressable
-          style={{
-            backgroundColor: MAIN.DEFAULT,
-            borderRadius: 16,
-            paddingVertical: 16,
-            bottom: 10,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
+          style={styles.btnApply}
           onPress={() => {
             // 제출하기 로직
           }}
         >
-          <Text style={{ color: WHITE, fontSize: 16, fontWeight: "600" }}>
-            제출하기
-          </Text>
+          <Text style={styles.btnApplyText}>제출하기</Text>
         </Pressable>
       </View>
     </View>
