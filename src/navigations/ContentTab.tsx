@@ -26,13 +26,17 @@ const ContentTab = () => {
           paddingBottom: 10,
           height: 90,
         },
+        tabBarActiveTintColor: "black",
+        tabBarInactiveTintColor: "gray",
       }}
     >
       <Tab.Screen
         name={ContentRoutes.HOME}
         component={MainHomeScreen}
         options={{
-          tabBarIcon: () => <Feather name="home" size={24} color="black" />,
+          tabBarIcon: ({ focused }) => (
+            <Feather name="home" size={24} color={focused ? "black" : "gray"} />
+          ),
           title: "홈",
         }}
       />
@@ -40,7 +44,9 @@ const ContentTab = () => {
         name={ContentRoutes.ACTIVITY}
         component={ActivityScreen}
         options={{
-          tabBarIcon: () => <Entypo name="megaphone" size={24} color="black" />,
+          tabBarIcon: ({ focused }) => (
+            <Entypo name="megaphone" size={24} color={focused ? "black" : "gray"} />
+          ),
           title: "모집공고",
         }}
       />
@@ -48,8 +54,8 @@ const ContentTab = () => {
         name={ContentRoutes.PAYMENT}
         component={PaymentScreen}
         options={{
-          tabBarIcon: () => (
-            <Ionicons name="chatbubble-outline" size={24} color="black" />
+          tabBarIcon: ({ focused }) => (
+            <Ionicons name="chatbubble-outline" size={24} color={focused ? "black" : "gray"} />
           ),
           title: "채팅",
         }}
@@ -58,7 +64,9 @@ const ContentTab = () => {
         name={ContentRoutes.CHAT}
         component={ChatScreen}
         options={{
-          tabBarIcon: () => <Octicons name="people" size={24} color="black" />,
+          tabBarIcon: ({ focused }) => (
+            <Octicons name="people" size={24} color={focused ? "black" : "gray"} />
+          ),
           title: "라운지",
         }}
       />
@@ -66,8 +74,8 @@ const ContentTab = () => {
         name={ContentRoutes.LOUNGE}
         component={LoungeScreen}
         options={{
-          tabBarIcon: () => (
-            <MaterialCommunityIcons name="notebook" size={24} color="black" />
+          tabBarIcon: ({ focused }) => (
+            <MaterialCommunityIcons name="notebook" size={24} color={focused ? "black" : "gray"} />
           ),
           title: "포트폴리오",
         }}
