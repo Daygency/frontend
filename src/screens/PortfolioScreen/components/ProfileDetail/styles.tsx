@@ -9,9 +9,7 @@ const styles = StyleSheet.create({
   contentContainer: {
     paddingHorizontal: 12,
     paddingVertical: 16,
-  },
-  section: {
-    marginBottom: 24,
+    gap: 10,
   },
   sectionTitle: {
     fontSize: 16,
@@ -39,4 +37,3 @@ const styles = StyleSheet.create({
 });
 
 export default styles;
-
