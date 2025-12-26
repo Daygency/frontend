@@ -2,11 +2,15 @@ import { ScrollView, View } from "react-native";
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
 import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
 import { RootRoutes } from "../../navigations/routes";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import styles from "./styles";
+import MainHomeHeader from "../../components/MainHomeHeader/MainHomeHeader";
+import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
+import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../components/MainHomeTopBar/styles";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -17,6 +21,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const AnnouncementScreen = () => {
   const navigation = useNavigation<NavigationProp>();
+  const { top } = useSafeAreaInsets();
   const [recruitmentStatus, setRecruitmentStatus] = useState<
     string | undefined
   >();
@@ -128,7 +133,8 @@ const AnnouncementScreen = () => {
   ];
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: top }]}>
+      <MainHomeTopBar />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

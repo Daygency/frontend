@@ -7,22 +7,7 @@ import styles from "./styles";
 const MainHomeHeader = () => {
   return (
     <View style={styles.container}>
-      <SearchInput />
-      <Pressable style={styles.iconButton}>
-        <MaterialCommunityIcons
-          name="bell-outline"
-          size={23}
-          color={MAIN.DEFAULT}
-        />
-        <View style={styles.dotNew} />
-      </Pressable>
-      <Pressable style={styles.iconButton}>
-        <MaterialCommunityIcons
-          name="cog-outline"
-          size={23}
-          color={MAIN.DEFAULT}
-        />
-      </Pressable>
+      {/* <SearchInput /> */}
     </View>
   );
 };
