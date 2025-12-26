@@ -14,6 +14,9 @@ const styles = StyleSheet.create({
     left: 8,
     justifyContent: "center",
   },
+  tabView: {
+    flex: 1,
+  },
 });
 
 export default styles;
