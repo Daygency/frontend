@@ -2,65 +2,36 @@ import { View, Text, ScrollView } from "react-native";
 import styles from "./styles";
 import { GRAY, BLACK, MAIN } from "../../../../color";
 import { Ionicons } from "@expo/vector-icons";
+import Section from "../../../../components/Section/Section";
+import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
+import ReviewCard from "../../../../components/ReviewCard/ReviewCard";
 
 const Activity = () => {
-  // 임시 활동 데이터
-  const activities = [
-    {
-      id: 1,
-      title: "2024 봄 콘서트",
-      date: "2024.03.15",
-      location: "예술의전당",
-      type: "공연",
-    },
-    {
-      id: 2,
-      title: "음악 페스티벌 참여",
-      date: "2024.02.20",
-      location: "세종문화회관",
-      type: "공연",
-    },
-    {
-      id: 3,
-      title: "마스터클래스 진행",
-      date: "2024.01.10",
-      location: "서울대학교",
-      type: "교육",
-    },
-    {
-      id: 4,
-      title: "앨범 발매",
-      date: "2023.12.01",
-      location: "온라인",
-      type: "앨범",
-    },
-  ];
-
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      {activities.map((activity) => (
-        <View key={activity.id} style={styles.activityItem}>
-          <View style={styles.activityHeader}>
-            <Text style={styles.activityTitle}>{activity.title}</Text>
-            <View style={styles.activityTypeBadge}>
-              <Text style={styles.activityTypeText}>{activity.type}</Text>
-            </View>
+    <ScrollView>
+      <View style={styles.container}>
+        <View style={styles.activityContiner}>
+          <View style={styles.activityCountItem}>
+            <Text>활동 횟수</Text>
+            <Text>15회</Text>
           </View>
-          <View style={styles.activityInfo}>
-            <View style={styles.activityInfoRow}>
-              <Ionicons name="calendar-outline" size={14} color={GRAY.DARK} />
-              <Text style={styles.activityInfoText}>{activity.date}</Text>
-            </View>
-            <View style={styles.activityInfoRow}>
-              <Ionicons name="location-outline" size={14} color={GRAY.DARK} />
-              <Text style={styles.activityInfoText}>{activity.location}</Text>
-            </View>
+          <View style={styles.activityTempoItem}>
+            <Text>예술 템포</Text>
+            <Text>84점</Text>
           </View>
         </View>
-      ))}
+        <Section
+          title="받은 후기"
+          onPressMore={() => {}}
+          styles={{ title: { marginTop: 12 } }}
+        >
+          <ReviewCard />
+          <ReviewCard />
+          <ReviewCard />
+        </Section>
+      </View>
     </ScrollView>
   );
 };
 
 export default Activity;
-

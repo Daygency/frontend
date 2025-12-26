@@ -43,7 +43,9 @@ const PortfolioScreen = () => {
         navigationState={{ index, routes }}
         renderScene={renderScene}
         onIndexChange={setIndex}
-        renderTabBar={(props) => <CategoryTabBar {...props} evenlyDistributed />}
+        renderTabBar={(props) => (
+          <CategoryTabBar {...props} evenlyDistributed />
+        )}
         initialLayout={{ width: layout.width }}
         style={styles.tabView}
       />
