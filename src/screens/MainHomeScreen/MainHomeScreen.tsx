@@ -12,7 +12,6 @@ import ArtistScreen from "../ArtistScreen/ArtistScreen";
 import VenueScreen from "../VenueScreen/VenueScreen";
 import AgencyScreen from "../AgencyScreen/AgencyScreen";
 import { useNavigation } from "@react-navigation/native";
-import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../components/MainHomeTopBar/styles";
 
 const MainHomeScreen = () => {
   const { top } = useSafeAreaInsets();

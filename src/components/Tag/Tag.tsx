@@ -7,12 +7,18 @@ interface TagProps {
   text: string;
   variant?: TagVariant;
   borderColor?: string;
+  backgroundColor?: string;
 }
 
-const Tag = ({ text, variant = "type", borderColor }: TagProps) => {
+const Tag = ({
+  text,
+  variant = "type",
+  borderColor,
+  backgroundColor,
+}: TagProps) => {
   const getStyle = (): ViewStyle[] => {
     const baseStyle: ViewStyle[] = [styles.tag];
-    
+
     switch (variant) {
       case "type":
         baseStyle.push(styles.typeTag as ViewStyle);
@@ -30,6 +36,10 @@ const Tag = ({ text, variant = "type", borderColor }: TagProps) => {
     // borderColor가 제공되면 적용
     if (borderColor) {
       baseStyle.push({ borderColor, borderWidth: 1 });
+    }
+
+    if (backgroundColor) {
+      baseStyle.push({ backgroundColor });
     }
 
     return baseStyle;
@@ -56,7 +66,3 @@ const Tag = ({ text, variant = "type", borderColor }: TagProps) => {
 };
 
 export default Tag;
-
-
-
-
