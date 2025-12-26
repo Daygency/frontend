@@ -12,7 +12,6 @@ import AnnouncementScreen from "../AnnouncementScreen/AnnouncementScreen";
 import ArtistScreen from "../ArtistScreen/ArtistScreen";
 import VenueScreen from "../VenueScreen/VenueScreen";
 import AgencyScreen from "../AgencyScreen/AgencyScreen";
-import AcademyScreen from "../AcademyScreen/AcademyScreen";
 import { useNavigation } from "@react-navigation/native";
 
 const MainHomeScreen = () => {
