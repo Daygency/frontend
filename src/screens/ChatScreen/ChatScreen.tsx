@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Logo from "../../components/Logo/Logo";
 import { MAIN } from "../../color";
 import styles from "./styles";
+import ChatList from "./components/ChatList/ChatList";
 
 const ChatScreen = () => {
   const { top } = useSafeAreaInsets();
@@ -18,9 +19,7 @@ const ChatScreen = () => {
           </Pressable>
         </View>
       </View>
-      <View style={styles.content}>
-        <Text>Chat</Text>
-      </View>
+      <ChatList />
     </View>
   );
 };
