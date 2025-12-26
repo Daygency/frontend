@@ -4,18 +4,9 @@ import { WHITE } from "../../color";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
     alignItems: "center",
     backgroundColor: WHITE,
   },
 });
 
 export default styles;
-
-
-
-
-
-
-
-
