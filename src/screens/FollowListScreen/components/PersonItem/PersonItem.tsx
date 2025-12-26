@@ -19,7 +19,10 @@ const PersonItem = ({ person }: PersonItemProps) => {
   return (
     <View style={styles.container}>
       {person.profileImage ? (
-        <Image source={{ uri: person.profileImage }} style={styles.profileImage} />
+        <Image
+          source={{ uri: person.profileImage }}
+          style={styles.profileImage}
+        />
       ) : (
         <View style={styles.placeholderImage} />
       )}
