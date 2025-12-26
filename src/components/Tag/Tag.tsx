@@ -8,6 +8,7 @@ interface TagProps {
   variant?: TagVariant;
   borderColor?: string;
   backgroundColor?: string;
+  textColor?: string;
 }
 
 const Tag = ({
@@ -15,6 +16,7 @@ const Tag = ({
   variant = "type",
   borderColor,
   backgroundColor,
+  textColor,
 }: TagProps) => {
   const getStyle = (): ViewStyle[] => {
     const baseStyle: ViewStyle[] = [styles.tag];
@@ -46,16 +48,26 @@ const Tag = ({
   };
 
   const getTextStyle = () => {
+    const textStyle: any[] = [];
     switch (variant) {
       case "type":
-        return styles.typeTagText;
+        textStyle.push(styles.typeTagText);
+        break;
       case "status":
-        return styles.statusTagText;
+        textStyle.push(styles.statusTagText);
+        break;
       case "countdown":
-        return styles.countdownTagText;
+        textStyle.push(styles.countdownTagText);
+        break;
       default:
-        return styles.typeTagText;
+        textStyle.push(styles.typeTagText);
     }
+
+    if (textColor) {
+      textStyle.push({ color: textColor });
+    }
+
+    return textStyle;
   };
 
   return (

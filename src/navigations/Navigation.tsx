@@ -115,7 +115,7 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={styles.title}>팔로우 목록</Text>
+                <Text style={styles.title}>팔로잉 / 팔로워</Text>
               </View>
             ),
             headerShadowVisible: false,
