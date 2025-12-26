@@ -20,6 +20,16 @@ const styles = StyleSheet.create({
     borderColor: GRAY.DEFAULT,
     minHeight: 42,
   },
+  tabBarItemEven: {
+    flex: 1,
+    paddingHorizontal: 0,
+    paddingVertical: 13,
+    justifyContent: "center",
+    alignItems: "center",
+    borderBottomWidth: 1,
+    borderColor: GRAY.DEFAULT,
+    minHeight: 42,
+  },
   tabLabel: {
     fontSize: 15,
     lineHeight: 20,
