@@ -1,17 +1,30 @@
 import { ScrollView, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import ImageScrollView from "../ImageScrollView/ImageScrollView";
 import Section from "../Section/Section";
-import SupplierList from "../SupplierList/SupplierList";
 import AnnouncementCard from "../AnnouncementCard/AnnouncementCard";
 import GrayCard from "../GrayCard/GrayCard";
 import EventScheduleCard from "../EventScheduleCard/EventScheduleCard";
 import ImageCarousel from "../ImageCarousel/ImageCarousel";
+import { ContentRoutes } from "../../navigations/routes";
 
-interface AllContentSceneProps {
-  onPressAnnouncementMore?: () => void;
-}
+type ContentTabParamList = {
+  [ContentRoutes.HOME]: undefined;
+  [ContentRoutes.ACTIVITY]: undefined;
+  [ContentRoutes.PAYMENT]: undefined;
+  [ContentRoutes.CHAT]: undefined;
+  [ContentRoutes.LOUNGE]: undefined;
+};
 
-const AllContentScene = ({ onPressAnnouncementMore }: AllContentSceneProps) => {
+type NavigationProp = BottomTabNavigationProp<ContentTabParamList>;
+
+const AllContentScene = () => {
+  const navigation = useNavigation<NavigationProp>();
+
+  const handleAnnouncementMore = () => {
+    navigation.navigate(ContentRoutes.ACTIVITY);
+  };
   return (
     <ScrollView>
       {/* <ImageScrollView
@@ -22,7 +35,7 @@ const AllContentScene = ({ onPressAnnouncementMore }: AllContentSceneProps) => {
       /> */}
       <ImageCarousel width={339} height={183} gap={5} />
       {/* <SupplierList /> */}
-      <Section title="모집공고" onPressMore={onPressAnnouncementMore}>
+      <Section title="모집공고" onPressMore={handleAnnouncementMore}>
         <AnnouncementCard title="제목1" />
         <AnnouncementCard title="제목2" />
         <AnnouncementCard title="제목3" />

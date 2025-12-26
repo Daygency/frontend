@@ -5,9 +5,9 @@ export const HomeRoutes = {
 export const ContentRoutes = {
   HOME: "Home",
   ACTIVITY: "Activity",
-  PAYMENT: "Payment",
-  CHAT: "Chat",
-  LOUNGE: "Lounge",
+  PAYMENT: "Chat",
+  CHAT: "Lounge",
+  LOUNGE: "Portfolio",
 } as const;
 
 export const RootRoutes = {

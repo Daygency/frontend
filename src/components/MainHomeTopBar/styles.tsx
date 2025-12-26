@@ -1,9 +1,13 @@
 import { StyleSheet } from "react-native";
 import { MAIN, RED, WHITE } from "../../color";
 
+// MainHomeTopBar의 높이 상수 (Logo 24px + paddingBottom 15px + 여유공간)
+export const MAIN_HOME_TOP_BAR_HEIGHT = 44;
+
 const styles = StyleSheet.create({
   container: {
     width: "100%",
+    height: MAIN_HOME_TOP_BAR_HEIGHT,
     flexDirection: "row",
     paddingHorizontal: 17,
     alignItems: "center",

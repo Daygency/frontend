@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { ContentRoutes } from "./routes";
 import MainHomeScreen from "../screens/MainHomeScreen/MainHomeScreen";
-import ActivityScreen from "../screens/ActivityScreen/ActivityScreen";
-import PaymentScreen from "../screens/PaymentScreen/PaymentScreen";
+import AnnouncementScreen from "../screens/AnnouncementScreen/AnnouncementScreen";
 import ChatScreen from "../screens/ChatScreen/ChatScreen";
 import LoungeScreen from "../screens/LoungeScreen/LoungeScreen";
+import PortfolioScreen from "../screens/PortfolioScreen/PortfolioScreen";
 import {
   AntDesign,
   Entypo,
@@ -42,40 +42,56 @@ const ContentTab = () => {
       />
       <Tab.Screen
         name={ContentRoutes.ACTIVITY}
-        component={ActivityScreen}
+        component={AnnouncementScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Entypo name="megaphone" size={24} color={focused ? "black" : "gray"} />
+            <Entypo
+              name="megaphone"
+              size={24}
+              color={focused ? "black" : "gray"}
+            />
           ),
           title: "모집공고",
         }}
       />
       <Tab.Screen
         name={ContentRoutes.PAYMENT}
-        component={PaymentScreen}
+        component={ChatScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Ionicons name="chatbubble-outline" size={24} color={focused ? "black" : "gray"} />
+            <Ionicons
+              name="chatbubble-outline"
+              size={24}
+              color={focused ? "black" : "gray"}
+            />
           ),
           title: "채팅",
         }}
       />
       <Tab.Screen
         name={ContentRoutes.CHAT}
-        component={ChatScreen}
+        component={LoungeScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <Octicons name="people" size={24} color={focused ? "black" : "gray"} />
+            <Octicons
+              name="people"
+              size={24}
+              color={focused ? "black" : "gray"}
+            />
           ),
           title: "라운지",
         }}
       />
       <Tab.Screen
         name={ContentRoutes.LOUNGE}
-        component={LoungeScreen}
+        component={PortfolioScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <MaterialCommunityIcons name="notebook" size={24} color={focused ? "black" : "gray"} />
+            <MaterialCommunityIcons
+              name="notebook"
+              size={24}
+              color={focused ? "black" : "gray"}
+            />
           ),
           title: "포트폴리오",
         }}
