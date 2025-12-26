@@ -46,7 +46,7 @@ const MainHomeScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <MainHomeTopBar />
+      <MainHomeTopBar logoName="DAYGENCY" />
       <MainHomeHeader />
       <TabView
         navigationState={{ index, routes }}

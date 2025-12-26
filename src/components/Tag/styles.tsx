@@ -3,18 +3,19 @@ import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   tag: {
-    borderRadius: 6,
-    paddingHorizontal: 10,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    justifyContent: "center",
+    alignItems: "center",
   },
   typeTag: {
-    backgroundColor: GRAY.DARK_1,
+    backgroundColor: "#EDF2F7",
   },
   typeTagText: {
-    fontSize: 12,
-    lineHeight: 21,
-    letterSpacing: 0.24,
-    color: BLACK,
-    fontWeight: "400",
+    fontSize: 11,
+    color: "#4A5568",
+    fontWeight: "500",
   },
   statusTag: {
     backgroundColor: WHITE,

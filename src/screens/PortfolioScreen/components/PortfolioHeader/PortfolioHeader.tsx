@@ -3,11 +3,12 @@ import { Pressable } from "react-native";
 import styles from "./styles";
 import { MaterialIcons, Octicons } from "@expo/vector-icons";
 import { MAIN } from "../../../../color";
+import Logo from "../../../../components/Logo/Logo";
 
 const PortfolioHeader = () => {
   return (
     <View style={styles.headerContainer}>
-      <Text style={styles.title}>내 포트폴리오</Text>
+      <Logo size={24} logoName="내 포트폴리오" />
       <View style={styles.iconContainer}>
         <Pressable style={styles.iconButton}>
           <View style={styles.iconTextContainer}>

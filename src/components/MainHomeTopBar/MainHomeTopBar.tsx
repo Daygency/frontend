@@ -5,10 +5,10 @@ import { WHITE, MAIN } from "../../color";
 import styles from "./styles";
 import Feather from "@expo/vector-icons/Feather";
 
-const MainHomeTopBar = () => {
+const MainHomeTopBar = ({ logoName }: { logoName: string }) => {
   return (
     <View style={styles.container}>
-      <Logo size={24} />
+      <Logo size={24} logoName={logoName} />
       <View style={styles.iconContainer}>
         <Pressable style={styles.iconButton}>
           <Feather name="search" size={23} color={MAIN.DEFAULT} />

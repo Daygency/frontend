@@ -5,10 +5,10 @@ import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
 
 const LoungeScreen = () => {
   const { top } = useSafeAreaInsets();
-  
+
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <MainHomeTopBar />
+      <MainHomeTopBar logoName="라운지" />
       <Text>Lounge</Text>
     </View>
   );
