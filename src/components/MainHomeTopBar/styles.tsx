@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { MAIN, WHITE } from "../../color";
+import { MAIN, RED, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -27,19 +27,29 @@ const styles = StyleSheet.create({
     marginLeft: 22,
     lineHeight: 17,
   },
+  iconContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 20,
+  },
   icon: {
     position: "absolute",
     left: 8,
     justifyContent: "center",
   },
+  iconButton: {
+    position: "relative",
+    flexShrink: 0,
+  },
+  dotNew: {
+    position: "absolute",
+    top: -1,
+    right: -3,
+    width: 5,
+    height: 5,
+    borderRadius: 5,
+    backgroundColor: RED.DEFAULT,
+  },
 });
 
 export default styles;
-
-
-
-
-
-
-
-
