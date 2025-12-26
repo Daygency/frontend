@@ -134,7 +134,7 @@ const AnnouncementScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <MainHomeTopBar />
+      <MainHomeTopBar logoName="모집공고" />
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
