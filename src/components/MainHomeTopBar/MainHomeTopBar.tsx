@@ -8,7 +8,7 @@ import Feather from "@expo/vector-icons/Feather";
 const MainHomeTopBar = () => {
   return (
     <View style={styles.container}>
-      <Logo size={24} />
+      <Logo size={24} logoName="DAYGENCY" />
       <View style={styles.iconContainer}>
         <Pressable style={styles.iconButton}>
           <Feather name="search" size={23} color={MAIN.DEFAULT} />

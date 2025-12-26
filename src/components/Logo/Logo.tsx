@@ -1,16 +1,15 @@
 import { Text, View } from "react-native";
-import styles from "./styles";
 import { MAIN } from "../../color";
-
 interface LogoProp {
   size: number;
+  logoName: string;
 }
 
-const Logo = ({ size }: LogoProp) => {
+const Logo = ({ logoName, size }: LogoProp) => {
   return (
     <View>
-      <Text style={{ fontSize: size, ...styles.logoText }}>
-        DAYGENCY
+      <Text style={{ fontSize: size, fontWeight: "700", color: MAIN.DEFAULT }}>
+        {logoName}
       </Text>
     </View>
   );
