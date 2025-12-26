@@ -3,7 +3,6 @@ import { GRAY } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     flexShrink: 1,
     backgroundColor: GRAY.DEFAULT,
     height: 35,
@@ -29,9 +28,3 @@ const styles = StyleSheet.create({
 });
 
 export default styles;
-
-
-
-
-
-

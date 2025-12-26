@@ -3,12 +3,12 @@ import { TextInput, View } from "react-native";
 import { GRAY } from "../../color";
 import styles from "./styles";
 
-const SearchInput = () => {
+const SearchInput = ({ placeholder }: { placeholder: string }) => {
   return (
     <View style={styles.container}>
       <TextInput
         style={styles.input}
-        placeholder="오늘, 어떤 무대를 찾고 계신가요?"
+        placeholder={placeholder}
         placeholderTextColor={GRAY.DARK}
       />
       <View style={styles.icon}>

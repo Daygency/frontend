@@ -10,6 +10,8 @@ import ProfileDetail from "./components/ProfileDetail/ProfileDetail";
 import Photo from "./components/Photo/Photo";
 import Activity from "./components/Activity/Activity";
 import CategoryTabBar from "../../components/CategoryTabBar/CategoryTabBar";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
 
 const PortfolioScreen = () => {
   const { top } = useSafeAreaInsets();

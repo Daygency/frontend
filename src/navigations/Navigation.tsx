@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import ContentTab from "./ContentTab";
 import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
 import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
+import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -84,6 +85,37 @@ const Navigation = () => {
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>지원하기</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.FOLLOW_LIST}
+          component={FollowListScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>팔로잉 / 팔로워</Text>
               </View>
             ),
             headerShadowVisible: false,

@@ -1,10 +1,15 @@
-import { View, Text, Switch } from "react-native";
+import { View, Text, Switch, Pressable } from "react-native";
 import styles from "./styles";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../../color";
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootRoutes } from "../../../../navigations/routes";
 
 const Profile = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
   const followerCount = 100;
   const followingCount = 100;
   const [isEnabled, setIsEnabled] = useState(false);
@@ -21,10 +26,13 @@ const Profile = () => {
               <Text style={styles.profileTag}>예술가</Text>
             </View>
           </View>
-          <View style={styles.profileFollowerContainer}>
+          <Pressable
+            style={styles.profileFollowerContainer}
+            onPress={() => navigation.navigate(RootRoutes.FOLLOW_LIST)}
+          >
             <Text>팔로워 {followerCount}</Text>
             <Text>팔로잉 {followingCount}</Text>
-          </View>
+          </Pressable>
         </View>
       </View>
       <View style={styles.profileFollowingContainer}>

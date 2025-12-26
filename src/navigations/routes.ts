@@ -14,4 +14,5 @@ export const RootRoutes = {
   CONTENT_TAB: "ContentTab",
   ANNOUNCEMENT_DETAIL: "AnnouncementDetail",
   APPLICATION: "Application",
+  FOLLOW_LIST: "FollowList",
 } as const;
