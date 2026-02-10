@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
 import SelectableTag from "../../../components/SelectableTag/SelectableTag";
+import { RootRoutes } from "../../../navigations/routes";
 
 type TagOption =
   | "전체"
@@ -77,6 +79,7 @@ const MOCK_POSTS: CommunityPost[] = [
 const CommunityScene = () => {
   const [selectedTag, setSelectedTag] = useState<TagOption>("전체");
   const [loading, setLoading] = useState(false);
+  const navigation = useNavigation<any>();
 
   const filteredPosts = useMemo(() => {
     if (selectedTag === "전체") return MOCK_POSTS;
@@ -105,6 +108,11 @@ const CommunityScene = () => {
         likes={item.likes}
         comments={item.comments}
         scraps={item.scraps}
+        onPress={() =>
+          navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
+            post: item,
+          })
+        }
       />
     );
   };

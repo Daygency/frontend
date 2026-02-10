@@ -4,6 +4,7 @@ import ContentTab from "./ContentTab";
 import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
 import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
 import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
+import CommunityDetailScreen from "../screens/CommunityDetailScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -137,6 +138,62 @@ const Navigation = () => {
                   color="#000"
                 />
               </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.COMMUNITY_DETAIL}
+          component={CommunityDetailScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>커뮤니티</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+            headerRight: () => (
+              <View style={styles.rightItemsWrap}>
+                <Pressable hitSlop={10}>
+                  <MaterialCommunityIcons
+                    name="heart-outline"
+                    size={21}
+                    color="#000"
+                  />
+                </Pressable>
+                <Pressable hitSlop={10}>
+                  <MaterialCommunityIcons
+                    name="share-variant"
+                    size={21}
+                    color="#000"
+                  />
+                </Pressable>
+                <Pressable hitSlop={10}>
+                  <MaterialCommunityIcons
+                    name="dots-vertical"
+                    size={21}
+                    color="#000"
+                  />
+                </Pressable>
+              </View>
             ),
           })}
         />
