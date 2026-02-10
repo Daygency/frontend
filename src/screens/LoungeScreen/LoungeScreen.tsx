@@ -1,4 +1,4 @@
-import { Text, useWindowDimensions, View } from "react-native";
+import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
 import styles from "./styles";
@@ -6,6 +6,7 @@ import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
 import { TabView } from "react-native-tab-view";
 import CategoryTabBar from "../../components/CategoryTabBar/CategoryTabBar";
 import MusicNewsScene from "./components/MusicNewsScene";
+import CommunityScene from "./components/CommunityScene";
 
 const LoungeScreen = () => {
   const { top } = useSafeAreaInsets();
@@ -21,7 +22,7 @@ const LoungeScreen = () => {
       case "음악계 소식":
         return <MusicNewsScene />;
       case "커뮤니티":
-        return <Text>커뮤니티</Text>;
+        return <CommunityScene />;
       default:
         return null;
     }

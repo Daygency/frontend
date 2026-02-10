@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { View } from "react-native";
 import styles from "../styles";
+import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 
 type SortOption = "최신순" | "스크랩순" | "좋아요 순";
 
@@ -13,23 +14,12 @@ const MusicNewsScene = () => {
     <View style={styles.newsSceneContainer}>
       <View style={styles.sortFilterContainer}>
         {SORT_OPTIONS.map((option) => (
-          <Pressable
+          <SelectableTag
             key={option}
-            style={[
-              styles.sortButton,
-              sortBy === option && styles.sortButtonActive,
-            ]}
+            label={option}
+            selected={sortBy === option}
             onPress={() => setSortBy(option)}
-          >
-            <Text
-              style={[
-                styles.sortButtonText,
-                sortBy === option && styles.sortButtonTextActive,
-              ]}
-            >
-              {option}
-            </Text>
-          </Pressable>
+          />
         ))}
       </View>
       {/* TODO: 정렬 기준에 따라 리스트를 정렬할 영역 */}
