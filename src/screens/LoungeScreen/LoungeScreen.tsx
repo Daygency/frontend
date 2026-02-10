@@ -5,6 +5,7 @@ import styles from "./styles";
 import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
 import { TabView } from "react-native-tab-view";
 import CategoryTabBar from "../../components/CategoryTabBar/CategoryTabBar";
+import MusicNewsScene from "./components/MusicNewsScene";
 
 const LoungeScreen = () => {
   const { top } = useSafeAreaInsets();
@@ -18,7 +19,7 @@ const LoungeScreen = () => {
   const renderScene = ({ route }: { route: { key: string } }) => {
     switch (route.key) {
       case "음악계 소식":
-        return <Text>음악계 소식</Text>;
+        return <MusicNewsScene />;
       case "커뮤니티":
         return <Text>커뮤니티</Text>;
       default:
