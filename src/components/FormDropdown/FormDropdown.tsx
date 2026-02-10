@@ -37,7 +37,7 @@ const FormDropdown = ({
           <Foundation
             name="asterisk"
             size={10}
-            color={RED}
+            color={RED.DEFAULT}
             style={styles.asterisk}
           />
         )}
@@ -59,7 +59,7 @@ const FormDropdown = ({
           valueField="value"
           placeholder={placeholder}
           value={value}
-          onChange={onChange}
+          onChange={(item) => onChange?.(item as DropdownItem)}
           renderLeftIcon={() => null}
         />
       </ShadowCardButton>

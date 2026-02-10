@@ -37,7 +37,7 @@ const FormDropdownInput = ({
         valueField="value"
         placeholder={placeholder}
         value={value}
-        onChange={onChange}
+        onChange={(item) => onChange?.(item as DropdownItem)}
         renderLeftIcon={() => null}
       />
     </ShadowCardButton>
