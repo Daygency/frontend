@@ -1,10 +1,10 @@
 import { ScrollView, View } from "react-native";
 import { useState } from "react";
-import AgencyCard from "../../components/AgencyCard/AgencyCard";
-import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
-import styles from "./styles";
+import AgencyCard from "../../../components/AgencyCard/AgencyCard";
+import FilterDropdown from "../../../components/FilterDropdown/FilterDropdown";
+import styles from "./agencyStyles";
 
-const AgencyScreen = () => {
+const AgencyScene = () => {
   const [sortBy, setSortBy] = useState<string>("추천수순");
 
   const sortOptions = ["추천수순", "협업자순", "활동자순", "스크랩수순"];
@@ -124,5 +124,5 @@ const AgencyScreen = () => {
   );
 };
 
-export default AgencyScreen;
+export default AgencyScene;
 
