@@ -6,6 +6,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: WHITE,
   },
+  tabView: {
+    flex: 1,
+  },
 });
 
 export default styles;
