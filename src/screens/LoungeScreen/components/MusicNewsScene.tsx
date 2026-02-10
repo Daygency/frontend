@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import styles from "../styles";
 import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 
@@ -12,7 +12,15 @@ const MusicNewsScene = () => {
 
   return (
     <View style={styles.newsSceneContainer}>
-      <View style={styles.sortFilterContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.sortFilterContainer}
+        nestedScrollEnabled
+        directionalLockEnabled
+        scrollEventThrottle={16}
+        bounces={false}
+      >
         {SORT_OPTIONS.map((option) => (
           <SelectableTag
             key={option}
@@ -21,7 +29,7 @@ const MusicNewsScene = () => {
             onPress={() => setSortBy(option)}
           />
         ))}
-      </View>
+      </ScrollView>
       {/* TODO: 정렬 기준에 따라 리스트를 정렬할 영역 */}
     </View>
   );

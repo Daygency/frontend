@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { View } from "react-native";
+import { ScrollView, View } from "react-native";
 import styles from "../styles";
 import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 
@@ -27,7 +27,15 @@ const CommunityScene = () => {
 
   return (
     <View style={styles.newsSceneContainer}>
-      <View style={styles.sortFilterContainer}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.sortFilterContainer}
+        nestedScrollEnabled
+        directionalLockEnabled
+        scrollEventThrottle={16}
+        bounces={false}
+      >
         {TAG_OPTIONS.map((tag) => (
           <SelectableTag
             key={tag}
@@ -36,7 +44,7 @@ const CommunityScene = () => {
             onPress={() => setSelectedTag(tag)}
           />
         ))}
-      </View>
+      </ScrollView>
       {/* TODO: 선택된 태그 기준으로 커뮤니티 글 필터링 */}
     </View>
   );
