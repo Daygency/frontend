@@ -1,12 +1,6 @@
-import {
-  Image,
-  Pressable,
-  ScrollView,
-  StyleProp,
-  ViewStyle,
-  Text
-} from "react-native";
+import { ScrollView, StyleProp, ViewStyle } from "react-native";
 import defaultStyles from "./styles";
+import EventNewsCard from "../EventNewsCard/EventNewsCard";
 
 interface Styles {
   container?: StyleProp<ViewStyle>;
@@ -33,25 +27,23 @@ const ImageScrollView = ({ styles, width, height, gap, images, type = "default" 
   return (
     <ScrollView
       horizontal
-      style={[defaultStyles.container, styles?.container,  { height: height }]}
-      contentContainerStyle={{gap: gap}}
+      style={[defaultStyles.container, styles?.container, { height: height }]}
+      contentContainerStyle={{ gap: gap }}
       showsHorizontalScrollIndicator={false}
     >
       {imageLinkList.map((imageLink, index) => (
-        <Pressable key={index} style={{width: width, height: type == "withText" ? height : "auto", marginRight: index === imageLinkList.length -1 ? 12 : 0}}>
-          <Image
-            source={{ uri: imageLink }}
-            style={{...defaultStyles.image, height: type == "withText" ? 193 : height, borderRadius: 5}}
-            resizeMode="cover"
-          />
-          {type === "withText" ? 
-            <>
-              <Text style={defaultStyles.imageTitle} numberOfLines={2} ellipsizeMode="tail">공연 제목이 들어가는 자리입니다.공연 제목이 들어가는 자리입니다.</Text>
-              <Text style={defaultStyles.imageSpace}>토끼마을</Text>
-              <Text style={defaultStyles.imageDate}>2000.05.16 ~ 2003.07.15</Text>
-            </> :  null
-          }
-        </Pressable>
+        <EventNewsCard
+          key={index}
+          width={width}
+          height={type === "withText" ? 193 : height}
+          title="공연 제목이 들어가는 자리입니다.공연 제목이 들어가는 자리입니다."
+          place="토끼마을"
+          dateRange="2000.05.16 ~ 2003.07.15"
+          imageUrl={imageLink}
+          containerStyle={{
+            marginRight: index === imageLinkList.length - 1 ? 12 : 0,
+          }}
+        />
       ))}
     </ScrollView>
   );

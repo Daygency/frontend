@@ -1,13 +1,13 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useState } from "react";
-import VenueCard from "../../components/VenueCard/VenueCard";
-import RentalNewsCard from "../../components/RentalNewsCard/RentalNewsCard";
-import styles from "./styles";
-import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
+import VenueCard from "../../../components/VenueCard/VenueCard";
+import RentalNewsCard from "../../../components/RentalNewsCard/RentalNewsCard";
+import FilterDropdown from "../../../components/FilterDropdown/FilterDropdown";
+import styles from "./venueStyles";
 
 type TabType = "info" | "news";
 
-const VenueScreen = () => {
+const VenueScene = () => {
   const [selectedTab, setSelectedTab] = useState<TabType>("info");
   const [sortBy, setSortBy] = useState<string>("추천수순");
   const sortOptions = ["스크랩수순", "가나다순"];
@@ -76,7 +76,6 @@ const VenueScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Sub Tab Navigation */}
       <View style={styles.tabContainer}>
         <Pressable
           style={[styles.tab, selectedTab === "info" && styles.tabActive]}
@@ -130,5 +129,5 @@ const VenueScreen = () => {
   );
 };
 
-export default VenueScreen;
+export default VenueScene;
 

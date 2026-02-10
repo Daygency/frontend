@@ -1,10 +1,10 @@
 import { ScrollView, View } from "react-native";
 import { useState } from "react";
-import ArtistCard from "../../components/ArtistCard/ArtistCard";
-import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
-import styles from "./styles";
+import ArtistCard from "../../../components/ArtistCard/ArtistCard";
+import FilterDropdown from "../../../components/FilterDropdown/FilterDropdown";
+import styles from "./artistStyles";
 
-const ArtistScreen = () => {
+const ArtistScene = () => {
   const [major, setMajor] = useState<string | undefined>();
   const [sortBy, setSortBy] = useState<string>("추천수순");
 
@@ -68,5 +68,5 @@ const ArtistScreen = () => {
   );
 };
 
-export default ArtistScreen;
+export default ArtistScene;
 

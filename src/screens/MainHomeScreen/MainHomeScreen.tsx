@@ -8,9 +8,9 @@ import CategoryTabBar from "../../components/CategoryTabBar/CategoryTabBar";
 import AllContentScene from "../../components/AllContentScene/AllContentScene";
 import { CategoryList } from "../../constants/categories";
 import styles from "./styles";
-import ArtistScreen from "../ArtistScreen/ArtistScreen";
-import VenueScreen from "../VenueScreen/VenueScreen";
-import AgencyScreen from "../AgencyScreen/AgencyScreen";
+import ArtistScene from "./scenes/ArtistScene";
+import VenueScene from "./scenes/VenueScene";
+import AgencyScene from "./scenes/AgencyScene";
 import { useNavigation } from "@react-navigation/native";
 
 const MainHomeScreen = () => {
@@ -34,11 +34,11 @@ const MainHomeScreen = () => {
       case "전체":
         return <AllContentScene />;
       case "예술가":
-        return <ArtistScreen />;
+        return <ArtistScene />;
       case "공연장":
-        return <VenueScreen />;
+        return <VenueScene />;
       case "기획사":
-        return <AgencyScreen />;
+        return <AgencyScene />;
       default:
         return null;
     }

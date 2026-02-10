@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { WHITE } from "../../color";
+import { WHITE } from "../../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -29,11 +29,4 @@ const styles = StyleSheet.create({
 });
 
 export default styles;
-
-
-
-
-
-
-
 
