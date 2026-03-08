@@ -36,7 +36,11 @@ const SettingsScreen = () => {
         label="내 자료 보관함"
         onPress={() => navigation.navigate(RootRoutes.MY_DATA_ARCHIVE)}
       />
-      <SettingItem icon="help-circle-outline" label="고객센터" />
+      <SettingItem
+        icon="help-circle-outline"
+        label="고객센터"
+        onPress={() => navigation.navigate(RootRoutes.CUSTOMER_SERVICE)}
+      />
       <SettingItem
         icon="account-outline"
         label="계정"

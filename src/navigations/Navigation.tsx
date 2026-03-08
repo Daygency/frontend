@@ -14,6 +14,7 @@ import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActi
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import NotificationSettingsScreen from "../screens/NotificationSettingsScreen/NotificationSettingsScreen";
 import MyDataArchiveScreen from "../screens/MyDataArchiveScreen/MyDataArchiveScreen";
+import CustomerServiceScreen from "../screens/CustomerServiceScreen/CustomerServiceScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -449,6 +450,37 @@ const Navigation = () => {
             headerRight: () => (
               <Pressable hitSlop={10}>
                 <Text style={{ fontSize: 16, color: "#000" }}>관리</Text>
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.CUSTOMER_SERVICE}
+          component={CustomerServiceScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>고객센터</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
               </Pressable>
             ),
           })}

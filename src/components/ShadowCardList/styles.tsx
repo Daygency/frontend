@@ -67,6 +67,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GRAY.DARK_2,
   },
+  faqItem: {
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: GRAY.MEDIUM,
+  },
+  faqItemHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  faqQuestion: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "600",
+    color: GRAY.DARK_100,
+    marginRight: 8,
+  },
+  faqAnswerWrap: {
+    marginTop: 12,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: GRAY.MEDIUM,
+  },
+  faqAnswer: {
+    fontSize: 13,
+    color: GRAY.DARK_2,
+    lineHeight: 20,
+  },
 });
 
 export default styles;
