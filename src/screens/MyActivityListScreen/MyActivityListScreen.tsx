@@ -5,6 +5,7 @@ import styles from "./styles";
 
 type MyActivityListParams = {
   type: "posts" | "comments";
+  source?: "scrap";
 };
 
 const MOCK_POSTS = [
@@ -39,8 +40,13 @@ type RootStackParamList = {
 
 const MyActivityListScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, "MyActivityList">>();
-  const { type } = route.params;
+  const { type, source } = route.params;
   const data = type === "posts" ? MOCK_POSTS : MOCK_COMMENTS;
+
+  const getEmptyMessage = () => {
+    if (source === "scrap") return "스크랩한 글이 없습니다.";
+    return type === "posts" ? "작성한 글이 없습니다." : "작성한 댓글이 없습니다.";
+  };
 
   return (
     <View style={styles.container}>
@@ -61,9 +67,7 @@ const MyActivityListScreen = () => {
         contentContainerStyle={styles.listContent}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {type === "posts" ? "작성한 글이 없습니다." : "작성한 댓글이 없습니다."}
-            </Text>
+            <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
           </View>
         }
       />

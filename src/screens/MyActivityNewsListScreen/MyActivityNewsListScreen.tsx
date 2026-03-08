@@ -1,4 +1,5 @@
 import { FlatList, Text, View, useWindowDimensions } from "react-native";
+import { useRoute, RouteProp } from "@react-navigation/native";
 import EventNewsCard from "../../components/EventNewsCard/EventNewsCard";
 import styles from "./styles";
 
@@ -21,9 +22,22 @@ const MOCK_NEWS = [
 const CARD_GAP = 12;
 const HORIZONTAL_PADDING = 16;
 
+type MyActivityNewsListParams = {
+  source?: "scrap";
+};
+
+type RootStackParamList = {
+  MyActivityNewsList: MyActivityNewsListParams | undefined;
+};
+
 const MyActivityNewsListScreen = () => {
   const { width } = useWindowDimensions();
   const cardWidth = (width - HORIZONTAL_PADDING * 2 - CARD_GAP) / 2;
+  const route = useRoute<RouteProp<RootStackParamList, "MyActivityNewsList">>();
+  const source = route.params?.source;
+
+  const emptyMessage =
+    source === "scrap" ? "스크랩한 공연 소식이 없습니다." : "공연 소식이 없습니다.";
 
   return (
     <View style={styles.container}>
@@ -47,7 +61,7 @@ const MyActivityNewsListScreen = () => {
         )}
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>공연 소식이 없습니다.</Text>
+            <Text style={styles.emptyText}>{emptyMessage}</Text>
           </View>
         }
       />
