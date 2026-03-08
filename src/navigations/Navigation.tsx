@@ -7,6 +7,7 @@ import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
 import CommunityDetailScreen from "../screens/CommunityDetailScreen";
 import CommunityRegistrationScreen from "../screens/CommunityRegistrationScreen";
 import SettingsScreen from "../screens/SettingsScreen/SettingsScreen";
+import MyInfoScreen from "../screens/MyInfoScreen/MyInfoScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -206,12 +207,21 @@ const Navigation = () => {
           })}
         />
         <Stack.Screen
+<<<<<<< HEAD
           name={RootRoutes.COMMUNITY_DETAIL}
           component={CommunityDetailScreen}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>커뮤니티</Text>
+=======
+          name={RootRoutes.MY_INFO}
+          component={MyInfoScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>내 정보</Text>
+>>>>>>> 1bcd8b6 (feat: 내 정보 설정 창)
               </View>
             ),
             headerShadowVisible: false,
@@ -234,6 +244,7 @@ const Navigation = () => {
                 />
               </Pressable>
             ),
+<<<<<<< HEAD
             headerRight: () => (
               <View style={styles.rightItemsWrap}>
                 <Pressable hitSlop={10}>
@@ -259,6 +270,8 @@ const Navigation = () => {
                 </Pressable>
               </View>
             ),
+=======
+>>>>>>> 1bcd8b6 (feat: 내 정보 설정 창)
           })}
         />
       </Stack.Navigator>

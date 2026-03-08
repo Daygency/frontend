@@ -18,4 +18,5 @@ export const RootRoutes = {
   COMMUNITY_DETAIL: "CommunityDetail",
   COMMUNITY_REGISTRATION: "CommunityRegistration",
   SETTINGS: "Settings",
+  MY_INFO: "MyInfo",
 } as const;
