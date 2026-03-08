@@ -10,6 +10,7 @@ type CommunityCardProps = {
   likes: number;
   comments: number;
   scraps: number;
+  onPress?: () => void;
 };
 
 const CommunityCard = ({
@@ -20,9 +21,10 @@ const CommunityCard = ({
   likes,
   comments,
   scraps,
+  onPress,
 }: CommunityCardProps) => {
   return (
-    <Pressable style={styles.container}>
+    <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.row}>
         <View style={styles.textContainer}>
           <Text style={styles.title} numberOfLines={1}>

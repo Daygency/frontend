@@ -15,4 +15,6 @@ export const RootRoutes = {
   ANNOUNCEMENT_DETAIL: "AnnouncementDetail",
   APPLICATION: "Application",
   FOLLOW_LIST: "FollowList",
+  COMMUNITY_DETAIL: "CommunityDetail",
+  COMMUNITY_REGISTRATION: "CommunityRegistration",
 } as const;

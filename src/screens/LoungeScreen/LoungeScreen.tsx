@@ -1,14 +1,18 @@
 import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import styles from "./styles";
 import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
+import FabButton from "../../components/FabButton/FabButton";
 import { TabView } from "react-native-tab-view";
 import CategoryTabBar from "../../components/CategoryTabBar/CategoryTabBar";
 import MusicNewsScene from "./components/MusicNewsScene";
 import CommunityScene from "./components/CommunityScene";
+import { RootRoutes } from "../../navigations/routes";
 
 const LoungeScreen = () => {
+  const navigation = useNavigation<any>();
   const { top } = useSafeAreaInsets();
   const layout = useWindowDimensions();
   const [index, setIndex] = useState(0);
@@ -40,6 +44,9 @@ const LoungeScreen = () => {
           <CategoryTabBar {...props} evenlyDistributed />
         )}
         style={styles.tabView}
+      />
+      <FabButton
+        onPress={() => navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION)}
       />
     </View>
   );
