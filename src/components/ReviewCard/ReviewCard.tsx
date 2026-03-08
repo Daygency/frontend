@@ -54,7 +54,7 @@ const ReviewCard = ({
           {showReactionTag && (
             <Tag text={reactionTag!} variant="reaction" />
           )}
-          {showTags?.map((tag, index) => (
+          {(tags ?? []).map((tag, index) => (
             <Tag
               key={index}
               text={tag.text}
