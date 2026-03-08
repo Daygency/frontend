@@ -1,10 +1,15 @@
 import React from "react";
 import { ScrollView, Alert } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import SettingItem from "../SettingsScreen/components/SettingItem/SettingItem";
 import { RED } from "../../color";
+import { RootRoutes } from "../../navigations/routes";
 import styles from "./styles";
 
 const AccountScreen = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
   const handleLogout = () => {
     Alert.alert(
       "로그아웃",
@@ -23,7 +28,7 @@ const AccountScreen = () => {
   };
 
   const handleWithdraw = () => {
-    // TODO: 회원 탈퇴 로직
+    navigation.navigate(RootRoutes.WITHDRAW_CONFIRM);
   };
 
   return (

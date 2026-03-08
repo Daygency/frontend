@@ -29,4 +29,5 @@ export const RootRoutes = {
   INQUIRY: "Inquiry",
   INQUIRY_DETAIL: "InquiryDetail",
   ACCOUNT: "Account",
+  WITHDRAW_CONFIRM: "WithdrawConfirm",
 } as const;
