@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ScrollView, View, Text } from "react-native";
+import { ScrollView, View, Text, StyleSheet } from "react-native";
 import Section from "../../../components/Section/Section";
 import ImageScrollView from "../../../components/ImageScrollView/ImageScrollView";
 import CommunityCard from "../../LoungeScreen/components/CommunityCard";
@@ -21,10 +21,71 @@ const MOCK_POSTS = [
   },
 ];
 
+const MOCK_COMMENTS = [
+  {
+    id: "c1",
+    title: "오늘 공연 후기 모음",
+    contentPreview: "다들 수고 많으셨습니다! 다음 공연도 기대됩니다",
+    author: "관람객A",
+    date: "2025.11.18",
+    likes: 32,
+    comments: 12,
+    scraps: 8,
+  },
+];
+
 const PostsCommentsScene = () => {
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("작성글");
-  const data = selectedFilter === "작성글" ? MOCK_POSTS : [];
-  const communitySectionTitle = selectedFilter === "작성글" ? "커뮤니티" : "댓글";
+  const postsData = selectedFilter === "작성글" ? MOCK_POSTS : [];
+  const commentsData = selectedFilter === "댓글" ? MOCK_COMMENTS : [];
+
+  const renderContentSection = (
+    title: string,
+    data: typeof MOCK_POSTS,
+    emptyMessage: string
+  ) => (
+    <Section
+      title={title}
+      onPressMore={() => {}}
+      styles={{ content: { paddingHorizontal: 0 } }}
+    >
+      {data.length > 0 ? (
+        data.map((item) => (
+          <CommunityCard
+            key={item.id}
+            title={item.title}
+            contentPreview={item.contentPreview}
+            author={item.author}
+            date={item.date}
+            likes={item.likes}
+            comments={item.comments}
+            scraps={item.scraps}
+          />
+        ))
+      ) : (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>{emptyMessage}</Text>
+        </View>
+      )}
+    </Section>
+  );
+
+  const renderNewsSection = (scrollKey: string) => (
+    <Section
+      title="공연 소식"
+      onPressMore={() => {}}
+      styles={{ content: { paddingHorizontal: 0 } }}
+    >
+      <ImageScrollView
+        key={scrollKey}
+        styles={{ container: {} }}
+        width={138}
+        height={264}
+        gap={14}
+        type="withText"
+      />
+    </Section>
+  );
 
   return (
     <ScrollView
@@ -44,47 +105,26 @@ const PostsCommentsScene = () => {
           onPress={() => setSelectedFilter("댓글")}
         />
       </View>
-      <Section
-        title={communitySectionTitle}
-        onPressMore={() => {}}
-        styles={{ content: { paddingHorizontal: 0 } }}
-      >
-        {data.length > 0 ? (
-          data.map((item) => (
-            <CommunityCard
-              key={item.id}
-              title={item.title}
-              contentPreview={item.contentPreview}
-              author={item.author}
-              date={item.date}
-              likes={item.likes}
-              comments={item.comments}
-              scraps={item.scraps}
-            />
-          ))
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>
-              {selectedFilter === "작성글" ? "작성한 글이 없습니다." : "작성한 댓글이 없습니다."}
-            </Text>
-          </View>
-        )}
-      </Section>
-      <Section
-        title="공연 소식"
-        onPressMore={() => {}}
-        styles={{ content: { paddingHorizontal: 0 } }}
-      >
-        <ImageScrollView
-          styles={{ container: {} }}
-          width={138}
-          height={264}
-          gap={14}
-          type="withText"
-        />
-      </Section>
+
+      {/* 작성글: 작성글과 공연 소식 각각 별도 스크롤 상태 유지 */}
+      <View style={selectedFilter === "작성글" ? undefined : localStyles.hidden}>
+        {renderContentSection("커뮤니티", postsData, "작성한 글이 없습니다.")}
+        {renderNewsSection("posts")}
+      </View>
+
+      {/* 댓글: 댓글 단 글과 공연 소식 각각 별도 스크롤 상태 유지 */}
+      <View style={selectedFilter === "댓글" ? undefined : localStyles.hidden}>
+        {renderContentSection("커뮤니티", commentsData, "작성한 댓글이 없습니다.")}
+        {renderNewsSection("comments")}
+      </View>
     </ScrollView>
   );
 };
+
+const localStyles = StyleSheet.create({
+  hidden: {
+    display: "none",
+  },
+});
 
 export default PostsCommentsScene;
