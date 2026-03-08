@@ -25,9 +25,29 @@ const Activity = () => {
           onPressMore={() => {}}
           styles={{ title: { marginTop: 12 } }}
         >
-          <ReviewCard />
-          <ReviewCard />
-          <ReviewCard />
+          <ReviewCard
+            title="2025년도 봄 정기 연주회"
+            content="저는 봄 정기 연주회에 참가했습니다. 좋은 경험이었습니다."
+            tags={[
+              { text: "봄 정기 연주회", variant: "type" },
+              { text: "좋은 경험", variant: "status" },
+            ]}
+          />
+          <ReviewCard
+            title="2025년도 봄 정기 연주회"
+            content="저는 봄 정기 연주회에 참가했습니다. 좋은 경험이었습니다."
+            tags={[
+              { text: "봄 정기 연주회", variant: "type" },
+              { text: "좋은 경험", variant: "status" },
+            ]}
+          />
+          <ReviewCard
+            title="2025년도 봄 정기 연주회"
+            tags={[
+              { text: "봄 정기 연주회", variant: "type" },
+              { text: "좋은 경험", variant: "status" },
+            ]}
+          />
         </Section>
       </View>
     </ScrollView>

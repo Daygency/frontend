@@ -1,34 +1,68 @@
-import { View, Text } from "react-native";
+import { View, Text, Pressable } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
 import { Entypo } from "@expo/vector-icons";
 import styles from "./styles";
 import Tag from "../Tag/Tag";
+import { MAIN } from "../../color";
 
-const ReviewCard = () => {
+export interface ReviewCardProps {
+  author?: string;
+  date?: string;
+  title: string;
+  content?: string;
+  reactionTag?: string;
+  tags?: { text: string; variant?: "type" | "status" | "reaction" }[];
+  onOptionsPress?: () => void;
+}
+
+const ReviewCard = ({
+  author = "이XX",
+  date = "2025.09.20",
+  title,
+  content,
+  reactionTag,
+  tags,
+  onOptionsPress,
+}: ReviewCardProps) => {
+  const showReactionTag = reactionTag !== undefined && reactionTag !== "";
+  const showTags = tags && tags.length > 0;
+
   return (
     <ShadowCardButton>
       <View style={styles.header}>
-        <View style={styles.profileContainer} />
+        <View style={[styles.profileContainer, { backgroundColor: MAIN.DEFAULT }]} />
         <View style={styles.profileNameContainer}>
-          <Text>이XX</Text>
-          <Text>2025.09.20</Text>
+          <Text style={styles.authorText}>{author}</Text>
+          <Text style={styles.dateText}>{date}</Text>
         </View>
-        <View style={styles.dotsContainer}>
+        <Pressable
+          onPress={onOptionsPress}
+          hitSlop={10}
+          style={styles.dotsContainer}
+        >
           <Entypo name="dots-three-vertical" size={24} color="black" />
-        </View>
+        </Pressable>
       </View>
 
       <View style={styles.contentContainer}>
-        <Text style={styles.title}>2025년도 봄 정기 연주회</Text>
-        <Text style={styles.content}>
-          저는 봄 정기 연주회에 참가했습니다. 좋은 경험이었습니다.
-        </Text>
+        <Text style={styles.title}>{title}</Text>
+        {content ? <Text style={styles.content}>{content}</Text> : null}
       </View>
 
-      <View style={styles.tagContainer}>
-        <Tag text="봄 정기 연주회" variant="type" />
-        <Tag text="좋은 경험" variant="status" />
-      </View>
+      {(showReactionTag || showTags) && (
+        <View style={styles.tagContainer}>
+          {showReactionTag && (
+            <Tag text={reactionTag!} variant="reaction" />
+          )}
+          {(tags ?? []).map((tag, index) => (
+            <Tag
+              key={index}
+              text={tag.text}
+              variant={tag.variant ?? "type"}
+            />
+          ))}
+        </View>
+      )}
     </ShadowCardButton>
   );
 };

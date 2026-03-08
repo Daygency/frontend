@@ -4,8 +4,13 @@ import Logo from "../Logo/Logo";
 import { WHITE, MAIN } from "../../color";
 import styles from "./styles";
 import Feather from "@expo/vector-icons/Feather";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootRoutes } from "../../navigations/routes";
 
 const MainHomeTopBar = ({ logoName }: { logoName: string }) => {
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
   return (
     <View style={styles.container}>
       <Logo size={24} logoName={logoName} />
@@ -22,7 +27,10 @@ const MainHomeTopBar = ({ logoName }: { logoName: string }) => {
           />
           <View style={styles.dotNew} />
         </Pressable>
-        <Pressable style={styles.iconButton}>
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => navigation.navigate(RootRoutes.SETTINGS)}
+        >
           <MaterialCommunityIcons
             name="cog-outline"
             size={23}

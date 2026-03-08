@@ -1,5 +1,5 @@
 import { Platform, StyleSheet } from "react-native";
-import { BLUE } from "../../color";
+import { MAIN } from "../../color";
 
 const styles = StyleSheet.create({
   fab: {
@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: BLUE.DEFAULT,
+    backgroundColor: MAIN.DEFAULT,
     alignItems: "center",
     justifyContent: "center",
     ...Platform.select({

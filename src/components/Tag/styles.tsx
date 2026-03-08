@@ -39,6 +39,17 @@ const styles = StyleSheet.create({
     color: WHITE,
     fontWeight: "500",
   },
+  reactionTag: {
+    backgroundColor: GRAY.MEDIUM,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  reactionTagText: {
+    fontSize: 13,
+    color: GRAY.DARK_100,
+    fontWeight: "400",
+  },
 });
 
 export default styles;

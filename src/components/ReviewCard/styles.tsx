@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY } from "../../color";
+import { GRAY } from "../../color";
 
 const styles = StyleSheet.create({
   header: {
@@ -7,38 +7,48 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   profileContainer: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: GRAY.MEDIUM,
   },
-  dotsContainer: {
-    position: "absolute",
-    right: 0,
-    top: 0,
-  },
   profileNameContainer: {
-    position: "absolute",
-    left: 40,
-    top: 0,
+    flex: 1,
+    marginLeft: 10,
+  },
+  authorText: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: "#000",
+  },
+  dateText: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+    marginTop: 2,
+  },
+  dotsContainer: {
+    padding: 4,
   },
   contentContainer: {
-    marginTop: 10,
+    marginTop: 12,
   },
   title: {
     fontSize: 16,
     fontWeight: "600",
-    color: BLACK,
+    color: "#000",
   },
   content: {
     fontSize: 14,
     fontWeight: "400",
-    color: BLACK,
+    color: "#000",
+    lineHeight: 20,
+    marginTop: 8,
   },
   tagContainer: {
     flexDirection: "row",
-    gap: 6,
-    marginTop: 10,
+    flexWrap: "wrap",
+    gap: 8,
+    marginTop: 12,
   },
 });
 
