@@ -207,21 +207,12 @@ const Navigation = () => {
           })}
         />
         <Stack.Screen
-<<<<<<< HEAD
           name={RootRoutes.COMMUNITY_DETAIL}
           component={CommunityDetailScreen}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>커뮤니티</Text>
-=======
-          name={RootRoutes.MY_INFO}
-          component={MyInfoScreen}
-          options={({ navigation }) => ({
-            headerTitle: () => (
-              <View style={styles.titleWrap}>
-                <Text style={styles.title}>내 정보</Text>
->>>>>>> 1bcd8b6 (feat: 내 정보 설정 창)
               </View>
             ),
             headerShadowVisible: false,
@@ -244,7 +235,6 @@ const Navigation = () => {
                 />
               </Pressable>
             ),
-<<<<<<< HEAD
             headerRight: () => (
               <View style={styles.rightItemsWrap}>
                 <Pressable hitSlop={10}>
@@ -270,8 +260,37 @@ const Navigation = () => {
                 </Pressable>
               </View>
             ),
-=======
->>>>>>> 1bcd8b6 (feat: 내 정보 설정 창)
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.MY_INFO}
+          component={MyInfoScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>내 정보</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
           })}
         />
       </Stack.Navigator>
