@@ -8,28 +8,24 @@ export interface ShadowCardListItemProps {
   label: string;
   value: string;
   onPress?: () => void;
-  isFirst?: boolean;
   isLast?: boolean;
+  valueColor?: string;
 }
 
 const ShadowCardListItem = ({
   label,
   value,
   onPress,
-  isFirst,
   isLast,
+  valueColor,
 }: ShadowCardListItemProps) => {
   const content = (
-    <View
-      style={[
-        styles.item,
-        isFirst && styles.itemHighlighted,
-        isLast && styles.itemLast,
-      ]}
-    >
+    <View style={[styles.item, isLast && styles.itemLast]}>
       <View style={styles.itemContent}>
         <Text style={styles.label}>{label}</Text>
-        <Text style={styles.value}>{value}</Text>
+        <Text style={[styles.value, valueColor && { color: valueColor }]}>
+          {value}
+        </Text>
       </View>
       {onPress && (
         <MaterialCommunityIcons

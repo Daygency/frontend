@@ -8,6 +8,7 @@ import CommunityDetailScreen from "../screens/CommunityDetailScreen";
 import CommunityRegistrationScreen from "../screens/CommunityRegistrationScreen";
 import SettingsScreen from "../screens/SettingsScreen/SettingsScreen";
 import MyInfoScreen from "../screens/MyInfoScreen/MyInfoScreen";
+import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -269,6 +270,37 @@ const Navigation = () => {
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>내 정보</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.CHANGE_NAME}
+          component={ChangeNameScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>이름 변경</Text>
               </View>
             ),
             headerShadowVisible: false,
