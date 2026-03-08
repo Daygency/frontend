@@ -70,11 +70,12 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
   },
   textContainer: {
     flex: 1,
-    marginRight: 12,
+    minWidth: 0,
+    marginRight: 8,
   },
   title: {
     fontSize: 15,
@@ -93,8 +94,9 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
   },
   thumbnail: {
-    width: 56,
-    height: 56,
+    width: 64,
+    height: 64,
+    flexShrink: 0,
     borderRadius: 8,
     backgroundColor: GRAY.MEDIUM,
   },

@@ -8,6 +8,7 @@ import CommunityDetailScreen from "../screens/CommunityDetailScreen";
 import CommunityRegistrationScreen from "../screens/CommunityRegistrationScreen";
 import SettingsScreen from "../screens/SettingsScreen/SettingsScreen";
 import MyInfoScreen from "../screens/MyInfoScreen/MyInfoScreen";
+import MyActivityScreen from "../screens/MyActivityScreen/MyActivityScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
@@ -270,6 +271,37 @@ const Navigation = () => {
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>내 정보</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.MY_ACTIVITY}
+          component={MyActivityScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>내 활동</Text>
               </View>
             ),
             headerShadowVisible: false,
