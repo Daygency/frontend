@@ -27,4 +27,5 @@ export const RootRoutes = {
   MY_DATA_ARCHIVE: "MyDataArchive",
   CUSTOMER_SERVICE: "CustomerService",
   INQUIRY: "Inquiry",
+  INQUIRY_DETAIL: "InquiryDetail",
 } as const;
