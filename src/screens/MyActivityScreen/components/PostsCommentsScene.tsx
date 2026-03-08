@@ -39,6 +39,7 @@ const MOCK_COMMENTS = [
 
 type RootStackParamList = {
   MyActivityList: { type: "posts" | "comments" };
+  MyActivityNewsList: undefined;
 };
 
 const PostsCommentsScene = () => {
@@ -51,6 +52,10 @@ const PostsCommentsScene = () => {
     navigation.navigate(RootRoutes.MY_ACTIVITY_LIST, {
       type: selectedFilter === "작성글" ? "posts" : "comments",
     });
+  };
+
+  const handlePressNews = () => {
+    navigation.navigate(RootRoutes.MY_ACTIVITY_NEWS_LIST);
   };
 
   const renderContentSection = (
@@ -88,7 +93,7 @@ const PostsCommentsScene = () => {
   const renderNewsSection = (scrollKey: string) => (
     <Section
       title="공연 소식"
-      onPressMore={() => {}}
+      onPressMore={handlePressNews}
       styles={{ content: { paddingHorizontal: 0 } }}
     >
       <ImageScrollView

@@ -21,5 +21,6 @@ export const RootRoutes = {
   MY_INFO: "MyInfo",
   MY_ACTIVITY: "MyActivity",
   MY_ACTIVITY_LIST: "MyActivityList",
+  MY_ACTIVITY_NEWS_LIST: "MyActivityNewsList",
   CHANGE_NAME: "ChangeName",
 } as const;

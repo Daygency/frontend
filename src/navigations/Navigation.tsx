@@ -10,6 +10,7 @@ import SettingsScreen from "../screens/SettingsScreen/SettingsScreen";
 import MyInfoScreen from "../screens/MyInfoScreen/MyInfoScreen";
 import MyActivityScreen from "../screens/MyActivityScreen/MyActivityScreen";
 import MyActivityListScreen from "../screens/MyActivityListScreen/MyActivityListScreen";
+import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActivityNewsListScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
@@ -284,6 +285,35 @@ const Navigation = () => {
                     navigation.goBack();
                   }
                 }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.MY_ACTIVITY_NEWS_LIST}
+          component={MyActivityNewsListScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={[styles.title, { fontWeight: "700", fontSize: 18 }]}>
+                  공연 소식
+                </Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
                 hitSlop={10}
                 style={styles.leftIcon}
               >
