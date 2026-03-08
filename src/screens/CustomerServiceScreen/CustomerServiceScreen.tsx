@@ -1,13 +1,12 @@
 import React from "react";
-import { ScrollView, Text, View, Pressable, Linking } from "react-native";
+import { ScrollView, Text, View, Pressable } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootRoutes } from "../../navigations/routes";
 import ShadowCardList, {
-  ShadowCardListItem,
   ShadowCardListFaqItem,
 } from "../../components/ShadowCardList/ShadowCardList";
 import styles from "./styles";
-
-const OPEN_CHAT_URL = "https://open.kakao.com"; // TODO: 실제 오픈채팅 링크로 교체
-const INQUIRY_URL = "mailto:support@example.com"; // TODO: 실제 문의 이메일로 교체
 
 const FAQ_LIST = [
   {
@@ -31,12 +30,10 @@ const FAQ_LIST = [
 ];
 
 const CustomerServiceScreen = () => {
-  const handleOpenChat = () => {
-    Linking.openURL(OPEN_CHAT_URL).catch(() => {});
-  };
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
 
   const handleInquiry = () => {
-    Linking.openURL(INQUIRY_URL).catch(() => {});
+    navigation.navigate(RootRoutes.INQUIRY);
   };
 
   return (
@@ -45,21 +42,10 @@ const CustomerServiceScreen = () => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {/* 오픈채팅 링크 */}
-      <Text style={[styles.sectionTitle, styles.sectionTitleFirst]}>
-        오픈채팅 링크
-      </Text>
-      <ShadowCardList>
-        <ShadowCardListItem
-          label="오픈채팅"
-          value="바로가기"
-          onPress={handleOpenChat}
-          isLast
-        />
-      </ShadowCardList>
-
       {/* 1대1 문의 */}
-      <Text style={styles.sectionTitle}>1대1 문의</Text>
+      <Text style={[styles.sectionTitle, styles.sectionTitleFirst]}>
+        1대1 문의
+      </Text>
       <ShadowCardList>
         <View style={{ padding: 20 }}>
           <Text

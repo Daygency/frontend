@@ -26,4 +26,5 @@ export const RootRoutes = {
   NOTIFICATION_SETTINGS: "NotificationSettings",
   MY_DATA_ARCHIVE: "MyDataArchive",
   CUSTOMER_SERVICE: "CustomerService",
+  INQUIRY: "Inquiry",
 } as const;
