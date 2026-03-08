@@ -23,3 +23,4 @@ const ShadowCardList = ({ children, styles: customStyles }: ShadowCardListProps)
 
 export default ShadowCardList;
 export { default as ShadowCardListItem } from "./ShadowCardListItem";
+export { default as ShadowCardListToggleItem } from "./ShadowCardListToggleItem";

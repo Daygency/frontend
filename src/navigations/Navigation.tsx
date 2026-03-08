@@ -12,6 +12,7 @@ import MyActivityScreen from "../screens/MyActivityScreen/MyActivityScreen";
 import MyActivityListScreen from "../screens/MyActivityListScreen/MyActivityListScreen";
 import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActivityNewsListScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
+import NotificationSettingsScreen from "../screens/NotificationSettingsScreen/NotificationSettingsScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -263,6 +264,37 @@ const Navigation = () => {
                   />
                 </Pressable>
               </View>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.NOTIFICATION_SETTINGS}
+          component={NotificationSettingsScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>알림 설정</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
             ),
           })}
         />

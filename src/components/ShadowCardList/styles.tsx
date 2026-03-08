@@ -54,6 +54,19 @@ const styles = StyleSheet.create({
   chevron: {
     marginLeft: 8,
   },
+  toggleItemContent: {
+    flex: 1,
+  },
+  toggleLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: GRAY.DARK_100,
+    marginBottom: 4,
+  },
+  toggleDescription: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+  },
 });
 
 export default styles;
