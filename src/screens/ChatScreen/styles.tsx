@@ -31,6 +31,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  filterWrapper: {},
+  filterScroll: {
+    paddingVertical: 12,
+  },
+  filterContent: {
+    flexDirection: "row",
+    paddingHorizontal: 17,
+    gap: 8,
+  },
 });
 
 export default styles;

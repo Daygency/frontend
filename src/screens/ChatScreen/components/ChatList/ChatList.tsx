@@ -1,6 +1,8 @@
+import { useMemo } from "react";
 import { FlatList, View } from "react-native";
 import ChatItem from "../ChatItem/ChatItem";
 import { GRAY } from "../../../../color";
+import type { ChatFilter } from "../../types";
 
 const MOCK_CHATS = [
   {
@@ -11,6 +13,8 @@ const MOCK_CHATS = [
     timestamp: "어제",
     unreadCount: 0,
     isOnline: false,
+    isMyPosted: true,
+    isApplication: false,
   },
   {
     id: "2",
@@ -20,6 +24,8 @@ const MOCK_CHATS = [
     timestamp: "09.28",
     unreadCount: 1,
     isOnline: true,
+    isMyPosted: false,
+    isApplication: true,
   },
   {
     id: "3",
@@ -29,13 +35,29 @@ const MOCK_CHATS = [
     timestamp: "09.25",
     unreadCount: 0,
     isOnline: false,
+    isMyPosted: true,
+    isApplication: true,
   },
 ];
 
-const ChatList = () => {
+interface ChatListProps {
+  filter: ChatFilter;
+}
+
+const ChatList = ({ filter }: ChatListProps) => {
+  const filteredChats = useMemo(() => {
+    return MOCK_CHATS.filter((chat) => {
+      if (filter === "전체") return true;
+      if (filter === "안읽음") return chat.unreadCount > 0;
+      if (filter === "내가올린공고") return chat.isMyPosted;
+      if (filter === "지원공고") return chat.isApplication;
+      return true;
+    });
+  }, [filter]);
+
   return (
     <FlatList
-      data={MOCK_CHATS}
+      data={filteredChats}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <ChatItem
