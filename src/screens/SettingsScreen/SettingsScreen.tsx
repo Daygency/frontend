@@ -31,7 +31,11 @@ const SettingsScreen = () => {
         label="알림 설정"
         onPress={() => navigation.navigate(RootRoutes.NOTIFICATION_SETTINGS)}
       />
-      <SettingItem icon="file-document-outline" label="내 자료 보관함" />
+      <SettingItem
+        icon="file-document-outline"
+        label="내 자료 보관함"
+        onPress={() => navigation.navigate(RootRoutes.MY_DATA_ARCHIVE)}
+      />
       <SettingItem icon="help-circle-outline" label="고객센터" />
       <SettingItem
         icon="account-outline"

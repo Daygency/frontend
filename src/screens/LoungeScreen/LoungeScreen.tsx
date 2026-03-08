@@ -45,9 +45,11 @@ const LoungeScreen = () => {
         )}
         style={styles.tabView}
       />
-      <FabButton
-        onPress={() => navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION)}
-      />
+      {index === 1 && (
+        <FabButton
+          onPress={() => navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION)}
+        />
+      )}
     </View>
   );
 };

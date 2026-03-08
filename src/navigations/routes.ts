@@ -24,4 +24,5 @@ export const RootRoutes = {
   MY_ACTIVITY_NEWS_LIST: "MyActivityNewsList",
   CHANGE_NAME: "ChangeName",
   NOTIFICATION_SETTINGS: "NotificationSettings",
+  MY_DATA_ARCHIVE: "MyDataArchive",
 } as const;

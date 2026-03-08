@@ -13,6 +13,7 @@ import MyActivityListScreen from "../screens/MyActivityListScreen/MyActivityList
 import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActivityNewsListScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import NotificationSettingsScreen from "../screens/NotificationSettingsScreen/NotificationSettingsScreen";
+import MyDataArchiveScreen from "../screens/MyDataArchiveScreen/MyDataArchiveScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -414,6 +415,40 @@ const Navigation = () => {
                   size={30}
                   color="#000"
                 />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.MY_DATA_ARCHIVE}
+          component={MyDataArchiveScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={[styles.title, { fontWeight: "700", fontSize: 18 }]}>
+                  내 자료 보관함
+                </Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "center",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+            headerRight: () => (
+              <Pressable hitSlop={10}>
+                <Text style={{ fontSize: 16, color: "#000" }}>관리</Text>
               </Pressable>
             ),
           })}
