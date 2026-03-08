@@ -20,5 +20,6 @@ export const RootRoutes = {
   SETTINGS: "Settings",
   MY_INFO: "MyInfo",
   MY_ACTIVITY: "MyActivity",
+  MY_ACTIVITY_LIST: "MyActivityList",
   CHANGE_NAME: "ChangeName",
 } as const;

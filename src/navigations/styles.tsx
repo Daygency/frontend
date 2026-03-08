@@ -15,9 +15,7 @@ const styles = StyleSheet.create({
     marginLeft: -10,
     color: BLACK,
   },
-  leftIcon: {
-
-  },
+  leftIcon: {},
   rightItemsWrap: {
     flexDirection: "row",
     alignItems: "center",

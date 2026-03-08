@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { ScrollView, View, Text, StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Section from "../../../components/Section/Section";
+import { RootRoutes } from "../../../navigations/routes";
 import ImageScrollView from "../../../components/ImageScrollView/ImageScrollView";
 import CommunityCard from "../../LoungeScreen/components/CommunityCard";
 import SelectableTag from "../../../components/SelectableTag/SelectableTag";
@@ -34,19 +37,31 @@ const MOCK_COMMENTS = [
   },
 ];
 
+type RootStackParamList = {
+  MyActivityList: { type: "posts" | "comments" };
+};
+
 const PostsCommentsScene = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedFilter, setSelectedFilter] = useState<FilterOption>("작성글");
   const postsData = selectedFilter === "작성글" ? MOCK_POSTS : [];
   const commentsData = selectedFilter === "댓글" ? MOCK_COMMENTS : [];
 
+  const handlePressCommunity = () => {
+    navigation.navigate(RootRoutes.MY_ACTIVITY_LIST, {
+      type: selectedFilter === "작성글" ? "posts" : "comments",
+    });
+  };
+
   const renderContentSection = (
     title: string,
     data: typeof MOCK_POSTS,
-    emptyMessage: string
+    emptyMessage: string,
+    onPressMore: () => void
   ) => (
     <Section
       title={title}
-      onPressMore={() => {}}
+      onPressMore={onPressMore}
       styles={{ content: { paddingHorizontal: 0 } }}
     >
       {data.length > 0 ? (
@@ -108,13 +123,23 @@ const PostsCommentsScene = () => {
 
       {/* 작성글: 작성글과 공연 소식 각각 별도 스크롤 상태 유지 */}
       <View style={selectedFilter === "작성글" ? undefined : localStyles.hidden}>
-        {renderContentSection("커뮤니티", postsData, "작성한 글이 없습니다.")}
+        {renderContentSection(
+          "커뮤니티",
+          postsData,
+          "작성한 글이 없습니다.",
+          handlePressCommunity
+        )}
         {renderNewsSection("posts")}
       </View>
 
       {/* 댓글: 댓글 단 글과 공연 소식 각각 별도 스크롤 상태 유지 */}
       <View style={selectedFilter === "댓글" ? undefined : localStyles.hidden}>
-        {renderContentSection("커뮤니티", commentsData, "작성한 댓글이 없습니다.")}
+        {renderContentSection(
+          "커뮤니티",
+          commentsData,
+          "작성한 댓글이 없습니다.",
+          handlePressCommunity
+        )}
         {renderNewsSection("comments")}
       </View>
     </ScrollView>

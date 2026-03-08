@@ -9,6 +9,7 @@ import CommunityRegistrationScreen from "../screens/CommunityRegistrationScreen"
 import SettingsScreen from "../screens/SettingsScreen/SettingsScreen";
 import MyInfoScreen from "../screens/MyInfoScreen/MyInfoScreen";
 import MyActivityScreen from "../screens/MyActivityScreen/MyActivityScreen";
+import MyActivityListScreen from "../screens/MyActivityListScreen/MyActivityListScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
@@ -283,6 +284,35 @@ const Navigation = () => {
                     navigation.goBack();
                   }
                 }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.MY_ACTIVITY_LIST}
+          component={MyActivityListScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={[styles.title, { fontWeight: "700", fontSize: 18 }]}>
+                  커뮤니티
+                </Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
                 hitSlop={10}
                 style={styles.leftIcon}
               >
