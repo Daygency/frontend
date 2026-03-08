@@ -28,4 +28,5 @@ export const RootRoutes = {
   CUSTOMER_SERVICE: "CustomerService",
   INQUIRY: "Inquiry",
   INQUIRY_DETAIL: "InquiryDetail",
+  ACCOUNT: "Account",
 } as const;

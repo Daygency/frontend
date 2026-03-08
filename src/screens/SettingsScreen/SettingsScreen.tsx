@@ -45,6 +45,7 @@ const SettingsScreen = () => {
         icon="account-outline"
         label="계정"
         color={RED.DEFAULT}
+        onPress={() => navigation.navigate(RootRoutes.ACCOUNT)}
         isLast
       />
     </ScrollView>

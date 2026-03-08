@@ -17,6 +17,7 @@ import MyDataArchiveScreen from "../screens/MyDataArchiveScreen/MyDataArchiveScr
 import CustomerServiceScreen from "../screens/CustomerServiceScreen/CustomerServiceScreen";
 import InquiryScreen from "../screens/InquiryScreen/InquiryScreen";
 import InquiryDetailScreen from "../screens/InquiryDetailScreen/InquiryDetailScreen";
+import AccountScreen from "../screens/AccountScreen/AccountScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -525,6 +526,37 @@ const Navigation = () => {
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>문의 상세</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.ACCOUNT}
+          component={AccountScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>계정</Text>
               </View>
             ),
             headerShadowVisible: false,
