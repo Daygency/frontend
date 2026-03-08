@@ -6,6 +6,7 @@ import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
 import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
 import CommunityDetailScreen from "../screens/CommunityDetailScreen";
 import CommunityRegistrationScreen from "../screens/CommunityRegistrationScreen";
+import SettingsScreen from "../screens/SettingsScreen/SettingsScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -149,6 +150,37 @@ const Navigation = () => {
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>커뮤니티 등록</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.SETTINGS}
+          component={SettingsScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>설정</Text>
               </View>
             ),
             headerShadowVisible: false,

@@ -17,4 +17,5 @@ export const RootRoutes = {
   FOLLOW_LIST: "FollowList",
   COMMUNITY_DETAIL: "CommunityDetail",
   COMMUNITY_REGISTRATION: "CommunityRegistration",
+  SETTINGS: "Settings",
 } as const;
