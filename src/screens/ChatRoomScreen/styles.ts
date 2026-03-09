@@ -107,6 +107,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: "#000",
   },
+  inputSingleLine: {
+    maxHeight: 40,
+  },
   sendButton: {
     width: 40,
     height: 40,

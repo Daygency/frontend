@@ -103,13 +103,17 @@ const ChatRoomScreen = () => {
           <Feather name="plus" size={22} color="#666" />
         </Pressable>
         <TextInput
-          style={styles.input}
+          style={[
+            styles.input,
+            !isKeyboardVisible && styles.inputSingleLine,
+          ]}
           value={message}
           onChangeText={setMessage}
           placeholder="메시지를 입력하세요"
           placeholderTextColor={GRAY.DARK_2}
           multiline
           maxLength={500}
+          scrollEnabled={isKeyboardVisible}
         />
         <Pressable
           style={[
