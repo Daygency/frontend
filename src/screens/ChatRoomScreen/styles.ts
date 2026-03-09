@@ -105,6 +105,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 10,
     fontSize: 15,
+    lineHeight: 20,
     color: "#000",
   },
   inputSingleLine: {
