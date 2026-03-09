@@ -67,7 +67,12 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
     fontWeight: "400",
   },
-  moreButton: {
+  headerRightButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  headerButton: {
     padding: 4,
   },
   messageArea: {

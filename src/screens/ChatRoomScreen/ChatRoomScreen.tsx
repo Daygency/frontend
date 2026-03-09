@@ -12,6 +12,7 @@ import {
   TextInputKeyPressEventData,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { RootRoutes } from "../../navigations/routes";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { GRAY, WHITE } from "../../color";
@@ -155,9 +156,18 @@ const ChatRoomScreen = () => {
           </View>
         </View>
 
-        <Pressable hitSlop={10} style={styles.moreButton}>
-          <MaterialCommunityIcons name="dots-vertical" size={22} color="#000" />
-        </Pressable>
+        <View style={styles.headerRightButtons}>
+          <Pressable hitSlop={10} style={styles.headerButton}>
+            <Feather name="search" size={22} color="#000" />
+          </Pressable>
+          <Pressable
+            hitSlop={10}
+            style={styles.headerButton}
+            onPress={() => navigation.navigate(RootRoutes.CHAT_ROOM_OPTIONS)}
+          >
+            <MaterialCommunityIcons name="menu" size={22} color="#000" />
+          </Pressable>
+        </View>
       </View>
 
       {/* Message area */}

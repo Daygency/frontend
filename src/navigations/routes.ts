@@ -31,4 +31,5 @@ export const RootRoutes = {
   ACCOUNT: "Account",
   WITHDRAW_CONFIRM: "WithdrawConfirm",
   CHAT_ROOM: "ChatRoom",
+  CHAT_ROOM_OPTIONS: "ChatRoomOptions",
 } as const;
