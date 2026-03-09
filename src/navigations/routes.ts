@@ -30,4 +30,6 @@ export const RootRoutes = {
   INQUIRY_DETAIL: "InquiryDetail",
   ACCOUNT: "Account",
   WITHDRAW_CONFIRM: "WithdrawConfirm",
+  CHAT_ROOM: "ChatRoom",
+  CHAT_ROOM_OPTIONS: "ChatRoomOptions",
 } as const;
