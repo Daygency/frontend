@@ -19,6 +19,7 @@ import InquiryScreen from "../screens/InquiryScreen/InquiryScreen";
 import InquiryDetailScreen from "../screens/InquiryDetailScreen/InquiryDetailScreen";
 import AccountScreen from "../screens/AccountScreen/AccountScreen";
 import WithdrawConfirmScreen from "../screens/WithdrawConfirmScreen/WithdrawConfirmScreen";
+import ChatRoomScreen from "../screens/ChatRoomScreen/ChatRoomScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -643,6 +644,11 @@ const Navigation = () => {
               </Pressable>
             ),
           })}
+        />
+        <Stack.Screen
+          name={RootRoutes.CHAT_ROOM}
+          component={ChatRoomScreen}
+          options={{ headerShown: false }}
         />
       </Stack.Navigator>
     </NavigationContainer>

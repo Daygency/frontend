@@ -30,4 +30,5 @@ export const RootRoutes = {
   INQUIRY_DETAIL: "InquiryDetail",
   ACCOUNT: "Account",
   WITHDRAW_CONFIRM: "WithdrawConfirm",
+  CHAT_ROOM: "ChatRoom",
 } as const;
