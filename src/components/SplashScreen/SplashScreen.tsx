@@ -1,10 +1,14 @@
-import { StyleSheet, Text, View } from "react-native";
-import { WHITE, MAIN } from "../../color";
+import { StyleSheet, View, Image } from "react-native";
+import { WHITE } from "../../color";
 
 const SplashScreenView = () => {
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>DAYGENCY</Text>
+      <Image
+        source={require("../../../assets/logo.png")}
+        style={styles.logo}
+        resizeMode="contain"
+      />
     </View>
   );
 };
@@ -17,9 +21,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   logo: {
-    fontSize: 40,
-    fontWeight: "700",
-    color: MAIN.DEFAULT,
+    width: 80,
+    height: 80,
   },
 });
 

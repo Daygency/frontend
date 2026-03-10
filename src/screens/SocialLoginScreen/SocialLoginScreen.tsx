@@ -5,6 +5,7 @@ import {
   Pressable,
   ScrollView,
   Platform,
+  Image,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
@@ -44,7 +45,14 @@ const SocialLoginScreen = () => {
       ]}
       showsVerticalScrollIndicator={false}
     >
-      <Text style={styles.logo}>DAYGENCY</Text>
+      <View style={styles.logoWrap}>
+        <Image
+          source={require("../../../assets/logo.png")}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+        <Text style={styles.logoText}>DAYGENCY</Text>
+      </View>
       <Text style={styles.tagline}>
         계정에 로그인하여 데이전시를 시작하세요
       </Text>
@@ -122,11 +130,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     marginBottom: 24,
   },
-  logo: {
-    fontSize: 25,
-    fontWeight: "700",
-    color: MAIN.DEFAULT,
+  logoWrap: {
+    alignItems: "center",
     marginBottom: 20,
+  },
+  logo: {
+    width: 64,
+    height: 64,
+  },
+  logoText: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
   },
   tagline: {
     fontSize: 13,
