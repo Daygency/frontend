@@ -6,19 +6,57 @@ import {
   ScrollView,
   Platform,
   Image,
+  Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useAuth } from "../../contexts/AuthContext";
 import { WHITE, GRAY, MAIN } from "../../color";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  login as kakaoLogin,
+  loginWithKakaoAccount,
+} from "@react-native-seoul/kakao-login";
+import { useState } from "react";
 
 const SocialLoginScreen = () => {
   const { top, bottom } = useSafeAreaInsets();
   const { login, enterBrowse } = useAuth();
+  const [isKakaoLoading, setIsKakaoLoading] = useState(false);
 
-  const handleKakaoLogin = () => {
-    // TODO: 카카오 소셜 로그인 연동
-    login("kakao_dummy_token");
+  const handleKakaoLogin = async () => {
+    if (isKakaoLoading) return;
+    setIsKakaoLoading(true);
+    try {
+      let token;
+      try {
+        token = await kakaoLogin();
+      } catch {
+        token = await loginWithKakaoAccount();
+      }
+
+      // 서버에 카카오 토큰 전송 → 검증 후 AccessToken 수신
+      const API_BASE =
+        Platform.OS === "android" ? "http://10.0.2.2:3000" : "http://localhost:3000";
+      const res = await fetch(`${API_BASE}/auth/kakao`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: token.accessToken }),
+      });
+      if (!res.ok) throw new Error("서버 인증 실패");
+      const { accessToken } = await res.json();
+      await login(accessToken);
+    } catch (error) {
+      console.error("[Kakao Login Error]", error);
+      const message =
+        error instanceof Error ? error.message : String(error);
+      Alert.alert(
+        "로그인 실패",
+        `카카오 로그인에 실패했습니다. 다시 시도해 주세요.\n\n(오류: ${message})`
+      );
+    } finally {
+      setIsKakaoLoading(false);
+    }
   };
 
   const handleNaverLogin = () => {
@@ -65,10 +103,15 @@ const SocialLoginScreen = () => {
             pressed && styles.buttonPressed,
           ]}
           onPress={handleKakaoLogin}
+          disabled={isKakaoLoading}
         >
-          <MaterialCommunityIcons name="chat" size={22} color="#000" />
+          {isKakaoLoading ? (
+            <ActivityIndicator size="small" color="#000" />
+          ) : (
+            <MaterialCommunityIcons name="chat" size={22} color="#000" />
+          )}
           <Text style={[styles.buttonText, styles.kakaoButtonText]}>
-            카카오로 시작하기
+            {isKakaoLoading ? "로그인 중..." : "카카오로 시작하기"}
           </Text>
         </Pressable>
 
