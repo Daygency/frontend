@@ -123,7 +123,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   logo: {
-    fontSize: 30,
+    fontSize: 25,
     fontWeight: "700",
     color: MAIN.DEFAULT,
     marginBottom: 20,
