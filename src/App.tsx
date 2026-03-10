@@ -2,6 +2,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AuthProvider } from "./contexts/AuthContext";
 import Navigation from "./navigations/Navigation";
 import SplashScreenView from "./components/SplashScreen/SplashScreen";
 
@@ -28,8 +29,10 @@ const App = () => {
 
   return (
     <SafeAreaProvider>
-      <StatusBar style="dark" />
-      <Navigation />
+      <AuthProvider>
+        <StatusBar style="dark" />
+        <Navigation />
+      </AuthProvider>
     </SafeAreaProvider>
   );
 };
