@@ -2,11 +2,18 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { initializeKakaoSDK } from "@react-native-kakao/core";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navigation from "./navigations/Navigation";
 import SplashScreenView from "./components/SplashScreen/SplashScreen";
 
 SplashScreen.preventAutoHideAsync();
+
+const kakaoNativeAppKey =
+  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? "";
+if (kakaoNativeAppKey) {
+  initializeKakaoSDK(kakaoNativeAppKey);
+}
 
 const SPLASH_DURATION_MS = 1000;
 

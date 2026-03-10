@@ -2,12 +2,21 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const AUTH_TOKEN_KEY = "@daygency_auth_token";
+const USER_INFO_KEY = "@daygency_user_info";
+
+export type SocialUser = {
+  socialId: string;
+  nickname: string;
+  email: string;
+  profileImgUrl: string;
+};
 
 type AuthContextType = {
   isLoggedIn: boolean;
   isBrowsing: boolean;
   isLoading: boolean;
-  login: (token: string) => Promise<void>;
+  user: SocialUser | null;
+  login: (token: string, user: SocialUser) => Promise<void>;
   logout: () => Promise<void>;
   enterBrowse: () => void;
 };
@@ -18,14 +27,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isBrowsing, setIsBrowsing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<SocialUser | null>(null);
 
   useEffect(() => {
     const loadAuthState = async () => {
       try {
-        const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+        const [token, userJson] = await Promise.all([
+          AsyncStorage.getItem(AUTH_TOKEN_KEY),
+          AsyncStorage.getItem(USER_INFO_KEY),
+        ]);
         setIsLoggedIn(!!token);
+        setUser(userJson ? (JSON.parse(userJson) as SocialUser) : null);
       } catch {
         setIsLoggedIn(false);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
@@ -33,13 +48,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     loadAuthState();
   }, []);
 
-  const login = async (token: string) => {
-    await AsyncStorage.setItem(AUTH_TOKEN_KEY, token);
+  const login = async (token: string, userInfo: SocialUser) => {
+    await Promise.all([
+      AsyncStorage.setItem(AUTH_TOKEN_KEY, token),
+      AsyncStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo)),
+    ]);
+    setUser(userInfo);
     setIsLoggedIn(true);
   };
 
   const logout = async () => {
-    await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+    await Promise.all([
+      AsyncStorage.removeItem(AUTH_TOKEN_KEY),
+      AsyncStorage.removeItem(USER_INFO_KEY),
+    ]);
+    setUser(null);
     setIsLoggedIn(false);
     setIsBrowsing(false);
   };
@@ -50,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ isLoggedIn, isBrowsing, isLoading, login, logout, enterBrowse }}
+      value={{ isLoggedIn, isBrowsing, isLoading, user, login, logout, enterBrowse }}
     >
       {children}
     </AuthContext.Provider>
