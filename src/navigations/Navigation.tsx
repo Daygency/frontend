@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 import ContentTab from "./ContentTab";
 import SocialLoginScreen from "../screens/SocialLoginScreen/SocialLoginScreen";
+import RoleSelectionScreen from "../screens/RoleSelectionScreen/RoleSelectionScreen";
 import SplashScreenView from "../components/SplashScreen/SplashScreen";
 import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
 import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
@@ -33,10 +34,25 @@ import styles from "./styles";
 const Stack = createNativeStackNavigator();
 
 const Navigation = () => {
-  const { isLoggedIn, isBrowsing, isLoading } = useAuth();
+  const { isLoggedIn, isBrowsing, isLoading, needsRoleSelection } = useAuth();
 
   if (isLoading) {
     return <SplashScreenView />;
+  }
+
+  if (isLoggedIn && needsRoleSelection) {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            contentStyle: { backgroundColor: WHITE },
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name={RootRoutes.ROLE_SELECTION} component={RoleSelectionScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
   }
 
   if (!isLoggedIn && !isBrowsing) {

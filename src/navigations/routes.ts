@@ -12,6 +12,7 @@ export const ContentRoutes = {
 
 export const RootRoutes = {
   LOGIN: "Login",
+  ROLE_SELECTION: "RoleSelection",
   CONTENT_TAB: "ContentTab",
   ANNOUNCEMENT_DETAIL: "AnnouncementDetail",
   APPLICATION: "Application",

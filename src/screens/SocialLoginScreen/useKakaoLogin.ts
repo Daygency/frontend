@@ -28,14 +28,18 @@ export const useKakaoLogin = () => {
       if (!res.ok) throw new Error("서버 인증 실패");
 
       const data = await res.json();
-      const { accessToken, user } = data;
+      const { accessToken, user, isNew } = data;
       const u = user ?? {};
-      await authLogin(accessToken, {
-        socialId: String(u.socialId ?? ""),
-        nickname: String(u.nickname ?? ""),
-        email: String(u.email ?? ""),
-        profileImgUrl: String(u.profileImgUrl ?? ""),
-      });
+      await authLogin(
+        accessToken,
+        {
+          socialId: String(u.userId ?? u.socialId ?? ""),
+          nickname: String(u.nickname ?? ""),
+          email: String(u.email ?? ""),
+          profileImgUrl: String(u.profileImgUrl ?? ""),
+        },
+        { isNewUser: isNew }
+      );
     } catch (error) {
       console.error("[Kakao Login Error]", error);
       const message = error instanceof Error ? error.message : String(error);
