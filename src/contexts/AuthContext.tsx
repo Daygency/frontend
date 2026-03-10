@@ -5,15 +5,18 @@ const AUTH_TOKEN_KEY = "@daygency_auth_token";
 
 type AuthContextType = {
   isLoggedIn: boolean;
+  isBrowsing: boolean;
   isLoading: boolean;
   login: (token: string) => Promise<void>;
   logout: () => Promise<void>;
+  enterBrowse: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isBrowsing, setIsBrowsing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -38,10 +41,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
     setIsLoggedIn(false);
+    setIsBrowsing(false);
+  };
+
+  const enterBrowse = () => {
+    setIsBrowsing(true);
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isLoading, login, logout }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, isBrowsing, isLoading, login, logout, enterBrowse }}
+    >
       {children}
     </AuthContext.Provider>
   );

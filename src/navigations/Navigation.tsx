@@ -33,13 +33,13 @@ import styles from "./styles";
 const Stack = createNativeStackNavigator();
 
 const Navigation = () => {
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn, isBrowsing, isLoading } = useAuth();
 
   if (isLoading) {
     return <SplashScreenView />;
   }
 
-  if (!isLoggedIn) {
+  if (!isLoggedIn && !isBrowsing) {
     return (
       <NavigationContainer>
         <Stack.Navigator
@@ -367,7 +367,9 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={[styles.title, { fontWeight: "700", fontSize: 18 }]}>
+                <Text
+                  style={[styles.title, { fontWeight: "700", fontSize: 18 }]}
+                >
                   공연 소식
                 </Text>
               </View>
@@ -396,7 +398,9 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={[styles.title, { fontWeight: "700", fontSize: 18 }]}>
+                <Text
+                  style={[styles.title, { fontWeight: "700", fontSize: 18 }]}
+                >
                   커뮤니티
                 </Text>
               </View>
@@ -456,7 +460,9 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={[styles.title, { fontWeight: "700", fontSize: 18 }]}>
+                <Text
+                  style={[styles.title, { fontWeight: "700", fontSize: 18 }]}
+                >
                   내 자료 보관함
                 </Text>
               </View>

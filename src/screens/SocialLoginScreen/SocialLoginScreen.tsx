@@ -13,7 +13,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const SocialLoginScreen = () => {
   const { top, bottom } = useSafeAreaInsets();
-  const { login } = useAuth();
+  const { login, enterBrowse } = useAuth();
 
   const handleKakaoLogin = () => {
     // TODO: 카카오 소셜 로그인 연동
@@ -31,8 +31,8 @@ const SocialLoginScreen = () => {
   };
 
   const handleBrowse = () => {
-    // 둘러보기 - 비로그인으로 메인 홈 진입 (임시 토큰 저장)
-    login("guest_token");
+    // 둘러보기 - 비로그인으로 메인 홈 진입
+    enterBrowse();
   };
 
   return (
@@ -40,13 +40,14 @@ const SocialLoginScreen = () => {
       style={styles.container}
       contentContainerStyle={[
         styles.contentContainer,
-        { paddingTop: top + 80, paddingBottom: bottom + 40 },
+        { paddingTop: top, paddingBottom: bottom, paddingVertical: 24 },
       ]}
       showsVerticalScrollIndicator={false}
     >
       <Text style={styles.logo}>DAYGENCY</Text>
-      <Text style={styles.tagline}>데이전시에서</Text>
-      <Text style={styles.tagline}>예술활동의 과정을 더 선명하게 만들어보세요.</Text>
+      <Text style={styles.tagline}>
+        계정에 로그인하여 데이전시를 시작하세요
+      </Text>
 
       <View style={styles.buttonContainer}>
         <Pressable
@@ -57,11 +58,7 @@ const SocialLoginScreen = () => {
           ]}
           onPress={handleKakaoLogin}
         >
-          <MaterialCommunityIcons
-            name="chat"
-            size={22}
-            color="#000"
-          />
+          <MaterialCommunityIcons name="chat" size={22} color="#000" />
           <Text style={[styles.buttonText, styles.kakaoButtonText]}>
             카카오로 시작하기
           </Text>
@@ -121,16 +118,18 @@ const styles = StyleSheet.create({
   contentContainer: {
     flexGrow: 1,
     alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 24,
+    marginBottom: 24,
   },
   logo: {
-    fontSize: 40,
+    fontSize: 30,
     fontWeight: "700",
     color: MAIN.DEFAULT,
     marginBottom: 20,
   },
   tagline: {
-    fontSize: 16,
+    fontSize: 13,
     color: MAIN.DEFAULT,
     marginBottom: 4,
     textAlign: "center",
