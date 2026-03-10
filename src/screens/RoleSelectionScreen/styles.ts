@@ -4,19 +4,11 @@ import { WHITE, MAIN, RED } from "../../color";
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignContent: "center",
     backgroundColor: WHITE,
   },
   contentContainer: {
     flexGrow: 1,
     paddingHorizontal: 24,
-  },
-  logoText: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: MAIN.DEFAULT,
-    textAlign: "center",
-    marginBottom: 24,
   },
   mainQuestion: {
     fontSize: 22,
@@ -24,13 +16,12 @@ export const styles = StyleSheet.create({
     color: MAIN.DEFAULT,
     textAlign: "left",
     marginBottom: 12,
-    marginTop: 20,
   },
   subText: {
     fontSize: 15,
     color: "#9E9E9E",
     textAlign: "left",
-    marginBottom: 4,
+    marginBottom: 50,
   },
   noteText: {
     fontSize: 14,
@@ -48,19 +39,18 @@ export const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     borderRadius: 12,
-    borderWidth: 1,
+    borderWidth: 2,
+    borderColor: "#E0E0E0",
     gap: 16,
   },
   artistOption: {
-    borderColor: "#E0E0E0",
-    backgroundColor: "#FFF9E6",
+    backgroundColor: WHITE,
   },
   plannerOption: {
-    borderColor: "#E0E0E0",
-    backgroundColor: "#E8F5E9",
+    backgroundColor: WHITE,
   },
   optionPressed: {
-    opacity: 0.9,
+    borderColor: MAIN.DEFAULT,
   },
   iconWrap: {
     width: 56,

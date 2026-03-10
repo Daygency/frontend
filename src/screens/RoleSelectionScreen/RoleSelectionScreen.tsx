@@ -1,34 +1,42 @@
 import { View, Text, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useAuth } from "../../contexts/AuthContext";
+import { useNavigation } from "@react-navigation/native";
 import ArtistIcon from "../../components/ArtistIcon/ArtistIcon";
 import AgencyIcon from "../../components/AgencyIcon/AgencyIcon";
 import { styles } from "./styles";
+import { RootRoutes } from "../../navigations/routes";
 
 export type UserRole = "artist" | "planner";
 
 const RoleSelectionScreen = () => {
-  const { completeSignup } = useAuth();
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
+  const navigation = useNavigation();
+
+  const handleSelectRole = (role: UserRole) => {
+    (
+      navigation as {
+        navigate: (name: string, params: { role: UserRole }) => void;
+      }
+    ).navigate(RootRoutes.SIGNUP, { role });
+  };
 
   return (
     <View
       style={[
         styles.container,
         styles.contentContainer,
-        { paddingTop: top + 48, paddingBottom: bottom + 24 },
+        { paddingTop: 24, paddingBottom: bottom + 24 },
       ]}
     >
-      <Text style={styles.logoText}>DAYGENCY</Text>
-
       <Text style={styles.mainQuestion}>
-        {"데이전시를,\n어떤 역할로 이용하시겠어요?"}
+        {"데이전시를\n어떤 역할로 이용하시겠어요?"}
       </Text>
 
       <Text style={styles.subText}>
-        선택한 역할에 맞춰 프로필 형식이 생성됩니다.
+        {
+          "선택한 역할에 맞춰 프로필 형식이 생성되고,\n두 역할 모두 기능은 동일합니다."
+        }
       </Text>
-      <Text style={styles.noteText}>두 역할 모두 기능은 동일합니다.</Text>
 
       <View style={styles.optionsContainer}>
         <Pressable
@@ -37,7 +45,7 @@ const RoleSelectionScreen = () => {
             styles.artistOption,
             pressed && styles.optionPressed,
           ]}
-          onPress={() => completeSignup("artist")}
+          onPress={() => handleSelectRole("artist")}
         >
           <View style={[styles.iconWrap, styles.artistIconWrap]}>
             <ArtistIcon width={56} height={56} />
@@ -56,7 +64,7 @@ const RoleSelectionScreen = () => {
             styles.plannerOption,
             pressed && styles.optionPressed,
           ]}
-          onPress={() => completeSignup("planner")}
+          onPress={() => handleSelectRole("planner")}
         >
           <View style={[styles.iconWrap, styles.plannerIconWrap]}>
             <AgencyIcon width={56} height={56} />
