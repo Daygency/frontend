@@ -11,6 +11,7 @@ export const ContentRoutes = {
 } as const;
 
 export const RootRoutes = {
+  LOGIN: "Login",
   CONTENT_TAB: "ContentTab",
   ANNOUNCEMENT_DETAIL: "AnnouncementDetail",
   APPLICATION: "Application",

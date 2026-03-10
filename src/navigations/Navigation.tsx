@@ -1,6 +1,9 @@
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useAuth } from "../contexts/AuthContext";
 import ContentTab from "./ContentTab";
+import SocialLoginScreen from "../screens/SocialLoginScreen/SocialLoginScreen";
+import SplashScreenView from "../components/SplashScreen/SplashScreen";
 import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
 import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
 import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
@@ -30,6 +33,27 @@ import styles from "./styles";
 const Stack = createNativeStackNavigator();
 
 const Navigation = () => {
+  const { isLoggedIn, isBrowsing, isLoading } = useAuth();
+
+  if (isLoading) {
+    return <SplashScreenView />;
+  }
+
+  if (!isLoggedIn && !isBrowsing) {
+    return (
+      <NavigationContainer>
+        <Stack.Navigator
+          screenOptions={{
+            contentStyle: { backgroundColor: WHITE },
+            headerShown: false,
+          }}
+        >
+          <Stack.Screen name={RootRoutes.LOGIN} component={SocialLoginScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    );
+  }
+
   return (
     <NavigationContainer>
       <Stack.Navigator
@@ -343,7 +367,9 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={[styles.title, { fontWeight: "700", fontSize: 18 }]}>
+                <Text
+                  style={[styles.title, { fontWeight: "700", fontSize: 18 }]}
+                >
                   공연 소식
                 </Text>
               </View>
@@ -372,7 +398,9 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={[styles.title, { fontWeight: "700", fontSize: 18 }]}>
+                <Text
+                  style={[styles.title, { fontWeight: "700", fontSize: 18 }]}
+                >
                   커뮤니티
                 </Text>
               </View>
@@ -432,7 +460,9 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={[styles.title, { fontWeight: "700", fontSize: 18 }]}>
+                <Text
+                  style={[styles.title, { fontWeight: "700", fontSize: 18 }]}
+                >
                   내 자료 보관함
                 </Text>
               </View>
