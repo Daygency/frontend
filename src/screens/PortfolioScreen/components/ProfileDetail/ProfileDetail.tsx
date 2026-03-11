@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import styles from "./styles";
 import { GRAY, BLACK, MAIN } from "../../../../color";
 import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
-import { getMyProfile } from "../../../../lib/profileApi";
+import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
 import {
   getProfileCache,
   saveProfileCache,

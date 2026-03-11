@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
-import type { EducationEntry } from "../../../lib/profileApi";
+import type { EducationEntry } from "../../../lib/apis/portfolio/profileApi";
 import DatePickerField from "./DatePickerField";
 import styles from "../styles";
 
@@ -13,8 +13,10 @@ type Props = {
 };
 
 const formatPeriod = (
-  sY: string, sM: string,
-  eY: string, eM: string
+  sY: string,
+  sM: string,
+  eY: string,
+  eM: string,
 ): string => {
   const fmt = (y: string, m: string) =>
     y && m ? `${y}.${m.padStart(2, "0")}` : y || "";
@@ -31,8 +33,10 @@ const EducationItem = ({ entry, onChange, onDelete }: Props) => {
   const [isFocused, setIsFocused] = useState(false);
 
   const period = formatPeriod(
-    entry.startYear, entry.startMonth,
-    entry.endYear, entry.endMonth
+    entry.startYear,
+    entry.startMonth,
+    entry.endYear,
+    entry.endMonth,
   );
 
   if (!isEditing) {

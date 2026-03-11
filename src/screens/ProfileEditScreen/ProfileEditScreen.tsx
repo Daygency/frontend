@@ -13,13 +13,13 @@ import { TabView } from "react-native-tab-view";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../color";
-import { getMyProfile } from "../../lib/profileApi";
+import { getMyProfile } from "../../lib/apis/portfolio/profileApi";
 import type {
   EducationEntry,
   CareerEntry,
   AwardEntry,
   CertificateEntry,
-} from "../../lib/profileApi";
+} from "../../lib/apis/portfolio/profileApi";
 import { getProfileCache, saveProfileCache } from "../../lib/profileCache";
 import { useAuth } from "../../contexts/AuthContext";
 import TopIntroductionTab from "./components/TopIntroductionTab";
@@ -61,7 +61,9 @@ const ProfileEditScreen = () => {
   const [educationList, setEducationList] = useState<EducationEntry[]>([]);
   const [careerList, setCareerList] = useState<CareerEntry[]>([]);
   const [awardList, setAwardList] = useState<AwardEntry[]>([]);
-  const [certificateList, setCertificateList] = useState<CertificateEntry[]>([]);
+  const [certificateList, setCertificateList] = useState<CertificateEntry[]>(
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -85,7 +87,9 @@ const ProfileEditScreen = () => {
       }
     });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const populateForm = (p: Awaited<ReturnType<typeof getMyProfile>>) => {

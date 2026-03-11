@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, Alert } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import { GRAY, MAIN } from "../../../color";
-import type { CertificateEntry } from "../../../lib/profileApi";
+import type { CertificateEntry } from "../../../lib/apis/portfolio/profileApi";
 import DatePickerField from "./DatePickerField";
 import styles from "../styles";
 
@@ -20,7 +20,9 @@ const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
   const date =
     entry.year && entry.month
       ? `취득 ${entry.year}.${entry.month.padStart(2, "0")}`
-      : entry.year ? `취득 ${entry.year}` : "";
+      : entry.year
+        ? `취득 ${entry.year}`
+        : "";
 
   const handlePickFile = async () => {
     try {
@@ -44,9 +46,7 @@ const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
           <Text style={styles.entryCompactDescription} numberOfLines={2}>
             {entry.description || "(내용 없음)"}
           </Text>
-          {date ? (
-            <Text style={styles.entryCompactPeriod}>{date}</Text>
-          ) : null}
+          {date ? <Text style={styles.entryCompactPeriod}>{date}</Text> : null}
           {entry.fileName ? (
             <Text
               style={[styles.entryCompactPeriod, { color: MAIN.DEFAULT }]}
@@ -110,7 +110,11 @@ const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
         onConfirm={(y, m) => onChange({ year: y, month: m })}
       />
       <Pressable style={styles.filePickerButton} onPress={handlePickFile}>
-        <MaterialCommunityIcons name="paperclip" size={16} color={MAIN.DEFAULT} />
+        <MaterialCommunityIcons
+          name="paperclip"
+          size={16}
+          color={MAIN.DEFAULT}
+        />
         <Text style={styles.filePickerText} numberOfLines={1}>
           {entry.fileName ? entry.fileName : "증명서 파일 첨부"}
         </Text>

@@ -1,7 +1,13 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE, AUTH_TOKEN_KEY } from "../lib/api";
+import { API_BASE, AUTH_TOKEN_KEY } from "../lib/apis/api";
 import { clearProfileCache } from "../lib/profileCache";
 const USER_INFO_KEY = "@daygency_user_info";
 const PENDING_SIGNUP_KEY = "@daygency_pending_signup";
@@ -26,7 +32,11 @@ type AuthContextType = {
   isLoading: boolean;
   needsRoleSelection: boolean;
   user: SocialUser | null;
-  login: (token: string, user: SocialUser, options?: { isNewUser?: boolean }) => Promise<void>;
+  login: (
+    token: string,
+    user: SocialUser,
+    options?: { isNewUser?: boolean },
+  ) => Promise<void>;
   completeSignup: (params: SignupParams) => Promise<void>;
   logout: () => Promise<void>;
   enterBrowse: () => void;
@@ -66,7 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (
     token: string,
     userInfo: SocialUser,
-    options?: { isNewUser?: boolean }
+    options?: { isNewUser?: boolean },
   ) => {
     await Promise.all([
       AsyncStorage.setItem(AUTH_TOKEN_KEY, token),
@@ -105,7 +115,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       if (!res.ok) {
         const message =
-          data?.message ?? data?.error ?? (typeof data === "string" ? data : "");
+          data?.message ??
+          data?.error ??
+          (typeof data === "string" ? data : "");
         throw new Error(message || `가입에 실패했습니다 (${res.status})`);
       }
 

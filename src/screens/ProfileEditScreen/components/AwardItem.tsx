@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
-import type { AwardEntry } from "../../../lib/profileApi";
+import type { AwardEntry } from "../../../lib/apis/portfolio/profileApi";
 import DatePickerField from "./DatePickerField";
 import styles from "../styles";
 
@@ -28,9 +28,7 @@ const AwardItem = ({ entry, onChange, onDelete }: Props) => {
           <Text style={styles.entryCompactDescription} numberOfLines={2}>
             {entry.description || "(내용 없음)"}
           </Text>
-          {date ? (
-            <Text style={styles.entryCompactPeriod}>{date}</Text>
-          ) : null}
+          {date ? <Text style={styles.entryCompactPeriod}>{date}</Text> : null}
         </View>
         <View style={styles.entryCompactActions}>
           <Pressable

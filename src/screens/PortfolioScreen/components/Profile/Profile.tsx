@@ -7,19 +7,23 @@ import {
   ActivityIndicator,
 } from "react-native";
 import styles from "./styles";
-import { FontAwesome, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import {
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../../color";
 import { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../../navigations/routes";
-import { getMyProfile } from "../../../../lib/profileApi";
+import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
 import type {
   EducationEntry,
   CareerEntry,
   AwardEntry,
   CertificateEntry,
-} from "../../../../lib/profileApi";
+} from "../../../../lib/apis/portfolio/types";
 import {
   getProfileCache,
   saveProfileCache,
@@ -77,7 +81,8 @@ const EducationSection = ({ entries }: { entries: EducationEntry[] }) => {
       {entries.map((e) => {
         const start = formatYearMonth(e.startYear, e.startMonth);
         const end = formatYearMonth(e.endYear, e.endMonth);
-        const period = start || end ? `(${start}${start && end ? " ~ " : ""}${end})` : "";
+        const period =
+          start || end ? `(${start}${start && end ? " ~ " : ""}${end})` : "";
         return (
           <View key={e.id} style={styles.entryRow}>
             <MaterialCommunityIcons
@@ -88,9 +93,7 @@ const EducationSection = ({ entries }: { entries: EducationEntry[] }) => {
             />
             <View style={styles.entryTextBlock}>
               <Text style={styles.entryDescription}>{e.description}</Text>
-              {period ? (
-                <Text style={styles.entryPeriod}>{period}</Text>
-              ) : null}
+              {period ? <Text style={styles.entryPeriod}>{period}</Text> : null}
             </View>
           </View>
         );
@@ -106,7 +109,8 @@ const CareerSection = ({ entries }: { entries: CareerEntry[] }) => {
       {entries.map((e) => {
         const start = formatYearMonth(e.startYear, e.startMonth);
         const end = formatYearMonth(e.endYear, e.endMonth);
-        const period = start || end ? `(${start}${start && end ? " ~ " : ""}${end})` : "";
+        const period =
+          start || end ? `(${start}${start && end ? " ~ " : ""}${end})` : "";
         return (
           <View key={e.id} style={styles.entryRow}>
             <MaterialCommunityIcons
@@ -117,9 +121,7 @@ const CareerSection = ({ entries }: { entries: CareerEntry[] }) => {
             />
             <View style={styles.entryTextBlock}>
               <Text style={styles.entryDescription}>{e.description}</Text>
-              {period ? (
-                <Text style={styles.entryPeriod}>{period}</Text>
-              ) : null}
+              {period ? <Text style={styles.entryPeriod}>{period}</Text> : null}
             </View>
           </View>
         );

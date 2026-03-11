@@ -6,7 +6,7 @@ import type {
   CareerEntry,
   AwardEntry,
   CertificateEntry,
-} from "../../../lib/profileApi";
+} from "../../../lib/apis/portfolio/profileApi";
 import SectionHeader from "./SectionHeader";
 import EducationItem from "./EducationItem";
 import CareerItem from "./CareerItem";
@@ -45,13 +45,13 @@ const ProfileTab = ({
   // ── 학력 ──
   const updateEducation = (id: string, updates: Partial<EducationEntry>) =>
     setEducationList(
-      educationList.map((e) => (e.id === id ? { ...e, ...updates } : e))
+      educationList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteEducation = (id: string) =>
     setEducationList(educationList.filter((e) => e.id !== id));
   const addEducation = () => {
     const hasEditing = educationList.some(
-      (e) => !e.description || !e.description.trim()
+      (e) => !e.description || !e.description.trim(),
     );
     if (hasEditing) return;
     setEducationList([
@@ -70,13 +70,13 @@ const ProfileTab = ({
   // ── 경력 ──
   const updateCareer = (id: string, updates: Partial<CareerEntry>) =>
     setCareerList(
-      careerList.map((e) => (e.id === id ? { ...e, ...updates } : e))
+      careerList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteCareer = (id: string) =>
     setCareerList(careerList.filter((e) => e.id !== id));
   const addCareer = () => {
     const hasEditing = careerList.some(
-      (e) => !e.description || !e.description.trim()
+      (e) => !e.description || !e.description.trim(),
     );
     if (hasEditing) return;
     setCareerList([
@@ -95,13 +95,13 @@ const ProfileTab = ({
   // ── 수상 ──
   const updateAward = (id: string, updates: Partial<AwardEntry>) =>
     setAwardList(
-      awardList.map((e) => (e.id === id ? { ...e, ...updates } : e))
+      awardList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteAward = (id: string) =>
     setAwardList(awardList.filter((e) => e.id !== id));
   const addAward = () => {
     const hasEditing = awardList.some(
-      (e) => !e.description || !e.description.trim()
+      (e) => !e.description || !e.description.trim(),
     );
     if (hasEditing) return;
     setAwardList([
@@ -113,13 +113,13 @@ const ProfileTab = ({
   // ── 자격증 ──
   const updateCertificate = (id: string, updates: Partial<CertificateEntry>) =>
     setCertificateList(
-      certificateList.map((e) => (e.id === id ? { ...e, ...updates } : e))
+      certificateList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteCertificate = (id: string) =>
     setCertificateList(certificateList.filter((e) => e.id !== id));
   const addCertificate = () => {
     const hasEditing = certificateList.some(
-      (e) => !e.description || !e.description.trim()
+      (e) => !e.description || !e.description.trim(),
     );
     if (hasEditing) return;
     setCertificateList([
@@ -135,12 +135,7 @@ const ProfileTab = ({
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.field}>
-        <Text
-          style={[
-            styles.label,
-            isAboutFocused && styles.labelFocused,
-          ]}
-        >
+        <Text style={[styles.label, isAboutFocused && styles.labelFocused]}>
           소개
         </Text>
         <TextInput

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Alert } from "react-native";
 import { login } from "@react-native-kakao/user";
 import { useAuth } from "../../../contexts/AuthContext";
-import { API_BASE } from "../../../lib/api";
+import { API_BASE } from "../../../lib/apis/api";
 
 export const useKakaoLogin = () => {
   const { login: authLogin } = useAuth();
@@ -43,11 +43,11 @@ export const useKakaoLogin = () => {
 
       if (!res.ok) {
         const backendMsg =
-          data?.message ?? data?.error ?? (typeof data === "string" ? data : "");
+          data?.message ??
+          data?.error ??
+          (typeof data === "string" ? data : "");
         console.error("[Kakao] 서버 에러:", res.status, data);
-        throw new Error(
-          backendMsg || `서버 인증 실패 (${res.status})`
-        );
+        throw new Error(backendMsg || `서버 인증 실패 (${res.status})`);
       }
 
       const { accessToken, user, needsSignup, isNew } = data;
