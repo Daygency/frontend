@@ -1,9 +1,13 @@
 import { StyleSheet } from "react-native";
-import { BLACK, MAIN } from "../../../../color";
-import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../../PortfolioScreen/styles";
+import { WHITE, MAIN } from "../../../color";
+import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../../components/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
-  headerContainer: {
+  container: {
+    flex: 1,
+    backgroundColor: WHITE,
+  },
+  header: {
     width: "100%",
     height: MAIN_HOME_TOP_BAR_HEIGHT,
     flexDirection: "row",
@@ -12,13 +16,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 15,
     paddingTop: 10,
-  },
-  title: {
-    marginLeft: 4,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    color: BLACK,
   },
   iconContainer: {
     flexDirection: "row",
@@ -29,7 +26,20 @@ const styles = StyleSheet.create({
     position: "relative",
     flexShrink: 0,
   },
+  content: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  filterWrapper: {},
+  filterScroll: {
+    paddingVertical: 12,
+  },
+  filterContent: {
+    flexDirection: "row",
+    paddingHorizontal: 17,
+    gap: 8,
+  },
 });
 
 export default styles;
-

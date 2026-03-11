@@ -1,5 +1,5 @@
 import { Text, View } from "react-native";
-import Tag from "../../../../components/Tag/Tag";
+import Tag from "../../../../../components/Tag/Tag";
 import styles from "./styles";
 
 interface ChatItemProps {

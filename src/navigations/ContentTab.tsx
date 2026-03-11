@@ -2,7 +2,7 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { ContentRoutes } from "./routes";
 import MainHomeScreen from "../screens/MainHomeScreen/MainHomeScreen";
 import AnnouncementScreen from "../screens/AnnouncementScreen/AnnouncementScreen";
-import ChatScreen from "../screens/ChatScreen/ChatScreen";
+import ChatScreen from "../screens/ChatScreens/ChatScreen/ChatScreen";
 import LoungeScreen from "../screens/LoungeScreen/LoungeScreen";
 import PortfolioScreen from "../screens/PortfolioScreen/PortfolioScreen";
 import {

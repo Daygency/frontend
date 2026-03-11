@@ -12,10 +12,10 @@ import {
   TextInputKeyPressEventData,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { RootRoutes } from "../../navigations/routes";
+import { RootRoutes } from "../../../navigations/routes";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
-import { GRAY, WHITE } from "../../color";
+import { GRAY, WHITE } from "../../../color";
 import styles from "./styles";
 
 export type ChatRoomParams = {

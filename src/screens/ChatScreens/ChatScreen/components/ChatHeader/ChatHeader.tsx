@@ -3,10 +3,10 @@ import { Pressable } from "react-native";
 import styles from "./styles";
 import Feather from "@expo/vector-icons/Feather";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { MAIN } from "../../../../color";
+import { MAIN } from "../../../../../color";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootRoutes } from "../../../../navigations/routes";
+import { RootRoutes } from "../../../../../navigations/routes";
 
 const ChatHeader = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();

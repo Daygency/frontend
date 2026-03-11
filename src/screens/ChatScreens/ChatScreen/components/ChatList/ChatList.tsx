@@ -2,8 +2,8 @@ import { useMemo } from "react";
 import { FlatList, Pressable, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import ChatItem from "../ChatItem/ChatItem";
-import { GRAY } from "../../../../color";
-import { RootRoutes } from "../../../../navigations/routes";
+import { GRAY } from "../../../../../color";
+import { RootRoutes } from "../../../../../navigations/routes";
 import type { ChatFilter } from "../../types";
 
 const MOCK_CHATS = [

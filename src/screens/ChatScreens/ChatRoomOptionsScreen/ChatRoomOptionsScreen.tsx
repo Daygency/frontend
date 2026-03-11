@@ -2,7 +2,7 @@ import { View, Text, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { GRAY, WHITE } from "../../color";
+import { GRAY, WHITE } from "../../../color";
 import styles from "./styles";
 
 const ChatRoomOptionsScreen = () => {
