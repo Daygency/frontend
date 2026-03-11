@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE, AUTH_TOKEN_KEY } from "../lib/api";
+import { clearProfileCache } from "../lib/profileCache";
 const USER_INFO_KEY = "@daygency_user_info";
 const PENDING_SIGNUP_KEY = "@daygency_pending_signup";
 
@@ -138,6 +139,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       AsyncStorage.removeItem(AUTH_TOKEN_KEY),
       AsyncStorage.removeItem(USER_INFO_KEY),
       AsyncStorage.removeItem(PENDING_SIGNUP_KEY),
+      clearProfileCache(),
     ]);
     setUser(null);
     setIsLoggedIn(false);

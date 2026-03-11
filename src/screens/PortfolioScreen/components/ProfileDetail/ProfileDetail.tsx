@@ -4,6 +4,10 @@ import styles from "./styles";
 import { GRAY, BLACK, MAIN } from "../../../../color";
 import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
 import { getMyProfile } from "../../../../lib/profileApi";
+import {
+  getProfileCache,
+  saveProfileCache,
+} from "../../../../lib/profileCache";
 import { useAuth } from "../../../../contexts/AuthContext";
 
 const ProfileDetail = () => {
@@ -14,12 +18,24 @@ const ProfileDetail = () => {
 
   useEffect(() => {
     let cancelled = false;
+    const apiResponded = { current: false };
+
+    getProfileCache().then((cached) => {
+      if (!cancelled && cached && !apiResponded.current) {
+        setProfile(cached);
+        setIsLoading(false);
+      }
+    });
+
     getMyProfile().then((data) => {
       if (!cancelled) {
+        apiResponded.current = true;
+        if (data) saveProfileCache(data);
         setProfile(data);
         setIsLoading(false);
       }
     });
+
     return () => {
       cancelled = true;
     };

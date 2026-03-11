@@ -14,6 +14,10 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../../navigations/routes";
 import { getMyProfile } from "../../../../lib/profileApi";
+import {
+  getProfileCache,
+  saveProfileCache,
+} from "../../../../lib/profileCache";
 import { useAuth } from "../../../../contexts/AuthContext";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -21,12 +25,16 @@ const ROLE_LABEL: Record<string, string> = {
   planner: "플래너",
 };
 
-const isValidImageUrl = (url: string | undefined): boolean =>
-  !!url?.trim() && (url.startsWith("http://") || url.startsWith("https://"));
+/** http/https URL 또는 로컬 file:// 경로 유효성 검사 */
+const isValidImageSource = (uri: string | undefined): boolean =>
+  !!uri?.trim() &&
+  (uri.startsWith("http://") ||
+    uri.startsWith("https://") ||
+    uri.startsWith("file://"));
 
-/** iOS ATS는 http 차단 → https로 변환 */
-const toHttpsImageUrl = (url: string | undefined): string | null => {
-  const trimmed = url?.trim();
+/** iOS ATS는 http 차단 → https로 변환 (file://는 그대로 반환) */
+const toDisplayImageUri = (uri: string | undefined): string | null => {
+  const trimmed = uri?.trim();
   if (!trimmed) return null;
   if (trimmed.startsWith("http://"))
     return trimmed.replace("http://", "https://");
@@ -46,8 +54,8 @@ const Profile = () => {
   const displayNickname = profile?.nickname || user?.nickname || "이름 없음";
   const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
   const displayProfileImgUrl =
-    isValidImageUrl(rawProfileImgUrl) && !imageError
-      ? toHttpsImageUrl(rawProfileImgUrl)
+    isValidImageSource(rawProfileImgUrl) && !imageError
+      ? toDisplayImageUri(rawProfileImgUrl)
       : null;
 
   console.log("[Profile] profileImgUrl:", {
@@ -63,13 +71,27 @@ const Profile = () => {
 
   useEffect(() => {
     let cancelled = false;
+    const apiResponded = { current: false };
     setImageError(false);
+
+    // 1) 캐시에서 먼저 표시 (즉시 로딩)
+    getProfileCache().then((cached) => {
+      if (!cancelled && cached && !apiResponded.current) {
+        setProfile(cached);
+        setIsLoading(false);
+      }
+    });
+
+    // 2) API에서 최신 데이터 조회 후 캐시 저장
     getMyProfile().then((data) => {
       if (!cancelled) {
+        apiResponded.current = true;
+        if (data) saveProfileCache(data);
         setProfile(data);
         setIsLoading(false);
       }
     });
+
     return () => {
       cancelled = true;
     };
