@@ -42,10 +42,16 @@ const SignupScreen = () => {
     setMarketingChecked(next);
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!allRequiredChecked) return;
-    // TODO: API 호출 - activityId, agreements, role 전송
-    completeSignup(role);
+    try {
+      await completeSignup({
+        role,
+        nickname: activityId.trim() || undefined,
+      });
+    } catch {
+      // 에러는 AuthContext에서 Alert 처리
+    }
   };
 
   return (

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Platform, Alert } from "react-native";
+import { Alert } from "react-native";
 import { login } from "@react-native-kakao/user";
 import { useAuth } from "../../../contexts/AuthContext";
+import { API_BASE } from "../../../lib/api";
 
 export const useKakaoLogin = () => {
   const { login: authLogin } = useAuth();
@@ -25,10 +26,6 @@ export const useKakaoLogin = () => {
         );
       }
 
-      const API_BASE =
-        Platform.OS === "android"
-          ? "http://10.0.2.2:3000"
-          : "http://localhost:3000";
       console.log("[Kakao] 서버로 요청 전송:", `${API_BASE}/auth/kakao`);
       const res = await fetch(`${API_BASE}/auth/kakao`, {
         method: "POST",

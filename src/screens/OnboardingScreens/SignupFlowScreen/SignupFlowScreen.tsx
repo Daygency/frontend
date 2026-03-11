@@ -61,10 +61,16 @@ const SignupFlowScreen = () => {
     setMarketingChecked(next);
   };
 
-  const handleComplete = () => {
+  const handleComplete = async () => {
     if (!allRequiredChecked) return;
-    // TODO: API 호출 - activityId, agreements, selectedRole 전송
-    completeSignup(selectedRole);
+    try {
+      await completeSignup({
+        role: selectedRole,
+        nickname: activityId.trim() || undefined,
+      });
+    } catch {
+      // 에러는 AuthContext에서 Alert 처리
+    }
   };
 
   const goToStep2 = (role: UserRole) => {

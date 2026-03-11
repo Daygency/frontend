@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE } from "../lib/api";
 
 const AUTH_TOKEN_KEY = "@daygency_auth_token";
 const USER_INFO_KEY = "@daygency_user_info";
@@ -14,6 +16,11 @@ export type SocialUser = {
 
 export type UserRole = "artist" | "planner";
 
+export type SignupParams = {
+  role: UserRole;
+  nickname?: string; // 미입력 시 소셜 프로필 값 사용
+};
+
 type AuthContextType = {
   isLoggedIn: boolean;
   isBrowsing: boolean;
@@ -21,7 +28,7 @@ type AuthContextType = {
   needsRoleSelection: boolean;
   user: SocialUser | null;
   login: (token: string, user: SocialUser, options?: { isNewUser?: boolean }) => Promise<void>;
-  completeSignup: (role: UserRole) => Promise<void>;
+  completeSignup: (params: SignupParams) => Promise<void>;
   logout: () => Promise<void>;
   enterBrowse: () => void;
 };
@@ -75,14 +82,56 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  const completeSignup = async (role: UserRole) => {
+  const completeSignup = async (params: SignupParams) => {
+    const { role, nickname } = params;
     try {
+      const accessToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      if (!accessToken) {
+        throw new Error("로그인 정보가 없습니다. 다시 로그인해 주세요.");
+      }
+
+      const body: { accessToken: string; nickname?: string; role?: string } = {
+        accessToken,
+        role,
+      };
+      if (nickname?.trim()) body.nickname = nickname.trim();
+
+      const res = await fetch(`${API_BASE}/auth/signup/kakao`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        const message =
+          data?.message ?? data?.error ?? (typeof data === "string" ? data : "");
+        throw new Error(message || `가입에 실패했습니다 (${res.status})`);
+      }
+
+      // 토큰 발급 시 새 토큰으로 갱신
+      if (data.accessToken) {
+        await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
+      }
+      if (data.user) {
+        const u = data.user;
+        const userInfo: SocialUser = {
+          socialId: String(u.userId ?? u.socialId ?? ""),
+          nickname: String(u.nickname ?? ""),
+          email: String(u.email ?? ""),
+          profileImgUrl: String(u.profileImgUrl ?? ""),
+        };
+        await AsyncStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo));
+        setUser(userInfo);
+      }
+
       await AsyncStorage.removeItem(PENDING_SIGNUP_KEY);
       setNeedsRoleSelection(false);
-      // TODO: 서버에 role 전송 (프로필 생성 API 호출)
-      // await fetch(.../auth/complete-signup, { body: { role } });
-    } catch {
-      // ignore
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      Alert.alert("가입 실패", message);
+      throw error;
     }
   };
 
