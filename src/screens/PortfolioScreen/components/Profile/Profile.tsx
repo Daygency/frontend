@@ -280,9 +280,10 @@ const Profile = () => {
     );
   }
 
-  const roleLabel = profile?.role
-    ? (ROLE_LABEL[profile.role] ?? profile.role)
-    : "";
+  const roleLabel =
+    profile?.role && profile.role !== "user"
+      ? ROLE_LABEL[profile.role] ?? profile.role
+      : "";
 
   const educationEntries = profile?.educationEntries ?? [];
   const careerEntries = profile?.careerEntries ?? [];
