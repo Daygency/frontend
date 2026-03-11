@@ -3,7 +3,7 @@ import { ScrollView, Text, View, StyleSheet, Image } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import ShadowCardList from "../../components/ShadowCardList/ShadowCardList";
 import { GRAY } from "../../color";
-import type { InquiryItem } from "../CustomerServiceScreen/components/InquiryHistoryItem";
+import type { InquiryItem } from "../SettingsScreens/CustomerServiceScreen/components/InquiryHistoryItem";
 
 export type InquiryDetailParams = {
   inquiry: InquiryItem;

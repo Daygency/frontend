@@ -2,28 +2,29 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 import ContentTab from "./ContentTab";
-import SocialLoginScreen from "../screens/SocialLoginScreen/SocialLoginScreen";
-import SplashScreenView from "../components/SplashScreen/SplashScreen";
+import SocialLoginScreen from "../screens/OnboardingScreens/SocialLoginScreen/SocialLoginScreen";
+import SignupFlowScreen from "../screens/OnboardingScreens/SignupFlowScreen/SignupFlowScreen";
+import SplashScreenView from "../screens/OnboardingScreens/SplashScreen/SplashScreen";
 import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
 import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
 import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
 import CommunityDetailScreen from "../screens/CommunityDetailScreen";
 import CommunityRegistrationScreen from "../screens/CommunityRegistrationScreen";
 import SettingsScreen from "../screens/SettingsScreen/SettingsScreen";
-import MyInfoScreen from "../screens/MyInfoScreen/MyInfoScreen";
-import MyActivityScreen from "../screens/MyActivityScreen/MyActivityScreen";
+import MyInfoScreen from "../screens/SettingsScreens/MyInfoScreen/MyInfoScreen";
+import MyActivityScreen from "../screens/SettingsScreens/MyActivityScreen/MyActivityScreen";
 import MyActivityListScreen from "../screens/MyActivityListScreen/MyActivityListScreen";
 import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActivityNewsListScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
-import NotificationSettingsScreen from "../screens/NotificationSettingsScreen/NotificationSettingsScreen";
-import MyDataArchiveScreen from "../screens/MyDataArchiveScreen/MyDataArchiveScreen";
-import CustomerServiceScreen from "../screens/CustomerServiceScreen/CustomerServiceScreen";
+import NotificationSettingsScreen from "../screens/SettingsScreens/NotificationSettingsScreen/NotificationSettingsScreen";
+import MyDataArchiveScreen from "../screens/SettingsScreens/MyDataArchiveScreen/MyDataArchiveScreen";
+import CustomerServiceScreen from "../screens/SettingsScreens/CustomerServiceScreen/CustomerServiceScreen";
 import InquiryScreen from "../screens/InquiryScreen/InquiryScreen";
 import InquiryDetailScreen from "../screens/InquiryDetailScreen/InquiryDetailScreen";
-import AccountScreen from "../screens/AccountScreen/AccountScreen";
+import AccountScreen from "../screens/SettingsScreens/AccountScreen/AccountScreen";
 import WithdrawConfirmScreen from "../screens/WithdrawConfirmScreen/WithdrawConfirmScreen";
-import ChatRoomScreen from "../screens/ChatRoomScreen/ChatRoomScreen";
-import ChatRoomOptionsScreen from "../screens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
+import ChatRoomScreen from "../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
+import ChatRoomOptionsScreen from "../screens/ChatScreens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -33,10 +34,18 @@ import styles from "./styles";
 const Stack = createNativeStackNavigator();
 
 const Navigation = () => {
-  const { isLoggedIn, isBrowsing, isLoading } = useAuth();
+  const { isLoggedIn, isBrowsing, isLoading, needsRoleSelection } = useAuth();
 
   if (isLoading) {
     return <SplashScreenView />;
+  }
+
+  if (isLoggedIn && needsRoleSelection) {
+    return (
+      <NavigationContainer>
+        <SignupFlowScreen />
+      </NavigationContainer>
+    );
   }
 
   if (!isLoggedIn && !isBrowsing) {

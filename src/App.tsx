@@ -5,7 +5,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { initializeKakaoSDK } from "@react-native-kakao/core";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navigation from "./navigations/Navigation";
-import SplashScreenView from "./components/SplashScreen/SplashScreen";
+import SplashScreenView from "./screens/OnboardingScreens/SplashScreen/SplashScreen";
 
 SplashScreen.preventAutoHideAsync();
 
