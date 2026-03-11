@@ -1,9 +1,49 @@
-import { View, Text, ScrollView } from "react-native";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { useState, useEffect } from "react";
 import styles from "./styles";
-import { GRAY, BLACK } from "../../../../color";
+import { GRAY, BLACK, MAIN } from "../../../../color";
 import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
+import { getMyProfile } from "../../../../lib/profileApi";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 const ProfileDetail = () => {
+  const { user } = useAuth();
+  const [profile, setProfile] =
+    useState<Awaited<ReturnType<typeof getMyProfile>>>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMyProfile().then((data) => {
+      if (!cancelled) {
+        setProfile(data);
+        setIsLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.contentContainer,
+          { justifyContent: "center", alignItems: "center", minHeight: 200 },
+        ]}
+      >
+        <ActivityIndicator size="small" color={MAIN.DEFAULT} />
+      </View>
+    );
+  }
+
+  const aboutMe = profile?.aboutMe?.trim() || "소개가 없습니다.";
+  const email = profile?.contact?.email ?? user?.email ?? "";
+  const phoneNumber = profile?.contact?.phoneNumber ?? "";
+  const hasContact = email || phoneNumber;
+
   return (
     <ScrollView
       style={styles.container}
@@ -19,10 +59,7 @@ const ProfileDetail = () => {
         }}
       >
         <Text style={styles.sectionTitle}>소개</Text>
-        <Text style={styles.sectionContent}>
-          안녕하세요. 저는 클래식 피아니스트입니다. 다양한 공연 활동을 통해
-          음악을 사랑하는 분들과 소통하고 있습니다.
-        </Text>
+        <Text style={styles.sectionContent}>{aboutMe}</Text>
       </ShadowCardButton>
 
       <ShadowCardButton
@@ -35,14 +72,9 @@ const ProfileDetail = () => {
         }}
       >
         <Text style={styles.sectionTitle}>학력</Text>
-        <View style={styles.listItem}>
-          <Text style={styles.listItemText}>
-            • 서울대학교 음악대학 피아노과 졸업
-          </Text>
-        </View>
-        <View style={styles.listItem}>
-          <Text style={styles.listItemText}>• 독일 베를린 예술대학 석사</Text>
-        </View>
+        <Text style={styles.sectionContent}>
+          {profile?.education?.trim() || "정보가 없습니다."}
+        </Text>
       </ShadowCardButton>
 
       <ShadowCardButton
@@ -55,16 +87,9 @@ const ProfileDetail = () => {
         }}
       >
         <Text style={styles.sectionTitle}>경력</Text>
-        <View style={styles.listItem}>
-          <Text style={styles.listItemText}>
-            • 2020년 - 현재: 프리랜서 피아니스트
-          </Text>
-        </View>
-        <View style={styles.listItem}>
-          <Text style={styles.listItemText}>
-            • 2018년 - 2020년: 서울심포니 오케스트라 객원 연주자
-          </Text>
-        </View>
+        <Text style={styles.sectionContent}>
+          {profile?.career?.trim() || "정보가 없습니다."}
+        </Text>
       </ShadowCardButton>
 
       <ShadowCardButton
@@ -77,16 +102,9 @@ const ProfileDetail = () => {
         }}
       >
         <Text style={styles.sectionTitle}>수상 경력</Text>
-        <View style={styles.listItem}>
-          <Text style={styles.listItemText}>
-            • 2019년 국제 피아노 콩쿠르 1등
-          </Text>
-        </View>
-        <View style={styles.listItem}>
-          <Text style={styles.listItemText}>
-            • 2017년 청소년 음악 콩쿠르 최우수상
-          </Text>
-        </View>
+        <Text style={styles.sectionContent}>
+          {profile?.awards?.trim() || "정보가 없습니다."}
+        </Text>
       </ShadowCardButton>
 
       <ShadowCardButton
@@ -99,8 +117,18 @@ const ProfileDetail = () => {
         }}
       >
         <Text style={styles.sectionTitle}>연락처</Text>
-        <Text style={styles.sectionContent}>Email: artist@example.com</Text>
-        <Text style={styles.sectionContent}>Phone: 010-1234-5678</Text>
+        {hasContact ? (
+          <>
+            {email ? (
+              <Text style={styles.sectionContent}>Email: {email}</Text>
+            ) : null}
+            {phoneNumber ? (
+              <Text style={styles.sectionContent}>Phone: {phoneNumber}</Text>
+            ) : null}
+          </>
+        ) : (
+          <Text style={styles.sectionContent}>연락처 정보가 없습니다.</Text>
+        )}
       </ShadowCardButton>
     </ScrollView>
   );

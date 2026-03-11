@@ -38,6 +38,12 @@ const styles = StyleSheet.create({
     backgroundColor: GRAY.MEDIUM,
     justifyContent: "center",
     alignItems: "center",
+    overflow: "hidden",
+  },
+  profileImage: {
+    width: 95,
+    height: 95,
+    borderRadius: 50,
   },
   profileInfoContainer: {
     flex: 1,
