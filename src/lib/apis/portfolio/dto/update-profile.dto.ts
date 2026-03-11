@@ -1,19 +1,19 @@
 import { UserRole } from "../types";
 
 export type Education = {
-  discription: string;
+  description: string;
   startedAt: Date;
   endedAt: Date;
 };
 
 export type Career = {
-  discription: string;
+  description: string;
   startedAt: Date;
   endedAt: Date;
 };
 
 export type Award = {
-  discription: string;
+  description: string;
   awardedAt: Date;
 };
 
@@ -23,20 +23,22 @@ export type Certificate = {
 };
 
 export type ProfileUpdateRequestDto = {
-  nickname: string;
-  activityName: string;
-  aboutMe: string;
-  selfIntroduction: string;
-  role: UserRole;
-  email: string;
-  phoneNumber: string;
-  artTempo: number;
-  profileImgUrl: string;
-  isEmailSubscribed: boolean;
-  isPushEnabled: boolean;
-  socialId: string;
-  educations: Education[];
-  careers: Career[];
-  awards: Award[];
-  certificates: Certificate[];
+  nickname?: string;
+  activityName?: string;
+  aboutMe?: string;
+  selfIntroduction?: string;
+  role?: UserRole;
+  email?: string;
+  phoneNumber?: string;
+  artTempo?: number;
+  profileImgUrl?: string;
+  isEmailSubscribed?: boolean;
+  isPushEnabled?: boolean;
+  socialId?: string;
+  educations?: Education[];
+  careers?: Career[];
+  awards?: Award[];
+  majorId?: number | null;
+  majorDetail?: string;
+  certificates?: Certificate[];
 };

@@ -8,6 +8,11 @@ export async function updateProfile(
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
   if (!token) return null;
 
+  console.log(
+    "[updateProfile] 요청 payload:",
+    JSON.stringify(profile, null, 2),
+  );
+
   const response = await fetch(`${API_BASE}/users/profile/my`, {
     method: "PATCH",
     headers: {
@@ -15,9 +20,21 @@ export async function updateProfile(
       "Content-Type": "application/json",
     },
     body: JSON.stringify(profile),
+  }).catch((error) => {
+    console.log("[updateProfile] fetch 에러:", error);
+    throw error;
   });
 
-  if (!response.ok) return null;
+  if (!response.ok) {
+    const errorText = await response.text().catch(() => "");
+    console.log(
+      "[updateProfile] 실패 status:",
+      response.status,
+      "body:",
+      errorText,
+    );
+    return null;
+  }
 
   const data = await response.json().catch(() => null);
   if (!data) return null;

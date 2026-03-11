@@ -41,6 +41,8 @@ export type ProfileResponseDto = {
   role: UserRole;
   aboutMe: string;
   selfIntroduction?: string;
+  major?: string;
+  majorDetail?: string;
   education: string | null;
   career: string | null;
   awards: string | null;

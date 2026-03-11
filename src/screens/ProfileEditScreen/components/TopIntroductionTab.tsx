@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
 import styles from "../styles";
+import { MAJOR_OPTIONS } from "../../../constants/majors";
 import OneLineTextInput from "../../../components/OneLineTextInput/OneLineTextInput";
 
 type Props = {
@@ -14,23 +15,13 @@ type Props = {
   originalActivityName: string;
   aboutMe: string;
   setAboutMe: (v: string) => void;
+  majorId: number | null;
+  setMajorId: (id: number | null) => void;
+  major: string;
+  setMajor: (v: string) => void;
+  majorDetail: string;
+  setMajorDetail: (v: string) => void;
 };
-
-const MAJOR_OPTIONS = [
-  "건반악기",
-  "현악",
-  "관악",
-  "성악",
-  "타악",
-  "작곡",
-  "지휘",
-  "음악학",
-  "국악",
-  "무용",
-  "실용",
-  "뮤지컬·크로스오버",
-  "기타",
-] as const;
 
 const TopIntroductionTab = ({
   nickname,
@@ -40,6 +31,12 @@ const TopIntroductionTab = ({
   originalActivityName,
   aboutMe,
   setAboutMe,
+  majorId,
+  setMajorId,
+  major,
+  setMajor,
+  majorDetail,
+  setMajorDetail,
 }: Props) => {
   const [isNameFocused, setIsNameFocused] = React.useState(false);
   const [isActivityNameFocused, setIsActivityNameFocused] =
@@ -55,9 +52,15 @@ const TopIntroductionTab = ({
     React.useState<string>("");
 
   const [isMajorListOpen, setIsMajorListOpen] = React.useState(false);
-  const [selectedMajor, setSelectedMajor] = React.useState<string>("");
-  const [customMajor, setCustomMajor] = React.useState<string>("");
-  const [detailMajor, setDetailMajor] = React.useState<string>("");
+  const [selectedMajorId, setSelectedMajorId] = React.useState<number | null>(
+    majorId ?? null,
+  );
+  const [customMajor, setCustomMajor] = React.useState<string>(
+    major &&
+      !MAJOR_OPTIONS.some((option) => option.label === major)
+      ? major
+      : "",
+  );
 
   const [isCustomMajorFocused, setIsCustomMajorFocused] = React.useState(false);
   const [isDetailMajorFocused, setIsDetailMajorFocused] = React.useState(false);
@@ -95,9 +98,18 @@ const TopIntroductionTab = ({
     return GRAY.DARK_2;
   };
 
-  const handleSelectMajor = (major: (typeof MAJOR_OPTIONS)[number]) => {
-    setSelectedMajor(major);
-    if (major !== "기타") {
+  const selectedMajorOption =
+    selectedMajorId == null
+      ? undefined
+      : MAJOR_OPTIONS.find((option) => option.id === selectedMajorId);
+
+  const handleSelectMajor = (
+    option: (typeof MAJOR_OPTIONS)[number],
+  ) => {
+    setSelectedMajorId(option.id);
+    setMajorId(option.id);
+    setMajor(option.label === "기타" ? "" : option.label);
+    if (option.label !== "기타") {
       setCustomMajor("");
     }
     setIsMajorListOpen(false);
@@ -203,9 +215,9 @@ const TopIntroductionTab = ({
           onPress={() => setIsMajorListOpen((prev) => !prev)}
         >
           <Text style={styles.placeholder}>
-            {selectedMajor && selectedMajor !== "기타"
-              ? selectedMajor
-              : selectedMajor === "기타" && customMajor.trim()
+            {selectedMajorOption && selectedMajorOption.label !== "기타"
+              ? selectedMajorOption.label
+              : selectedMajorOption?.label === "기타" && customMajor.trim()
                 ? customMajor.trim()
                 : "전공을 선택하세요"}
           </Text>
@@ -231,10 +243,10 @@ const TopIntroductionTab = ({
               nestedScrollEnabled
               showsVerticalScrollIndicator
             >
-              {MAJOR_OPTIONS.map((major, index) => (
+              {MAJOR_OPTIONS.map((option, index) => (
                 <Pressable
-                  key={major}
-                  onPress={() => handleSelectMajor(major)}
+                  key={option.id}
+                  onPress={() => handleSelectMajor(option)}
                   style={{
                     paddingHorizontal: 12,
                     paddingVertical: 10,
@@ -250,14 +262,14 @@ const TopIntroductionTab = ({
                     style={{
                       fontSize: 14,
                       color:
-                        selectedMajor === major
+                        selectedMajorId === option.id
                           ? GRAY.DARK_100
                           : GRAY.DARK_2,
                     }}
                   >
-                    {major}
+                    {option.label}
                   </Text>
-                  {selectedMajor === major && (
+                  {selectedMajorId === option.id && (
                     <MaterialCommunityIcons
                       name="check"
                       size={18}
@@ -269,7 +281,7 @@ const TopIntroductionTab = ({
             </ScrollView>
           </View>
         )}
-        {selectedMajor === "기타" && (
+        {selectedMajorOption?.label === "기타" && (
           <TextInput
             style={[
               styles.input,
@@ -278,7 +290,10 @@ const TopIntroductionTab = ({
               isCustomMajorFocused && styles.inputFocused,
             ]}
             value={customMajor}
-            onChangeText={setCustomMajor}
+            onChangeText={(text) => {
+              setCustomMajor(text);
+              setMajor(text);
+            }}
             placeholder="전공을 직접 입력하세요"
             placeholderTextColor={GRAY.DARK_2}
             onFocus={() => setIsCustomMajorFocused(true)}
@@ -289,11 +304,11 @@ const TopIntroductionTab = ({
           style={[
             styles.input,
             styles.singleLineInput,
-            selectedMajor === "기타" && { marginTop: 16 },
+            selectedMajorOption?.label === "기타" && { marginTop: 16 },
             isDetailMajorFocused && styles.inputFocused,
           ]}
-          value={detailMajor}
-          onChangeText={setDetailMajor}
+          value={majorDetail}
+          onChangeText={setMajorDetail}
           placeholder="세부 전공을 입력하세요"
           placeholderTextColor={GRAY.DARK_2}
           onFocus={() => setIsDetailMajorFocused(true)}

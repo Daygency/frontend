@@ -26,6 +26,7 @@ import { useAuth } from "../../contexts/AuthContext";
 import { updateProfile } from "../../lib/apis/portfolio/profileUpdate";
 import type { ProfileUpdateRequestDto } from "../../lib/apis/portfolio/dto/update-profile.dto";
 import { isDupActivityName } from "../../lib/apis/portfolio/IsDupActivityName";
+import { MAJOR_OPTIONS } from "../../constants/majors";
 import TopIntroductionTab from "./components/TopIntroductionTab";
 import ProfileTab from "./components/ProfileTab";
 import styles from "./styles";
@@ -64,6 +65,9 @@ const ProfileEditScreen = () => {
   const [originalActivityName, setOriginalActivityName] = useState("");
   const [aboutMe, setAboutMe] = useState("");
   const [selfIntroduction, setSelfIntroduction] = useState("");
+  const [majorId, setMajorId] = useState<number | null>(null);
+  const [major, setMajor] = useState<string>("");
+  const [majorDetail, setMajorDetail] = useState<string>("");
   const [educationList, setEducationList] = useState<EducationEntry[]>([]);
   const [careerList, setCareerList] = useState<CareerEntry[]>([]);
   const [awardList, setAwardList] = useState<AwardEntry[]>([]);
@@ -111,6 +115,23 @@ const ProfileEditScreen = () => {
     setOriginalActivityName(initialActivityName);
     setAboutMe(p.aboutMe || "");
     setSelfIntroduction((p as any).selfIntroduction || "");
+
+    const backendMajorId = (p as any).majorId as number | undefined;
+    if (typeof backendMajorId === "number") {
+      setMajorId(backendMajorId);
+      const matchedOption = MAJOR_OPTIONS.find(
+        (option) => option.id === backendMajorId,
+      );
+      setMajor(matchedOption?.label || ((p as any).major as string) || "");
+    } else {
+      const majorName = ((p as any).major as string) || "";
+      setMajor(majorName);
+      const matchedOption = MAJOR_OPTIONS.find(
+        (option) => option.label === majorName,
+      );
+      setMajorId(matchedOption?.id ?? null);
+    }
+    setMajorDetail(((p as any).majorDetail as string) || "");
     setEducationList(p.educationEntries ?? []);
     setCareerList(p.careerEntries ?? []);
     setAwardList(p.awardEntries ?? []);
@@ -159,6 +180,12 @@ const ProfileEditScreen = () => {
           originalActivityName={originalActivityName}
           aboutMe={aboutMe}
           setAboutMe={setAboutMe}
+          majorId={majorId}
+          setMajorId={setMajorId}
+          major={major}
+          setMajor={setMajor}
+          majorDetail={majorDetail}
+          setMajorDetail={setMajorDetail}
         />
       );
     }
@@ -189,6 +216,9 @@ const ProfileEditScreen = () => {
       activityName,
       aboutMe,
       selfIntroduction,
+      majorId,
+      major,
+      majorDetail,
       educationEntries: educationList,
       careerEntries: careerList,
       awardEntries: awardList,
@@ -212,7 +242,42 @@ const ProfileEditScreen = () => {
 
     const current: any = profile;
 
-    return {
+    const basePayload: ProfileUpdateRequestDto = {
+      nickname: current.nickname,
+      activityName: current.activityName,
+      aboutMe: current.aboutMe,
+      selfIntroduction: (current as any).selfIntroduction,
+      role: current.role,
+      email: current.contact?.email,
+      phoneNumber: current.contact?.phoneNumber,
+      artTempo: current.artTempo,
+      profileImgUrl: current.profileImgUrl,
+      isEmailSubscribed: current.isEmailSubscribed,
+      isPushEnabled: current.isPushEnabled,
+      socialId: current.socialId,
+      educations: (current.educationEntries ?? []).map((e: any) => ({
+        discription: e.description,
+        startedAt: toDate(e.startYear, e.startMonth),
+        endedAt: toDate(e.endYear, e.endMonth),
+      })),
+      careers: (current.careerEntries ?? []).map((c: any) => ({
+        discription: c.description,
+        startedAt: toDate(c.startYear, c.startMonth),
+        endedAt: toDate(c.endYear, c.endMonth),
+      })),
+      awards: (current.awardEntries ?? []).map((a: any) => ({
+        discription: a.description,
+        awardedAt: toDate(a.year, a.month),
+      })),
+      majorId: (current as any).majorId ?? null,
+      majorDetail: (current as any).majorDetail,
+      certificates: (current.certificateEntries ?? []).map((c: any) => ({
+        description: c.description,
+        obtainedAt: toDate(c.year, c.month),
+      })),
+    };
+
+    const fullPayload: ProfileUpdateRequestDto = {
       nickname,
       activityName,
       aboutMe,
@@ -228,29 +293,79 @@ const ProfileEditScreen = () => {
       isPushEnabled: current.isPushEnabled ?? false,
       socialId: current.socialId ?? "",
       educations: educationList.map((e) => ({
-        discription: e.description,
+        description: e.description,
         startedAt: toDate(e.startYear, e.startMonth),
         endedAt: toDate(e.endYear, e.endMonth),
       })),
       careers: careerList.map((c) => ({
-        discription: c.description,
+        description: c.description,
         startedAt: toDate(c.startYear, c.startMonth),
         endedAt: toDate(c.endYear, c.endMonth),
       })),
       awards: awardList.map((a) => ({
-        discription: a.description,
+        description: a.description,
         awardedAt: toDate(a.year, a.month),
       })),
+      majorId: majorId ?? null,
+      majorDetail,
       certificates: certificateList.map((c) => ({
         description: c.description,
         obtainedAt: toDate(c.year, c.month),
       })),
     };
+
+    const diff: ProfileUpdateRequestDto = {};
+
+    (Object.keys(fullPayload) as (keyof ProfileUpdateRequestDto)[]).forEach(
+      (key) => {
+        const nextValue = fullPayload[key];
+        const prevValue = basePayload[key];
+
+        const bothUndefined =
+          typeof nextValue === "undefined" && typeof prevValue === "undefined";
+        if (bothUndefined) return;
+
+        const isComplex =
+          nextValue instanceof Date ||
+          prevValue instanceof Date ||
+          Array.isArray(nextValue) ||
+          Array.isArray(prevValue) ||
+          (typeof nextValue === "object" && nextValue !== null) ||
+          (typeof prevValue === "object" && prevValue !== null);
+
+        const isEqual = isComplex
+          ? JSON.stringify(nextValue) === JSON.stringify(prevValue)
+          : nextValue === prevValue;
+
+        if (!isEqual) {
+          (diff as any)[key] = nextValue;
+        }
+      },
+    );
+
+    if (Object.keys(diff).length === 0) {
+      return null;
+    }
+
+    return diff;
   };
 
   const handleComplete = async () => {
-    if (activityName.trim()) {
-      const isDup = await isDupActivityName(activityName.trim());
+    console.log("[ProfileEditScreen] handleComplete pressed", {
+      submitting,
+      activityName,
+      originalActivityName,
+    });
+
+    const trimmedActivityName = activityName.trim();
+    const trimmedOriginalActivityName = originalActivityName.trim();
+
+    // 활동 아이디를 변경했을 때만 중복 검사
+    if (
+      trimmedActivityName &&
+      trimmedActivityName !== trimmedOriginalActivityName
+    ) {
+      const isDup = await isDupActivityName(trimmedActivityName);
       if (isDup) {
         Alert.alert(
           "활동 아이디 중복",
@@ -262,6 +377,13 @@ const ProfileEditScreen = () => {
 
     const payload = buildUpdatePayload();
     if (!payload || submitting) {
+      console.log(
+        "[ProfileEditScreen] early return (no payload or submitting)",
+        {
+          hasPayload: !!payload,
+          submitting,
+        },
+      );
       await persistToCache();
       navigation.goBack();
       return;
@@ -269,9 +391,28 @@ const ProfileEditScreen = () => {
 
     try {
       setSubmitting(true);
+      console.log(
+        "[ProfileEditScreen] update payload:",
+        JSON.stringify(payload),
+      );
       const updated = await updateProfile(payload);
       if (updated) {
-        await saveProfileCache(updated);
+        const updatedProfileForCache: any = {
+          ...(profile as any),
+          ...(updated as any),
+          nickname,
+          activityName,
+          aboutMe,
+          selfIntroduction,
+          majorId,
+          major,
+          majorDetail,
+          educationEntries: educationList,
+          careerEntries: careerList,
+          awardEntries: awardList,
+          certificateEntries: certificateList,
+        };
+        await saveProfileCache(updatedProfileForCache);
       } else {
         await persistToCache();
       }
