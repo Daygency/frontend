@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Platform, Alert } from "react-native";
 import { login } from "@react-native-kakao/user";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../../contexts/AuthContext";
 
 export const useKakaoLogin = () => {
   const { login: authLogin } = useAuth();

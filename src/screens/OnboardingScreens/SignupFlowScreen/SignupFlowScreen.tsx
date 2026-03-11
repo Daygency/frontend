@@ -14,11 +14,11 @@ import Animated, {
 } from "react-native-reanimated";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import ArtistIcon from "../../components/ArtistIcon/ArtistIcon";
-import AgencyIcon from "../../components/AgencyIcon/AgencyIcon";
-import SignupFlowProgress from "../../components/SignupFlowProgress/SignupFlowProgress";
-import { useAuth } from "../../contexts/AuthContext";
-import { MAIN, GRAY, WHITE } from "../../color";
+import ArtistIcon from "../../../components/ArtistIcon/ArtistIcon";
+import AgencyIcon from "../../../components/AgencyIcon/AgencyIcon";
+import SignupFlowProgress from "../../../components/SignupFlowProgress/SignupFlowProgress";
+import { useAuth } from "../../../contexts/AuthContext";
+import { MAIN, GRAY, WHITE } from "../../../color";
 import { styles } from "./styles";
 import { styles as roleSelectionStyles } from "../RoleSelectionScreen/styles";
 

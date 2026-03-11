@@ -1,49 +1,17 @@
 import { StyleSheet } from "react-native";
-import { WHITE, MAIN, GRAY } from "../../color";
+import { WHITE, MAIN, GRAY } from "../../../color";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: WHITE,
   },
-  sliderWrapper: {
+  scrollView: {
     flex: 1,
-    overflow: "hidden",
   },
-  sliderTrack: {
-    flexDirection: "row",
-  },
-  slidePage: {
-    flexGrow: 0,
-    flexShrink: 0,
-  },
-  formPage: {
-    flexDirection: "column",
-    justifyContent: "space-between",
-    alignSelf: "stretch",
-  },
-  formScroll: {
-    flexGrow: 1,
-  },
-  formContent: {
-    flexGrow: 1,
+  contentContainer: {
     paddingHorizontal: 24,
-    paddingTop: 24,
     paddingBottom: 24,
-  },
-  headerRow: {
-    position: "relative",
-  },
-  backButton: {
-    position: "absolute",
-    right: 16,
-    top: 8,
-    zIndex: 1,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 24,
   },
   heading1: {
     fontSize: 22,
@@ -99,16 +67,13 @@ export const styles = StyleSheet.create({
     fontSize: 15,
     color: MAIN.DEFAULT,
   },
-  agreementItemUnchecked: {
-    color: GRAY.DARK_2,
-  },
   agreementOptional: {
     color: GRAY.DARK_2,
   },
   buttonContainer: {
-    flexShrink: 0,
     paddingHorizontal: 24,
-    paddingTop: 24,
+    paddingVertical: 24,
+    paddingBottom: 34,
   },
   completeButton: {
     backgroundColor: MAIN.DEFAULT,

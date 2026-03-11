@@ -3,8 +3,8 @@ import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useAuth } from "../../contexts/AuthContext";
-import { MAIN, GRAY, WHITE } from "../../color";
+import { useAuth } from "../../../contexts/AuthContext";
+import { MAIN, GRAY, WHITE } from "../../../color";
 import { styles } from "./styles";
 
 type SignupRouteParams = {

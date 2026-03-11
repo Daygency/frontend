@@ -1,7 +1,7 @@
 import { View, Text, Pressable, ScrollView, Image, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useAuth } from "../../contexts/AuthContext";
+import { useAuth } from "../../../contexts/AuthContext";
 import { useKakaoLogin } from "./useKakaoLogin";
 import { styles } from "./styles";
 
@@ -39,7 +39,7 @@ const SocialLoginScreen = () => {
     >
       <View style={styles.logoWrap}>
         <Image
-          source={require("../../../assets/logo.png")}
+          source={require("../../../../assets/logo.png")}
           style={styles.logo}
           resizeMode="contain"
         />

@@ -1,11 +1,11 @@
 import { StyleSheet, View, Image } from "react-native";
-import { WHITE } from "../../color";
+import { WHITE } from "../../../color";
 
 const SplashScreenView = () => {
   return (
     <View style={styles.container}>
       <Image
-        source={require("../../../assets/logo.png")}
+        source={require("../../../../assets/logo.png")}
         style={styles.logo}
         resizeMode="contain"
       />

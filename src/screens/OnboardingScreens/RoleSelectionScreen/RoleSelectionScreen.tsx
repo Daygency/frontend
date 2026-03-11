@@ -1,10 +1,10 @@
 import { View, Text, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
-import ArtistIcon from "../../components/ArtistIcon/ArtistIcon";
-import AgencyIcon from "../../components/AgencyIcon/AgencyIcon";
+import ArtistIcon from "../../../components/ArtistIcon/ArtistIcon";
+import AgencyIcon from "../../../components/AgencyIcon/AgencyIcon";
 import { styles } from "./styles";
-import { RootRoutes } from "../../navigations/routes";
+import { RootRoutes } from "../../../navigations/routes";
 
 export type UserRole = "artist" | "planner";
 
