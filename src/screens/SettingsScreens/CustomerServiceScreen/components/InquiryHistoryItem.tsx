@@ -3,8 +3,8 @@ import { Pressable, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { GRAY } from "../../../color";
-import { RootRoutes } from "../../../navigations/routes";
+import { GRAY } from "../../../../color";
+import { RootRoutes } from "../../../../navigations/routes";
 import styles from "../inquiryHistoryItemStyles";
 
 export interface InquiryItem {

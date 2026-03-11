@@ -2,11 +2,11 @@ import { useState } from "react";
 import { ScrollView, View, Text, StyleSheet } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import Section from "../../../components/Section/Section";
-import { RootRoutes } from "../../../navigations/routes";
-import ImageScrollView from "../../../components/ImageScrollView/ImageScrollView";
-import CommunityCard from "../../LoungeScreen/components/CommunityCard";
-import SelectableTag from "../../../components/SelectableTag/SelectableTag";
+import Section from "../../../../components/Section/Section";
+import { RootRoutes } from "../../../../navigations/routes";
+import ImageScrollView from "../../../../components/ImageScrollView/ImageScrollView";
+import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
+import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
 import styles from "../styles";
 
 type FilterOption = "작성글" | "댓글";

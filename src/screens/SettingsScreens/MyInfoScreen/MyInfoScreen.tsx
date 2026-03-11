@@ -2,9 +2,9 @@ import React from "react";
 import { ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import ShadowCardList, { ShadowCardListItem } from "../../components/ShadowCardList/ShadowCardList";
+import ShadowCardList, { ShadowCardListItem } from "../../../components/ShadowCardList/ShadowCardList";
 import styles from "./styles";
-import { RootRoutes } from "../../navigations/routes";
+import { RootRoutes } from "../../../navigations/routes";
 
 const ORIGINAL_NAME = "김연주";
 

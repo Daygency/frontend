@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from "react";
 import { ScrollView, Text, View } from "react-native";
-import SelectableTag from "../../../components/SelectableTag/SelectableTag";
-import ShadowCardList from "../../../components/ShadowCardList/ShadowCardList";
+import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
+import ShadowCardList from "../../../../components/ShadowCardList/ShadowCardList";
 import InquiryHistoryItem from "./InquiryHistoryItem";
 import styles from "../styles";
 

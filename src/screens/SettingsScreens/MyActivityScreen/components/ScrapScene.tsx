@@ -7,13 +7,13 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import Section from "../../../components/Section/Section";
-import { RootRoutes } from "../../../navigations/routes";
-import ImageScrollView from "../../../components/ImageScrollView/ImageScrollView";
-import CommunityCard from "../../LoungeScreen/components/CommunityCard";
-import SelectableTag from "../../../components/SelectableTag/SelectableTag";
-import FilterDropdown from "../../../components/FilterDropdown/FilterDropdown";
-import AnnouncementCard from "../../../components/AnnouncementCard/AnnouncementCard";
+import Section from "../../../../components/Section/Section";
+import { RootRoutes } from "../../../../navigations/routes";
+import ImageScrollView from "../../../../components/ImageScrollView/ImageScrollView";
+import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
+import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
+import FilterDropdown from "../../../../components/FilterDropdown/FilterDropdown";
+import AnnouncementCard from "../../../../components/AnnouncementCard/AnnouncementCard";
 import styles from "../styles";
 
 type ScrapTab = "모집공고" | "프로필" | "라운지";

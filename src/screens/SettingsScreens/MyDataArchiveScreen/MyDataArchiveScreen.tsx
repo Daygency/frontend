@@ -9,9 +9,9 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { GRAY } from "../../color";
-import ShadowCardButton from "../../components/ShadowCardButton/ShadowCardButton";
-import FabButton from "../../components/FabButton/FabButton";
+import { GRAY } from "../../../color";
+import ShadowCardButton from "../../../components/ShadowCardButton/ShadowCardButton";
+import FabButton from "../../../components/FabButton/FabButton";
 import styles from "./styles";
 
 const MOCK_DOCUMENTS = [

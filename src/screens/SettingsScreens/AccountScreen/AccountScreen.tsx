@@ -2,10 +2,10 @@ import React from "react";
 import { ScrollView, Alert } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import SettingItem from "../SettingsScreen/components/SettingItem/SettingItem";
-import { useAuth } from "../../contexts/AuthContext";
-import { RED } from "../../color";
-import { RootRoutes } from "../../navigations/routes";
+import SettingItem from "../../SettingsScreen/components/SettingItem/SettingItem";
+import { useAuth } from "../../../contexts/AuthContext";
+import { RED } from "../../../color";
+import { RootRoutes } from "../../../navigations/routes";
 import styles from "./styles";
 
 const AccountScreen = () => {

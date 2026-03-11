@@ -2,10 +2,10 @@ import React from "react";
 import { ScrollView, Text, View, Pressable } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootRoutes } from "../../../navigations/routes";
+import { RootRoutes } from "../../../../navigations/routes";
 import ShadowCardList, {
   ShadowCardListFaqItem,
-} from "../../../components/ShadowCardList/ShadowCardList";
+} from "../../../../components/ShadowCardList/ShadowCardList";
 import styles from "../styles";
 
 const FAQ_LIST = [

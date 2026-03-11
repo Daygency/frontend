@@ -1,5 +1,5 @@
 import { FlatList, View, Text, StyleSheet } from "react-native";
-import ReviewCard from "../../../components/ReviewCard/ReviewCard";
+import ReviewCard from "../../../../components/ReviewCard/ReviewCard";
 import styles from "../styles";
 
 const localStyles = StyleSheet.create({

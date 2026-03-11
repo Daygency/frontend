@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ScrollView } from "react-native";
 import ShadowCardList, {
   ShadowCardListToggleItem,
-} from "../../components/ShadowCardList/ShadowCardList";
+} from "../../../components/ShadowCardList/ShadowCardList";
 import styles from "./styles";
 
 const NotificationSettingsScreen = () => {
