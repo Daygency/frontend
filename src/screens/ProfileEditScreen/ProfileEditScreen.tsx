@@ -25,7 +25,7 @@ import { getProfileCache, saveProfileCache } from "../../lib/profileCache";
 import { useAuth } from "../../contexts/AuthContext";
 import { updateProfile } from "../../lib/apis/portfolio/profileUpdate";
 import type { ProfileUpdateRequestDto } from "../../lib/apis/portfolio/dto/update-profile.dto";
-import { isDupActivityName } from "../../lib/apis/portfolio/IsDupActivityId";
+import { isDupActivityName } from "../../lib/apis/portfolio/IsDupActivityName";
 import TopIntroductionTab from "./components/TopIntroductionTab";
 import ProfileTab from "./components/ProfileTab";
 import styles from "./styles";
@@ -61,12 +61,14 @@ const ProfileEditScreen = () => {
 
   const [nickname, setNickname] = useState("");
   const [activityName, setActivityName] = useState("");
+  const [originalActivityName, setOriginalActivityName] = useState("");
   const [aboutMe, setAboutMe] = useState("");
   const [educationList, setEducationList] = useState<EducationEntry[]>([]);
   const [careerList, setCareerList] = useState<CareerEntry[]>([]);
   const [awardList, setAwardList] = useState<AwardEntry[]>([]);
-  const [certificateList, setCertificateList] =
-    useState<CertificateEntry[]>([]);
+  const [certificateList, setCertificateList] = useState<CertificateEntry[]>(
+    [],
+  );
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -98,9 +100,14 @@ const ProfileEditScreen = () => {
 
   const populateForm = (p: Awaited<ReturnType<typeof getMyProfile>>) => {
     if (!p) return;
-    console.log("[ProfileEditScreen] populateForm activityName:", p.activityName);
+    console.log(
+      "[ProfileEditScreen] populateForm activityName:",
+      p.activityName,
+    );
     setNickname(p.nickname || user?.nickname || "");
-    setActivityName(p.activityName || "");
+    const initialActivityName = p.activityName || "";
+    setActivityName(initialActivityName);
+    setOriginalActivityName(initialActivityName);
     setAboutMe(p.aboutMe || "");
     setEducationList(p.educationEntries ?? []);
     setCareerList(p.careerEntries ?? []);
@@ -147,6 +154,7 @@ const ProfileEditScreen = () => {
           setNickname={setNickname}
           activityName={activityName}
           setActivityName={setActivityName}
+          originalActivityName={originalActivityName}
           aboutMe={aboutMe}
           setAboutMe={setAboutMe}
         />
@@ -211,7 +219,8 @@ const ProfileEditScreen = () => {
       phoneNumber:
         current.contact?.phoneNumber ?? (user as any)?.phoneNumber ?? "",
       artTempo: current.artTempo ?? 0,
-      profileImgUrl: current.profileImgUrl ?? (user as any)?.profileImgUrl ?? "",
+      profileImgUrl:
+        current.profileImgUrl ?? (user as any)?.profileImgUrl ?? "",
       isEmailSubscribed: current.isEmailSubscribed ?? false,
       isPushEnabled: current.isPushEnabled ?? false,
       socialId: current.socialId ?? "",

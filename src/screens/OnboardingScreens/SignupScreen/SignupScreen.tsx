@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react";
-import { View, Text, TextInput, Pressable, ScrollView, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  ScrollView,
+  Alert,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../../../contexts/AuthContext";
 import { MAIN, GRAY, WHITE } from "../../../color";
-import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityId";
+import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
 import { styles } from "./styles";
 
 type SignupRouteParams = {
@@ -15,7 +22,8 @@ type SignupRouteParams = {
 const SignupScreen = () => {
   const { bottom } = useSafeAreaInsets();
   const route = useRoute();
-  const role = (route.params as SignupRouteParams | undefined)?.role ?? "artist";
+  const role =
+    (route.params as SignupRouteParams | undefined)?.role ?? "artist";
   const { completeSignup, user } = useAuth();
 
   const [nickname, setNickname] = useState(user?.nickname ?? "");
@@ -23,8 +31,9 @@ const SignupScreen = () => {
   const [isNicknameFocused, setIsNicknameFocused] = useState(false);
   const [isActivityNameFocused, setIsActivityNameFocused] = useState(false);
   const [isCheckingActivityName, setIsCheckingActivityName] = useState(false);
-  const [isActivityNameDuplicate, setIsActivityNameDuplicate] =
-    useState<boolean | null>(null);
+  const [isActivityNameDuplicate, setIsActivityNameDuplicate] = useState<
+    boolean | null
+  >(null);
   const [activityNameMessage, setActivityNameMessage] = useState<string>("");
   const [isActivityNameVerified, setIsActivityNameVerified] = useState(false);
   const [agreeAll, setAgreeAll] = useState(false);
@@ -130,10 +139,7 @@ const SignupScreen = () => {
             닉네임
           </Text>
           <TextInput
-            style={[
-              styles.input,
-              isNicknameFocused && styles.inputFocused,
-            ]}
+            style={[styles.input, isNicknameFocused && styles.inputFocused]}
             value={nickname}
             onChangeText={setNickname}
             placeholder="닉네임을 입력하세요"
@@ -203,14 +209,13 @@ const SignupScreen = () => {
               marginTop: 4,
               fontSize: 12,
               minHeight: 16,
-              color:
-                !activityNameMessage
-                  ? GRAY.DEFAULT_1
-                  : isActivityNameDuplicate === true
+              color: !activityNameMessage
+                ? GRAY.DEFAULT_1
+                : isActivityNameDuplicate === true
                   ? "#F44336"
                   : isActivityNameDuplicate === false
-                  ? "#4CAF50"
-                  : GRAY.DARK_2,
+                    ? "#4CAF50"
+                    : GRAY.DARK_2,
             }}
           >
             {activityNameMessage || " "}
@@ -227,8 +232,8 @@ const SignupScreen = () => {
             <Text style={styles.agreementTitle}>모두 동의합니다.</Text>
           </Pressable>
           <Text style={styles.agreementDesc}>
-            회원 가입 및 회원 관리 등의 목적으로 이메일, 휴대폰 번호 등의
-            정보를 수집 및 이용하고 있습니다.
+            회원 가입 및 회원 관리 등의 목적으로 이메일, 휴대폰 번호 등의 정보를
+            수집 및 이용하고 있습니다.
           </Text>
 
           <Pressable

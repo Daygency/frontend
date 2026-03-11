@@ -23,7 +23,8 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
   },
   activityBarText: {
-    fontSize: 12,
+    fontSize: 20,
+    fontWeight: "600",
     color: GRAY.DARK_2,
   },
 });

@@ -207,9 +207,6 @@ const Profile = () => {
   const [imageError, setImageError] = useState(false);
 
   const displayNickname = profile?.nickname || user?.nickname || "이름 없음";
-  const activityNameLabel = profile?.activityName
-    ? `@${profile.activityName}`
-    : "";
   const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
   const displayProfileImgUrl =
     isValidImageSource(rawProfileImgUrl) && !imageError
@@ -317,9 +314,6 @@ const Profile = () => {
           <View style={styles.profileNameContainer}>
             <View>
               <Text style={styles.profileName}>{displayNickname}</Text>
-              {!!activityNameLabel && (
-                <Text style={styles.profileActivityId}>{activityNameLabel}</Text>
-              )}
             </View>
             {roleLabel ? (
               <View style={styles.profileTagContainer}>

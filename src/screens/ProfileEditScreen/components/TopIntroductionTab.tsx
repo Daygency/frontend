@@ -2,7 +2,7 @@ import React from "react";
 import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
-import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityId";
+import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
 import styles from "../styles";
 import OneLineTextInput from "../../../components/OneLineTextInput/OneLineTextInput";
 
@@ -11,6 +11,7 @@ type Props = {
   setNickname: (v: string) => void;
   activityName: string;
   setActivityName: (v: string) => void;
+  originalActivityName: string;
   aboutMe: string;
   setAboutMe: (v: string) => void;
 };
@@ -20,6 +21,7 @@ const TopIntroductionTab = ({
   setNickname,
   activityName,
   setActivityName,
+  originalActivityName,
   aboutMe,
   setAboutMe,
 }: Props) => {
@@ -30,8 +32,9 @@ const TopIntroductionTab = ({
 
   const [isCheckingActivityName, setIsCheckingActivityName] =
     React.useState(false);
-  const [isActivityNameDuplicate, setIsActivityNameDuplicate] =
-    React.useState<boolean | null>(null);
+  const [isActivityNameDuplicate, setIsActivityNameDuplicate] = React.useState<
+    boolean | null
+  >(null);
   const [activityNameMessage, setActivityNameMessage] =
     React.useState<string>("");
 
@@ -75,12 +78,7 @@ const TopIntroductionTab = ({
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.field}>
-        <Text
-          style={[
-            styles.label,
-            isNameFocused && styles.labelFocused,
-          ]}
-        >
+        <Text style={[styles.label, isNameFocused && styles.labelFocused]}>
           닉네임 *
         </Text>
         <OneLineTextInput
@@ -95,10 +93,7 @@ const TopIntroductionTab = ({
       </View>
       <View style={styles.field}>
         <Text
-          style={[
-            styles.label,
-              isActivityNameFocused && styles.labelFocused,
-          ]}
+          style={[styles.label, isActivityNameFocused && styles.labelFocused]}
         >
           활동 아이디 *
         </Text>
@@ -106,14 +101,18 @@ const TopIntroductionTab = ({
           <OneLineTextInput
             placeholder="활동 아이디를 입력하세요"
             value={activityName}
-            onChangeText={setActivityName}
+            onChangeText={(text) => {
+              setActivityName(text);
+              setIsActivityNameDuplicate(null);
+              setActivityNameMessage("");
+            }}
             placeholderTextColor={GRAY.DARK_2}
             autoCapitalize="none"
             onFocus={() => setIsActivityNameFocused(true)}
             onBlur={() => {
               setIsActivityNameFocused(false);
             }}
-            style={[{ flex: 1 }, isActivityIdFocused && styles.inputFocused]}
+            style={[{ flex: 1 }, isActivityNameFocused && styles.inputFocused]}
           />
           <Pressable
             style={{
@@ -126,7 +125,11 @@ const TopIntroductionTab = ({
               backgroundColor: GRAY.DEFAULT_1,
             }}
             onPress={handleCheckActivityId}
-            disabled={isCheckingActivityName}
+            disabled={
+              isCheckingActivityName ||
+              !activityName.trim() ||
+              activityName.trim() === originalActivityName.trim()
+            }
           >
             <Text
               style={{
@@ -134,7 +137,7 @@ const TopIntroductionTab = ({
                 color: GRAY.DARK_100,
               }}
             >
-              {isCheckingActivityId ? "확인 중..." : "중복 확인"}
+              {isCheckingActivityName ? "확인 중..." : "중복 확인"}
             </Text>
           </Pressable>
           <MaterialCommunityIcons
@@ -149,14 +152,13 @@ const TopIntroductionTab = ({
             marginTop: 4,
             fontSize: 12,
             minHeight: 16,
-              color:
-              !activityNameMessage
-                ? GRAY.DEFAULT_1
-                : isActivityNameDuplicate === true
+            color: !activityNameMessage
+              ? GRAY.DEFAULT_1
+              : isActivityNameDuplicate === true
                 ? "#F44336"
                 : isActivityNameDuplicate === false
-                ? "#4CAF50"
-                : GRAY.DARK_2,
+                  ? "#4CAF50"
+                  : GRAY.DARK_2,
           }}
         >
           {activityNameMessage || " "}
@@ -180,12 +182,7 @@ const TopIntroductionTab = ({
         />
       </View>
       <View style={styles.field}>
-        <Text
-          style={[
-            styles.label,
-            isIntroFocused && styles.labelFocused,
-          ]}
-        >
+        <Text style={[styles.label, isIntroFocused && styles.labelFocused]}>
           한 줄 소개
         </Text>
         <TextInput

@@ -16,8 +16,8 @@ const Logo = ({ logoName, size, subtitle }: LogoProp) => {
       {subtitle ? (
         <Text
           style={{
-            marginTop: 2,
-            fontSize: size * 0.5,
+            marginTop: 1,
+            fontSize: size * 0.6,
             color: GRAY.DARK_2,
           }}
         >

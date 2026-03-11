@@ -45,11 +45,6 @@ const PortfolioScreen = () => {
   return (
     <View style={[styles.container, { paddingTop: top }]}>
       <PortfolioHeader />
-      {activityName ? (
-        <View style={styles.activityBar}>
-          <Text style={styles.activityBarText}>@{activityName}</Text>
-        </View>
-      ) : null}
       <Profile />
 
       <TabView
