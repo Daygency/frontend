@@ -14,6 +14,7 @@ type Props = {
 
 const AwardItem = ({ entry, onChange, onDelete }: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
+  const [isFocused, setIsFocused] = useState(false);
 
   const date =
     entry.year && entry.month
@@ -61,17 +62,21 @@ const AwardItem = ({ entry, onChange, onDelete }: Props) => {
 
   return (
     <View style={styles.entryCard}>
-      <Pressable style={styles.deleteButton} onPress={onDelete} hitSlop={4}>
-        <MaterialCommunityIcons name="close" size={16} color={GRAY.DARK_2} />
-      </Pressable>
       <TextInput
-        style={[styles.input, styles.multilineInput, { marginRight: 28 }]}
+        style={[
+          styles.input,
+          styles.multilineInput,
+          isFocused && styles.inputFocused,
+          { marginRight: 28 },
+        ]}
         value={entry.description}
         onChangeText={(v) => onChange({ description: v })}
         placeholder="수상명, 주최기관 등 수상 내용을 입력하세요"
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
       />
       <DatePickerField
         label="수상시점"
@@ -80,12 +85,20 @@ const AwardItem = ({ entry, onChange, onDelete }: Props) => {
         pickerTitle="수상 년월"
         onConfirm={(y, m) => onChange({ year: y, month: m })}
       />
-      <Pressable
-        style={styles.entryCompleteButton}
-        onPress={() => setIsEditing(false)}
-      >
-        <Text style={styles.entryCompleteButtonText}>완료</Text>
-      </Pressable>
+      <View style={styles.entryButtonRow}>
+        <Pressable
+          style={styles.entryCancelButton}
+          onPress={() => setIsEditing(false)}
+        >
+          <Text style={styles.entryCancelButtonText}>취소</Text>
+        </Pressable>
+        <Pressable
+          style={styles.entryCompleteButton}
+          onPress={() => setIsEditing(false)}
+        >
+          <Text style={styles.entryCompleteButtonText}>완료</Text>
+        </Pressable>
+      </View>
     </View>
   );
 };

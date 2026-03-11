@@ -27,6 +27,7 @@ const formatPeriod = (
 
 const CareerItem = ({ entry, onChange, onDelete }: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
+  const [isFocused, setIsFocused] = useState(false);
 
   const period = formatPeriod(
     entry.startYear, entry.startMonth,
@@ -74,17 +75,21 @@ const CareerItem = ({ entry, onChange, onDelete }: Props) => {
 
   return (
     <View style={styles.entryCard}>
-      <Pressable style={styles.deleteButton} onPress={onDelete} hitSlop={4}>
-        <MaterialCommunityIcons name="close" size={16} color={GRAY.DARK_2} />
-      </Pressable>
       <TextInput
-        style={[styles.input, styles.multilineInput, { marginRight: 28 }]}
+        style={[
+          styles.input,
+          styles.multilineInput,
+          isFocused && styles.inputFocused,
+          { marginRight: 28 },
+        ]}
         value={entry.description}
         onChangeText={(v) => onChange({ description: v })}
         placeholder="회사명, 직무, 역할 등 경력을 입력하세요"
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
+        onFocus={() => setIsFocused(true)}
+        onBlur={() => setIsFocused(false)}
       />
       <DatePickerField
         label="시작"
@@ -100,12 +105,20 @@ const CareerItem = ({ entry, onChange, onDelete }: Props) => {
         pickerTitle="종료 년월"
         onConfirm={(y, m) => onChange({ endYear: y, endMonth: m })}
       />
-      <Pressable
-        style={styles.entryCompleteButton}
-        onPress={() => setIsEditing(false)}
-      >
-        <Text style={styles.entryCompleteButtonText}>완료</Text>
-      </Pressable>
+      <View style={styles.entryButtonRow}>
+        <Pressable
+          style={styles.entryCancelButton}
+          onPress={() => setIsEditing(false)}
+        >
+          <Text style={styles.entryCancelButtonText}>취소</Text>
+        </Pressable>
+        <Pressable
+          style={styles.entryCompleteButton}
+          onPress={() => setIsEditing(false)}
+        >
+          <Text style={styles.entryCompleteButtonText}>완료</Text>
+        </Pressable>
+      </View>
     </View>
   );
 };

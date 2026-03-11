@@ -1,5 +1,5 @@
 import { Platform, StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { BLUE, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -93,6 +93,9 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_100,
     marginBottom: 8,
   },
+  labelFocused: {
+    color: BLUE.DEFAULT,
+  },
   input: {
     borderWidth: 1,
     borderColor: GRAY.MEDIUM,
@@ -102,6 +105,9 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: GRAY.DARK_100,
     backgroundColor: WHITE,
+  },
+  singleLineInput: {
+    height: 48,
   },
   inputRow: {
     flexDirection: "row",
@@ -124,6 +130,9 @@ const styles = StyleSheet.create({
     minHeight: 80,
     textAlignVertical: "top",
     paddingTop: Platform.OS === "ios" ? 14 : 12,
+  },
+  inputFocused: {
+    borderColor: BLUE.DEFAULT,
   },
   buttonContainer: {
     paddingHorizontal: 20,
@@ -321,13 +330,34 @@ const styles = StyleSheet.create({
   },
 
   // ── 항목 완료 버튼 ──
-  entryCompleteButton: {
+  entryButtonRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     marginTop: 12,
+  },
+  entryCancelButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM,
+    backgroundColor: WHITE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  entryCompleteButton: {
+    flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
     backgroundColor: MAIN.DEFAULT,
     alignItems: "center",
     justifyContent: "center",
+  },
+  entryCancelButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: GRAY.DARK_2,
   },
   entryCompleteButtonText: {
     fontSize: 14,

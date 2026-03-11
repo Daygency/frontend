@@ -1,9 +1,10 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as FileSystem from "expo-file-system";
+import { Directory, File, Paths } from "expo-file-system";
+import * as LegacyFileSystem from "expo-file-system/legacy";
 import type { ProfileResponseDto } from "./profileApi";
 
 const PROFILE_CACHE_KEY = "@daygency_profile_cache";
-const PROFILE_IMAGE_CACHE_DIR = `${FileSystem.cacheDirectory}profile/`;
+const PROFILE_IMAGE_CACHE_DIR = new Directory(Paths.cache, "profile");
 
 const isValidImageUrl = (url: string | undefined): boolean =>
   !!url?.trim() &&
@@ -22,9 +23,9 @@ export async function getProfileCache(): Promise<ProfileResponseDto | null> {
     // 로컬 이미지 경로 유효성 확인 (파일이 삭제되었을 수 있음)
     if (profile.profileImgUrl?.startsWith("file://")) {
       try {
-        const info = await FileSystem.getInfoAsync(profile.profileImgUrl, {
-          type: "file",
-        });
+        const info = await LegacyFileSystem.getInfoAsync(
+          profile.profileImgUrl
+        );
         if (!info.exists) profile.profileImgUrl = "";
       } catch {
         profile.profileImgUrl = "";
@@ -47,14 +48,9 @@ async function downloadProfileImage(
         ? imageUrl.replace("http://", "https://")
         : imageUrl;
 
-    await FileSystem.makeDirectoryAsync(PROFILE_IMAGE_CACHE_DIR, {
-      intermediates: true,
-    });
-    const ext = imageUrl.split(".").pop()?.split("?")[0] || "jpg";
-    const filename = `profile_${Date.now()}.${ext}`;
-    const localPath = `${PROFILE_IMAGE_CACHE_DIR}${filename}`;
-    const result = await FileSystem.downloadAsync(httpsUrl, localPath);
-    if (result.status === 200) return result.uri;
+    PROFILE_IMAGE_CACHE_DIR.create({ intermediates: true });
+    const result = await File.downloadFileAsync(httpsUrl, PROFILE_IMAGE_CACHE_DIR);
+    if (result.exists) return result.uri;
   } catch {
     // 다운로드 실패 시 원본 URL 유지
   }

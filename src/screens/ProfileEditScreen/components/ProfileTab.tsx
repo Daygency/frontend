@@ -41,6 +41,7 @@ const ProfileTab = ({
   certificateList,
   setCertificateList,
 }: Props) => {
+  const [isAboutFocused, setIsAboutFocused] = React.useState(false);
   // ── 학력 ──
   const updateEducation = (id: string, updates: Partial<EducationEntry>) =>
     setEducationList(
@@ -134,15 +135,28 @@ const ProfileTab = ({
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.field}>
-        <Text style={styles.label}>소개</Text>
+        <Text
+          style={[
+            styles.label,
+            isAboutFocused && styles.labelFocused,
+          ]}
+        >
+          소개
+        </Text>
         <TextInput
-          style={[styles.input, styles.multilineInput]}
+          style={[
+            styles.input,
+            styles.multilineInput,
+            isAboutFocused && styles.inputFocused,
+          ]}
           value={aboutMe}
           onChangeText={setAboutMe}
           placeholder="소개를 입력하세요"
           placeholderTextColor={GRAY.DARK_2}
           multiline
           numberOfLines={5}
+          onFocus={() => setIsAboutFocused(true)}
+          onBlur={() => setIsAboutFocused(false)}
         />
       </View>
 

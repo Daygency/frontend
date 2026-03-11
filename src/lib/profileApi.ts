@@ -59,7 +59,7 @@ export async function getMyProfile(): Promise<ProfileResponseDto | null> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
   if (!token) return null;
 
-  const res = await fetch(`${API_BASE}/profile/my`, {
+  const res = await fetch(`${API_BASE}/users/profile/my`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
