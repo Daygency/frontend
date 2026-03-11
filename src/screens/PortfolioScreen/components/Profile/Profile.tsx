@@ -1,30 +1,72 @@
-import { View, Text, Switch, Pressable } from "react-native";
+import { View, Text, Switch, Pressable, Image, ActivityIndicator } from "react-native";
 import styles from "./styles";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../../color";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../../navigations/routes";
+import { getMyProfile } from "../../../../lib/profileApi";
+
+const ROLE_LABEL: Record<string, string> = {
+  artist: "예술가",
+  planner: "플래너",
+};
 
 const Profile = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const [profile, setProfile] = useState<Awaited<ReturnType<typeof getMyProfile>>>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isEnabled, setIsEnabled] = useState(false);
 
   const followerCount = 100;
   const followingCount = 100;
-  const [isEnabled, setIsEnabled] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    getMyProfile().then((data) => {
+      if (!cancelled) {
+        setProfile(data);
+        setIsLoading(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (isLoading) {
+    return (
+      <View style={[styles.container, { paddingVertical: 24, alignItems: "center" }]}>
+        <ActivityIndicator size="small" color={MAIN.DEFAULT} />
+      </View>
+    );
+  }
+
+  const roleLabel = profile?.role ? ROLE_LABEL[profile.role] ?? profile.role : "";
+
   return (
     <View style={styles.container}>
       <View style={styles.profileContainer}>
         <View style={styles.profileImageContainer}>
-          <Text>사진</Text>
+          {profile?.profileImgUrl ? (
+            <Image
+              source={{ uri: profile.profileImgUrl }}
+              style={{ width: 95, height: 95, borderRadius: 50 }}
+              resizeMode="cover"
+            />
+          ) : (
+            <Text>사진</Text>
+          )}
         </View>
         <View style={styles.profileInfoContainer}>
           <View style={styles.profileNameContainer}>
-            <Text style={styles.profileName}>예술가 이름</Text>
-            <View style={styles.profileTagContainer}>
-              <Text style={styles.profileTag}>예술가</Text>
-            </View>
+            <Text style={styles.profileName}>{profile?.nickname ?? "이름 없음"}</Text>
+            {roleLabel ? (
+              <View style={styles.profileTagContainer}>
+                <Text style={styles.profileTag}>{roleLabel}</Text>
+              </View>
+            ) : null}
           </View>
           <Pressable
             style={styles.profileFollowerContainer}
@@ -40,7 +82,7 @@ const Profile = () => {
         <Text>은정님이 팔로우 중</Text>
       </View>
       <Text style={styles.profileIntroduction}>
-        안녕하세요, 저는 연주자입니다 !
+        {profile?.aboutMe ? profile.aboutMe : "소개가 없습니다."}
       </Text>
       <View style={styles.profileSettingContainer}>
         <View style={styles.profileEditContainer}>
