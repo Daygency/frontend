@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { View, Text, TextInput, Pressable, ScrollView, Alert } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../../../contexts/AuthContext";
 import { MAIN, GRAY, WHITE } from "../../../color";
+import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityId";
 import { styles } from "./styles";
 
 type SignupRouteParams = {
@@ -15,9 +16,17 @@ const SignupScreen = () => {
   const { bottom } = useSafeAreaInsets();
   const route = useRoute();
   const role = (route.params as SignupRouteParams | undefined)?.role ?? "artist";
-  const { completeSignup } = useAuth();
+  const { completeSignup, user } = useAuth();
 
-  const [activityId, setActivityId] = useState("");
+  const [nickname, setNickname] = useState(user?.nickname ?? "");
+  const [activityName, setActivityName] = useState("");
+  const [isNicknameFocused, setIsNicknameFocused] = useState(false);
+  const [isActivityNameFocused, setIsActivityNameFocused] = useState(false);
+  const [isCheckingActivityName, setIsCheckingActivityName] = useState(false);
+  const [isActivityNameDuplicate, setIsActivityNameDuplicate] =
+    useState<boolean | null>(null);
+  const [activityNameMessage, setActivityNameMessage] = useState<string>("");
+  const [isActivityNameVerified, setIsActivityNameVerified] = useState(false);
   const [agreeAll, setAgreeAll] = useState(false);
   const [ageChecked, setAgeChecked] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
@@ -25,7 +34,13 @@ const SignupScreen = () => {
   const [marketingChecked, setMarketingChecked] = useState(false);
 
   const allRequiredChecked =
-    ageChecked && termsChecked && privacyChecked && activityId.trim().length > 0;
+    ageChecked &&
+    termsChecked &&
+    privacyChecked &&
+    nickname.trim().length > 0 &&
+    activityName.trim().length > 0 &&
+    isActivityNameVerified &&
+    isActivityNameDuplicate === false;
 
   useEffect(() => {
     const all =
@@ -42,12 +57,53 @@ const SignupScreen = () => {
     setMarketingChecked(next);
   };
 
+  const handleCheckActivityId = async () => {
+    const value = activityName.trim();
+    if (!value) {
+      setIsActivityNameDuplicate(null);
+      setActivityNameMessage("");
+      setIsActivityNameVerified(false);
+      return;
+    }
+
+    try {
+      setIsCheckingActivityName(true);
+      const isDup = await isDupActivityName(value);
+      setIsActivityNameDuplicate(isDup);
+      if (isDup) {
+        setActivityNameMessage("이미 사용 중인 활동 아이디입니다.");
+        setIsActivityNameVerified(false);
+      } else {
+        setActivityNameMessage("사용 가능한 활동 아이디입니다.");
+        setIsActivityNameVerified(true);
+      }
+    } catch {
+      setIsActivityNameDuplicate(null);
+      setActivityNameMessage("활동 아이디 중복 확인에 실패했습니다.");
+      setIsActivityNameVerified(false);
+    } finally {
+      setIsCheckingActivityName(false);
+    }
+  };
+
   const handleComplete = async () => {
     if (!allRequiredChecked) return;
     try {
+      if (activityName.trim()) {
+        const isDup = await isDupActivityName(activityName.trim());
+        if (isDup) {
+          Alert.alert(
+            "활동 아이디 중복",
+            "이미 사용 중인 활동 아이디입니다. 다른 아이디를 입력해주세요.",
+          );
+          return;
+        }
+      }
+
       await completeSignup({
         role,
-        nickname: activityId.trim() || undefined,
+        nickname: nickname.trim() || undefined,
+        activityName: activityName.trim(),
       });
     } catch {
       // 에러는 AuthContext에서 Alert 처리
@@ -68,26 +124,97 @@ const SignupScreen = () => {
         </Text>
 
         <View style={styles.inputSection}>
-          <Text style={styles.label}>이메일</Text>
+          <Text
+            style={[styles.label, isNicknameFocused && styles.labelFocused]}
+          >
+            닉네임
+          </Text>
           <TextInput
-            style={styles.input}
-            value="daygency@gmail.com"
-            editable={false}
+            style={[
+              styles.input,
+              isNicknameFocused && styles.inputFocused,
+            ]}
+            value={nickname}
+            onChangeText={setNickname}
+            placeholder="닉네임을 입력하세요"
             placeholderTextColor={GRAY.MEDIUM_100}
+            onFocus={() => setIsNicknameFocused(true)}
+            onBlur={() => setIsNicknameFocused(false)}
           />
         </View>
 
         <View style={styles.inputSection}>
-          <Text style={styles.label}>활동 아이디</Text>
-          <TextInput
-            style={styles.input}
-            value={activityId}
-            onChangeText={setActivityId}
-            placeholder="아이디를 입력하세요."
-            placeholderTextColor={GRAY.MEDIUM_100}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
+          <Text
+            style={[styles.label, isActivityNameFocused && styles.labelFocused]}
+          >
+            활동 아이디
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
+            <TextInput
+              style={[
+                styles.input,
+                { flex: 1 },
+                isActivityNameFocused && styles.inputFocused,
+              ]}
+              value={activityName}
+              onChangeText={(text) => {
+                setActivityName(text);
+                setIsActivityNameDuplicate(null);
+                setActivityNameMessage("");
+                setIsActivityNameVerified(false);
+              }}
+              placeholder="아이디를 입력하세요."
+              placeholderTextColor={GRAY.MEDIUM_100}
+              autoCapitalize="none"
+              autoCorrect={false}
+              onFocus={() => setIsActivityNameFocused(true)}
+              onBlur={() => setIsActivityNameFocused(false)}
+            />
+            <Pressable
+              style={{
+                marginLeft: 8,
+                paddingHorizontal: 10,
+                paddingVertical: 8,
+                borderRadius: 8,
+                borderWidth: 1,
+                borderColor: GRAY.MEDIUM,
+                backgroundColor: GRAY.DEFAULT_1,
+              }}
+              onPress={handleCheckActivityId}
+              disabled={isCheckingActivityName}
+            >
+              <Text
+                style={{
+                  fontSize: 12,
+                  color: GRAY.DARK_100,
+                }}
+              >
+                {isCheckingActivityName ? "확인 중..." : "중복 확인"}
+              </Text>
+            </Pressable>
+          </View>
+          <Text
+            style={{
+              marginTop: 4,
+              fontSize: 12,
+              minHeight: 16,
+              color:
+                !activityNameMessage
+                  ? GRAY.DEFAULT_1
+                  : isActivityNameDuplicate === true
+                  ? "#F44336"
+                  : isActivityNameDuplicate === false
+                  ? "#4CAF50"
+                  : GRAY.DARK_2,
+            }}
+          >
+            {activityNameMessage || " "}
+          </Text>
         </View>
 
         <View style={styles.agreementSection}>

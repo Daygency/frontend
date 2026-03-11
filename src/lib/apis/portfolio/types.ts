@@ -37,6 +37,7 @@ export type CertificateEntry = {
 export type ProfileResponseDto = {
   profileImgUrl: string;
   nickname: string;
+  activityName?: string;
   role: UserRole;
   aboutMe: string;
   education: string | null;

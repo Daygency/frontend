@@ -1,7 +1,7 @@
-import { View, useWindowDimensions } from "react-native";
+import { View, Text, useWindowDimensions } from "react-native";
 import styles from "./styles";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TabView } from "react-native-tab-view";
 
 import PortfolioHeader from "./components/PortfolioHeader/PortfolioHeader";
@@ -10,8 +10,7 @@ import ProfileDetail from "./components/ProfileDetail/ProfileDetail";
 import Photo from "./components/Photo/Photo";
 import Activity from "./components/Activity/Activity";
 import CategoryTabBar from "../../components/CategoryTabBar/CategoryTabBar";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useNavigation } from "@react-navigation/native";
+import { getProfileCache } from "../../lib/profileCache";
 
 const PortfolioScreen = () => {
   const { top } = useSafeAreaInsets();
@@ -22,6 +21,13 @@ const PortfolioScreen = () => {
     { key: "photo", title: "사진" },
     { key: "activity", title: "활동" },
   ]);
+  const [activityName, setActivityName] = useState<string | null>(null);
+
+  useEffect(() => {
+    getProfileCache().then((p) => {
+      setActivityName(p?.activityName ?? null);
+    });
+  }, []);
 
   const renderScene = ({ route }: { route: { key: string } }) => {
     switch (route.key) {
@@ -39,6 +45,11 @@ const PortfolioScreen = () => {
   return (
     <View style={[styles.container, { paddingTop: top }]}>
       <PortfolioHeader />
+      {activityName ? (
+        <View style={styles.activityBar}>
+          <Text style={styles.activityBarText}>@{activityName}</Text>
+        </View>
+      ) : null}
       <Profile />
 
       <TabView

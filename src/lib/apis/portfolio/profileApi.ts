@@ -21,6 +21,7 @@ export async function getMyProfile(): Promise<ProfileResponseDto | null> {
   console.log("[getMyProfile] API 응답:", JSON.stringify(data, null, 2));
 
   const profile = data as ProfileResponseDto;
+  console.log("[getMyProfile] parsed activityName:", profile.activityName);
   // 상대 경로인 경우 API base URL 붙이기 (예: /uploads/profile/xxx.jpg)
   if (profile.profileImgUrl?.startsWith("/")) {
     profile.profileImgUrl = `${API_BASE}${profile.profileImgUrl}`;

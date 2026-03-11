@@ -16,6 +16,11 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: BLACK,
   },
+  profileActivityId: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+    marginTop: 2,
+  },
   profileTagContainer: {
     flexDirection: "row",
     alignItems: "center",

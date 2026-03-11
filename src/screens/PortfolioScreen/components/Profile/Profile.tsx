@@ -13,8 +13,8 @@ import {
   MaterialCommunityIcons,
 } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../../color";
-import { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../../navigations/routes";
 import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
@@ -207,6 +207,9 @@ const Profile = () => {
   const [imageError, setImageError] = useState(false);
 
   const displayNickname = profile?.nickname || user?.nickname || "이름 없음";
+  const activityNameLabel = profile?.activityName
+    ? `@${profile.activityName}`
+    : "";
   const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
   const displayProfileImgUrl =
     isValidImageSource(rawProfileImgUrl) && !imageError
@@ -220,13 +223,15 @@ const Profile = () => {
     display: displayProfileImgUrl,
     imageError,
   });
+  console.log("[Profile] activityName:", profile?.activityName);
 
   const followerCount = 100;
   const followingCount = 100;
 
-  useEffect(() => {
+  const loadProfile = useCallback(() => {
     let cancelled = false;
     const apiResponded = { current: false };
+    setIsLoading(true);
     setImageError(false);
 
     getProfileCache().then((cached) => {
@@ -249,6 +254,17 @@ const Profile = () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+      return () => {};
+    }, [loadProfile])
+  );
 
   useEffect(() => {
     setImageError(false);
@@ -299,7 +315,12 @@ const Profile = () => {
         </View>
         <View style={styles.profileInfoContainer}>
           <View style={styles.profileNameContainer}>
-            <Text style={styles.profileName}>{displayNickname}</Text>
+            <View>
+              <Text style={styles.profileName}>{displayNickname}</Text>
+              {!!activityNameLabel && (
+                <Text style={styles.profileActivityId}>{activityNameLabel}</Text>
+              )}
+            </View>
             {roleLabel ? (
               <View style={styles.profileTagContainer}>
                 <Text style={styles.profileTag}>{roleLabel}</Text>

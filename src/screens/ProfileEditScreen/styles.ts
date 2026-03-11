@@ -103,11 +103,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: Platform.OS === "ios" ? 14 : 12,
     fontSize: 16,
+    lineHeight: 20,
     color: GRAY.DARK_100,
     backgroundColor: WHITE,
   },
   singleLineInput: {
-    height: 48,
+    minHeight: 48,
   },
   inputRow: {
     flexDirection: "row",

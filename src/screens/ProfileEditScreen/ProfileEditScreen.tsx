@@ -8,6 +8,7 @@ import {
   Platform,
   useWindowDimensions,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { TabView } from "react-native-tab-view";
 import { useNavigation } from "@react-navigation/native";
@@ -19,9 +20,12 @@ import type {
   CareerEntry,
   AwardEntry,
   CertificateEntry,
-} from "../../lib/apis/portfolio/profileApi";
+} from "../../lib/apis/portfolio/types";
 import { getProfileCache, saveProfileCache } from "../../lib/profileCache";
 import { useAuth } from "../../contexts/AuthContext";
+import { updateProfile } from "../../lib/apis/portfolio/profileUpdate";
+import type { ProfileUpdateRequestDto } from "../../lib/apis/portfolio/dto/update-profile.dto";
+import { isDupActivityName } from "../../lib/apis/portfolio/IsDupActivityId";
 import TopIntroductionTab from "./components/TopIntroductionTab";
 import ProfileTab from "./components/ProfileTab";
 import styles from "./styles";
@@ -56,14 +60,14 @@ const ProfileEditScreen = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const [nickname, setNickname] = useState("");
-  const [activityId, setActivityId] = useState("");
+  const [activityName, setActivityName] = useState("");
   const [aboutMe, setAboutMe] = useState("");
   const [educationList, setEducationList] = useState<EducationEntry[]>([]);
   const [careerList, setCareerList] = useState<CareerEntry[]>([]);
   const [awardList, setAwardList] = useState<AwardEntry[]>([]);
-  const [certificateList, setCertificateList] = useState<CertificateEntry[]>(
-    [],
-  );
+  const [certificateList, setCertificateList] =
+    useState<CertificateEntry[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -94,8 +98,9 @@ const ProfileEditScreen = () => {
 
   const populateForm = (p: Awaited<ReturnType<typeof getMyProfile>>) => {
     if (!p) return;
+    console.log("[ProfileEditScreen] populateForm activityName:", p.activityName);
     setNickname(p.nickname || user?.nickname || "");
-    setActivityId("");
+    setActivityName(p.activityName || "");
     setAboutMe(p.aboutMe || "");
     setEducationList(p.educationEntries ?? []);
     setCareerList(p.careerEntries ?? []);
@@ -140,8 +145,8 @@ const ProfileEditScreen = () => {
         <TopIntroductionTab
           nickname={nickname}
           setNickname={setNickname}
-          activityId={activityId}
-          setActivityId={setActivityId}
+          activityName={activityName}
+          setActivityName={setActivityName}
           aboutMe={aboutMe}
           setAboutMe={setAboutMe}
         />
@@ -171,6 +176,7 @@ const ProfileEditScreen = () => {
     await saveProfileCache({
       ...profile,
       nickname,
+      activityName,
       aboutMe,
       educationEntries: educationList,
       careerEntries: careerList,
@@ -184,9 +190,83 @@ const ProfileEditScreen = () => {
     navigation.goBack();
   };
 
+  const toDate = (year: string, month: string): Date => {
+    const y = Number(year || new Date().getFullYear());
+    const m = Number(month || 1);
+    return new Date(y, m - 1, 1);
+  };
+
+  const buildUpdatePayload = (): ProfileUpdateRequestDto | null => {
+    if (!profile) return null;
+
+    const current: any = profile;
+
+    return {
+      nickname,
+      activityName,
+      aboutMe,
+      selfIntroduction: aboutMe,
+      role: current.role ?? "user",
+      email: current.contact?.email ?? (user as any)?.email ?? "",
+      phoneNumber:
+        current.contact?.phoneNumber ?? (user as any)?.phoneNumber ?? "",
+      artTempo: current.artTempo ?? 0,
+      profileImgUrl: current.profileImgUrl ?? (user as any)?.profileImgUrl ?? "",
+      isEmailSubscribed: current.isEmailSubscribed ?? false,
+      isPushEnabled: current.isPushEnabled ?? false,
+      socialId: current.socialId ?? "",
+      educations: educationList.map((e) => ({
+        discription: e.description,
+        startedAt: toDate(e.startYear, e.startMonth),
+        endedAt: toDate(e.endYear, e.endMonth),
+      })),
+      careers: careerList.map((c) => ({
+        discription: c.description,
+        startedAt: toDate(c.startYear, c.startMonth),
+        endedAt: toDate(c.endYear, c.endMonth),
+      })),
+      awards: awardList.map((a) => ({
+        discription: a.description,
+        awardedAt: toDate(a.year, a.month),
+      })),
+      certificates: certificateList.map((c) => ({
+        description: c.description,
+        obtainedAt: toDate(c.year, c.month),
+      })),
+    };
+  };
+
   const handleComplete = async () => {
-    await persistToCache();
-    navigation.goBack();
+    if (activityName.trim()) {
+      const isDup = await isDupActivityName(activityName.trim());
+      if (isDup) {
+        Alert.alert(
+          "활동 아이디 중복",
+          "이미 사용 중인 활동 아이디입니다. 다른 아이디를 입력해주세요.",
+        );
+        return;
+      }
+    }
+
+    const payload = buildUpdatePayload();
+    if (!payload || submitting) {
+      await persistToCache();
+      navigation.goBack();
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const updated = await updateProfile(payload);
+      if (updated) {
+        await saveProfileCache(updated);
+      } else {
+        await persistToCache();
+      }
+    } finally {
+      setSubmitting(false);
+      navigation.goBack();
+    }
   };
 
   if (isLoading) {
@@ -248,8 +328,14 @@ const ProfileEditScreen = () => {
           <Pressable style={styles.previewButton} onPress={handlePreview}>
             <Text style={styles.previewButtonText}>미리보기</Text>
           </Pressable>
-          <Pressable style={styles.button} onPress={handleComplete}>
-            <Text style={styles.buttonText}>수정 완료</Text>
+          <Pressable
+            style={styles.button}
+            onPress={handleComplete}
+            disabled={submitting}
+          >
+            <Text style={styles.buttonText}>
+              {submitting ? "저장 중..." : "수정 완료"}
+            </Text>
           </Pressable>
         </View>
       </View>
