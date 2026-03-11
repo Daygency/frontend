@@ -40,6 +40,7 @@ export type ProfileResponseDto = {
   activityName?: string;
   role: UserRole;
   aboutMe: string;
+  selfIntroduction?: string;
   education: string | null;
   career: string | null;
   awards: string | null;

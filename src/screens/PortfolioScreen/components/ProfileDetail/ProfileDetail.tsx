@@ -55,7 +55,10 @@ const ProfileDetail = () => {
     );
   }
 
-  const aboutMe = profile?.aboutMe?.trim() || "소개가 없습니다.";
+  const aboutMe =
+    (profile as any)?.selfIntroduction?.trim() ||
+    profile?.aboutMe?.trim() ||
+    "소개가 없습니다.";
   const email = profile?.contact?.email ?? user?.email ?? "";
   const phoneNumber = profile?.contact?.phoneNumber ?? "";
   const hasContact = email || phoneNumber;

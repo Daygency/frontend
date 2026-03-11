@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { Pressable } from "react-native";
 import styles from "./styles";
@@ -7,7 +7,7 @@ import { MAIN } from "../../../../color";
 import Logo from "../../../../components/Logo/Logo";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { getProfileCache } from "../../../../lib/profileCache";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { RootRoutes } from "../../../../navigations/routes";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
@@ -16,7 +16,7 @@ const PortfolioHeader = () => {
   const { user } = useAuth();
   const [activityName, setActivityName] = useState<string>("");
 
-  useEffect(() => {
+  const loadActivityName = useCallback(() => {
     let cancelled = false;
     getProfileCache().then((cached) => {
       if (!cancelled && cached?.activityName) {
@@ -29,6 +29,20 @@ const PortfolioHeader = () => {
       cancelled = true;
     };
   }, [user]);
+
+  useEffect(() => {
+    const cleanup = loadActivityName();
+    return cleanup;
+  }, [loadActivityName]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const cleanup = loadActivityName();
+      return () => {
+        cleanup();
+      };
+    }, [loadActivityName]),
+  );
 
   return (
     <View style={styles.headerContainer}>

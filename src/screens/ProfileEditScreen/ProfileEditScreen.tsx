@@ -63,6 +63,7 @@ const ProfileEditScreen = () => {
   const [activityName, setActivityName] = useState("");
   const [originalActivityName, setOriginalActivityName] = useState("");
   const [aboutMe, setAboutMe] = useState("");
+  const [selfIntroduction, setSelfIntroduction] = useState("");
   const [educationList, setEducationList] = useState<EducationEntry[]>([]);
   const [careerList, setCareerList] = useState<CareerEntry[]>([]);
   const [awardList, setAwardList] = useState<AwardEntry[]>([]);
@@ -109,6 +110,7 @@ const ProfileEditScreen = () => {
     setActivityName(initialActivityName);
     setOriginalActivityName(initialActivityName);
     setAboutMe(p.aboutMe || "");
+    setSelfIntroduction((p as any).selfIntroduction || "");
     setEducationList(p.educationEntries ?? []);
     setCareerList(p.careerEntries ?? []);
     setAwardList(p.awardEntries ?? []);
@@ -163,8 +165,8 @@ const ProfileEditScreen = () => {
     if (route.key === "profile") {
       return (
         <ProfileTab
-          aboutMe={aboutMe}
-          setAboutMe={setAboutMe}
+          aboutMe={selfIntroduction}
+          setAboutMe={setSelfIntroduction}
           educationList={educationList}
           setEducationList={setEducationList}
           careerList={careerList}
@@ -186,6 +188,7 @@ const ProfileEditScreen = () => {
       nickname,
       activityName,
       aboutMe,
+      selfIntroduction,
       educationEntries: educationList,
       careerEntries: careerList,
       awardEntries: awardList,
@@ -213,7 +216,7 @@ const ProfileEditScreen = () => {
       nickname,
       activityName,
       aboutMe,
-      selfIntroduction: aboutMe,
+      selfIntroduction,
       role: current.role ?? "user",
       email: current.contact?.email ?? (user as any)?.email ?? "",
       phoneNumber:
