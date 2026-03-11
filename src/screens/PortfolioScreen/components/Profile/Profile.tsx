@@ -159,10 +159,13 @@ const Profile = () => {
         {profile?.aboutMe ? profile.aboutMe : "소개가 없습니다."}
       </Text>
       <View style={styles.profileSettingContainer}>
-        <View style={styles.profileEditContainer}>
+        <Pressable
+          style={styles.profileEditContainer}
+          onPress={() => navigation.navigate(RootRoutes.PROFILE_EDIT)}
+        >
           <Ionicons name="settings-outline" size={20} color="white" />
           <Text style={styles.profileEditText}>프로필 수정</Text>
-        </View>
+        </Pressable>
         <View style={styles.profilePrivateContainer}>
           <Switch
             value={isEnabled}
