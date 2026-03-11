@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   Pressable,
-  ScrollView,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -16,11 +14,16 @@ import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../color";
 import { getMyProfile } from "../../lib/profileApi";
-import {
-  getProfileCache,
-  saveProfileCache,
-} from "../../lib/profileCache";
+import type {
+  EducationEntry,
+  CareerEntry,
+  AwardEntry,
+  CertificateEntry,
+} from "../../lib/profileApi";
+import { getProfileCache, saveProfileCache } from "../../lib/profileCache";
 import { useAuth } from "../../contexts/AuthContext";
+import TopIntroductionTab from "./components/TopIntroductionTab";
+import ProfileTab from "./components/ProfileTab";
 import styles from "./styles";
 
 const isValidImageSource = (uri: string | undefined): boolean =>
@@ -37,168 +40,11 @@ const toDisplayImageUri = (uri: string | undefined): string | null => {
   return trimmed;
 };
 
-/** 상단소개 탭 - 이름, 활동 아이디, 전공, 한 줄 소개 */
-const TopIntroductionTab = ({
-  nickname,
-  setNickname,
-  activityId,
-  setActivityId,
-  aboutMe,
-  setAboutMe,
-}: {
-  nickname: string;
-  setNickname: (v: string) => void;
-  activityId: string;
-  setActivityId: (v: string) => void;
-  aboutMe: string;
-  setAboutMe: (v: string) => void;
-}) => (
-  <ScrollView
-    style={styles.tabContent}
-    contentContainerStyle={styles.tabContentContainer}
-    keyboardShouldPersistTaps="handled"
-  >
-    <View style={styles.field}>
-      <Text style={styles.label}>이름 *</Text>
-      <TextInput
-        style={styles.input}
-        value={nickname}
-        onChangeText={setNickname}
-        placeholder="이름을 입력하세요"
-        placeholderTextColor={GRAY.DARK_2}
-      />
-    </View>
-    <View style={styles.field}>
-      <Text style={styles.label}>활동 아이디 *</Text>
-      <View style={styles.inputRow}>
-        <TextInput
-          style={[styles.input, { flex: 1 }]}
-          value={activityId}
-          onChangeText={setActivityId}
-          placeholder="활동 아이디를 입력하세요"
-          placeholderTextColor={GRAY.DARK_2}
-          autoCapitalize="none"
-        />
-        <MaterialCommunityIcons
-          name="check-circle"
-          size={24}
-          color={activityId ? "#4CAF50" : GRAY.DARK_2}
-          style={styles.checkIcon}
-        />
-      </View>
-    </View>
-    <View style={styles.field}>
-      <Text style={styles.label}>전공/세부전공</Text>
-      <Pressable style={[styles.input, styles.selectInput]}>
-        <Text style={styles.placeholder}>전공을 선택하세요</Text>
-        <MaterialCommunityIcons
-          name="chevron-down"
-          size={20}
-          color={GRAY.DARK_2}
-        />
-      </Pressable>
-      <TextInput
-        style={styles.input}
-        value=""
-        placeholder="세부 전공을 입력하세요"
-        placeholderTextColor={GRAY.DARK_2}
-      />
-    </View>
-    <View style={styles.field}>
-      <Text style={styles.label}>한 줄 소개</Text>
-      <TextInput
-        style={[styles.input, styles.multilineInput]}
-        value={aboutMe}
-        onChangeText={setAboutMe}
-        placeholder="한 줄 소개를 입력하세요"
-        placeholderTextColor={GRAY.DARK_2}
-        multiline
-        numberOfLines={3}
-      />
-    </View>
-  </ScrollView>
-);
-
-/** 프로필 탭 - 소개, 학력, 경력 등 */
-const ProfileTab = ({
-  aboutMe,
-  setAboutMe,
-  education,
-  setEducation,
-  career,
-  setCareer,
-  awards,
-  setAwards,
-}: {
-  aboutMe: string;
-  setAboutMe: (v: string) => void;
-  education: string;
-  setEducation: (v: string) => void;
-  career: string;
-  setCareer: (v: string) => void;
-  awards: string;
-  setAwards: (v: string) => void;
-}) => (
-  <ScrollView
-    style={styles.tabContent}
-    contentContainerStyle={styles.tabContentContainer}
-    keyboardShouldPersistTaps="handled"
-  >
-    <View style={styles.field}>
-      <Text style={styles.label}>소개</Text>
-      <TextInput
-        style={[styles.input, styles.multilineInput]}
-        value={aboutMe}
-        onChangeText={setAboutMe}
-        placeholder="소개를 입력하세요"
-        placeholderTextColor={GRAY.DARK_2}
-        multiline
-        numberOfLines={5}
-      />
-    </View>
-    <View style={styles.field}>
-      <Text style={styles.label}>학력</Text>
-      <TextInput
-        style={[styles.input, styles.multilineInput]}
-        value={education}
-        onChangeText={setEducation}
-        placeholder="학력을 입력하세요"
-        placeholderTextColor={GRAY.DARK_2}
-        multiline
-        numberOfLines={4}
-      />
-    </View>
-    <View style={styles.field}>
-      <Text style={styles.label}>경력</Text>
-      <TextInput
-        style={[styles.input, styles.multilineInput]}
-        value={career}
-        onChangeText={setCareer}
-        placeholder="경력을 입력하세요"
-        placeholderTextColor={GRAY.DARK_2}
-        multiline
-        numberOfLines={4}
-      />
-    </View>
-    <View style={styles.field}>
-      <Text style={styles.label}>수상 경력</Text>
-      <TextInput
-        style={[styles.input, styles.multilineInput]}
-        value={awards}
-        onChangeText={setAwards}
-        placeholder="수상 경력을 입력하세요"
-        placeholderTextColor={GRAY.DARK_2}
-        multiline
-        numberOfLines={3}
-      />
-    </View>
-  </ScrollView>
-);
-
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
   const layout = useWindowDimensions();
   const { user } = useAuth();
+
   const [tabIndex, setTabIndex] = useState(0);
   const [routes] = useState([
     { key: "top", title: "상단소개" },
@@ -212,9 +58,10 @@ const ProfileEditScreen = () => {
   const [nickname, setNickname] = useState("");
   const [activityId, setActivityId] = useState("");
   const [aboutMe, setAboutMe] = useState("");
-  const [education, setEducation] = useState("");
-  const [career, setCareer] = useState("");
-  const [awards, setAwards] = useState("");
+  const [educationList, setEducationList] = useState<EducationEntry[]>([]);
+  const [careerList, setCareerList] = useState<CareerEntry[]>([]);
+  const [awardList, setAwardList] = useState<AwardEntry[]>([]);
+  const [certificateList, setCertificateList] = useState<CertificateEntry[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -223,7 +70,7 @@ const ProfileEditScreen = () => {
     getProfileCache().then((cached) => {
       if (!cancelled && cached && !apiResponded.current) {
         setProfile(cached);
-        setFormFromProfile(cached);
+        populateForm(cached);
         setIsLoading(false);
       }
     });
@@ -233,24 +80,23 @@ const ProfileEditScreen = () => {
         apiResponded.current = true;
         if (data) saveProfileCache(data);
         setProfile(data);
-        setFormFromProfile(data);
+        populateForm(data);
         setIsLoading(false);
       }
     });
 
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
-  const setFormFromProfile = (p: Awaited<ReturnType<typeof getMyProfile>>) => {
+  const populateForm = (p: Awaited<ReturnType<typeof getMyProfile>>) => {
     if (!p) return;
     setNickname(p.nickname || user?.nickname || "");
-    setActivityId(""); // API에 활동 아이디 없음 - 추후 추가 시 매핑
+    setActivityId("");
     setAboutMe(p.aboutMe || "");
-    setEducation(p.education || "");
-    setCareer(p.career || "");
-    setAwards(p.awards || "");
+    setEducationList(p.educationEntries ?? []);
+    setCareerList(p.careerEntries ?? []);
+    setAwardList(p.awardEntries ?? []);
+    setCertificateList(p.certificateEntries ?? []);
   };
 
   const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
@@ -272,7 +118,9 @@ const ProfileEditScreen = () => {
           <Text
             style={[
               styles.tabButtonText,
-              i === tabIndex ? styles.tabButtonTextActive : styles.tabButtonTextInactive,
+              i === tabIndex
+                ? styles.tabButtonTextActive
+                : styles.tabButtonTextInactive,
             ]}
           >
             {route.title}
@@ -300,20 +148,40 @@ const ProfileEditScreen = () => {
         <ProfileTab
           aboutMe={aboutMe}
           setAboutMe={setAboutMe}
-          education={education}
-          setEducation={setEducation}
-          career={career}
-          setCareer={setCareer}
-          awards={awards}
-          setAwards={setAwards}
+          educationList={educationList}
+          setEducationList={setEducationList}
+          careerList={careerList}
+          setCareerList={setCareerList}
+          awardList={awardList}
+          setAwardList={setAwardList}
+          certificateList={certificateList}
+          setCertificateList={setCertificateList}
         />
       );
     }
     return null;
   };
 
-  const handleComplete = () => {
-    // TODO: 저장 API 연동
+  const persistToCache = async () => {
+    if (!profile) return;
+    await saveProfileCache({
+      ...profile,
+      nickname,
+      aboutMe,
+      educationEntries: educationList,
+      careerEntries: careerList,
+      awardEntries: awardList,
+      certificateEntries: certificateList,
+    });
+  };
+
+  const handlePreview = async () => {
+    await persistToCache();
+    navigation.goBack();
+  };
+
+  const handleComplete = async () => {
+    await persistToCache();
     navigation.goBack();
   };
 
@@ -331,6 +199,7 @@ const ProfileEditScreen = () => {
       behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={0}
     >
+      {/* 프로필 이미지 */}
       <View style={styles.profileImageSection}>
         <View style={styles.profileImageWrapper}>
           {displayProfileImgUrl ? (
@@ -358,6 +227,7 @@ const ProfileEditScreen = () => {
         </View>
       </View>
 
+      {/* 탭 */}
       <TabView
         navigationState={{ index: tabIndex, routes }}
         renderScene={renderScene}
@@ -368,10 +238,16 @@ const ProfileEditScreen = () => {
         swipeEnabled={false}
       />
 
+      {/* 수정 완료 버튼 */}
       <View style={styles.buttonContainer}>
-        <Pressable style={styles.button} onPress={handleComplete}>
-          <Text style={styles.buttonText}>수정 완료</Text>
-        </Pressable>
+        <View style={styles.buttonRow}>
+          <Pressable style={styles.previewButton} onPress={handlePreview}>
+            <Text style={styles.previewButtonText}>미리보기</Text>
+          </Pressable>
+          <Pressable style={styles.button} onPress={handleComplete}>
+            <Text style={styles.buttonText}>수정 완료</Text>
+          </Pressable>
+        </View>
       </View>
     </KeyboardAvoidingView>
   );

@@ -85,7 +85,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     gap: 4,
-    height: 34,
+    height: 37,
     backgroundColor: MAIN.DEFAULT,
     borderRadius: 10,
     justifyContent: "center",
@@ -96,7 +96,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     gap: 4,
-    height: 34,
+    height: 37,
     backgroundColor: MAIN.DEFAULT,
     borderRadius: 10,
     justifyContent: "center",
@@ -112,6 +112,59 @@ const styles = StyleSheet.create({
     letterSpacing: 0.24,
     fontWeight: "400",
     color: WHITE,
+  },
+
+  // ── 섹션 구분선 ──
+  sectionDivider: {
+    height: 1,
+    backgroundColor: GRAY.MEDIUM,
+    marginTop: 16,
+    marginBottom: 4,
+  },
+
+  // ── 학력/경력/수상/자격증 섹션 ──
+  sectionBlock: {
+    marginTop: 14,
+  },
+  sectionTitle: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: GRAY.DARK_100,
+    marginBottom: 8,
+    letterSpacing: 0.2,
+  },
+  entryRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 8,
+    gap: 6,
+  },
+  entryIcon: {
+    marginTop: 2,
+  },
+  entryTextBlock: {
+    flex: 1,
+    gap: 2,
+  },
+  entryDescription: {
+    fontSize: 13,
+    color: GRAY.DARK_100,
+    lineHeight: 18,
+  },
+  entryPeriod: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+  },
+  fileChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    marginTop: 2,
+  },
+  fileChipText: {
+    fontSize: 11,
+    color: MAIN.DEFAULT,
+    flex: 1,
   },
 });
 
