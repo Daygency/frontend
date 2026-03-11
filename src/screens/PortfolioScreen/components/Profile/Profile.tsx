@@ -1,4 +1,11 @@
-import { View, Text, Switch, Pressable, Image, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Switch,
+  Pressable,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 import styles from "./styles";
 import { FontAwesome, Ionicons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../../color";
@@ -7,23 +14,56 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../../navigations/routes";
 import { getMyProfile } from "../../../../lib/profileApi";
+import { useAuth } from "../../../../contexts/AuthContext";
 
 const ROLE_LABEL: Record<string, string> = {
   artist: "예술가",
   planner: "플래너",
 };
 
+const isValidImageUrl = (url: string | undefined): boolean =>
+  !!url?.trim() && (url.startsWith("http://") || url.startsWith("https://"));
+
+/** iOS ATS는 http 차단 → https로 변환 */
+const toHttpsImageUrl = (url: string | undefined): string | null => {
+  const trimmed = url?.trim();
+  if (!trimmed) return null;
+  if (trimmed.startsWith("http://"))
+    return trimmed.replace("http://", "https://");
+  return trimmed;
+};
+
 const Profile = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
-  const [profile, setProfile] = useState<Awaited<ReturnType<typeof getMyProfile>>>(null);
+  const { user } = useAuth();
+  const [profile, setProfile] =
+    useState<Awaited<ReturnType<typeof getMyProfile>>>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isEnabled, setIsEnabled] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
+  // API 프로필 → 로그인 시 저장된 user 정보 fallback (nickname, profileImgUrl)
+  const displayNickname = profile?.nickname || user?.nickname || "이름 없음";
+  const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
+  const displayProfileImgUrl =
+    isValidImageUrl(rawProfileImgUrl) && !imageError
+      ? toHttpsImageUrl(rawProfileImgUrl)
+      : null;
+
+  console.log("[Profile] profileImgUrl:", {
+    fromProfile: profile?.profileImgUrl,
+    fromUser: user?.profileImgUrl,
+    raw: rawProfileImgUrl,
+    display: displayProfileImgUrl,
+    imageError,
+  });
 
   const followerCount = 100;
   const followingCount = 100;
 
   useEffect(() => {
     let cancelled = false;
+    setImageError(false);
     getMyProfile().then((data) => {
       if (!cancelled) {
         setProfile(data);
@@ -35,25 +75,37 @@ const Profile = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setImageError(false);
+  }, [rawProfileImgUrl]);
+
   if (isLoading) {
     return (
-      <View style={[styles.container, { paddingVertical: 24, alignItems: "center" }]}>
+      <View
+        style={[
+          styles.container,
+          { paddingVertical: 24, alignItems: "center" },
+        ]}
+      >
         <ActivityIndicator size="small" color={MAIN.DEFAULT} />
       </View>
     );
   }
 
-  const roleLabel = profile?.role ? ROLE_LABEL[profile.role] ?? profile.role : "";
+  const roleLabel = profile?.role
+    ? (ROLE_LABEL[profile.role] ?? profile.role)
+    : "";
 
   return (
     <View style={styles.container}>
       <View style={styles.profileContainer}>
         <View style={styles.profileImageContainer}>
-          {profile?.profileImgUrl ? (
+          {displayProfileImgUrl ? (
             <Image
-              source={{ uri: profile.profileImgUrl }}
-              style={{ width: 95, height: 95, borderRadius: 50 }}
+              source={{ uri: displayProfileImgUrl }}
+              style={styles.profileImage}
               resizeMode="cover"
+              onError={() => setImageError(true)}
             />
           ) : (
             <Text>사진</Text>
@@ -61,7 +113,7 @@ const Profile = () => {
         </View>
         <View style={styles.profileInfoContainer}>
           <View style={styles.profileNameContainer}>
-            <Text style={styles.profileName}>{profile?.nickname ?? "이름 없음"}</Text>
+            <Text style={styles.profileName}>{displayNickname}</Text>
             {roleLabel ? (
               <View style={styles.profileTagContainer}>
                 <Text style={styles.profileTag}>{roleLabel}</Text>
@@ -77,10 +129,10 @@ const Profile = () => {
           </Pressable>
         </View>
       </View>
-      <View style={styles.profileFollowingContainer}>
+      {/* <View style={styles.profileFollowingContainer}>
         <FontAwesome name="user-circle" size={15} color="black" />
         <Text>은정님이 팔로우 중</Text>
-      </View>
+      </View> */}
       <Text style={styles.profileIntroduction}>
         {profile?.aboutMe ? profile.aboutMe : "소개가 없습니다."}
       </Text>

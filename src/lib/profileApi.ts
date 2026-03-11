@@ -31,5 +31,14 @@ export async function getMyProfile(): Promise<ProfileResponseDto | null> {
   if (!res.ok) return null;
 
   const data = await res.json().catch(() => null);
-  return data as ProfileResponseDto;
+  if (!data) return null;
+
+  console.log("[getMyProfile] API 응답:", JSON.stringify(data, null, 2));
+
+  const profile = data as ProfileResponseDto;
+  // 상대 경로인 경우 API base URL 붙이기 (예: /uploads/profile/xxx.jpg)
+  if (profile.profileImgUrl?.startsWith("/")) {
+    profile.profileImgUrl = `${API_BASE}${profile.profileImgUrl}`;
+  }
+  return profile;
 }
