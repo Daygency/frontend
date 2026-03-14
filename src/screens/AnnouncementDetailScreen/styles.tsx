@@ -22,6 +22,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
+    marginBottom: 10,
   },
   producerName: {
     fontSize: 15,
@@ -31,6 +32,7 @@ const styles = StyleSheet.create({
     color: BLACK,
   },
   infoContainer: {
+    marginTop: 10,
     gap: 10,
   },
   infoRow: {
@@ -86,7 +88,8 @@ const styles = StyleSheet.create({
     right: 0,
     paddingHorizontal: 16,
     paddingVertical: 16,
-    backgroundColor: WHITE,...Platform.select({
+    backgroundColor: WHITE,
+    ...Platform.select({
       ios: {
         shadowColor: "#000",
         shadowOffset: { width: 0, height: -2 },
