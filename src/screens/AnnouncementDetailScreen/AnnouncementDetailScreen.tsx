@@ -49,6 +49,11 @@ const AnnouncementDetailScreen = () => {
     "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
   ];
 
+  const attachmentList = [
+    { name: "모집공고_상세안내.pdf", size: "2.4 MB" },
+    { name: "오디션_곡목.pdf", size: "1.1 MB" },
+  ];
+
   const handleImageLoad = (index: number, event: any) => {
     const { width, height } = event.nativeEvent.source;
     const imageWidth = screenWidth - 40;
@@ -135,6 +140,32 @@ const AnnouncementDetailScreen = () => {
               ]}
               onLoad={(event) => handleImageLoad(index, event)}
             />
+          ))}
+        </View>
+        <View style={styles.dividerThick} />
+        <View style={styles.section}>
+          <Text style={styles.attachmentTitle}>첨부파일</Text>
+          {attachmentList.map((file, index) => (
+            <Pressable
+              key={index}
+              style={styles.attachmentCard}
+              onPress={() => {}}
+            >
+              <MaterialCommunityIcons
+                name="paperclip"
+                size={20}
+                color={MAIN.DEFAULT}
+              />
+              <View style={styles.attachmentInfo}>
+                <Text style={styles.attachmentFileName}>{file.name}</Text>
+                <Text style={styles.attachmentFileSize}>{file.size}</Text>
+              </View>
+              <MaterialCommunityIcons
+                name="download"
+                size={22}
+                color={MAIN.DEFAULT}
+              />
+            </Pressable>
           ))}
         </View>
       </ScrollView>

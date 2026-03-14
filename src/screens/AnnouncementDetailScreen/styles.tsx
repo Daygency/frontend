@@ -81,6 +81,38 @@ const styles = StyleSheet.create({
     marginTop: 16,
     borderRadius: 8,
   },
+  attachmentTitle: {
+    fontSize: 15,
+    lineHeight: 24,
+    fontWeight: "600",
+    letterSpacing: -0.32,
+    color: MAIN.DEFAULT,
+    marginBottom: 12,
+  },
+  attachmentCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: GRAY.DEFAULT,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    marginBottom: 10,
+    gap: 12,
+  },
+  attachmentInfo: {
+    flex: 1,
+  },
+  attachmentFileName: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: BLACK,
+    marginBottom: 4,
+  },
+  attachmentFileSize: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+    fontWeight: "400",
+  },
   applyContainer: {
     position: "absolute",
     bottom: 0,
