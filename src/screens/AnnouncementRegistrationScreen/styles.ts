@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, BLUE, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tabActive: {
-    backgroundColor: BLUE.DEFAULT,
+    backgroundColor: MAIN.DEFAULT,
   },
   tabText: {
     fontSize: 14,
@@ -153,8 +153,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   checkboxChecked: {
-    backgroundColor: BLUE.DEFAULT,
-    borderColor: BLUE.DEFAULT,
+    backgroundColor: MAIN.DEFAULT,
+    borderColor: MAIN.DEFAULT,
   },
   applicationFormLabel: {
     flex: 1,
@@ -180,14 +180,14 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   radioChecked: {
-    borderColor: BLUE.DEFAULT,
+    borderColor: MAIN.DEFAULT,
     borderWidth: 2,
   },
   radioInner: {
     width: 10,
     height: 10,
     borderRadius: 5,
-    backgroundColor: BLUE.DEFAULT,
+    backgroundColor: MAIN.DEFAULT,
   },
   confirmText: {
     flex: 1,
@@ -204,19 +204,16 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "center",
     paddingHorizontal: 20,
     paddingTop: 16,
+    paddingBottom: 16,
     backgroundColor: WHITE,
   },
-  footerSpacer: {
-    flex: 1,
-  },
   registerButton: {
-    flex: 1,
-    maxWidth: 200,
+    alignSelf: "center",
+    minWidth: 200,
     backgroundColor: "#0057D9",
     borderRadius: 12,
     paddingVertical: 14,

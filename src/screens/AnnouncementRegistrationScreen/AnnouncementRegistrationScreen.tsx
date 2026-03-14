@@ -1,6 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
+  Animated,
   Pressable,
   ScrollView,
   Switch,
@@ -14,7 +15,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Form from "../../components/Form/Form";
 import FormTextInput from "../../components/FormTextInput/FormTextInput";
 import FormDropdownInput from "../../components/FormDropdownInput/FormDropdownInput";
-import { BLACK, BLUE, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
 
 const announcementTypeOptions = [
@@ -59,6 +60,23 @@ const AnnouncementRegistrationScreen = () => {
   const navigation = useNavigation();
   const { bottom } = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabType>("announcement");
+  const contentOpacity = useRef(new Animated.Value(1)).current;
+
+  const handleTabPress = (tab: TabType) => {
+    if (tab === activeTab) return;
+    Animated.timing(contentOpacity, {
+      toValue: 0,
+      duration: 150,
+      useNativeDriver: true,
+    }).start(() => {
+      setActiveTab(tab);
+      Animated.timing(contentOpacity, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
 
   // 공고 작성 필드
   const [title, setTitle] = useState("");
@@ -120,7 +138,7 @@ const AnnouncementRegistrationScreen = () => {
       <View style={styles.tabContainer}>
         <Pressable
           style={[styles.tab, activeTab === "announcement" && styles.tabActive]}
-          onPress={() => setActiveTab("announcement")}
+          onPress={() => handleTabPress("announcement")}
         >
           <Text
             style={[
@@ -133,7 +151,7 @@ const AnnouncementRegistrationScreen = () => {
         </Pressable>
         <Pressable
           style={[styles.tab, activeTab === "applicationForm" && styles.tabActive]}
-          onPress={() => setActiveTab("applicationForm")}
+          onPress={() => handleTabPress("applicationForm")}
         >
           <Text
             style={[
@@ -153,6 +171,7 @@ const AnnouncementRegistrationScreen = () => {
         ]}
         showsVerticalScrollIndicator={false}
       >
+        <Animated.View style={{ opacity: contentOpacity }}>
         {activeTab === "announcement" ? (
           <>
             <View style={styles.formSection}>
@@ -355,7 +374,7 @@ const AnnouncementRegistrationScreen = () => {
                   }
                   disabled={!formFields[id]?.included}
                   trackColor={{
-                    true: BLUE.DEFAULT,
+                    true: MAIN.DEFAULT,
                     false: GRAY.MEDIUM,
                   }}
                   thumbColor={WHITE}
@@ -384,6 +403,7 @@ const AnnouncementRegistrationScreen = () => {
             </Pressable>
           </View>
         )}
+        </Animated.View>
       </ScrollView>
 
       <View
@@ -394,18 +414,17 @@ const AnnouncementRegistrationScreen = () => {
             ...Platform.select({
               ios: {
                 shadowColor: "#000",
-                shadowOffset: { width: 0, height: -2 },
-                shadowOpacity: 0.08,
-                shadowRadius: 12,
+                shadowOffset: { width: 0, height: -4 },
+                shadowOpacity: 0.12,
+                shadowRadius: 16,
               },
               android: {
-                elevation: 4,
+                elevation: 8,
               },
             }),
           },
         ]}
       >
-        <View style={styles.footerSpacer} />
         <Pressable
           style={[
             styles.registerButton,
