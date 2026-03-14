@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { WHITE, MAIN, GRAY } from "../../../color";
+import { WHITE, MAIN, GRAY, BLUE } from "../../../color";
 
 export const styles = StyleSheet.create({
   container: {
@@ -34,13 +34,24 @@ export const styles = StyleSheet.create({
     color: MAIN.DEFAULT,
     marginBottom: 8,
   },
+  labelFocused: {
+    color: BLUE.DEFAULT,
+  },
   input: {
     backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 16,
+    lineHeight: 20,
     color: MAIN.DEFAULT,
+    minHeight: 48,
+    borderWidth: 1,
+    borderColor: "transparent",
+  },
+  inputFocused: {
+    borderColor: BLUE.DEFAULT,
+    backgroundColor: WHITE,
   },
   agreementSection: {
     marginTop: 8,

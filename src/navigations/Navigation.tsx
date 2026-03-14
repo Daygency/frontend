@@ -25,6 +25,7 @@ import AccountScreen from "../screens/SettingsScreens/AccountScreen/AccountScree
 import WithdrawConfirmScreen from "../screens/WithdrawConfirmScreen/WithdrawConfirmScreen";
 import ChatRoomScreen from "../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
 import ChatRoomOptionsScreen from "../screens/ChatScreens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
+import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -696,6 +697,37 @@ const Navigation = () => {
           options={{
             headerShown: false,
           }}
+        />
+        <Stack.Screen
+          name={RootRoutes.PROFILE_EDIT}
+          component={ProfileEditScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>프로필 수정</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "center",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
         />
       </Stack.Navigator>
     </NavigationContainer>

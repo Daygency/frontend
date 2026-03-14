@@ -1,8 +1,15 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE, AUTH_TOKEN_KEY } from "../lib/api";
+import { API_BASE, AUTH_TOKEN_KEY } from "../lib/apis/api";
 import { clearProfileCache } from "../lib/profileCache";
+import { completeKakaoSignup } from "../lib/apis/auth/completeKakaoSignup";
 const USER_INFO_KEY = "@daygency_user_info";
 const PENDING_SIGNUP_KEY = "@daygency_pending_signup";
 
@@ -18,6 +25,7 @@ export type UserRole = "artist" | "planner";
 export type SignupParams = {
   role: UserRole;
   nickname?: string; // 미입력 시 소셜 프로필 값 사용
+  activityName?: string;
 };
 
 type AuthContextType = {
@@ -26,7 +34,11 @@ type AuthContextType = {
   isLoading: boolean;
   needsRoleSelection: boolean;
   user: SocialUser | null;
-  login: (token: string, user: SocialUser, options?: { isNewUser?: boolean }) => Promise<void>;
+  login: (
+    token: string,
+    user: SocialUser,
+    options?: { isNewUser?: boolean },
+  ) => Promise<void>;
   completeSignup: (params: SignupParams) => Promise<void>;
   logout: () => Promise<void>;
   enterBrowse: () => void;
@@ -66,7 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (
     token: string,
     userInfo: SocialUser,
-    options?: { isNewUser?: boolean }
+    options?: { isNewUser?: boolean },
   ) => {
     await Promise.all([
       AsyncStorage.setItem(AUTH_TOKEN_KEY, token),
@@ -82,38 +94,25 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const completeSignup = async (params: SignupParams) => {
-    const { role, nickname } = params;
+    const { role, nickname, activityName } = params;
     try {
       const accessToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
       if (!accessToken) {
         throw new Error("로그인 정보가 없습니다. 다시 로그인해 주세요.");
       }
 
-      const body: { accessToken: string; nickname?: string; role?: string } = {
+      const data = await completeKakaoSignup({
         accessToken,
         role,
-      };
-      if (nickname?.trim()) body.nickname = nickname.trim();
-
-      const res = await fetch(`${API_BASE}/auth/signup/kakao`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        ...(nickname?.trim() ? { nickname: nickname.trim() } : {}),
+        ...(activityName?.trim() ? { activityName: activityName.trim() } : {}),
       });
 
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok) {
-        const message =
-          data?.message ?? data?.error ?? (typeof data === "string" ? data : "");
-        throw new Error(message || `가입에 실패했습니다 (${res.status})`);
-      }
-
       // 토큰 발급 시 새 토큰으로 갱신
-      if (data.accessToken) {
+      if (data?.accessToken) {
         await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
       }
-      if (data.user) {
+      if (data?.user) {
         const u = data.user;
         const userInfo: SocialUser = {
           socialId: String(u.userId ?? u.socialId ?? ""),

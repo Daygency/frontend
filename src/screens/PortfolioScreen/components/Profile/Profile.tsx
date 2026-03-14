@@ -7,13 +7,17 @@ import {
   ActivityIndicator,
 } from "react-native";
 import styles from "./styles";
-import { FontAwesome, Ionicons } from "@expo/vector-icons";
+import {
+  FontAwesome,
+  Ionicons,
+  MaterialCommunityIcons,
+} from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../../color";
-import { useState, useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useState, useEffect, useCallback } from "react";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../../navigations/routes";
-import { getMyProfile } from "../../../../lib/profileApi";
+import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
 import {
   getProfileCache,
   saveProfileCache,
@@ -41,6 +45,16 @@ const toDisplayImageUri = (uri: string | undefined): string | null => {
   return trimmed;
 };
 
+const formatYearMonth = (year: string, month: string) => {
+  if (!year && !month) return "";
+  if (!year) return `${month}월`;
+  if (!month) return `${year}`;
+  return `${year}.${month.padStart(2, "0")}`;
+};
+
+// ─────────────────────────────────────────────
+// 메인 Profile 컴포넌트
+// ─────────────────────────────────────────────
 const Profile = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { user } = useAuth();
@@ -50,7 +64,6 @@ const Profile = () => {
   const [isEnabled, setIsEnabled] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  // API 프로필 → 로그인 시 저장된 user 정보 fallback (nickname, profileImgUrl)
   const displayNickname = profile?.nickname || user?.nickname || "이름 없음";
   const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
   const displayProfileImgUrl =
@@ -65,16 +78,17 @@ const Profile = () => {
     display: displayProfileImgUrl,
     imageError,
   });
+  console.log("[Profile] activityName:", profile?.activityName);
 
   const followerCount = 100;
   const followingCount = 100;
 
-  useEffect(() => {
+  const loadProfile = useCallback(() => {
     let cancelled = false;
     const apiResponded = { current: false };
+    setIsLoading(true);
     setImageError(false);
 
-    // 1) 캐시에서 먼저 표시 (즉시 로딩)
     getProfileCache().then((cached) => {
       if (!cancelled && cached && !apiResponded.current) {
         setProfile(cached);
@@ -82,7 +96,6 @@ const Profile = () => {
       }
     });
 
-    // 2) API에서 최신 데이터 조회 후 캐시 저장
     getMyProfile().then((data) => {
       if (!cancelled) {
         apiResponded.current = true;
@@ -96,6 +109,17 @@ const Profile = () => {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    loadProfile();
+  }, [loadProfile]);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+      return () => {};
+    }, [loadProfile])
+  );
 
   useEffect(() => {
     setImageError(false);
@@ -114,9 +138,10 @@ const Profile = () => {
     );
   }
 
-  const roleLabel = profile?.role
-    ? (ROLE_LABEL[profile.role] ?? profile.role)
-    : "";
+  const roleLabel =
+    profile?.role && profile.role !== "user"
+      ? ROLE_LABEL[profile.role] ?? profile.role
+      : "";
 
   return (
     <View style={styles.container}>
@@ -135,7 +160,9 @@ const Profile = () => {
         </View>
         <View style={styles.profileInfoContainer}>
           <View style={styles.profileNameContainer}>
-            <Text style={styles.profileName}>{displayNickname}</Text>
+            <View>
+              <Text style={styles.profileName}>{displayNickname}</Text>
+            </View>
             {roleLabel ? (
               <View style={styles.profileTagContainer}>
                 <Text style={styles.profileTag}>{roleLabel}</Text>
@@ -151,18 +178,19 @@ const Profile = () => {
           </Pressable>
         </View>
       </View>
-      {/* <View style={styles.profileFollowingContainer}>
-        <FontAwesome name="user-circle" size={15} color="black" />
-        <Text>은정님이 팔로우 중</Text>
-      </View> */}
+
       <Text style={styles.profileIntroduction}>
         {profile?.aboutMe ? profile.aboutMe : "소개가 없습니다."}
       </Text>
+
       <View style={styles.profileSettingContainer}>
-        <View style={styles.profileEditContainer}>
+        <Pressable
+          style={styles.profileEditContainer}
+          onPress={() => navigation.navigate(RootRoutes.PROFILE_EDIT)}
+        >
           <Ionicons name="settings-outline" size={20} color="white" />
           <Text style={styles.profileEditText}>프로필 수정</Text>
-        </View>
+        </Pressable>
         <View style={styles.profilePrivateContainer}>
           <Switch
             value={isEnabled}

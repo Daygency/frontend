@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, MAIN, RED, WHITE } from "../../../../color";
+import { BLACK, GRAY, MAIN, RED, WHITE } from "../../../../color";
 import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../styles";
 
 const styles = StyleSheet.create({
@@ -12,6 +12,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 15,
     paddingTop: 10,
+  },
+  leftContainer: {
+    flexShrink: 1,
   },
   title: {
     marginLeft: 4,
@@ -40,6 +43,17 @@ const styles = StyleSheet.create({
   iconText: {
     fontSize: 11,
     color: WHITE,
+    fontWeight: "600",
+  },
+  activityBar: {
+    marginTop: 2,
+    backgroundColor: "transparent",
+    alignSelf: "flex-start",
+    justifyContent: "center",
+  },
+  activityBarText: {
+    fontSize: 13,
+    color: GRAY.DARK,
     fontWeight: "600",
   },
   dotNew: {

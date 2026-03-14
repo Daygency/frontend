@@ -35,4 +35,5 @@ export const RootRoutes = {
   WITHDRAW_CONFIRM: "WithdrawConfirm",
   CHAT_ROOM: "ChatRoom",
   CHAT_ROOM_OPTIONS: "ChatRoomOptions",
+  PROFILE_EDIT: "ProfileEdit",
 } as const;
