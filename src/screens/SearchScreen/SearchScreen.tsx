@@ -10,7 +10,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { useState, useCallback, useMemo } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TabView } from "react-native-tab-view";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import {
   getRecentSearches,
   addRecentSearch,
@@ -55,6 +55,9 @@ const SearchScreen = () => {
   const { top } = useSafeAreaInsets();
   const layout = useWindowDimensions();
   const navigation = useNavigation();
+  const route = useRoute();
+  const initialTag = (route.params as { initialTag?: string } | undefined)?.initialTag;
+
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
   const [inputText, setInputText] = useState("");
@@ -69,7 +72,10 @@ const SearchScreen = () => {
   useFocusEffect(
     useCallback(() => {
       loadRecent();
-    }, [loadRecent])
+      if (initialTag != null) {
+        setSelectedTag(initialTag);
+      }
+    }, [loadRecent, initialTag])
   );
 
   const handleRemoveItem = async (term: string) => {

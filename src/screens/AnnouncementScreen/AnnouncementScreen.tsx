@@ -138,7 +138,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
 
   return (
     <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
-      {!hideTopBar && <MainHomeTopBar logoName="모집공고" />}
+      {!hideTopBar && <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

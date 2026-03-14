@@ -29,6 +29,14 @@ const MainHomeScreen = () => {
     }
   };
 
+  const categoryToSearchTag: Record<string, string | null> = {
+    전체: null,
+    아티스트: "아티스트",
+    공연장: "공연장정보",
+    기획사: "기획자",
+  };
+  const initialTag = categoryToSearchTag[routes[index].key] ?? null;
+
   const renderScene = ({ route }: { route: { key: string } }) => {
     switch (route.key) {
       case "전체":
@@ -46,7 +54,7 @@ const MainHomeScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <MainHomeTopBar logoName="DAYGENCY" />
+      <MainHomeTopBar logoName="DAYGENCY" initialTag={initialTag} />
       <MainHomeHeader />
       <TabView
         navigationState={{ index, routes }}

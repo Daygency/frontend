@@ -21,6 +21,12 @@ const LoungeScreen = () => {
     { key: "커뮤니티", title: "커뮤니티" },
   ]);
 
+  const tabToSearchTag: Record<string, string> = {
+    "음악계 소식": "공연소식",
+    "커뮤니티": "커뮤니티",
+  };
+  const initialTag = tabToSearchTag[routes[index].key] ?? "커뮤니티";
+
   const renderScene = ({ route }: { route: { key: string } }) => {
     switch (route.key) {
       case "음악계 소식":
@@ -34,7 +40,7 @@ const LoungeScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <MainHomeTopBar logoName="라운지" />
+      <MainHomeTopBar logoName="라운지" initialTag="커뮤니티" />
       <TabView
         navigationState={{ index, routes }}
         renderScene={renderScene}
