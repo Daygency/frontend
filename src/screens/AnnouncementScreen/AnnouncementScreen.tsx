@@ -1,16 +1,15 @@
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
-import FilterDropdown from "../../components/FilterDropdown/FilterDropdown";
+import MajorTagFilter from "../../components/MajorTagFilter/MajorTagFilter";
+import SectorTagSelectModal from "../../components/SectorTagSelectModal/SectorTagSelectModal";
 import { RootRoutes } from "../../navigations/routes";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import styles from "./styles";
-import MainHomeHeader from "../../components/MainHomeHeader/MainHomeHeader";
 import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
-import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../components/MainHomeTopBar/styles";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -26,15 +25,10 @@ interface AnnouncementScreenProps {
 const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => {
   const navigation = useNavigation<NavigationProp>();
   const { top } = useSafeAreaInsets();
-  const [recruitmentStatus, setRecruitmentStatus] = useState<
-    string | undefined
-  >();
-  const [announcementType, setAnnouncementType] = useState<
-    string | undefined
-  >();
-  const [recruitmentMajor, setRecruitmentMajor] = useState<
-    string | undefined
-  >();
+  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
+  const [isTagModalVisible, setIsTagModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<string>("최신순");
 
   const recruitmentStatusOptions = ["모집중", "모집마감"];
@@ -139,41 +133,71 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   return (
     <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
       {!hideTopBar && <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.filterContainer}
-        nestedScrollEnabled={true}
-        directionalLockEnabled={true}
-        scrollEventThrottle={16}
-        bounces={false}
-      >
-        <FilterDropdown
-          label="모집 상태"
-          options={recruitmentStatusOptions}
-          selectedValue={recruitmentStatus}
-          onSelect={setRecruitmentStatus}
-        />
-        <FilterDropdown
-          label="공고 유형"
-          options={announcementTypeOptions}
-          selectedValue={announcementType}
-          onSelect={setAnnouncementType}
-        />
-        <FilterDropdown
-          label="모집 전공"
-          options={recruitmentMajorOptions}
-          selectedValue={recruitmentMajor}
-          onSelect={setRecruitmentMajor}
-        />
-        <FilterDropdown
-          label="정렬"
-          options={sortOptions}
-          selectedValue={sortBy}
-          onSelect={setSortBy}
-        />
-      </ScrollView>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.filterWrapper}>
+        <View style={styles.filterRow}>
+          <MajorTagFilter
+            label="태그"
+            selectedValues={[
+              ...selectedStatus,
+              ...selectedTypes,
+              ...selectedMajors,
+            ]}
+            onPress={() => setIsTagModalVisible(true)}
+          />
+          {sortOptions.map((option) => (
+            <Pressable
+              key={option}
+              style={[styles.sortTab, sortBy === option && styles.sortTabActive]}
+              onPress={() => setSortBy(option)}
+            >
+              <Text
+                style={[
+                  styles.sortTabText,
+                  sortBy === option && styles.sortTabTextActive,
+                ]}
+              >
+                {option}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+      <SectorTagSelectModal
+        visible={isTagModalVisible}
+        title="태그 선택"
+        sections={[
+          {
+            title: "모집 상태",
+            options: recruitmentStatusOptions,
+            selectedValues: selectedStatus,
+            onToggle: (value) =>
+              setSelectedStatus((prev) =>
+                prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+              ),
+          },
+          {
+            title: "공고 유형",
+            options: announcementTypeOptions,
+            selectedValues: selectedTypes,
+            onToggle: (value) =>
+              setSelectedTypes((prev) =>
+                prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+              ),
+          },
+          {
+            title: "모집 전공",
+            options: recruitmentMajorOptions,
+            selectedValues: selectedMajors,
+            onToggle: (value) =>
+              setSelectedMajors((prev) =>
+                prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+              ),
+          },
+        ]}
+        onComplete={() => setIsTagModalVisible(false)}
+      />
+      <View style={styles.scrollContentWrapper}>
+        <ScrollView contentContainerStyle={styles.scrollContent}>
         {announcements.map((announcement, index) => (
           <View key={index} style={styles.cardWrapper}>
             <AnnouncementCard
@@ -192,7 +216,8 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             />
           </View>
         ))}
-      </ScrollView>
+        </ScrollView>
+      </View>
     </View>
   );
 };
