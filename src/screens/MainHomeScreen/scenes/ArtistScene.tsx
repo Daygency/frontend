@@ -1,66 +1,97 @@
-import { ScrollView, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { useState } from "react";
 import ArtistCard from "../../../components/ArtistCard/ArtistCard";
-import FilterDropdown from "../../../components/FilterDropdown/FilterDropdown";
+import MajorTagFilter from "../../../components/MajorTagFilter/MajorTagFilter";
+import MajorTagSelectModal from "../../../components/MajorTagSelectModal/MajorTagSelectModal";
 import styles from "./artistStyles";
 
-const ArtistScene = () => {
-  const [major, setMajor] = useState<string | undefined>();
-  const [sortBy, setSortBy] = useState<string>("추천수순");
+const MAJOR_OPTIONS = [
+  "건반악기",
+  "현악",
+  "관악",
+  "성악",
+  "타악",
+  "작곡",
+  "지휘",
+  "음악학",
+  "국악",
+  "무용",
+  "실용",
+  "뮤지컬·크로스오버",
+  "기타",
+];
 
-  const majorOptions = [
-    "건반악기",
-    "현악",
-    "관악",
-    "성악",
-    "타악",
-    "작곡",
-    "지휘",
-    "음악학",
-    "국악",
-    "무용",
-    "실용",
-    "뮤지컬·크로스오버",
-    "기타",
-  ];
-  const sortOptions = ["추천수순", "협업지수순", "활동횟수순", "스크랩수순"];
+const ArtistScene = () => {
+  const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
+  const [isMajorModalVisible, setIsMajorModalVisible] = useState(false);
+  const [sortBy, setSortBy] = useState<string>("예술템포순");
+  const sortOptions = ["예술템포순", "스크랩수순"] as const;
 
   return (
     <View style={styles.container}>
-      <View>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.filterContainer}
-          nestedScrollEnabled={true}
-          directionalLockEnabled={true}
-          scrollEventThrottle={16}
-          bounces={false}
-        >
-          <FilterDropdown
-            label="전공"
-            options={majorOptions}
-            selectedValue={major}
-            onSelect={setMajor}
+      <View style={styles.filterWrapper}>
+        <View style={styles.filterRow}>
+          <MajorTagFilter
+            selectedValues={selectedMajors}
+            onPress={() => setIsMajorModalVisible(true)}
           />
-          <FilterDropdown
-            label="정렬"
-            options={sortOptions}
-            selectedValue={sortBy}
-            onSelect={setSortBy}
-          />
-        </ScrollView>
+          {sortOptions.map((option) => (
+            <Pressable
+              key={option}
+              style={[styles.sortTab, sortBy === option && styles.sortTabActive]}
+              onPress={() => setSortBy(option)}
+            >
+              <Text
+                style={[
+                  styles.sortTabText,
+                  sortBy === option && styles.sortTabTextActive,
+                ]}
+              >
+                {option}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
+
+      <MajorTagSelectModal
+        visible={isMajorModalVisible}
+        options={MAJOR_OPTIONS}
+        selectedValues={selectedMajors}
+        onToggle={(value) => {
+          setSelectedMajors((prev) =>
+            prev.includes(value)
+              ? prev.filter((v) => v !== value)
+              : [...prev, value]
+          );
+        }}
+        onComplete={() => setIsMajorModalVisible(false)}
+      />
       <View style={styles.scrollContentWrapper}>
         <ScrollView contentContainerStyle={styles.scrollContent}>
           <View style={styles.cardWrapper}>
-            <ArtistCard name="김연주" category="현악" bookmarkCount={20} />
+            <ArtistCard
+              name="김연주"
+              category="현악"
+              musicNoteCount={47}
+              bookmarkCount={20}
+            />
           </View>
           <View style={styles.cardWrapper}>
-            <ArtistCard name="김연주" category="현악" bookmarkCount={20} />
+            <ArtistCard
+              name="김연주"
+              category="현악"
+              musicNoteCount={0}
+              bookmarkCount={0}
+            />
           </View>
           <View style={styles.cardWrapper}>
-            <ArtistCard name="김연주" category="현악" bookmarkCount={20} />
+            <ArtistCard
+              name="김연주"
+              category="현악"
+              musicNoteCount={47}
+              bookmarkCount={20}
+            />
           </View>
         </ScrollView>
       </View>

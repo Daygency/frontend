@@ -33,9 +33,21 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: GRAY.DARK,
   },
-  bookmarkContainer: {
+  iconsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  iconWithCount: {
     alignItems: "center",
     justifyContent: "center",
+  },
+  musicNoteCount: {
+    fontSize: 12,
+    lineHeight: 17,
+    fontWeight: "400",
+    color: "#F67777",
+    marginTop: 4,
   },
   bookmarkCount: {
     fontSize: 12,

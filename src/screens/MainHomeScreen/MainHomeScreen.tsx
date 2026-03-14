@@ -33,7 +33,7 @@ const MainHomeScreen = () => {
     switch (route.key) {
       case "전체":
         return <AllContentScene />;
-      case "예술가":
+      case "아티스트":
         return <ArtistScene />;
       case "공연장":
         return <VenueScene />;

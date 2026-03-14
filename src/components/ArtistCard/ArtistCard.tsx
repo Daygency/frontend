@@ -3,16 +3,32 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
 import { BLACK, WHITE } from "../../color";
 import styles from "./styles";
-
+import MusicNoteIcon from "../../../assets/music_note.svg";
 interface ArtistCardProps {
   name: string;
   category: string;
+  musicNoteCount?: number;
   bookmarkCount: number;
 }
 
-const ArtistCard = ({ name, category, bookmarkCount }: ArtistCardProps) => {
+const MUSIC_NOTE_COLOR = "#F67777";
+
+const ArtistCard = ({
+  name,
+  category,
+  musicNoteCount = 0,
+  bookmarkCount,
+}: ArtistCardProps) => {
   return (
-    <ShadowCardButton styles={{container: {borderRadius: 15, paddingVertical: 12, paddingHorizontal: 16}}}>
+    <ShadowCardButton
+      styles={{
+        container: {
+          borderRadius: 15,
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+        },
+      }}
+    >
       <View style={styles.container}>
         {/* Avatar */}
         <View style={styles.avatarContainer}>
@@ -29,14 +45,20 @@ const ArtistCard = ({ name, category, bookmarkCount }: ArtistCardProps) => {
           <Text style={styles.category}>{category}</Text>
         </View>
 
-        {/* Bookmark Icon and Count */}
-        <View style={styles.bookmarkContainer}>
-          <MaterialCommunityIcons
-            name="bookmark-outline"
-            size={20}
-            color={BLACK}
-          />
-          <Text style={styles.bookmarkCount}>{bookmarkCount}</Text>
+        {/* Music Note & Bookmark Icons with Counts */}
+        <View style={styles.iconsContainer}>
+          <View style={styles.iconWithCount}>
+            <MusicNoteIcon width={20} height={20} />
+            <Text style={styles.musicNoteCount}>{musicNoteCount}</Text>
+          </View>
+          <View style={styles.iconWithCount}>
+            <MaterialCommunityIcons
+              name="bookmark-outline"
+              size={20}
+              color={BLACK}
+            />
+            <Text style={styles.bookmarkCount}>{bookmarkCount}</Text>
+          </View>
         </View>
       </View>
     </ShadowCardButton>
