@@ -26,6 +26,8 @@ import WithdrawConfirmScreen from "../screens/WithdrawConfirmScreen/WithdrawConf
 import ChatRoomScreen from "../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
 import ChatRoomOptionsScreen from "../screens/ChatScreens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
 import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
+import ArtistPortfolioScreen from "../screens/ArtistPortfolioScreen/ArtistPortfolioScreen";
+import SearchScreen from "../screens/SearchScreen/SearchScreen";
 import { RootRoutes } from "./routes";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
@@ -190,6 +192,14 @@ const Navigation = () => {
               </Pressable>
             ),
           })}
+        />
+        <Stack.Screen
+          name={RootRoutes.ARTIST_PORTFOLIO}
+          component={ArtistPortfolioScreen}
+        />
+        <Stack.Screen
+          name={RootRoutes.SEARCH}
+          component={SearchScreen}
         />
         <Stack.Screen
           name={RootRoutes.COMMUNITY_REGISTRATION}

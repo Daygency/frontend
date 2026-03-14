@@ -8,16 +8,26 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../navigations/routes";
 
-const MainHomeTopBar = ({ logoName }: { logoName: string }) => {
+interface MainHomeTopBarProps {
+  logoName: string;
+  initialTag?: string | null;
+}
+
+const MainHomeTopBar = ({ logoName, initialTag }: MainHomeTopBarProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+
+  const handleSearchPress = () => {
+    navigation.getParent()?.navigate(RootRoutes.SEARCH as never, {
+      initialTag: initialTag ?? undefined,
+    } as never);
+  };
 
   return (
     <View style={styles.container}>
       <Logo size={24} logoName={logoName} />
       <View style={styles.iconContainer}>
-        <Pressable style={styles.iconButton}>
+        <Pressable style={styles.iconButton} onPress={handleSearchPress}>
           <Feather name="search" size={23} color={MAIN.DEFAULT} />
-          <View style={styles.dotNew} />
         </Pressable>
         <Pressable style={styles.iconButton}>
           <MaterialCommunityIcons
@@ -25,7 +35,6 @@ const MainHomeTopBar = ({ logoName }: { logoName: string }) => {
             size={23}
             color={MAIN.DEFAULT}
           />
-          <View style={styles.dotNew} />
         </Pressable>
         <Pressable
           style={styles.iconButton}

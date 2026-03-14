@@ -36,4 +36,7 @@ export const RootRoutes = {
   CHAT_ROOM: "ChatRoom",
   CHAT_ROOM_OPTIONS: "ChatRoomOptions",
   PROFILE_EDIT: "ProfileEdit",
+  ARTIST_PORTFOLIO: "ArtistPortfolio",
+  SEARCH: "Search",
+  SEARCH_RESULTS: "SearchResults",
 } as const;

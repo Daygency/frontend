@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE } from "../../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -7,12 +7,68 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: WHITE,
   },
-  filterContainer: {
-    flexDirection: "row",
+  filterWrapper: {
     paddingHorizontal: 12,
     paddingTop: 13,
+  },
+  filterRow: {
+    flexDirection: "row",
     paddingBottom: 9,
     gap: 8,
+    alignItems: "center",
+  },
+  tag: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 100,
+    backgroundColor: GRAY.DEFAULT,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+  },
+  tagSelected: {
+    backgroundColor: MAIN.DEFAULT,
+    borderColor: MAIN.DEFAULT,
+  },
+  tagText: {
+    color: "#000000",
+    fontSize: 14,
+    fontWeight: "400",
+  },
+  tagTextSelected: {
+    color: WHITE,
+    fontWeight: "500",
+  },
+  tagSection: {
+    marginTop: 10,
+    paddingBottom: 12,
+  },
+  tagContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  sortTab: {
+    backgroundColor: WHITE,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: MAIN.DEFAULT,
+    paddingHorizontal: 12,
+    height: 36,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  sortTabActive: {
+    borderColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.DEFAULT,
+  },
+  sortTabText: {
+    color: MAIN.DEFAULT,
+    fontSize: 14,
+    fontWeight: "400",
+  },
+  sortTabTextActive: {
+    color: WHITE,
+    fontWeight: "500",
   },
   scrollContentWrapper: {
     flex: 1,

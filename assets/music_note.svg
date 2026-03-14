@@ -1,0 +1,11 @@
+<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="musicNoteGradient" x1="10" y1="0" x2="10" y2="20" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFB3B3"/>
+      <stop offset="1" stop-color="#F67777"/>
+    </linearGradient>
+  </defs>
+  <ellipse cx="9" cy="14.5" rx="2.5" ry="2" fill="url(#musicNoteGradient)"/>
+  <rect x="10" y="2" width="1.5" height="13" fill="url(#musicNoteGradient)"/>
+  <path d="M11.5 2C11.5 2 14 4 15 6C16 8 14 10 11.5 9V2Z" fill="url(#musicNoteGradient)"/>
+</svg>
