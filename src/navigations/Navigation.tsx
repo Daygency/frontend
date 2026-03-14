@@ -208,7 +208,7 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={styles.title}>모집공고 등록</Text>
+                <Text style={styles.title}>모집 공고 등록</Text>
               </View>
             ),
             headerShadowVisible: false,
