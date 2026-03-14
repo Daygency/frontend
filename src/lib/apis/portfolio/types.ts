@@ -2,6 +2,7 @@ export type UserRole = "admin" | "user";
 
 export type EducationEntry = {
   id: string;
+  educationId?: string; // 백엔드 ID - 기존 항목 수정 시에만 있음
   description: string;
   startYear: string;
   startMonth: string;
@@ -11,6 +12,7 @@ export type EducationEntry = {
 
 export type CareerEntry = {
   id: string;
+  careerId?: string;
   description: string;
   startYear: string;
   startMonth: string;

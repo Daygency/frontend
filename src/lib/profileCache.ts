@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Directory, File, Paths } from "expo-file-system";
 import * as LegacyFileSystem from "expo-file-system/legacy";
-import type { ProfileResponseDto } from "./apis/portfolio/profileApi";
+import type { ProfileResponseDto } from "./apis/portfolio/types";
 
 const PROFILE_CACHE_KEY = "@daygency_profile_cache";
 const PROFILE_IMAGE_CACHE_DIR = new Directory(Paths.cache, "profile");

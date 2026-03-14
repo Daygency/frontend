@@ -48,7 +48,7 @@ const ProfileTab = ({
       educationList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteEducation = (id: string) =>
-    setEducationList(educationList.filter((e) => e.id !== id));
+    setEducationList((prev) => prev.filter((e) => e.id !== id));
   const addEducation = () => {
     const hasEditing = educationList.some(
       (e) => !e.description || !e.description.trim(),
@@ -73,7 +73,7 @@ const ProfileTab = ({
       careerList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteCareer = (id: string) =>
-    setCareerList(careerList.filter((e) => e.id !== id));
+    setCareerList((prev) => prev.filter((e) => e.id !== id));
   const addCareer = () => {
     const hasEditing = careerList.some(
       (e) => !e.description || !e.description.trim(),
@@ -98,7 +98,7 @@ const ProfileTab = ({
       awardList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteAward = (id: string) =>
-    setAwardList(awardList.filter((e) => e.id !== id));
+    setAwardList((prev) => prev.filter((e) => e.id !== id));
   const addAward = () => {
     const hasEditing = awardList.some(
       (e) => !e.description || !e.description.trim(),
@@ -116,7 +116,7 @@ const ProfileTab = ({
       certificateList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteCertificate = (id: string) =>
-    setCertificateList(certificateList.filter((e) => e.id !== id));
+    setCertificateList((prev) => prev.filter((e) => e.id !== id));
   const addCertificate = () => {
     const hasEditing = certificateList.some(
       (e) => !e.description || !e.description.trim(),

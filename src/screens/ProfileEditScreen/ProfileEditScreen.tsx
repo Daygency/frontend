@@ -132,9 +132,52 @@ const ProfileEditScreen = () => {
       setMajorId(matchedOption?.id ?? null);
     }
     setMajorDetail(((p as any).majorDetail as string) || "");
-    setEducationList(p.educationEntries ?? []);
-    setCareerList(p.careerEntries ?? []);
-    setAwardList(p.awardEntries ?? []);
+    const rawEducations =
+      (p as any).educations ?? (p as any).educationEntries ?? [];
+    setEducationList(
+      rawEducations.map((e: any) => {
+        const start = parseApiDateToYearMonth(e.startedAt);
+        const end = parseApiDateToYearMonth(e.endedAt);
+        return {
+          id: e.educationId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          educationId: e.educationId,
+          description: e.description ?? "",
+          startYear: start.year,
+          startMonth: start.month,
+          endYear: end.year,
+          endMonth: end.month,
+        };
+      }),
+    );
+    const rawCareers = (p as any).careers ?? (p as any).careerEntries ?? [];
+    setCareerList(
+      rawCareers.map((c: any) => {
+        const start = parseApiDateToYearMonth(c.startedAt);
+        const end = parseApiDateToYearMonth(c.endedAt);
+        return {
+          id: c.careerId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          careerId: c.careerId,
+          description: c.description ?? "",
+          startYear: start.year,
+          startMonth: start.month,
+          endYear: end.year,
+          endMonth: end.month,
+        };
+      }),
+    );
+    const rawAwards = (p as any).awards ?? (p as any).awardEntries ?? [];
+    setAwardList(
+      rawAwards.map((a: any) => {
+        const d = parseApiDateToYearMonth(a.awardedAt);
+        return {
+          id: a.awardId ?? newTempId(),
+          awardId: a.awardId,
+          description: a.description ?? "",
+          year: d.year,
+          month: d.month,
+        };
+      }),
+    );
     setCertificateList(p.certificateEntries ?? []);
   };
 
@@ -237,6 +280,18 @@ const ProfileEditScreen = () => {
     return new Date(y, m - 1, 1);
   };
 
+  const parseApiDateToYearMonth = (d: string | Date | undefined) => {
+    if (!d) return { year: "", month: "" };
+    const date = typeof d === "string" ? new Date(d) : d;
+    if (isNaN(date.getTime())) return { year: "", month: "" };
+    return {
+      year: String(date.getFullYear()),
+      month: String(date.getMonth() + 1).padStart(2, "0"),
+    };
+  };
+
+  const newTempId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
   const buildUpdatePayload = (): ProfileUpdateRequestDto | null => {
     if (!profile) return null;
 
@@ -256,17 +311,17 @@ const ProfileEditScreen = () => {
       isPushEnabled: current.isPushEnabled,
       socialId: current.socialId,
       educations: (current.educationEntries ?? []).map((e: any) => ({
-        discription: e.description,
+        description: e.description,
         startedAt: toDate(e.startYear, e.startMonth),
         endedAt: toDate(e.endYear, e.endMonth),
       })),
       careers: (current.careerEntries ?? []).map((c: any) => ({
-        discription: c.description,
+        description: c.description,
         startedAt: toDate(c.startYear, c.startMonth),
         endedAt: toDate(c.endYear, c.endMonth),
       })),
       awards: (current.awardEntries ?? []).map((a: any) => ({
-        discription: a.description,
+        description: a.description,
         awardedAt: toDate(a.year, a.month),
       })),
       majorId: (current as any).majorId ?? null,
@@ -293,11 +348,13 @@ const ProfileEditScreen = () => {
       isPushEnabled: current.isPushEnabled ?? false,
       socialId: current.socialId ?? "",
       educations: educationList.map((e) => ({
+        ...(e.educationId ? { educationId: e.educationId } : {}),
         description: e.description,
         startedAt: toDate(e.startYear, e.startMonth),
         endedAt: toDate(e.endYear, e.endMonth),
       })),
       careers: careerList.map((c) => ({
+        ...(c.careerId ? { careerId: c.careerId } : {}),
         description: c.description,
         startedAt: toDate(c.startYear, c.startMonth),
         endedAt: toDate(c.endYear, c.endMonth),
@@ -396,7 +453,16 @@ const ProfileEditScreen = () => {
         JSON.stringify(payload),
       );
       const updated = await updateProfile(payload);
-      if (updated) {
+      if (!updated) {
+        await persistToCache();
+        return;
+      }
+
+      // 성공 후 서버에서 최신 프로필을 다시 받아 캐시 동기화 (DB 반영/조회까지 확실히)
+      const fresh = await getMyProfile().catch(() => null);
+      if (fresh) {
+        await saveProfileCache(fresh as any);
+      } else {
         const updatedProfileForCache: any = {
           ...(profile as any),
           ...(updated as any),
@@ -413,8 +479,6 @@ const ProfileEditScreen = () => {
           certificateEntries: certificateList,
         };
         await saveProfileCache(updatedProfileForCache);
-      } else {
-        await persistToCache();
       }
     } finally {
       setSubmitting(false);

@@ -11,23 +11,34 @@ export const useKakaoLogin = () => {
   const handleKakaoLogin = async () => {
     if (isLoading) return;
     setIsLoading(true);
+    const url = `${API_BASE}/auth/kakao`;
     try {
-      // scopes + useKakaoAccountLogin → 카카오계정 로그인 + 개인정보 선택 동의 화면 표시
-      const token = await login({
-        scopes: ["profile_nickname", "profile_image"],
-        useKakaoAccountLogin: true,
-      });
-      console.log("[Kakao] login() 성공, token 있음:", !!token?.accessToken);
+      console.log("[Kakao 1/6] 시작 | API_BASE:", API_BASE, "| URL:", url);
 
-      const accessTokenFromKakao = token?.accessToken;
+      console.log("[Kakao 2/6] login() 호출 직전 (KakaoTalk 앱 로그인)...");
+      const token = await login({
+        // scopes + useKakaoAccountLogin 제거 → 카카오톡 앱 로그인 시도 (리다이렉트 이슈 우회)
+      });
+      console.log(
+        "[Kakao 3/6] login() 완료 | token 존재:",
+        !!token,
+        "| keys:",
+        token ? Object.keys(token) : [],
+      );
+
+      const accessTokenFromKakao =
+        token?.accessToken ?? (token as { access_token?: string })?.access_token;
       if (!accessTokenFromKakao || typeof accessTokenFromKakao !== "string") {
+        console.error("[Kakao] token 구조:", JSON.stringify(token, null, 2));
         throw new Error(
           "카카오 로그인 응답에 accessToken이 없습니다. (SDK 초기화 및 네이티브 앱 키 확인)",
         );
       }
+      console.log("[Kakao 3/6] accessToken 추출 완료, 길이:", accessTokenFromKakao?.length);
+      console.log("[Kakao 3/6] accessToken (카카오):", accessTokenFromKakao);
 
-      console.log("[Kakao] 서버로 요청 전송:", `${API_BASE}/auth/kakao`);
-      const res = await fetch(`${API_BASE}/auth/kakao`, {
+      console.log("[Kakao 4/6] fetch 전송 (끊기면=네트워크/백엔드 미도달):", url);
+      const res = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,7 +50,22 @@ export const useKakaoLogin = () => {
         }),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const data = await res.json().catch((e) => {
+        console.error("[Kakao] res.json() 실패:", e);
+        return {};
+      });
+
+      const { accessToken, user, needsSignup, isNew } = data;
+      console.log(
+        "[Kakao 5/6] fetch 응답 | status:",
+        res.status,
+        "| ok:",
+        res.ok,
+        "| data keys:",
+        typeof data === "object" ? Object.keys(data) : "not object",
+        "| accessToken:",
+        accessToken,
+      );
 
       if (!res.ok) {
         const backendMsg =
@@ -50,9 +76,8 @@ export const useKakaoLogin = () => {
         throw new Error(backendMsg || `서버 인증 실패 (${res.status})`);
       }
 
-      const { accessToken, user, needsSignup, isNew } = data;
-
       if (needsSignup) {
+        console.log("[Kakao 6/6] needsSignup=true, authLogin(신규) 호출");
         const profile = data.profile ?? {};
         await authLogin(
           accessTokenFromKakao,
@@ -71,6 +96,7 @@ export const useKakaoLogin = () => {
         throw new Error("서버 응답 형식이 올바르지 않습니다.");
       }
 
+      console.log("[Kakao 6/6] 기존 유저 로그인 완료");
       const u = user;
       await authLogin(
         accessToken,
@@ -84,6 +110,18 @@ export const useKakaoLogin = () => {
       );
     } catch (error) {
       console.error("[Kakao Login Error]", error);
+      console.error(
+        "[Kakao 실패 위치] 2에서 끊김=SDK 에러 | 4에서 끊김=네트워크/백엔드 도달 못함 | 5에서 끊김=백엔드 응답 에러",
+      );
+      console.error(
+        "[Kakao Error 상세]",
+        "name:",
+        error instanceof Error ? error.name : "-",
+        "| message:",
+        error instanceof Error ? error.message : String(error),
+        "| stack:",
+        error instanceof Error ? error.stack?.slice(0, 200) : "-",
+      );
       const message = error instanceof Error ? error.message : String(error);
       Alert.alert(
         "로그인 실패",

@@ -6,12 +6,17 @@ export async function getMyProfile(): Promise<ProfileResponseDto | null> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
   if (!token) return null;
 
-  const res = await fetch(`${API_BASE}/users/profile/my`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
+  const res = await fetch(
+    `${API_BASE}/users/profile/my?t=${Date.now()}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Cache-Control": "no-cache",
+        Pragma: "no-cache",
+      },
     },
-  });
+  );
 
   if (!res.ok) return null;
 

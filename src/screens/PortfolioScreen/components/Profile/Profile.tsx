@@ -18,12 +18,6 @@ import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../../navigations/routes";
 import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
-import type {
-  EducationEntry,
-  CareerEntry,
-  AwardEntry,
-  CertificateEntry,
-} from "../../../../lib/apis/portfolio/types";
 import {
   getProfileCache,
   saveProfileCache,
@@ -56,142 +50,6 @@ const formatYearMonth = (year: string, month: string) => {
   if (!year) return `${month}월`;
   if (!month) return `${year}`;
   return `${year}.${month.padStart(2, "0")}`;
-};
-
-// ─────────────────────────────────────────────
-// 프로필 섹션 컴포넌트들
-// ─────────────────────────────────────────────
-const SectionBlock = ({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) => (
-  <View style={styles.sectionBlock}>
-    <Text style={styles.sectionTitle}>{title}</Text>
-    {children}
-  </View>
-);
-
-const EducationSection = ({ entries }: { entries: EducationEntry[] }) => {
-  if (entries.length === 0) return null;
-  return (
-    <SectionBlock title="학력">
-      {entries.map((e) => {
-        const start = formatYearMonth(e.startYear, e.startMonth);
-        const end = formatYearMonth(e.endYear, e.endMonth);
-        const period =
-          start || end ? `(${start}${start && end ? " ~ " : ""}${end})` : "";
-        return (
-          <View key={e.id} style={styles.entryRow}>
-            <MaterialCommunityIcons
-              name="school-outline"
-              size={14}
-              color={GRAY.DARK_2}
-              style={styles.entryIcon}
-            />
-            <View style={styles.entryTextBlock}>
-              <Text style={styles.entryDescription}>{e.description}</Text>
-              {period ? <Text style={styles.entryPeriod}>{period}</Text> : null}
-            </View>
-          </View>
-        );
-      })}
-    </SectionBlock>
-  );
-};
-
-const CareerSection = ({ entries }: { entries: CareerEntry[] }) => {
-  if (entries.length === 0) return null;
-  return (
-    <SectionBlock title="경력사항">
-      {entries.map((e) => {
-        const start = formatYearMonth(e.startYear, e.startMonth);
-        const end = formatYearMonth(e.endYear, e.endMonth);
-        const period =
-          start || end ? `(${start}${start && end ? " ~ " : ""}${end})` : "";
-        return (
-          <View key={e.id} style={styles.entryRow}>
-            <MaterialCommunityIcons
-              name="briefcase-outline"
-              size={14}
-              color={GRAY.DARK_2}
-              style={styles.entryIcon}
-            />
-            <View style={styles.entryTextBlock}>
-              <Text style={styles.entryDescription}>{e.description}</Text>
-              {period ? <Text style={styles.entryPeriod}>{period}</Text> : null}
-            </View>
-          </View>
-        );
-      })}
-    </SectionBlock>
-  );
-};
-
-const AwardSection = ({ entries }: { entries: AwardEntry[] }) => {
-  if (entries.length === 0) return null;
-  return (
-    <SectionBlock title="수상경력">
-      {entries.map((e) => {
-        const date = formatYearMonth(e.year, e.month);
-        return (
-          <View key={e.id} style={styles.entryRow}>
-            <MaterialCommunityIcons
-              name="trophy-outline"
-              size={14}
-              color={GRAY.DARK_2}
-              style={styles.entryIcon}
-            />
-            <View style={styles.entryTextBlock}>
-              <Text style={styles.entryDescription}>{e.description}</Text>
-              {date ? <Text style={styles.entryPeriod}>{date}</Text> : null}
-            </View>
-          </View>
-        );
-      })}
-    </SectionBlock>
-  );
-};
-
-const CertificateSection = ({ entries }: { entries: CertificateEntry[] }) => {
-  if (entries.length === 0) return null;
-  return (
-    <SectionBlock title="수료증 / 자격증">
-      {entries.map((e) => {
-        const date = formatYearMonth(e.year, e.month);
-        return (
-          <View key={e.id} style={styles.entryRow}>
-            <MaterialCommunityIcons
-              name="certificate-outline"
-              size={14}
-              color={GRAY.DARK_2}
-              style={styles.entryIcon}
-            />
-            <View style={styles.entryTextBlock}>
-              <Text style={styles.entryDescription}>{e.description}</Text>
-              {date ? (
-                <Text style={styles.entryPeriod}>취득 {date}</Text>
-              ) : null}
-              {e.fileName ? (
-                <View style={styles.fileChip}>
-                  <MaterialCommunityIcons
-                    name="paperclip"
-                    size={11}
-                    color={MAIN.DEFAULT}
-                  />
-                  <Text style={styles.fileChipText} numberOfLines={1}>
-                    {e.fileName}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          </View>
-        );
-      })}
-    </SectionBlock>
-  );
 };
 
 // ─────────────────────────────────────────────
@@ -285,17 +143,6 @@ const Profile = () => {
       ? ROLE_LABEL[profile.role] ?? profile.role
       : "";
 
-  const educationEntries = profile?.educationEntries ?? [];
-  const careerEntries = profile?.careerEntries ?? [];
-  const awardEntries = profile?.awardEntries ?? [];
-  const certificateEntries = profile?.certificateEntries ?? [];
-
-  const hasSections =
-    educationEntries.length > 0 ||
-    careerEntries.length > 0 ||
-    awardEntries.length > 0 ||
-    certificateEntries.length > 0;
-
   return (
     <View style={styles.container}>
       <View style={styles.profileContainer}>
@@ -355,13 +202,6 @@ const Profile = () => {
           <Text style={styles.profilePrivateText}>프로필 비공개</Text>
         </View>
       </View>
-
-      {hasSections && <View style={styles.sectionDivider} />}
-
-      <EducationSection entries={educationEntries} />
-      <CareerSection entries={careerEntries} />
-      <AwardSection entries={awardEntries} />
-      <CertificateSection entries={certificateEntries} />
     </View>
   );
 };

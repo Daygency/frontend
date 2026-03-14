@@ -1,12 +1,14 @@
 import { UserRole } from "../types";
 
 export type Education = {
+  educationId?: string;
   description: string;
   startedAt: Date;
   endedAt: Date;
 };
 
 export type Career = {
+  careerId?: string;
   description: string;
   startedAt: Date;
   endedAt: Date;

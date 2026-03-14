@@ -11,21 +11,25 @@ type Props = {
 };
 
 const SectionHeader = ({ title, description, onAdd }: Props) => (
-  <Pressable style={styles.sectionHeader} onPress={onAdd}>
+  <View style={styles.sectionHeader}>
     <View style={styles.sectionHeaderTextBlock}>
       <Text style={styles.sectionTitle}>{title}</Text>
       {description ? (
         <Text style={styles.sectionSubtitle}>{description}</Text>
       ) : null}
     </View>
-    <View style={styles.sectionHeaderIconWrapper}>
+    <Pressable
+      style={styles.sectionHeaderIconWrapper}
+      onPress={onAdd}
+      hitSlop={0}
+    >
       <MaterialCommunityIcons
         name="plus"
         size={18}
         color={MAIN.DEFAULT}
       />
-    </View>
-  </Pressable>
+    </Pressable>
+  </View>
 );
 
 export default SectionHeader;

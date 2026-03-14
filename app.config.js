@@ -1,3 +1,10 @@
+// app.config.js 실행 시 .env 로드 (Expo prebuild/build 시 env 확인)
+try {
+  require("dotenv").config();
+} catch {
+  // dotenv 미설치 시 무시
+}
+
 module.exports = {
   expo: {
     name: "mfrontend",
@@ -8,7 +15,9 @@ module.exports = {
         "expo-build-properties",
         {
           android: {
-            extraMavenRepos: ["https://devrepo.kakao.com/nexus/content/groups/public/"],
+            extraMavenRepos: [
+              "https://devrepo.kakao.com/nexus/content/groups/public/",
+            ],
           },
         },
       ],
