@@ -38,4 +38,5 @@ export const RootRoutes = {
   PROFILE_EDIT: "ProfileEdit",
   ARTIST_PORTFOLIO: "ArtistPortfolio",
   SEARCH: "Search",
+  SEARCH_RESULTS: "SearchResults",
 } as const;

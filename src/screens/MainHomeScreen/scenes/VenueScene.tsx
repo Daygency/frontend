@@ -7,8 +7,12 @@ import styles from "./venueStyles";
 
 type TabType = "info" | "news";
 
-const VenueScene = () => {
-  const [selectedTab, setSelectedTab] = useState<TabType>("info");
+interface VenueSceneProps {
+  initialTab?: TabType;
+}
+
+const VenueScene = ({ initialTab = "info" }: VenueSceneProps) => {
+  const [selectedTab, setSelectedTab] = useState<TabType>(initialTab);
   const [sortBy, setSortBy] = useState<string>("추천수순");
   const sortOptions = ["스크랩수순", "가나다순"];
 

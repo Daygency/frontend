@@ -19,7 +19,11 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const AnnouncementScreen = () => {
+interface AnnouncementScreenProps {
+  hideTopBar?: boolean;
+}
+
+const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => {
   const navigation = useNavigation<NavigationProp>();
   const { top } = useSafeAreaInsets();
   const [recruitmentStatus, setRecruitmentStatus] = useState<
@@ -133,8 +137,8 @@ const AnnouncementScreen = () => {
   ];
 
   return (
-    <View style={[styles.container, { paddingTop: top }]}>
-      <MainHomeTopBar logoName="모집공고" />
+    <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
+      {!hideTopBar && <MainHomeTopBar logoName="모집공고" />}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}

@@ -125,6 +125,12 @@ const styles = StyleSheet.create({
   recentTagRemove: {
     padding: 4,
   },
+  tabView: {
+    flex: 1,
+  },
+  resultsContent: {
+    flex: 1,
+  },
 });
 
 export default styles;
