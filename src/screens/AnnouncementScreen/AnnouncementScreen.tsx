@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
+import FabButton from "../../components/FabButton/FabButton";
 import MajorTagFilter from "../../components/MajorTagFilter/MajorTagFilter";
 import SectorTagSelectModal from "../../components/SectorTagSelectModal/SectorTagSelectModal";
 import { RootRoutes } from "../../navigations/routes";
@@ -14,6 +15,7 @@ import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
 type RootStackParamList = {
   ContentTab: undefined;
   AnnouncementDetail: AnnouncementDetailParams;
+  AnnouncementRegistration: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -218,6 +220,11 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         ))}
         </ScrollView>
       </View>
+      {!hideTopBar && (
+        <FabButton
+          onPress={() => navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION)}
+        />
+      )}
     </View>
   );
 };
