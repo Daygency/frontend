@@ -15,9 +15,13 @@ const MainHomeTopBar = ({ logoName }: { logoName: string }) => {
     <View style={styles.container}>
       <Logo size={24} logoName={logoName} />
       <View style={styles.iconContainer}>
-        <Pressable style={styles.iconButton}>
+        <Pressable
+          style={styles.iconButton}
+          onPress={() =>
+            navigation.getParent()?.navigate(RootRoutes.SEARCH as never)
+          }
+        >
           <Feather name="search" size={23} color={MAIN.DEFAULT} />
-          <View style={styles.dotNew} />
         </Pressable>
         <Pressable style={styles.iconButton}>
           <MaterialCommunityIcons
@@ -25,7 +29,6 @@ const MainHomeTopBar = ({ logoName }: { logoName: string }) => {
             size={23}
             color={MAIN.DEFAULT}
           />
-          <View style={styles.dotNew} />
         </Pressable>
         <Pressable
           style={styles.iconButton}

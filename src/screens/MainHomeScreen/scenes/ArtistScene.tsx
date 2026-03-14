@@ -1,9 +1,11 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 import ArtistCard from "../../../components/ArtistCard/ArtistCard";
 import MajorTagFilter from "../../../components/MajorTagFilter/MajorTagFilter";
 import MajorTagSelectModal from "../../../components/MajorTagSelectModal/MajorTagSelectModal";
 import styles from "./artistStyles";
+import { RootRoutes } from "../../../navigations/routes";
 
 const MAJOR_OPTIONS = [
   "건반악기",
@@ -21,7 +23,14 @@ const MAJOR_OPTIONS = [
   "기타",
 ];
 
+const ARTIST_LIST = [
+  { name: "김연주", category: "현악", activityName: "kimyeonju", musicNoteCount: 47, bookmarkCount: 20 },
+  { name: "김연주", category: "현악", activityName: "kimyeonju2", musicNoteCount: 0, bookmarkCount: 0 },
+  { name: "김연주", category: "현악", activityName: "kimyeonju", musicNoteCount: 47, bookmarkCount: 20 },
+] as const;
+
 const ArtistScene = () => {
+  const navigation = useNavigation();
   const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
   const [isMajorModalVisible, setIsMajorModalVisible] = useState(false);
   const [sortBy, setSortBy] = useState<string>("예술템포순");
@@ -73,24 +82,42 @@ const ArtistScene = () => {
             <ArtistCard
               name="김연주"
               category="현악"
+              activityName="kimyeonju"
               musicNoteCount={47}
               bookmarkCount={20}
+              onPress={() =>
+                navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+                  activityName: "kimyeonju",
+                })
+              }
             />
           </View>
           <View style={styles.cardWrapper}>
             <ArtistCard
               name="김연주"
               category="현악"
+              activityName="kimyeonju2"
               musicNoteCount={0}
               bookmarkCount={0}
+              onPress={() =>
+                navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+                  activityName: "kimyeonju2",
+                })
+              }
             />
           </View>
           <View style={styles.cardWrapper}>
             <ArtistCard
               name="김연주"
               category="현악"
+              activityName="kimyeonju"
               musicNoteCount={47}
               bookmarkCount={20}
+              onPress={() =>
+                navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+                  activityName: "kimyeonju",
+                })
+              }
             />
           </View>
         </ScrollView>

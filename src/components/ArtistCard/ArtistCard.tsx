@@ -7,20 +7,23 @@ import MusicNoteIcon from "../../../assets/music_note.svg";
 interface ArtistCardProps {
   name: string;
   category: string;
+  activityName?: string;
   musicNoteCount?: number;
   bookmarkCount: number;
+  onPress?: () => void;
 }
-
-const MUSIC_NOTE_COLOR = "#F67777";
 
 const ArtistCard = ({
   name,
   category,
+  activityName,
   musicNoteCount = 0,
   bookmarkCount,
+  onPress,
 }: ArtistCardProps) => {
   return (
     <ShadowCardButton
+      onPress={onPress}
       styles={{
         container: {
           borderRadius: 15,
