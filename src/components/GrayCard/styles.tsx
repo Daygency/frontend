@@ -3,46 +3,45 @@ import { BLACK, GRAY, RED } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: GRAY.DEFAULT_1,
-    borderRadius: 10,
-    padding: 15,
-    gap: 10,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
+    backgroundColor: "transparent",
   },
   item: {
     flexDirection: "row",
     alignItems: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: GRAY.MEDIUM_2,
+  },
+  itemLast: {
+    borderBottomWidth: 0,
   },
   boardName: {
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.3,
-    fontWeight: "500",
+    fontSize: 15,
+    lineHeight: 22,
+    fontWeight: "600",
     color: BLACK,
-  },
-  spacer: {
-    width: 10,
+    flexShrink: 0,
+    marginRight: 8,
   },
   latestPostWrap: {
-    position: "relative",
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
   },
   latestPost: {
-    fontSize: 13,
-    lineHeight: 20,
-    letterSpacing: 0.3,
+    fontSize: 14,
+    lineHeight: 22,
     fontWeight: "400",
     color: BLACK,
     flex: 1,
   },
   newDot: {
-    position: "absolute",
-    top: 3,
-    right: -5,
-    width: 4,
-    height: 4,
+    width: 6,
+    height: 6,
     borderRadius: 3,
     backgroundColor: RED.DARK,
+    flexShrink: 0,
   },
 });
 

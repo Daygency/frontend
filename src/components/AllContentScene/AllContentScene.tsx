@@ -87,7 +87,15 @@ const AllContentScene = () => {
           type="withText"
         />
       </Section>
-      <Section title="커뮤니티" onPressMore={() => {}}>
+      <Section
+        title="커뮤니티"
+        onPressMore={() => {
+          (navigation as { navigate: (a: string, b?: object) => void }).navigate(
+            "ContentTab",
+            { screen: ContentRoutes.CHAT },
+          );
+        }}
+      >
         <GrayCard
           items={[
             {
@@ -104,10 +112,9 @@ const AllContentScene = () => {
             {
               boardName: "학원 운영",
               latestPost: "학원을 운영하려고 하는데 도움이 필요합니다!",
-              hasNew: true,
             },
             {
-              boardName: "학원·연습실 매매",
+              boardName: "학원·연습실",
               latestPost: "연습실 내놓습니다.",
             },
           ]}
