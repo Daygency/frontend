@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View, Text } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
 import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 import { RootRoutes } from "../../../navigations/routes";
+import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
+import type { CommunityCategory, CommunityListItem } from "../../../lib/apis/community/types";
 
 type TagOption =
   | "전체"
@@ -27,90 +29,102 @@ const TAG_OPTIONS: TagOption[] = [
 
 type PostTag = Exclude<TagOption, "전체">;
 
-type CommunityPost = {
-  id: string;
-  tag: PostTag;
-  title: string;
-  contentPreview: string;
-  author?: string;
-  date: string;
-  likes: number;
-  comments: number;
-  scraps: number;
-};
-
-// TODO: API 연동 시 실제 데이터로 대체
-const MOCK_POSTS: CommunityPost[] = [
-  {
-    id: "1",
-    tag: "구인",
-    title: "교향악단 바이올린 객원단원 채용",
-    contentPreview: "너무 떨렸는데 관객분들 반응이 좋아서 기분이 좋네",
-    author: "알수없음",
-    date: "2025.11.20",
-    likes: 45,
-    comments: 5,
-    scraps: 45,
-  },
-  {
-    id: "2",
-    tag: "자유게시판",
-    title: "실내악 앙상블 멤버 구합니다",
-    contentPreview: "정기적으로 모여 연습하고 공연할 팀원을 찾고 있어요.",
-    author: "김연주",
-    date: "2025.10.02",
-    likes: 12,
-    comments: 3,
-    scraps: 7,
-  },
-  {
-    id: "3",
-    tag: "입시정보",
-    title: "입시 레슨 같이 준비하실 분",
-    contentPreview: "서울권 음대 목표로 하는 수험생들과 스터디 겸 레슨 구해요.",
-    author: "알수없음",
-    date: "2025.09.15",
-    likes: 30,
-    comments: 10,
-    scraps: 18,
-  },
-];
-
 const CommunityScene = () => {
   const [selectedTag, setSelectedTag] = useState<TagOption>("전체");
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<CommunityCategory[]>([]);
+  const [items, setItems] = useState<CommunityListItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<any>();
 
   const filteredPosts = useMemo(() => {
-    if (selectedTag === "전체") return MOCK_POSTS;
-    return MOCK_POSTS.filter((post) => post.tag === selectedTag);
-  }, [selectedTag]);
+    const safeItems = Array.isArray(items) ? items : [];
+    if (selectedTag === "전체") return safeItems;
 
-  // 태그 변경 시 로딩 스피너를 잠깐 보여줌
-  // 추후 실제 API 연동 시 이 부분에 fetch 로직을 넣고
-  // 응답 받은 후 setLoading(false)를 호출하면 됨.
-  useEffect(() => {
-    setLoading(true);
-    const timeout = setTimeout(() => {
+    const categoryNameByTag: Record<PostTag, string> = {
+      자유게시판: "자유게시판",
+      구인: "구인",
+      입시정보: "입시정보",
+      유학정보: "유학정보",
+      "학원 운영": "학원운용",
+      "학원/연습실 매매": "학원/연습실 매매",
+    };
+
+    const targetName = categoryNameByTag[selectedTag as PostTag];
+    if (!targetName) return safeItems;
+    return safeItems.filter((item) => item.category === targetName);
+  }, [items, selectedTag]);
+
+  const findCategoryIdByTag = (tag: TagOption): string | undefined => {
+    if (tag === "전체") return undefined;
+
+    const categoryNameByTag: Record<PostTag, string> = {
+      자유게시판: "자유게시판",
+      구인: "구인",
+      입시정보: "입시정보",
+      유학정보: "유학정보",
+      "학원 운영": "학원운용",
+      "학원/연습실 매매": "학원/연습실 매매",
+    };
+
+    const name = categoryNameByTag[tag as PostTag];
+    if (!name) return undefined;
+    const category = categories.find((c) => c.name === name);
+    return category?.categoryId;
+  };
+
+  const loadCommunities = async (opts?: { append?: boolean }) => {
+    try {
+      setError(null);
+      setLoading(true);
+
+      const categoryId = findCategoryIdByTag(selectedTag);
+      const res = await getCommunityList({
+        limit: 20,
+        categoryId,
+        cursor: opts?.append ? nextCursor ?? undefined : undefined,
+      });
+
+      if (!res) {
+        setError("커뮤니티 목록을 불러오지 못했습니다.");
+        return;
+      }
+
+      setItems((prev) =>
+        opts?.append ? [...prev, ...res.items] : res.items
+      );
+      setNextCursor(res.nextCursor ?? null);
+    } finally {
       setLoading(false);
-    }, 400);
+    }
+  };
 
-    return () => clearTimeout(timeout);
+  useEffect(() => {
+    (async () => {
+      const cats = await getCommunityCategories();
+      if (cats) setCategories(cats);
+    })();
+  }, []);
+
+  useEffect(() => {
+    loadCommunities({ append: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTag]);
 
-  const renderItem = ({ item }: { item: CommunityPost }) => {
+  const renderItem = ({ item }: { item: CommunityListItem }) => {
     return (
       <CommunityCard
         title={item.title}
-        contentPreview={item.contentPreview}
-        author={item.author}
-        date={item.date}
-        likes={item.likes}
-        comments={item.comments}
-        scraps={item.scraps}
+        contentPreview={""}
+        author={undefined}
+        date={new Date(item.createdAt).toLocaleDateString()}
+        likes={0}
+        comments={0}
+        scraps={0}
         onPress={() =>
           navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
-            post: item,
+            communityId: item.communityId,
           })
         }
       />
@@ -138,18 +152,28 @@ const CommunityScene = () => {
           />
         ))}
       </ScrollView>
-      {loading ? (
+      {error ? (
+        <View style={localStyles.loaderContainer}>
+          <Text>{error}</Text>
+        </View>
+      ) : loading && (!Array.isArray(items) || items.length === 0) ? (
         <View style={localStyles.loaderContainer}>
           <ActivityIndicator size="small" />
         </View>
       ) : (
         <FlatList
           data={filteredPosts}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item.communityId}
           renderItem={renderItem}
           contentContainerStyle={localStyles.listContent}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews={false}
+          onEndReachedThreshold={0.2}
+          onEndReached={() => {
+            if (!loading && nextCursor) {
+              loadCommunities({ append: true });
+            }
+          }}
         />
       )}
     </View>
