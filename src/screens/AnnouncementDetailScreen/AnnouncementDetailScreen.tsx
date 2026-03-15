@@ -50,7 +50,7 @@ const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const params = route.params;
+  const params = route.params ?? {};
   const { width: screenWidth } = useWindowDimensions();
   const [isMine, setIsMine] = useState(false);
   const [imageHeights, setImageHeights] = useState<{ [key: number]: number }>(
@@ -168,10 +168,10 @@ const AnnouncementDetailScreen = () => {
       <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
         <View style={styles.dividerThick} />
         <AnnouncementBox
-          title={title}
-          type={type}
-          status={status}
-          daysLeft={daysLeft}
+          title={displayTitle}
+          type={displayType}
+          status={displayStatus}
+          daysLeft={displayDaysLeft}
         />
         <View style={styles.dividerThick} />
         <View style={styles.section}>
