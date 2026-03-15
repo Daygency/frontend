@@ -5,7 +5,7 @@ import type {
   CommunityCategory,
   CommunityDetailResponse,
   CommunityListParams,
-  CommunityListResponse,
+  CommunityListItem,
   CreateCommunityDto,
   UpdateCommunityDto,
 } from "./types";
@@ -46,11 +46,9 @@ export async function getCommunityCategories(): Promise<CommunityCategory[] | nu
 /** 커뮤니티 목록 조회 (GET /community) - 인증 불필요 */
 export async function getCommunityList(
   params?: CommunityListParams
-): Promise<CommunityListResponse | null> {
+): Promise<CommunityListItem[] | null> {
   try {
     const q = new URLSearchParams();
-    if (params?.cursor) q.set("cursor", params.cursor);
-    if (params?.limit != null) q.set("limit", String(params.limit));
     if (params?.categoryId) q.set("categoryId", params.categoryId);
 
     const query = q.toString();
@@ -63,7 +61,22 @@ export async function getCommunityList(
       return null;
     }
 
-    return res.json() as Promise<CommunityListResponse>;
+    const raw = await res.json();
+
+    // README 기준: Community 엔티티 배열 또는 호환 구조
+    if (Array.isArray(raw)) {
+      console.log("[getCommunityList] 배열 응답 사용:", raw.length);
+      return raw as CommunityListItem[];
+    }
+
+    if (Array.isArray((raw as any)?.items)) {
+      const items = (raw as any).items as CommunityListItem[];
+      console.log("[getCommunityList] items 배열 응답 사용:", items.length);
+      return items;
+    }
+
+    console.warn("[getCommunityList] 알 수 없는 응답 형식:", raw);
+    return [];
   } catch (e) {
     console.warn("[getCommunityList] 네트워크 에러:", e);
     return null;

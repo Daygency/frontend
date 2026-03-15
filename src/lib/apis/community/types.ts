@@ -3,23 +3,18 @@ export type CommunityCategory = {
   name: string;
 };
 
-export type CommunityListParams = {
-  cursor?: string;
-  limit?: number;
-  categoryId?: string;
-};
-
 export type CommunityListItem = {
   communityId: string;
   title: string;
-  category: string;
+  content: string;
   createdAt: string;
+  user: Record<string, unknown>;
+  category: Record<string, unknown>;
+  file: Record<string, unknown> | null;
 };
 
-export type CommunityListResponse = {
-  items: CommunityListItem[];
-  nextCursor: string | null;
-  hasMore: boolean;
+export type CommunityListParams = {
+  categoryId?: string;
 };
 
 export type CommunityDetailResponse = {

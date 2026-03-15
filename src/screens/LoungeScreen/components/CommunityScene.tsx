@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View, Text } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
 import SelectableTag from "../../../components/SelectableTag/SelectableTag";
@@ -34,7 +34,6 @@ const CommunityScene = () => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [items, setItems] = useState<CommunityListItem[]>([]);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<any>();
 
@@ -53,7 +52,11 @@ const CommunityScene = () => {
 
     const targetName = categoryNameByTag[selectedTag as PostTag];
     if (!targetName) return safeItems;
-    return safeItems.filter((item) => item.category === targetName);
+    return safeItems.filter((item) => {
+      const cat = (item as any).category;
+      const catName = typeof cat === "string" ? cat : cat?.name;
+      return catName === targetName;
+    });
   }, [items, selectedTag]);
 
   const findCategoryIdByTag = (tag: TagOption): string | undefined => {
@@ -81,9 +84,7 @@ const CommunityScene = () => {
 
       const categoryId = findCategoryIdByTag(selectedTag);
       const res = await getCommunityList({
-        limit: 20,
         categoryId,
-        cursor: opts?.append ? nextCursor ?? undefined : undefined,
       });
 
       if (!res) {
@@ -91,10 +92,8 @@ const CommunityScene = () => {
         return;
       }
 
-      setItems((prev) =>
-        opts?.append ? [...prev, ...res.items] : res.items
-      );
-      setNextCursor(res.nextCursor ?? null);
+      const nextItems = Array.isArray(res) ? res : [];
+      setItems(nextItems);
     } finally {
       setLoading(false);
     }
@@ -107,10 +106,13 @@ const CommunityScene = () => {
     })();
   }, []);
 
-  useEffect(() => {
-    loadCommunities({ append: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTag]);
+  // 포커스되거나 선택된 태그가 바뀔 때마다 목록 다시 불러오기
+  useFocusEffect(
+    useCallback(() => {
+      loadCommunities({ append: false });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedTag])
+  );
 
   const renderItem = ({ item }: { item: CommunityListItem }) => {
     return (
@@ -168,12 +170,6 @@ const CommunityScene = () => {
           contentContainerStyle={localStyles.listContent}
           showsVerticalScrollIndicator={false}
           removeClippedSubviews={false}
-          onEndReachedThreshold={0.2}
-          onEndReached={() => {
-            if (!loading && nextCursor) {
-              loadCommunities({ append: true });
-            }
-          }}
         />
       )}
     </View>
