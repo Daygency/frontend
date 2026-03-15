@@ -235,21 +235,23 @@ const AnnouncementDetailScreen = () => {
           ))}
         </View>
       </ScrollView>
-      <View style={styles.applyContainer}>
-        <Pressable
-          style={styles.btnApply}
-          onPress={() => {
-            navigation.navigate(RootRoutes.APPLICATION, {
-              title,
-              type,
-              status,
-              daysLeft,
-            });
-          }}
-        >
-          <Text style={styles.btnApplyText}>지원서 작성하기</Text>
-        </Pressable>
-      </View>
+      {!isMine && (
+        <View style={styles.applyContainer}>
+          <Pressable
+            style={styles.btnApply}
+            onPress={() => {
+              navigation.navigate(RootRoutes.APPLICATION, {
+                title,
+                type,
+                status,
+                daysLeft,
+              });
+            }}
+          >
+            <Text style={styles.btnApplyText}>지원서 작성하기</Text>
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 };

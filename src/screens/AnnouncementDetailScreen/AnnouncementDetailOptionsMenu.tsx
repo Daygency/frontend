@@ -50,8 +50,9 @@ const AnnouncementDetailOptionsMenu = ({
   if (isMine) {
     menuItems.push({ label: "수정", onPress: handleEdit });
     menuItems.push({ label: "삭제", onPress: handleDelete });
+  } else {
+    menuItems.push({ label: "신고", onPress: handleReport });
   }
-  menuItems.push({ label: "신고", onPress: handleReport });
 
   const toggleMenu = () => {
     if (menuVisible) {
