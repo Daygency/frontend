@@ -85,6 +85,11 @@ const AllContentScene = () => {
           height={264}
           gap={14}
           type="withText"
+          onCardPress={() => {
+            (navigation as { navigate: (a: string, b?: object) => void }).navigate(
+              RootRoutes.MUSIC_NEWS_DETAIL
+            );
+          }}
         />
       </Section>
       <Section

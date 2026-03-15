@@ -82,23 +82,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: GRAY.MEDIUM,
   },
-  anonymousToggle: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginRight: 12,
-  },
-  checkbox: {
-    width: 18,
-    height: 18,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: GRAY.DARK_2,
-    marginRight: 6,
-  },
-  anonymousText: {
-    fontSize: 12,
-    color: GRAY.DARK_2,
-  },
   inputWrapper: {
     flex: 1,
     borderRadius: 20,

@@ -1,7 +1,7 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { GRAY } from "../../color";
+import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
 import styles from "./styles";
 
 type CommunityPost = {
@@ -70,18 +70,7 @@ const CommunityDetailScreen = () => {
           { paddingBottom: (bottom || 0) + 10 },
         ]}
       >
-        <View style={styles.anonymousToggle}>
-          <View style={styles.checkbox} />
-          <Text style={styles.anonymousText}>익명</Text>
-        </View>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.commentInput}
-            placeholder="댓글을 입력해주세요"
-            placeholderTextColor={GRAY.DARK_2}
-            multiline
-          />
-        </View>
+        <CommentInputBar placeholder="댓글을 입력해주세요" />
       </View>
     </View>
   );

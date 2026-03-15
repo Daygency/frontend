@@ -38,8 +38,6 @@ const CommunityRegistrationScreen = () => {
   const [category, setCategory] = useState("학원·연습실 매매");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [isAnonymous, setIsAnonymous] = useState(true);
-
   const handleRegister = () => {
     // TODO: 등록 로직
   };
@@ -126,26 +124,6 @@ const CommunityRegistrationScreen = () => {
           },
         ]}
       >
-        <Pressable
-          style={styles.anonymousToggle}
-          onPress={() => setIsAnonymous(!isAnonymous)}
-        >
-          <View
-            style={[
-              styles.checkbox,
-              isAnonymous && styles.checkboxChecked,
-            ]}
-          >
-            {isAnonymous && (
-              <MaterialCommunityIcons
-                name="check"
-                size={14}
-                color={WHITE}
-              />
-            )}
-          </View>
-          <Text style={styles.anonymousText}>익명</Text>
-        </Pressable>
         <Pressable
           style={[styles.registerButton, !(title && content && category) && styles.registerButtonDisabled]}
           onPress={handleRegister}

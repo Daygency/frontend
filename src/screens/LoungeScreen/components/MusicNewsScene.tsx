@@ -1,8 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 import EventNewsCard from "../../../components/EventNewsCard/EventNewsCard";
+import type { MusicNewsDetailItem } from "../../../MusicNewsDetailScreen/MusicNewsDetailScreen";
+import { RootRoutes } from "../../../navigations/routes";
 
 type SortOption = "최신순" | "스크랩순" | "좋아요 순";
 
@@ -59,7 +62,30 @@ const MOCK_NEWS: MusicNewsItem[] = [
   },
 ];
 
+const toDetailItem = (item: MusicNewsItem): MusicNewsDetailItem => {
+  const [startDate] = item.dateRange.split(" ~ ");
+  return {
+    id: item.id,
+    title: item.title,
+    place: item.place,
+    date: startDate,
+    time: "19:00",
+    contact: "02-0000-0000",
+    uploadedAt: String(item.createdAt).replace(/(\d{4})(\d{2})(\d{2})/, "$1.$2.$3"),
+    description:
+      "봄 정기 연주회, 따뜻한 선율로 여러분을 초대합니다! 봄의 빛처럼 피어나는 음악을 무대에서 만나보세요",
+    imageUrl: item.imageUrl,
+    likes: item.likes,
+    comments: 0,
+    attachments: [
+      { name: "모집공고_상세안내.pdf", size: "2.4 MB" },
+      { name: "오디션_곡목.pdf", size: "1.1 MB" },
+    ],
+  };
+};
+
 const MusicNewsScene = () => {
+  const navigation = useNavigation<any>();
   const [sortBy, setSortBy] = useState<SortOption>("최신순");
   const [loading, setLoading] = useState(false);
 
@@ -97,6 +123,11 @@ const MusicNewsScene = () => {
         dateRange={item.dateRange}
         imageUrl={item.imageUrl}
         containerStyle={localStyles.card}
+        onPress={() =>
+          navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
+            news: toDetailItem(item),
+          })
+        }
       />
     );
   };
