@@ -1,149 +1,68 @@
-# Daygency API 명세
+# 5. 공고 수정
 
-> Base URL: 개발 `http://localhost:3000`, 운영은 배포 URL 사용
-
----
-
-## 활동 아이디(activityName) 중복 여부 확인
-
-회원가입 시 활동 아이디 입력 시 실시간으로 사용 가능 여부를 확인하는 API입니다.
+공고 정보를 수정합니다. **작성자만** 수정 가능합니다.
 
 ### Endpoint
 
 ```
-GET /users/check-activity-name
+PATCH /announcement/:id
 ```
 
-### Query Parameters
+### Headers
 
-| 파라미터      | 타입   | 필수 | 설명                 |
-|--------------|--------|------|----------------------|
-| activityName | string | O    | 확인할 활동 아이디 값 |
+| 헤더          | 설명           |
+|--------------|----------------|
+| Authorization| Bearer {accessToken} |
 
-### Response
+### Path Parameters
 
-| 필드      | 타입    | 설명                                         |
-|----------|---------|----------------------------------------------|
-| available | boolean | `true`: 사용 가능, `false`: 이미 사용 중      |
+| 파라미터 | 타입   | 필수 | 설명    |
+|---------|--------|------|---------|
+| id      | string | O    | 공고 ID |
 
-### Example
+### Request Body
 
-**Request**
+CreateAnnouncementDto의 모든 필드 **선택(partial)**. 수정할 필드만 보내면 됩니다.
 
-```
-GET /users/check-activity-name?activityName=my_activity_id
-```
+| 필드             | 타입    | 필수 | 설명                        |
+|-----------------|---------|------|-----------------------------|
+| title           | string  | X    | 제목                        |
+| content         | string  | X    | 내용                        |
+| deadlineAt      | string  | X    | 마감일 (ISO 8601)           |
+| scheduledAt     | string  | X    | 예정일 (ISO 8601)           |
+| status          | enum    | X    | 모집상태 (OPEN, CLOSED)     |
+| address         | string  | X    | 공연위치                    |
+| fileId          | string  | X    | 대표 파일 ID (null 가능)    |
+| categoryId      | string  | X    | 공고 유형 ID                |
+| majorIds        | array   | X    | 모집 전공 ID 배열           |
+| applicationConfig | object | X | 지원서 양식 설정 (일부만 보내도 됨) |
 
-**Response (사용 가능)**
+### Response (200)
+
+목록 아이템 형태 (create와 동일)
 
 ```json
 {
-  "available": true
+  "postId": "d45ba94f-3e2a-4e2d-a25b-7b39b0c27a5c",
+  "title": "2025 오케스트라 연주자 모집 (수정)",
+  "type": "오디션(연주자모집)",
+  "isRecruiting": true,
+  "dDay": "D-7"
 }
 ```
 
-**Response (이미 사용 중)**
+### 에러
 
-```json
-{
-  "available": false
-}
-```
-
-**Response (빈 값/공백 입력 시)**
-
-```json
-{
-  "available": false
-}
-```
-
-### 사용 시나리오
-
-- 회원가입 폼에서 activityName 입력 필드에 `onBlur` 또는 `onChange` (debounce) 시 호출
-- `available: true` → "사용 가능합니다" 안내
-- `available: false` → "이미 사용 중인 활동 아이디입니다" 안내
+| 상태 | 설명                |
+|-----|---------------------|
+| 401 | 인증 필요           |
+| 403 | 수정 권한 없음 (작성자 아님) |
+| 404 | 공고를 찾을 수 없음  |
 
 ### 참고
 
-- 인증 불필요 (public API)
-- activityName 길이 제한: 20자
-- 대소문자 구분
+- 인증 필요 (access token)
+- 작성자 본인만 수정 가능
+- 전송한 필드만 업데이트 (partial update)
 
 ---
-
-## 공고 유형(announcement_category) 목록 조회
-
-공고 작성/필터 시 사용하는 공고 유형 카테고리 목록을 반환하는 API입니다.
-
-### Endpoint
-
-```
-GET /announcement/categories
-```
-
-### Query Parameters
-
-없음
-
-### Response
-
-| 필드       | 타입   | 설명                    |
-|-----------|--------|-------------------------|
-| categoryId | string | 공고 유형 ID (UUID)     |
-| name      | string | 공고 유형명             |
-
-배열 형태로 반환됩니다.
-
-### Example
-
-**Request**
-
-```
-GET /announcement/categories
-```
-
-**Response**
-
-```json
-[
-  {
-    "categoryId": "uuid-1",
-    "name": "오디션(연주자모집)"
-  },
-  {
-    "categoryId": "uuid-2",
-    "name": "콩쿨(경연)"
-  },
-  {
-    "categoryId": "uuid-3",
-    "name": "입시평가회"
-  },
-  {
-    "categoryId": "uuid-4",
-    "name": "마스터클래스"
-  },
-  {
-    "categoryId": "uuid-5",
-    "name": "행사"
-  },
-  {
-    "categoryId": "uuid-6",
-    "name": "스탭구인"
-  },
-  {
-    "categoryId": "uuid-7",
-    "name": "기타"
-  }
-]
-```
-
-### 사용 시나리오
-
-- 공고 작성 폼: 카테고리 선택 드롭다운/셀렉트 옵션 로드
-- 공고 목록 필터: 카테고리별 필터 옵션 로드
-
-### 참고
-
-- 인증 불필요 (public API)
-- name 오름차순 정렬로 반환

@@ -1,4 +1,4 @@
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import { CommonActions } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -24,7 +24,11 @@ import FormDropdownInput from "../../components/FormDropdownInput/FormDropdownIn
 import SelectableTag from "../../components/SelectableTag/SelectableTag";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
-import { createAnnouncement } from "../../lib/apis/announcement/announcementApi";
+import {
+  createAnnouncement,
+  getAnnouncementDetail,
+  updateAnnouncement,
+} from "../../lib/apis/announcement/announcementApi";
 import type { ApplicationConfig } from "../../lib/apis/announcement/types";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
@@ -79,6 +83,33 @@ const FORM_TO_APPLICATION_CONFIG: Record<
   selfIntroduction: "includeIntroduce",
   academyOrAdvisor: null,
 };
+
+/** API applicationConfig key -> form field id */
+const APPLICATION_CONFIG_TO_FIELD: Record<
+  keyof ApplicationConfig,
+  string
+> = {
+  includeName: "name",
+  includeBirth: "birthYear",
+  includeGender: "gender",
+  includeMajor: "major",
+  includeMajorDetail: "detailMajor",
+  includeEducation: "education",
+  includeCategory: "participationSection",
+  includeMusic: "participatingSong",
+  includeAddress: "deliveryAddress",
+  includeFile: "photoVideoFile",
+  includeLink: "link",
+  includeDepartment: "affiliatedDepartment",
+  includeCareer: "experience",
+  includeIntroduce: "selfIntroduction",
+};
+
+function parseIsoToDate(iso: string | undefined): Date | null {
+  if (!iso?.trim()) return null;
+  const d = new Date(iso);
+  return isNaN(d.getTime()) ? null : d;
+}
 
 function buildApplicationConfig(
   formFields: Record<string, { included: boolean; required: boolean }>,
@@ -156,10 +187,22 @@ const DEFAULT_FORM_FIELDS = {
 
 type TabType = "announcement" | "applicationForm";
 
+type AnnouncementRegistrationParams = { postId?: string };
+
 const AnnouncementRegistrationScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute();
+  const postId = (route.params as { postId?: string } | undefined)?.postId;
+  const isEditMode = !!postId;
   const { bottom } = useSafeAreaInsets();
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: isEditMode ? "모집 공고 수정" : "모집 공고 등록",
+    } as { headerTitle?: string });
+  }, [navigation, isEditMode]);
   const [activeTab, setActiveTab] = useState<TabType>("announcement");
+  const [loadingEdit, setLoadingEdit] = useState(isEditMode);
   const contentOpacity = useRef(new Animated.Value(1)).current;
 
   const handleTabPress = (tab: TabType) => {
@@ -252,6 +295,83 @@ const AnnouncementRegistrationScreen = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    if (!postId) return;
+    setLoadingEdit(true);
+    getAnnouncementDetail(postId)
+      .then((res) => {
+        if (!res || typeof res !== "object") return;
+        const d = res as Record<string, unknown>;
+        const get = (k: string, alt?: string) =>
+          (d[k] ?? d[k.replace(/([A-Z])/g, "_$1").toLowerCase() ?? ""] ?? alt) as
+            | string
+            | undefined;
+        const getArr = (k: string) => {
+          const v = d[k] ?? d[k.replace(/([A-Z])/g, "_$1").toLowerCase()];
+          return Array.isArray(v) ? v : [];
+        };
+        const getObj = (k: string) => {
+          const v = d[k] ?? d[k.replace(/([A-Z])/g, "_$1").toLowerCase()];
+          return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
+        };
+        if (get("title")) setTitle(String(get("title") ?? ""));
+        if (get("content")) setContent(String(get("content") ?? ""));
+        if (get("address")) setLocation(String(get("address") ?? ""));
+        if (get("categoryId")) setAnnouncementType(String(get("categoryId") ?? ""));
+        const majors = getArr("majorIds");
+        if (majors.length > 0) {
+          setRecruitmentMajors(majors.map((id) => String(id)));
+        }
+        const sched = get("scheduledAt");
+        if (sched) {
+          const dt = new Date(sched);
+          if (!isNaN(dt.getTime())) {
+            setScheduledDate(dt);
+            setScheduledTime(dt);
+          }
+        }
+        const dl = get("deadlineAt");
+        if (dl) {
+          const dt = new Date(dl);
+          if (!isNaN(dt.getTime())) setDeadline(dt);
+        }
+        const fid = get("fileId");
+        if (fid) {
+          setFileId(fid);
+          setFileName("(기존 파일)");
+        }
+        const ac = getObj("applicationConfig");
+        if (Object.keys(ac).length > 0) {
+          setFormFields((prev) => {
+            const next = { ...prev };
+            (
+              Object.entries(APPLICATION_CONFIG_TO_FIELD) as [
+                keyof ApplicationConfig,
+                string,
+              ][]
+            ).forEach(([configKey, fieldId]) => {
+              const val = ac[configKey];
+              if (typeof val === "boolean" && next[fieldId]) {
+                next[fieldId] = { ...next[fieldId], included: val };
+              }
+            });
+            return next;
+          });
+        }
+      })
+      .catch((e) => {
+        console.warn("[loadEditData]", e);
+        Alert.alert("알림", "공고 정보를 불러오지 못했습니다.");
+      })
+      .finally(() => setLoadingEdit(false));
+  }, [postId]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: isEditMode ? "모집 공고 수정" : "모집 공고 등록",
+    });
+  }, [navigation, isEditMode]);
 
   const pickFileFromDocument = async () => {
     try {
@@ -386,31 +506,48 @@ const AnnouncementRegistrationScreen = () => {
     };
 
     try {
-      const res = await createAnnouncement(dto);
-      setIsSubmitting(false);
-      if (res) {
-        (navigation as { dispatch?: (action: object) => void }).dispatch?.(
-          CommonActions.reset({
-            index: 0,
-            routes: [
-              {
-                name: RootRoutes.CONTENT_TAB,
-                params: { screen: ContentRoutes.ACTIVITY },
-              },
-            ],
-          }),
-        );
+      if (isEditMode && postId) {
+        const res = await updateAnnouncement(postId, dto);
+        setIsSubmitting(false);
+        if (res) {
+          navigation.goBack();
+        } else {
+          Alert.alert(
+            "수정 실패",
+            "모집공고 수정에 실패했습니다. 다시 시도해주세요.",
+          );
+        }
       } else {
-        Alert.alert(
-          "등록 실패",
-          "모집공고 등록에 실패했습니다. 다시 시도해주세요.",
-        );
+        const res = await createAnnouncement(dto);
+        setIsSubmitting(false);
+        if (res) {
+          (navigation as { dispatch?: (action: object) => void }).dispatch?.(
+            CommonActions.reset({
+              index: 0,
+              routes: [
+                {
+                  name: RootRoutes.CONTENT_TAB,
+                  params: { screen: ContentRoutes.ACTIVITY },
+                },
+              ],
+            }),
+          );
+        } else {
+          Alert.alert(
+            "등록 실패",
+            "모집공고 등록에 실패했습니다. 다시 시도해주세요.",
+          );
+        }
       }
     } catch (e) {
       setIsSubmitting(false);
       const msg =
-        e instanceof Error ? e.message : "모집공고 등록에 실패했습니다.";
-      Alert.alert("등록 실패", msg);
+        e instanceof Error
+          ? e.message
+          : isEditMode
+            ? "모집공고 수정에 실패했습니다."
+            : "모집공고 등록에 실패했습니다.";
+      Alert.alert(isEditMode ? "수정 실패" : "등록 실패", msg);
     }
   };
 
@@ -447,8 +584,52 @@ const AnnouncementRegistrationScreen = () => {
     formConfig: submitAttempted && !formConfigConfirmed,
   };
 
+  if (loadingEdit) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#1F2A44" />
+        <Text style={{ marginTop: 12, fontSize: 14, color: GRAY.DARK_2 }}>
+          공고 정보를 불러오는 중...
+        </Text>
+      </View>
+    );
+  }
+
+  if (loadingEdit) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color="#666" />
+      </View>
+    );
+  }
+
+  if (loadingEdit) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={MAIN.DEFAULT} />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
+      {loadingEdit && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(255,255,255,0.8)",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 10,
+          }}
+        >
+          <ActivityIndicator size="large" color={MAIN.DEFAULT} />
+        </View>
+      )}
       {/* 탭 스위처 */}
       <View style={styles.tabContainer}>
         <Pressable
@@ -855,7 +1036,9 @@ const AnnouncementRegistrationScreen = () => {
           ]}
           onPress={handleRegister}
         >
-          <Text style={styles.registerButtonText}>등록하기</Text>
+          <Text style={styles.registerButtonText}>
+            {isEditMode ? "수정확인" : "등록하기"}
+          </Text>
         </Pressable>
       </View>
     </View>

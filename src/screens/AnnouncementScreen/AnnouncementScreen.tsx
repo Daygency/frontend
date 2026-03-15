@@ -91,8 +91,9 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       selectedTypes.length > 0
         ? categories.find((c) => c.name === selectedTypes[0])?.categoryId
         : undefined;
+    // 전공무관: majorIds 생략 시 전체 조회 (API 스펙)
     const majorIds =
-      selectedMajors.length > 0
+      selectedMajors.length > 0 && !selectedMajors.includes("전공무관")
         ? selectedMajors
             .map((name) => majors.find((m) => m.name === name)?.majorId)
             .filter(Boolean)

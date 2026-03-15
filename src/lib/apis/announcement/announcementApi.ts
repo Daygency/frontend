@@ -82,11 +82,15 @@ export async function getAnnouncementList(
   }
 }
 
-/** 공고 상세 조회 */
+/** 공고 상세 조회 (isMine 판별을 위해 인증 토큰 전송) */
 export async function getAnnouncementDetail(
   id: string
 ): Promise<Record<string, unknown> | null> {
-  const res = await fetch(`${API_BASE}/announcement/${id}`);
+  const headers = await getAuthHeaders();
+  const res = await fetch(`${API_BASE}/announcement/${id}`, {
+    method: "GET",
+    headers,
+  });
   if (!res.ok) {
     console.warn("[getAnnouncementDetail] 실패:", res.status);
     return null;

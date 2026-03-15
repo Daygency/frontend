@@ -1,4 +1,5 @@
 import {
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -8,12 +9,15 @@ import {
 } from "react-native";
 import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
+import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import RoundButton from "../../components/RoundButton/RoundButton";
 import { RootRoutes } from "../../navigations/routes";
+import { getAnnouncementDetail } from "../../lib/apis/announcement/announcementApi";
+import { deleteAnnouncement } from "../../lib/apis/announcement/announcementApi";
 import styles from "./styles";
 
 export type AnnouncementDetailParams = {
@@ -28,6 +32,7 @@ export type AnnouncementDetailParams = {
 type RootStackParamList = {
   ContentTab: undefined;
   AnnouncementDetail: AnnouncementDetailParams;
+  AnnouncementRegistration: { postId?: string };
   Application: AnnouncementDetailParams;
 };
 
@@ -40,11 +45,71 @@ const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { title, type, status, daysLeft } = route.params;
+  const { title, type, status, daysLeft, postId } = route.params;
   const { width: screenWidth } = useWindowDimensions();
+  const [isMine, setIsMine] = useState(false);
   const [imageHeights, setImageHeights] = useState<{ [key: number]: number }>(
     {}
   );
+
+  useEffect(() => {
+    if (postId) {
+      getAnnouncementDetail(postId).then((res) => {
+        if (!res) return;
+        // isMine (camelCase) 또는 is_mine (snake_case) 모두 처리
+        const mine =
+          (res as { isMine?: boolean }).isMine ??
+          (res as { is_mine?: boolean }).is_mine;
+        if (typeof mine === "boolean") {
+          setIsMine(mine);
+        }
+      });
+    }
+  }, [postId]);
+
+  useEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <AnnouncementDetailOptionsMenu
+          isMine={isMine}
+          postId={postId}
+          onEdit={() => {
+            if (postId) {
+              navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION, {
+                postId,
+              });
+            }
+          }}
+          onDelete={() => {
+            if (!postId) return;
+            Alert.alert(
+              "삭제 확인",
+              "정말 삭제하시겠습니까?",
+              [
+                { text: "취소", style: "cancel" },
+                {
+                  text: "삭제",
+                  style: "destructive",
+                  onPress: async () => {
+                    const ok = await deleteAnnouncement(postId);
+                    if (ok) {
+                      navigation.goBack();
+                    } else {
+                      Alert.alert("알림", "삭제에 실패했습니다.");
+                    }
+                  },
+                },
+              ]
+            );
+          }}
+          onReport={() => {
+            Alert.alert("알림", "신고 기능은 준비 중입니다.");
+          }}
+        />
+      ),
+    });
+  }, [navigation, isMine, postId]);
+
   const imageList = [
     "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
     "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
