@@ -16,6 +16,7 @@ export const RootRoutes = {
   SIGNUP: "Signup",
   CONTENT_TAB: "ContentTab",
   ANNOUNCEMENT_DETAIL: "AnnouncementDetail",
+  ANNOUNCEMENT_REGISTRATION: "AnnouncementRegistration",
   APPLICATION: "Application",
   FOLLOW_LIST: "FollowList",
   COMMUNITY_DETAIL: "CommunityDetail",

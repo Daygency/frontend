@@ -16,11 +16,18 @@ const GrayCard = ({ items }: GrayCardProps) => {
   return (
     <View style={styles.container}>
       {items.map((item, index) => (
-        <View key={index} style={styles.item}>
+        <View
+          key={index}
+          style={[
+            styles.item,
+            index === items.length - 1 && styles.itemLast,
+          ]}
+        >
           <Text style={styles.boardName}>{item.boardName}</Text>
-          <View style={styles.spacer} />
           <View style={styles.latestPostWrap}>
-            <Text style={styles.latestPost}>{item.latestPost}</Text>
+            <Text style={styles.latestPost} numberOfLines={1}>
+              {item.latestPost}
+            </Text>
             {item.hasNew && <View style={styles.newDot} />}
           </View>
         </View>

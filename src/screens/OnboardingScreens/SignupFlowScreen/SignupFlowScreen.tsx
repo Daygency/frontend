@@ -31,7 +31,7 @@ const ANIMATION_DURATION = 300;
 const SignupFlowScreen = () => {
   const { width } = useWindowDimensions();
   const { top, bottom } = useSafeAreaInsets();
-  const { completeSignup, user } = useAuth();
+  const { completeSignup, logout, user } = useAuth();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedRole, setSelectedRole] = useState<UserRole>("artist");
@@ -81,9 +81,9 @@ const SignupFlowScreen = () => {
   const handleCheckActivityId = async () => {
     const value = activityName.trim();
     if (!value) {
-      setIsActivityIdDuplicate(null);
-      setActivityIdMessage("");
-      setIsActivityIdVerified(false);
+      setIsActivityNameDuplicate(null);
+      setActivityNameMessage("");
+      setIsActivityNameVerified(false);
       return;
     }
 
@@ -141,6 +141,17 @@ const SignupFlowScreen = () => {
     slideX.value = withTiming(0, { duration: ANIMATION_DURATION });
   };
 
+  const handleBackFromRoleSelection = () => {
+    Alert.alert(
+      "가입 취소",
+      "가입을 취소하고 로그인 화면으로 돌아가시겠어요?",
+      [
+        { text: "아니요", style: "cancel" },
+        { text: "예", onPress: () => logout() },
+      ]
+    );
+  };
+
   const contentAnimatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateX: slideX.value }],
   }));
@@ -152,6 +163,19 @@ const SignupFlowScreen = () => {
       style={[styles.container, { paddingTop: top, paddingBottom: bottom }]}
     >
       <View style={styles.headerRow}>
+        {step === 1 ? (
+          <Pressable
+            style={styles.backButton}
+            onPress={handleBackFromRoleSelection}
+            hitSlop={12}
+          >
+            <MaterialCommunityIcons
+              name="chevron-left"
+              size={28}
+              color={MAIN.DEFAULT}
+            />
+          </Pressable>
+        ) : null}
         <SignupFlowProgress currentStep={step} />
         {step === 2 && (
           <Pressable style={styles.backButton} onPress={goToStep1} hitSlop={12}>

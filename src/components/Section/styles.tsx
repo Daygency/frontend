@@ -11,10 +11,9 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     marginBottom: 8,
-    paddingHorizontal: 12 + 8, // 기존 12씩 + 양쪽 4만큼 해서 콘텐츠보다 더 안쪽에 위치하도록 함
+    paddingHorizontal: 20,
   },
   title: {
-    marginLeft: 4,
     fontSize: 19,
     lineHeight: 27,
     letterSpacing: -0.32,
@@ -35,7 +34,7 @@ const styles = StyleSheet.create({
   content: {
     marginTop: 5,
     gap: 5,
-    paddingHorizontal: 12,
+    paddingHorizontal: 20,
   },
 });
 

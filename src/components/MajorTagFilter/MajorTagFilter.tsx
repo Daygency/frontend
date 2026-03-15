@@ -6,16 +6,21 @@ import { styles } from "./styles";
 interface MajorTagFilterProps {
   selectedValues: string[];
   onPress: () => void;
+  label?: string;
 }
 
-const MajorTagFilter = ({ selectedValues, onPress }: MajorTagFilterProps) => {
-  const label =
-    selectedValues.length > 0 ? `전공 (${selectedValues.length})` : "전공";
+const MajorTagFilter = ({
+  selectedValues,
+  onPress,
+  label = "전공",
+}: MajorTagFilterProps) => {
+  const displayLabel =
+    selectedValues.length > 0 ? `${label} (${selectedValues.length})` : label;
 
   return (
     <Pressable style={styles.triggerButton} onPress={onPress}>
       <View style={styles.triggerContent}>
-        <Text style={styles.triggerText}>{label}</Text>
+        <Text style={styles.triggerText}>{displayLabel}</Text>
         <MaterialCommunityIcons
           name="chevron-down"
           size={14}

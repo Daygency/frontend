@@ -14,6 +14,9 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     letterSpacing: 0.3,
   },
+  titleError: {
+    color: "#EC1313",
+  },
   example: {
     marginTop: 4,
     marginLeft: 16,

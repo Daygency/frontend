@@ -55,7 +55,7 @@ export const useKakaoLogin = () => {
         return {};
       });
 
-      const { accessToken, user, needsSignup, isNew } = data;
+      const { accessToken, refreshToken, user, needsSignup, isNew } = data;
       console.log(
         "[Kakao 5/6] fetch 응답 | status:",
         res.status,
@@ -106,9 +106,19 @@ export const useKakaoLogin = () => {
           email: String(u.email ?? ""),
           profileImgUrl: String(u.profileImgUrl ?? ""),
         },
-        { isNewUser: isNew },
+        { isNewUser: isNew, refreshToken: refreshToken ?? undefined },
       );
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      const isCanceledByUser =
+        message.toLowerCase().includes("canceled by user") ||
+        message.toLowerCase().includes("cancelled by user") ||
+        message.toLowerCase().includes("cancelled");
+
+      if (isCanceledByUser) {
+        return;
+      }
+
       console.error("[Kakao Login Error]", error);
       console.error(
         "[Kakao 실패 위치] 2에서 끊김=SDK 에러 | 4에서 끊김=네트워크/백엔드 도달 못함 | 5에서 끊김=백엔드 응답 에러",
@@ -118,11 +128,10 @@ export const useKakaoLogin = () => {
         "name:",
         error instanceof Error ? error.name : "-",
         "| message:",
-        error instanceof Error ? error.message : String(error),
+        message,
         "| stack:",
         error instanceof Error ? error.stack?.slice(0, 200) : "-",
       );
-      const message = error instanceof Error ? error.message : String(error);
       Alert.alert(
         "로그인 실패",
         `카카오 로그인에 실패했습니다. 다시 시도해 주세요.\n\n(오류: ${message})`,

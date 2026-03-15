@@ -1,32 +1,63 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN } from "../../color";
+import { BLACK, GRAY, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    paddingVertical: 19,
-    paddingHorizontal: 27,
-    backgroundColor: MAIN.LIGHT,
-    borderBottomWidth: 1,
-    borderBottomColor: GRAY.DARK_1,
+    paddingVertical: 20,
+    paddingHorizontal: 20,
+    backgroundColor: "#ffffff",
+  },
+  title: {
+    fontSize: 17,
+    lineHeight: 24,
+    letterSpacing: 0.3,
+    color: BLACK,
+    fontWeight: "700",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginTop: 5,
+    alignItems: "center",
+    marginTop: 10,
   },
   tagsContainer: {
     flexDirection: "row",
-    gap: 7,
+    gap: 8,
     flex: 1,
   },
-  title: {
-    fontSize: 16,
-    lineHeight: 24,
-    letterSpacing: 0.3,
+  typeTag: {
+    backgroundColor: GRAY.DARK_1,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  typeTagText: {
+    fontSize: 12,
+    lineHeight: 13,
+    letterSpacing: 0.24,
     color: BLACK,
-    fontWeight: "500",
+    fontWeight: "400",
+  },
+  statusTag: {
+    backgroundColor: WHITE,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  statusTagText: {
+    fontSize: 12,
+    lineHeight: 13,
+    letterSpacing: 0.24,
+    color: BLACK,
+    fontWeight: "400",
+  },
+  dateText: {
+    fontSize: 13,
+    color: GRAY.DARK_2,
+    fontWeight: "400",
   },
 });
 

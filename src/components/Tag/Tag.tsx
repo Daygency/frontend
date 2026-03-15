@@ -9,6 +9,7 @@ interface TagProps {
   borderColor?: string;
   backgroundColor?: string;
   textColor?: string;
+  borderRadius?: number;
 }
 
 const Tag = ({
@@ -17,6 +18,7 @@ const Tag = ({
   borderColor,
   backgroundColor,
   textColor,
+  borderRadius,
 }: TagProps) => {
   const getStyle = (): ViewStyle[] => {
     const baseStyle: ViewStyle[] = [styles.tag];
@@ -45,6 +47,10 @@ const Tag = ({
 
     if (backgroundColor) {
       baseStyle.push({ backgroundColor });
+    }
+
+    if (borderRadius !== undefined) {
+      baseStyle.push({ borderRadius });
     }
 
     return baseStyle;
