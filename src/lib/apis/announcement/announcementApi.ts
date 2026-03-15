@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE, AUTH_TOKEN_KEY } from "../api";
+import { fetchWithAuth } from "../fetchWithAuth";
 import type {
   CreateAnnouncementDto,
   CreateAnnouncementResponse,
@@ -82,12 +83,12 @@ export async function getAnnouncementList(
   }
 }
 
-/** 공고 상세 조회 (isMine 판별을 위해 인증 토큰 전송) */
+/** 공고 상세 조회 (isMine 판별을 위해 Authorization 헤더 포함, 401 시 refresh 후 재시도) */
 export async function getAnnouncementDetail(
   id: string
 ): Promise<Record<string, unknown> | null> {
   const headers = await getAuthHeaders();
-  const res = await fetch(`${API_BASE}/announcement/${id}`, {
+  const res = await fetchWithAuth(`${API_BASE}/announcement/${id}`, {
     method: "GET",
     headers,
   });
@@ -121,12 +122,19 @@ export async function updateAnnouncement(
   return JSON.parse(text) as Record<string, unknown>;
 }
 
-/** 공고 삭제 */
-export async function deleteAnnouncement(id: string): Promise<boolean> {
-  const headers = await getAuthHeadersRequired();
-  const res = await fetch(`${API_BASE}/announcement/${id}`, {
-    method: "DELETE",
-    headers,
-  });
-  return res.ok;
+/** 공고 삭제 (api-readme: DELETE /announcement/:id) */
+export async function deleteAnnouncement(
+  id: string
+): Promise<{ ok: boolean; status?: number }> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetch(`${API_BASE}/announcement/${id}`, {
+      method: "DELETE",
+      headers,
+    });
+    return { ok: res.ok, status: res.status };
+  } catch (e) {
+    console.warn("[deleteAnnouncement] 에러:", e);
+    return { ok: false };
+  }
 }

@@ -157,6 +157,13 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     loadData();
   }, [loadData]);
 
+  // 삭제/수정 후 돌아왔을 때 목록 최신화
+  useFocusEffect(
+    useCallback(() => {
+      loadData();
+    }, [loadData])
+  );
+
   const loadMore = () => {
     if (loading || !hasMore || !nextCursor) return;
     loadData(nextCursor);

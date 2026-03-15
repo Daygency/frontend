@@ -9,6 +9,7 @@ export type CompleteKakaoSignupRequest = {
 
 export type CompleteKakaoSignupResponse = {
   accessToken?: string;
+  refreshToken?: string;
   user?: {
     userId?: string | number;
     socialId?: string;

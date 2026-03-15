@@ -55,7 +55,7 @@ export const useKakaoLogin = () => {
         return {};
       });
 
-      const { accessToken, user, needsSignup, isNew } = data;
+      const { accessToken, refreshToken, user, needsSignup, isNew } = data;
       console.log(
         "[Kakao 5/6] fetch 응답 | status:",
         res.status,
@@ -106,7 +106,7 @@ export const useKakaoLogin = () => {
           email: String(u.email ?? ""),
           profileImgUrl: String(u.profileImgUrl ?? ""),
         },
-        { isNewUser: isNew },
+        { isNewUser: isNew, refreshToken: refreshToken ?? undefined },
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

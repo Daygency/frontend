@@ -23,6 +23,7 @@ import RoundButton from "../../components/RoundButton/RoundButton";
 import { RootRoutes } from "../../navigations/routes";
 import { getAnnouncementDetail } from "../../lib/apis/announcement/announcementApi";
 import { deleteAnnouncement } from "../../lib/apis/announcement/announcementApi";
+import { useAuth } from "../../contexts/AuthContext";
 import styles from "./styles";
 
 export type AnnouncementDetailParams = {
@@ -50,6 +51,7 @@ const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { isLoggedIn, user } = useAuth();
   const params = route.params ?? {};
   const { width: screenWidth } = useWindowDimensions();
   const [isMine, setIsMine] = useState(false);
@@ -65,7 +67,13 @@ const AnnouncementDetailScreen = () => {
 
   const fetchDetail = useCallback(() => {
     if (!params.postId) return;
+    console.log("[AnnouncementDetail] 인증 상태:", {
+      isLoggedIn,
+      userId: user?.socialId ?? "(없음)",
+      nickname: user?.nickname ?? "(없음)",
+    });
     getAnnouncementDetail(params.postId).then((res) => {
+      console.log("[AnnouncementDetail] API 응답:", JSON.stringify(res, null, 2));
       if (!res || typeof res !== "object") return;
       const d = res as Record<string, unknown>;
       const get = (k: string, alt?: string) =>
@@ -88,7 +96,15 @@ const AnnouncementDetailScreen = () => {
       const daysLeft = parseInt(dDay.replace(/\D/g, ""), 10) || params.daysLeft || 0;
       setDetailData({ title: String(title), type: String(type), status, daysLeft });
     });
-  }, [params.postId, params.title, params.type, params.status, params.daysLeft]);
+  }, [
+    params.postId,
+    params.title,
+    params.type,
+    params.status,
+    params.daysLeft,
+    isLoggedIn,
+    user,
+  ]);
 
   useFocusEffect(
     useCallback(() => {
@@ -126,10 +142,22 @@ const AnnouncementDetailScreen = () => {
                   text: "삭제",
                   style: "destructive",
                   onPress: async () => {
-                    const ok = await deleteAnnouncement(params.postId);
-                    if (ok) {
-                      navigation.goBack();
-                    } else {
+                    try {
+                      const { ok, status } = await deleteAnnouncement(params.postId!);
+                      if (ok) {
+                        navigation.goBack();
+                      } else {
+                        const msg =
+                          status === 401
+                            ? "인증이 필요합니다. 다시 로그인해주세요."
+                            : status === 403
+                              ? "삭제 권한이 없습니다."
+                              : status === 404
+                                ? "공고를 찾을 수 없습니다."
+                                : "삭제에 실패했습니다.";
+                        Alert.alert("알림", msg);
+                      }
+                    } catch (e) {
                       Alert.alert("알림", "삭제에 실패했습니다.");
                     }
                   },

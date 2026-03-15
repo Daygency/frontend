@@ -7,8 +7,13 @@ import {
 } from "react";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE, AUTH_TOKEN_KEY } from "../lib/apis/api";
+import {
+  API_BASE,
+  AUTH_TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+} from "../lib/apis/api";
 import { clearProfileCache } from "../lib/profileCache";
+import { onAuthExpired } from "../lib/authEvents";
 import { completeKakaoSignup } from "../lib/apis/auth/completeKakaoSignup";
 const USER_INFO_KEY = "@daygency_user_info";
 const PENDING_SIGNUP_KEY = "@daygency_pending_signup";
@@ -35,9 +40,9 @@ type AuthContextType = {
   needsRoleSelection: boolean;
   user: SocialUser | null;
   login: (
-    token: string,
+    accessToken: string,
     user: SocialUser,
-    options?: { isNewUser?: boolean },
+    options?: { isNewUser?: boolean; refreshToken?: string },
   ) => Promise<void>;
   completeSignup: (params: SignupParams) => Promise<void>;
   logout: () => Promise<void>;
@@ -52,6 +57,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [needsRoleSelection, setNeedsRoleSelection] = useState(false);
   const [user, setUser] = useState<SocialUser | null>(null);
+
+  useEffect(() => {
+    const unsub = onAuthExpired(() => {
+      setUser(null);
+      setIsLoggedIn(false);
+      setIsBrowsing(false);
+      setNeedsRoleSelection(false);
+    });
+    return unsub;
+  }, []);
 
   useEffect(() => {
     const loadAuthState = async () => {
@@ -76,14 +91,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (
-    token: string,
+    accessToken: string,
     userInfo: SocialUser,
-    options?: { isNewUser?: boolean },
+    options?: { isNewUser?: boolean; refreshToken?: string },
   ) => {
-    await Promise.all([
-      AsyncStorage.setItem(AUTH_TOKEN_KEY, token),
+    const toStore: Promise<void>[] = [
+      AsyncStorage.setItem(AUTH_TOKEN_KEY, accessToken),
       AsyncStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo)),
-    ]);
+    ];
+    if (options?.refreshToken) {
+      toStore.push(
+        AsyncStorage.setItem(REFRESH_TOKEN_KEY, options.refreshToken),
+      );
+    }
+    await Promise.all(toStore);
     setUser(userInfo);
     setIsLoggedIn(true);
 
@@ -108,9 +129,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         ...(activityName?.trim() ? { activityName: activityName.trim() } : {}),
       });
 
-      // 토큰 발급 시 새 토큰으로 갱신
+      // 토큰 발급 시 새 토큰으로 갱신 (auth-api.md: accessToken + refreshToken)
       if (data?.accessToken) {
         await AsyncStorage.setItem(AUTH_TOKEN_KEY, data.accessToken);
+      }
+      if (data?.refreshToken) {
+        await AsyncStorage.setItem(REFRESH_TOKEN_KEY, data.refreshToken);
       }
       if (data?.user) {
         const u = data.user;
@@ -136,6 +160,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     await Promise.all([
       AsyncStorage.removeItem(AUTH_TOKEN_KEY),
+      AsyncStorage.removeItem(REFRESH_TOKEN_KEY),
       AsyncStorage.removeItem(USER_INFO_KEY),
       AsyncStorage.removeItem(PENDING_SIGNUP_KEY),
       clearProfileCache(),
