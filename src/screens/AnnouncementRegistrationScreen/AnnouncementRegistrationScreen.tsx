@@ -28,6 +28,23 @@ const announcementTypeOptions = [
   { label: "기타", value: "기타" },
 ];
 
+const recruitmentMajorOptions = [
+  { label: "전공무관", value: "전공무관" },
+  { label: "건반악기", value: "건반악기" },
+  { label: "현악", value: "현악" },
+  { label: "관악", value: "관악" },
+  { label: "성악", value: "성악" },
+  { label: "타악", value: "타악" },
+  { label: "작곡", value: "작곡" },
+  { label: "지휘", value: "지휘" },
+  { label: "음악학", value: "음악학" },
+  { label: "국악", value: "국악" },
+  { label: "무용", value: "무용" },
+  { label: "실용", value: "실용" },
+  { label: "뮤지컬·크로스오버", value: "뮤지컬·크로스오버" },
+  { label: "기타", value: "기타" },
+];
+
 const APPLICATION_FORM_FIELDS = [
   { id: "name", label: "이름" },
   { id: "birthYear", label: "출생연도" },
@@ -85,6 +102,7 @@ const AnnouncementRegistrationScreen = () => {
   const [deadline, setDeadline] = useState("");
   const [location, setLocation] = useState("");
   const [announcementType, setAnnouncementType] = useState("");
+  const [recruitmentMajor, setRecruitmentMajor] = useState("");
   const [content, setContent] = useState("");
 
   // 지원서 양식 구성
@@ -94,11 +112,12 @@ const AnnouncementRegistrationScreen = () => {
     const initial: Record<string, { included: boolean; required: boolean }> =
       {};
     APPLICATION_FORM_FIELDS.forEach(({ id }) => {
-      initial[id] =
-        DEFAULT_FORM_FIELDS[id as keyof typeof DEFAULT_FORM_FIELDS] ?? {
-          included: false,
-          required: false,
-        };
+      initial[id] = DEFAULT_FORM_FIELDS[
+        id as keyof typeof DEFAULT_FORM_FIELDS
+      ] ?? {
+        included: false,
+        required: false,
+      };
     });
     return initial;
   });
@@ -111,7 +130,7 @@ const AnnouncementRegistrationScreen = () => {
   const updateFormField = (
     id: string,
     field: "included" | "required",
-    value: boolean
+    value: boolean,
   ) => {
     setFormFields((prev) => {
       const next = { ...prev };
@@ -129,6 +148,7 @@ const AnnouncementRegistrationScreen = () => {
     scheduledDate &&
     deadline &&
     announcementType &&
+    recruitmentMajor &&
     content &&
     formConfigConfirmed;
 
@@ -150,7 +170,10 @@ const AnnouncementRegistrationScreen = () => {
           </Text>
         </Pressable>
         <Pressable
-          style={[styles.tab, activeTab === "applicationForm" && styles.tabActive]}
+          style={[
+            styles.tab,
+            activeTab === "applicationForm" && styles.tabActive,
+          ]}
           onPress={() => handleTabPress("applicationForm")}
         >
           <Text
@@ -172,237 +195,246 @@ const AnnouncementRegistrationScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <Animated.View style={{ opacity: contentOpacity }}>
-        {activeTab === "announcement" ? (
-          <>
+          {activeTab === "announcement" ? (
+            <>
+              <View style={styles.formSection}>
+                <View style={styles.formField}>
+                  <Form title="공고명" isRequired>
+                    <FormTextInput
+                      placeholder="공고명을 입력하세요"
+                      value={title}
+                      onChangeText={setTitle}
+                    />
+                  </Form>
+                </View>
+
+                <View style={styles.formField}>
+                  <Form title="일정/장소" isRequired>
+                    <View style={styles.scheduleLocationBox}>
+                      <View style={styles.scheduleField}>
+                        <Form title="예정일" isRequired>
+                          <View>
+                            <FormTextInput
+                              placeholder="YYYY.MM.DD"
+                              value={scheduledDate}
+                              onChangeText={setScheduledDate}
+                            />
+                            <View style={styles.quickButtonRow}>
+                              <Pressable
+                                style={styles.quickButton}
+                                onPress={() => setScheduledDate("모집시 마감")}
+                              >
+                                <Text style={styles.quickButtonText}>
+                                  모집시 마감
+                                </Text>
+                              </Pressable>
+                              <Pressable
+                                style={styles.quickButton}
+                                onPress={() => setScheduledDate("마감됨")}
+                              >
+                                <Text style={styles.quickButtonText}>
+                                  마감됨
+                                </Text>
+                              </Pressable>
+                            </View>
+                          </View>
+                        </Form>
+                      </View>
+                      <View style={styles.scheduleField}>
+                        <Form title="예정 시간" isRequired={false}>
+                          <FormTextInput
+                            placeholder="00:00"
+                            value={scheduledTime}
+                            onChangeText={setScheduledTime}
+                          />
+                        </Form>
+                      </View>
+                      <View style={styles.scheduleField}>
+                        <Form title="공고 마감일" isRequired>
+                          <View>
+                            <FormTextInput
+                              placeholder="YYYY.MM.DD"
+                              value={deadline}
+                              onChangeText={setDeadline}
+                            />
+                            <View style={styles.quickButtonRow}>
+                              <Pressable
+                                style={styles.quickButton}
+                                onPress={() => setDeadline("모집시 마감")}
+                              >
+                                <Text style={styles.quickButtonText}>
+                                  모집시 마감
+                                </Text>
+                              </Pressable>
+                              <Pressable
+                                style={styles.quickButton}
+                                onPress={() => setDeadline("마감됨")}
+                              >
+                                <Text style={styles.quickButtonText}>
+                                  마감됨
+                                </Text>
+                              </Pressable>
+                            </View>
+                          </View>
+                        </Form>
+                      </View>
+                      <View style={styles.scheduleField}>
+                        <Form title="장소" isRequired={false}>
+                          <FormTextInput
+                            placeholder="장소를 입력하세요"
+                            value={location}
+                            onChangeText={setLocation}
+                          />
+                        </Form>
+                      </View>
+                    </View>
+                  </Form>
+                </View>
+
+                <View style={styles.formField}>
+                  <Form title="공고 유형" isRequired>
+                    <FormDropdownInput
+                      placeholder="공고 유형을 선택하세요"
+                      data={announcementTypeOptions}
+                      value={announcementType}
+                      onChange={(item) => setAnnouncementType(item.value)}
+                    />
+                  </Form>
+                </View>
+
+                <View style={styles.formField}>
+                  <Form title="모집 전공" isRequired>
+                    <FormDropdownInput
+                      placeholder="모집 전공을 선택하세요"
+                      data={recruitmentMajorOptions}
+                      value={recruitmentMajor}
+                      onChange={(item) => setRecruitmentMajor(item.value)}
+                    />
+                  </Form>
+                </View>
+
+                <View style={styles.formField}>
+                  <Form title="내용" isRequired>
+                    <View style={styles.contentInputWrapper}>
+                      <TextInput
+                        style={styles.contentInput}
+                        placeholder="연주자 모집, 대타 구인, 콩쿨, 입시평가회, 행사, 웨딩 오브리 등 모집 공고를 등록할 수 있어요."
+                        placeholderTextColor={GRAY.DARK_2}
+                        multiline
+                        value={content}
+                        onChangeText={setContent}
+                        textAlignVertical="top"
+                      />
+                      <Text style={styles.contentNote}>
+                        ▲ 공연 소식 및 홍보는 '라운지'를 이용해주세요
+                      </Text>
+                    </View>
+                  </Form>
+                </View>
+
+                <View style={styles.formField}>
+                  <Form title="사진/영상/파일" isRequired={false}>
+                    <View style={styles.fileOptions}>
+                      <Pressable style={styles.fileOptionItem} hitSlop={10}>
+                        <MaterialCommunityIcons
+                          name="file-document-outline"
+                          size={24}
+                          color={BLACK}
+                        />
+                        <Text style={styles.fileOptionText}>파일에서 선택</Text>
+                        <MaterialCommunityIcons
+                          name="chevron-right"
+                          size={24}
+                          color={GRAY.DARK_1}
+                        />
+                      </Pressable>
+                      <Pressable style={styles.fileOptionItem} hitSlop={10}>
+                        <MaterialCommunityIcons
+                          name="image-multiple-outline"
+                          size={24}
+                          color={BLACK}
+                        />
+                        <Text style={styles.fileOptionText}>앨범에서 선택</Text>
+                        <MaterialCommunityIcons
+                          name="chevron-right"
+                          size={24}
+                          color={GRAY.DARK_1}
+                        />
+                      </Pressable>
+                    </View>
+                  </Form>
+                </View>
+              </View>
+            </>
+          ) : (
             <View style={styles.formSection}>
-              <View style={styles.formField}>
-                <Form title="공고명" isRequired>
-                  <FormTextInput
-                    placeholder="공고명을 입력하세요"
-                    value={title}
-                    onChangeText={setTitle}
-                  />
-                </Form>
-              </View>
-
-              <View style={styles.formField}>
-                <Form title="일정/장소" isRequired>
-                  <View style={styles.scheduleLocationBox}>
-                    <View style={styles.scheduleField}>
-                      <Form title="예정일" isRequired>
-                        <View>
-                          <FormTextInput
-                            placeholder="YYYY.MM.DD"
-                            value={scheduledDate}
-                            onChangeText={setScheduledDate}
-                          />
-                          <View style={styles.quickButtonRow}>
-                            <Pressable
-                              style={styles.quickButton}
-                              onPress={() => setScheduledDate("모집시 마감")}
-                            >
-                              <Text style={styles.quickButtonText}>
-                                모집시 마감
-                              </Text>
-                            </Pressable>
-                            <Pressable
-                              style={styles.quickButton}
-                              onPress={() => setScheduledDate("마감됨")}
-                            >
-                              <Text style={styles.quickButtonText}>마감됨</Text>
-                            </Pressable>
-                          </View>
-                        </View>
-                      </Form>
-                    </View>
-                    <View style={styles.scheduleField}>
-                      <Form title="예정 시간" isRequired={false}>
-                        <FormTextInput
-                          placeholder="00:00"
-                          value={scheduledTime}
-                          onChangeText={setScheduledTime}
-                        />
-                      </Form>
-                    </View>
-                    <View style={styles.scheduleField}>
-                      <Form title="공고 마감일" isRequired>
-                        <View>
-                          <FormTextInput
-                            placeholder="YYYY.MM.DD"
-                            value={deadline}
-                            onChangeText={setDeadline}
-                          />
-                          <View style={styles.quickButtonRow}>
-                            <Pressable
-                              style={styles.quickButton}
-                              onPress={() => setDeadline("모집시 마감")}
-                            >
-                              <Text style={styles.quickButtonText}>
-                                모집시 마감
-                              </Text>
-                            </Pressable>
-                            <Pressable
-                              style={styles.quickButton}
-                              onPress={() => setDeadline("마감됨")}
-                            >
-                              <Text style={styles.quickButtonText}>마감됨</Text>
-                            </Pressable>
-                          </View>
-                        </View>
-                      </Form>
-                    </View>
-                    <View style={styles.scheduleField}>
-                      <Form title="장소" isRequired={false}>
-                        <FormTextInput
-                          placeholder="장소를 입력하세요"
-                          value={location}
-                          onChangeText={setLocation}
-                        />
-                      </Form>
-                    </View>
-                  </View>
-                </Form>
-              </View>
-
-              <View style={styles.formField}>
-                <Form title="공고 유형" isRequired>
-                  <FormDropdownInput
-                    placeholder="공고 유형을 선택하세요"
-                    data={announcementTypeOptions}
-                    value={announcementType}
-                    onChange={(item) => setAnnouncementType(item.value)}
-                  />
-                </Form>
-              </View>
-
-              <View style={styles.formField}>
-                <Form title="내용" isRequired>
-                  <View style={styles.contentInputWrapper}>
-                    <TextInput
-                      style={styles.contentInput}
-                      placeholder="연주자 모집, 대타 구인, 콩쿨, 입시평가회, 행사, 웨딩 오브리 등 모집 공고를 등록할 수 있어요."
-                      placeholderTextColor={GRAY.DARK_2}
-                      multiline
-                      value={content}
-                      onChangeText={setContent}
-                      textAlignVertical="top"
-                    />
-                    <Text style={styles.contentNote}>
-                      ▲ 공연 소식 및 홍보는 '라운지'를 이용해주세요
-                    </Text>
-                  </View>
-                </Form>
-              </View>
-
-              <View style={styles.formField}>
-                <Form title="사진/영상/파일" isRequired={false}>
-                  <View style={styles.fileOptions}>
-                    <Pressable style={styles.fileOptionItem} hitSlop={10}>
-                      <MaterialCommunityIcons
-                        name="file-document-outline"
-                        size={24}
-                        color={BLACK}
-                      />
-                      <Text style={styles.fileOptionText}>파일에서 선택</Text>
-                      <MaterialCommunityIcons
-                        name="chevron-right"
-                        size={24}
-                        color={GRAY.DARK_1}
-                      />
-                    </Pressable>
-                    <Pressable style={styles.fileOptionItem} hitSlop={10}>
-                      <MaterialCommunityIcons
-                        name="image-multiple-outline"
-                        size={24}
-                        color={BLACK}
-                      />
-                      <Text style={styles.fileOptionText}>앨범에서 선택</Text>
-                      <MaterialCommunityIcons
-                        name="chevron-right"
-                        size={24}
-                        color={GRAY.DARK_1}
-                      />
-                    </Pressable>
-                  </View>
-                </Form>
-              </View>
-            </View>
-          </>
-        ) : (
-          <View style={styles.formSection}>
-            <Text style={styles.applicationFormTitle}>
-              지원서 양식 구성
-              <Text style={styles.requiredMark}> *</Text>
-            </Text>
-            <Text style={styles.applicationFormDescription}>
-              지원자가 작성해야 할 정보를 선택해 주세요.
-            </Text>
-
-            <View style={styles.formFieldHeaderRow}>
-              <Text style={styles.formFieldHeader}>
-                지원서에 포함
+              <Text style={styles.applicationFormTitle}>
+                지원서 양식 구성
+                <Text style={styles.requiredMark}> *</Text>
               </Text>
-              <Text style={styles.formFieldHeader}>
-                지원자가 필수 작성
+              <Text style={styles.applicationFormDescription}>
+                지원자가 작성해야 할 정보를 선택해 주세요.
               </Text>
-            </View>
 
-            {APPLICATION_FORM_FIELDS.map(({ id, label }) => (
-              <View key={id} style={styles.applicationFormItem}>
-                <Pressable
-                  style={[
-                    styles.checkbox,
-                    formFields[id]?.included && styles.checkboxChecked,
-                  ]}
-                  onPress={() =>
-                    updateFormField(id, "included", !formFields[id]?.included)
-                  }
-                >
-                  {formFields[id]?.included && (
-                    <MaterialCommunityIcons
-                      name="check"
-                      size={14}
-                      color={WHITE}
-                    />
-                  )}
-                </Pressable>
-                <Text style={styles.applicationFormLabel}>{label}</Text>
-                <Switch
-                  value={formFields[id]?.required ?? false}
-                  onValueChange={(value) =>
-                    updateFormField(id, "required", value)
-                  }
-                  disabled={!formFields[id]?.included}
-                  trackColor={{
-                    true: MAIN.DEFAULT,
-                    false: GRAY.MEDIUM,
-                  }}
-                  thumbColor={WHITE}
-                  style={styles.formToggle}
-                />
+              <View style={styles.formFieldHeaderRow}>
+                <Text style={styles.formFieldHeader}>지원서에 포함</Text>
+                <Text style={styles.formFieldHeader}>지원자가 필수 작성</Text>
               </View>
-            ))}
 
-            <Pressable
-              style={styles.confirmRow}
-              onPress={() => setFormConfigConfirmed(!formConfigConfirmed)}
-            >
-              <View
-                style={[
-                  styles.radio,
-                  formConfigConfirmed && styles.radioChecked,
-                ]}
+              {APPLICATION_FORM_FIELDS.map(({ id, label }) => (
+                <View key={id} style={styles.applicationFormItem}>
+                  <Pressable
+                    style={[
+                      styles.checkbox,
+                      formFields[id]?.included && styles.checkboxChecked,
+                    ]}
+                    onPress={() =>
+                      updateFormField(id, "included", !formFields[id]?.included)
+                    }
+                  >
+                    {formFields[id]?.included && (
+                      <MaterialCommunityIcons
+                        name="check"
+                        size={14}
+                        color={WHITE}
+                      />
+                    )}
+                  </Pressable>
+                  <Text style={styles.applicationFormLabel}>{label}</Text>
+                  <Switch
+                    value={formFields[id]?.required ?? false}
+                    onValueChange={(value) =>
+                      updateFormField(id, "required", value)
+                    }
+                    disabled={!formFields[id]?.included}
+                    trackColor={{
+                      true: MAIN.DEFAULT,
+                      false: GRAY.MEDIUM,
+                    }}
+                    thumbColor={WHITE}
+                    style={styles.formToggle}
+                  />
+                </View>
+              ))}
+
+              <Pressable
+                style={styles.confirmRow}
+                onPress={() => setFormConfigConfirmed(!formConfigConfirmed)}
               >
-                {formConfigConfirmed && (
-                  <View style={styles.radioInner} />
-                )}
-              </View>
-              <Text style={styles.confirmText}>
-                지원서 양식을 위와 같이 구성합니다. *
-              </Text>
-            </Pressable>
-          </View>
-        )}
+                <View
+                  style={[
+                    styles.radio,
+                    formConfigConfirmed && styles.radioChecked,
+                  ]}
+                >
+                  {formConfigConfirmed && <View style={styles.radioInner} />}
+                </View>
+                <Text style={styles.confirmText}>
+                  지원서 양식을 위와 같이 구성합니다. *
+                </Text>
+              </Pressable>
+            </View>
+          )}
         </Animated.View>
       </ScrollView>
 
