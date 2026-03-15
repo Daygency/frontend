@@ -7,9 +7,14 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
-import { RouteProp, useRoute, useNavigation } from "@react-navigation/native";
+import {
+  RouteProp,
+  useRoute,
+  useNavigation,
+  useFocusEffect,
+} from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
@@ -45,43 +50,73 @@ const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { title, type, status, daysLeft, postId } = route.params;
+  const params = route.params;
   const { width: screenWidth } = useWindowDimensions();
   const [isMine, setIsMine] = useState(false);
   const [imageHeights, setImageHeights] = useState<{ [key: number]: number }>(
     {}
   );
+  const [detailData, setDetailData] = useState<{
+    title: string;
+    type: string;
+    status: string;
+    daysLeft: number;
+  } | null>(null);
 
-  useEffect(() => {
-    if (postId) {
-      getAnnouncementDetail(postId).then((res) => {
-        if (!res) return;
-        // isMine (camelCase) 또는 is_mine (snake_case) 모두 처리
-        const mine =
-          (res as { isMine?: boolean }).isMine ??
-          (res as { is_mine?: boolean }).is_mine;
-        if (typeof mine === "boolean") {
-          setIsMine(mine);
-        }
-      });
-    }
-  }, [postId]);
+  const fetchDetail = useCallback(() => {
+    if (!params.postId) return;
+    getAnnouncementDetail(params.postId).then((res) => {
+      if (!res || typeof res !== "object") return;
+      const d = res as Record<string, unknown>;
+      const get = (k: string, alt?: string) =>
+        (d[k] ?? d[k.replace(/([A-Z])/g, "_$1").toLowerCase() ?? ""] ?? alt) as
+          | string
+          | undefined;
+      const mine =
+        (d.isMine as boolean | undefined) ?? (d.is_mine as boolean | undefined);
+      if (typeof mine === "boolean") setIsMine(mine);
+      const title = get("title") ?? params.title ?? "";
+      const type = get("type") ?? params.type ?? "";
+      const isRecruiting = d.isRecruiting ?? d.is_recruiting;
+      const status =
+        typeof isRecruiting === "boolean"
+          ? isRecruiting
+            ? "모집중"
+            : "모집마감"
+          : params.status ?? "모집중";
+      const dDay = get("dDay") ?? get("d_day") ?? `D-${params.daysLeft ?? 0}`;
+      const daysLeft = parseInt(dDay.replace(/\D/g, ""), 10) || params.daysLeft || 0;
+      setDetailData({ title: String(title), type: String(type), status, daysLeft });
+    });
+  }, [params.postId, params.title, params.type, params.status, params.daysLeft]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (params.postId) fetchDetail();
+      return () => {};
+    }, [params.postId, fetchDetail])
+  );
+
+  const displayTitle = detailData?.title ?? params.title ?? "";
+  const displayType = detailData?.type ?? params.type ?? "";
+  const displayStatus = detailData?.status ?? params.status ?? "모집중";
+  const displayDaysLeft = detailData?.daysLeft ?? params.daysLeft ?? 0;
 
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <AnnouncementDetailOptionsMenu
           isMine={isMine}
-          postId={postId}
+          postId={params.postId}
           onEdit={() => {
-            if (postId) {
+            if (params.postId) {
               navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION, {
-                postId,
+                postId: params.postId,
               });
             }
           }}
           onDelete={() => {
-            if (!postId) return;
+            if (!params.postId) return;
             Alert.alert(
               "삭제 확인",
               "정말 삭제하시겠습니까?",
@@ -91,7 +126,7 @@ const AnnouncementDetailScreen = () => {
                   text: "삭제",
                   style: "destructive",
                   onPress: async () => {
-                    const ok = await deleteAnnouncement(postId);
+                    const ok = await deleteAnnouncement(params.postId);
                     if (ok) {
                       navigation.goBack();
                     } else {
@@ -108,7 +143,7 @@ const AnnouncementDetailScreen = () => {
         />
       ),
     });
-  }, [navigation, isMine, postId]);
+  }, [navigation, isMine, params.postId]);
 
   const imageList = [
     "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
@@ -241,10 +276,10 @@ const AnnouncementDetailScreen = () => {
             style={styles.btnApply}
             onPress={() => {
               navigation.navigate(RootRoutes.APPLICATION, {
-                title,
-                type,
-                status,
-                daysLeft,
+                title: displayTitle,
+                type: displayType,
+                status: displayStatus,
+                daysLeft: displayDaysLeft,
               });
             }}
           >
