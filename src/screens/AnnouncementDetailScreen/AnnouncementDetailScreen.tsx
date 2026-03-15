@@ -21,6 +21,7 @@ export type AnnouncementDetailParams = {
   type: string;
   status: string;
   daysLeft: number;
+  postId?: string;
   postedDate?: string;
 };
 

@@ -6,12 +6,14 @@ type FormTextInputProps = {
   placeholder: string;
   value?: string;
   onChangeText?: (text: string) => void;
+  hasError?: boolean;
 };
 
 const FormTextInput = ({
   placeholder,
   value,
   onChangeText,
+  hasError,
 }: FormTextInputProps) => {
   return (
     <ShadowCardButton
@@ -20,6 +22,7 @@ const FormTextInput = ({
           borderRadius: 12,
           paddingVertical: Platform.OS === "ios" ? 15 : 1,
           height: Platform.OS === "ios" ? 46 : 46,
+          ...(hasError && { borderWidth: 2, borderColor: "#EC1313" }),
         },
       }}
     >

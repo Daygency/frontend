@@ -1,5 +1,11 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { useState } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,6 +17,10 @@ import { RootRoutes } from "../../navigations/routes";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import styles from "./styles";
 import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
+import { getAnnouncementList } from "../../lib/apis/announcement/announcementApi";
+import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
+import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
+import { getMajors } from "../../lib/apis/announcement/majorApi";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -61,76 +71,103 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   ];
   const sortOptions = ["최신순", "스크랩수순"];
 
-  const announcements = [
-    {
-      title: "교향악단 바이올린 객원단원 채용",
-      type: "오디션(연주자 모집)",
-      status: "모집중",
-      daysLeft: 20,
+  const [items, setItems] = useState<AnnouncementListItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<{ name: string; categoryId: string }[]>([]);
+  const [majors, setMajors] = useState<{ name: string; majorId: string }[]>([]);
+
+  const buildListParams = useCallback(() => {
+    const status =
+      selectedStatus.length === 1
+        ? selectedStatus[0] === "모집중"
+          ? ("OPEN" as const)
+          : selectedStatus[0] === "모집마감"
+            ? ("CLOSED" as const)
+            : undefined
+        : undefined;
+    const categoryId =
+      selectedTypes.length > 0
+        ? categories.find((c) => c.name === selectedTypes[0])?.categoryId
+        : undefined;
+    const majorIds =
+      selectedMajors.length > 0
+        ? selectedMajors
+            .map((name) => majors.find((m) => m.name === name)?.majorId)
+            .filter(Boolean)
+            .join(",")
+        : undefined;
+    return { status, categoryId, majorIds };
+  }, [selectedStatus, selectedTypes, selectedMajors, categories, majors]);
+
+  const loadData = useCallback(
+    async (cursor?: string) => {
+      setLoading(true);
+      try {
+        const { status, categoryId, majorIds } = buildListParams();
+        const res = await getAnnouncementList({
+          cursor,
+          limit: 20,
+          status,
+          categoryId,
+          majorIds: majorIds || undefined,
+        });
+        if (!res) {
+          setItems([]);
+          setNextCursor(null);
+          setHasMore(false);
+          return;
+        }
+        if (!cursor) {
+          setItems(res.items ?? []);
+        } else {
+          setItems((prev) => [...prev, ...(res.items ?? [])]);
+        }
+        setNextCursor(res.nextCursor);
+        setHasMore(res.hasMore ?? false);
+      } finally {
+        setLoading(false);
+      }
     },
-    {
-      title: "교향악단 바이올린 객원단원 채용",
-      type: "콩쿨(경연)",
-      status: "모집중",
-      daysLeft: 20,
-    },
-    {
-      title: "교향악단 바이올린 객원단원 채용",
-      type: "입시평가회",
-      status: "모집중",
-      daysLeft: 20,
-    },
-    {
-      title: "2025 서울 국제 피아노 콩쿨 모집",
-      type: "콩쿨(경연)",
-      status: "모집중",
-      daysLeft: 15,
-    },
-    {
-      title: "오케스트라 단원 모집 공고",
-      type: "오디션",
-      status: "모집중",
-      daysLeft: 8,
-    },
-    {
-      title: "뮤지컬 배우 오디션",
-      type: "오디션",
-      status: "모집중",
-      daysLeft: 22,
-    },
-    {
-      title: "재즈 밴드 멤버 모집",
-      type: "밴드",
-      status: "모집중",
-      daysLeft: 5,
-    },
-    { title: "합창단 단원 모집", type: "합창", status: "모집중", daysLeft: 30 },
-    {
-      title: "바이올린 마스터클래스 참가자 모집",
-      type: "마스터클래스",
-      status: "모집중",
-      daysLeft: 12,
-    },
-    {
-      title: "플루트 연주자 모집",
-      type: "오디션",
-      status: "모집중",
-      daysLeft: 18,
-    },
-    { title: "드럼 연주자 모집", type: "밴드", status: "모집중", daysLeft: 7 },
-    {
-      title: "첼로 연주자 모집",
-      type: "오디션",
-      status: "모집중",
-      daysLeft: 25,
-    },
-    {
-      title: "클래식 기타 콩쿨",
-      type: "콩쿨(경연)",
-      status: "모집중",
-      daysLeft: 10,
-    },
-  ];
+    [buildListParams],
+  );
+
+  useEffect(() => {
+    getAnnouncementCategories().then((list) => {
+      setCategories(
+        list.map((c) => ({
+          name: c.name,
+          categoryId: (c as { categoryId?: string }).categoryId ?? (c as { id?: string }).id ?? "",
+        })),
+      );
+    });
+    getMajors().then((list) => {
+      setMajors(
+        list.map((m) => ({
+          name: m.name,
+          majorId: (m as { majorId?: string }).majorId ?? (m as { id?: string }).id ?? "",
+        })),
+      );
+    });
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const loadMore = () => {
+    if (loading || !hasMore || !nextCursor) return;
+    loadData(nextCursor);
+  };
+
+  const typeOptions = categories.length > 0 ? categories.map((c) => c.name) : announcementTypeOptions;
+  const majorOptionsForModal = majors.length > 0 ? majors.map((m) => m.name) : recruitmentMajorOptions;
+
+  const parseDaysLeft = (dDay: string): number => {
+    const m = dDay.match(/D-?(\d+)/);
+    return m ? Number(m[1]) : 0;
+  };
 
   return (
     <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
@@ -179,7 +216,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           },
           {
             title: "공고 유형",
-            options: announcementTypeOptions,
+            options: typeOptions,
             selectedValues: selectedTypes,
             onToggle: (value) =>
               setSelectedTypes((prev) =>
@@ -188,7 +225,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           },
           {
             title: "모집 전공",
-            options: recruitmentMajorOptions,
+            options: majorOptionsForModal,
             selectedValues: selectedMajors,
             onToggle: (value) =>
               setSelectedMajors((prev) =>
@@ -196,29 +233,53 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
               ),
           },
         ]}
-        onComplete={() => setIsTagModalVisible(false)}
+        onComplete={() => {
+          setIsTagModalVisible(false);
+          loadData();
+        }}
       />
       <View style={styles.scrollContentWrapper}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-        {announcements.map((announcement, index) => (
-          <View key={index} style={styles.cardWrapper}>
-            <AnnouncementCard
-              title={announcement.title}
-              type={announcement.type}
-              status={announcement.status}
-              daysLeft={announcement.daysLeft}
-              onPress={() => {
-                navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
-                  title: announcement.title,
-                  type: announcement.type,
-                  status: announcement.status,
-                  daysLeft: announcement.daysLeft,
-                });
-              }}
-            />
+        {loading && items.length === 0 ? (
+          <View style={styles.scrollContent}>
+            <ActivityIndicator size="large" color="#666" />
           </View>
-        ))}
-        </ScrollView>
+        ) : items.length === 0 ? (
+          <View style={[styles.scrollContent, styles.emptyState]}>
+            <Text style={styles.emptyStateText}>모집공고가 없습니다</Text>
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            onScroll={({ nativeEvent }) => {
+              const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+              const pad = 100;
+              if (layoutMeasurement.height + contentOffset.y >= contentSize.height - pad && hasMore && nextCursor && !loading) {
+                loadMore();
+              }
+            }}
+            scrollEventThrottle={200}
+          >
+            {items.map((item) => (
+              <View key={item.postId} style={styles.cardWrapper}>
+                <AnnouncementCard
+                  title={item.title}
+                  type={item.type}
+                  status={item.isRecruiting ? "모집중" : "모집마감"}
+                  daysLeft={parseDaysLeft(item.dDay)}
+                  onPress={() => {
+                    navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
+                      title: item.title,
+                      type: item.type,
+                      status: item.isRecruiting ? "모집중" : "모집마감",
+                      daysLeft: parseDaysLeft(item.dDay),
+                      postId: item.postId,
+                    });
+                  }}
+                />
+              </View>
+            ))}
+          </ScrollView>
+        )}
       </View>
       {!hideTopBar && (
         <FabButton

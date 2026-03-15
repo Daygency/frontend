@@ -54,6 +54,11 @@ const styles = StyleSheet.create({
   scheduleField: {
     gap: 8,
   },
+  chipRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
   quickButtonRow: {
     flexDirection: "row",
     gap: 8,
@@ -69,6 +74,55 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GRAY.DARK_100,
   },
+  quickButtonActive: {
+    backgroundColor: MAIN.DEFAULT,
+  },
+  datePickerField: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM,
+    backgroundColor: WHITE,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    minHeight: 46,
+  },
+  datePickerTextPlaceholder: {
+    fontSize: 14,
+    color: GRAY.DARK_2,
+  },
+  datePickerTouchable: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM,
+    backgroundColor: WHITE,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    minHeight: 46,
+    justifyContent: "center",
+  },
+  datePickerText: {
+    fontSize: 14,
+    color: BLACK,
+  },
+  datePickerConfirmButton: {
+    alignSelf: "flex-end",
+    marginTop: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: MAIN.DEFAULT,
+    borderRadius: 8,
+  },
+  datePickerConfirmText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: WHITE,
+  },
+  datePickerPlaceholder: {
+    color: GRAY.DARK_2,
+  },
   contentInputWrapper: {
     borderRadius: 12,
     borderWidth: 1,
@@ -78,6 +132,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 12,
     paddingBottom: 50,
+  },
+  inputErrorBorder: {
+    borderColor: "#EC1313",
+    borderWidth: 2,
   },
   contentInput: {
     fontSize: 14,
@@ -169,6 +227,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: 24,
     gap: 12,
+  },
+  confirmRowError: {
+    borderWidth: 2,
+    borderColor: "#EC1313",
+    borderRadius: 8,
+    padding: 12,
   },
   radio: {
     width: 22,

@@ -1,6 +1,9 @@
 import { useNavigation } from "@react-navigation/native";
-import { useRef, useState } from "react";
+import { CommonActions } from "@react-navigation/native";
+import { useEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   Pressable,
   ScrollView,
@@ -10,40 +13,120 @@ import {
   View,
   Platform,
 } from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/Form/Form";
 import FormTextInput from "../../components/FormTextInput/FormTextInput";
 import FormDropdownInput from "../../components/FormDropdownInput/FormDropdownInput";
+import SelectableTag from "../../components/SelectableTag/SelectableTag";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
+import { createAnnouncement } from "../../lib/apis/announcement/announcementApi";
+import type { ApplicationConfig } from "../../lib/apis/announcement/types";
+import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
+import { getMajors } from "../../lib/apis/announcement/majorApi";
+import { uploadFile } from "../../lib/apis/fileApi";
+import { RootRoutes, ContentRoutes } from "../../navigations/routes";
 
-const announcementTypeOptions = [
-  { label: "오디션(연주자모집)", value: "오디션(연주자모집)" },
-  { label: "콩쿨(경연)", value: "콩쿨(경연)" },
-  { label: "입시평가회", value: "입시평가회" },
-  { label: "마스터클래스", value: "마스터클래스" },
-  { label: "행사", value: "행사" },
-  { label: "스탭구인", value: "스탭구인" },
-  { label: "기타", value: "기타" },
+const FALLBACK_CATEGORY_OPTIONS = [
+  { label: "오디션(연주자모집)", value: "" },
+  { label: "콩쿨(경연)", value: "" },
+  { label: "입시평가회", value: "" },
+  { label: "마스터클래스", value: "" },
+  { label: "행사", value: "" },
+  { label: "스탭구인", value: "" },
+  { label: "기타", value: "" },
 ];
 
-const recruitmentMajorOptions = [
-  { label: "전공무관", value: "전공무관" },
-  { label: "건반악기", value: "건반악기" },
-  { label: "현악", value: "현악" },
-  { label: "관악", value: "관악" },
-  { label: "성악", value: "성악" },
-  { label: "타악", value: "타악" },
-  { label: "작곡", value: "작곡" },
-  { label: "지휘", value: "지휘" },
-  { label: "음악학", value: "음악학" },
-  { label: "국악", value: "국악" },
-  { label: "무용", value: "무용" },
-  { label: "실용", value: "실용" },
-  { label: "뮤지컬·크로스오버", value: "뮤지컬·크로스오버" },
-  { label: "기타", value: "기타" },
+const FALLBACK_MAJOR_OPTIONS = [
+  { label: "전공무관", value: "" },
+  { label: "건반악기", value: "" },
+  { label: "현악", value: "" },
+  { label: "관악", value: "" },
+  { label: "성악", value: "" },
+  { label: "타악", value: "" },
+  { label: "작곡", value: "" },
+  { label: "지휘", value: "" },
+  { label: "음악학", value: "" },
+  { label: "국악", value: "" },
+  { label: "무용", value: "" },
+  { label: "실용", value: "" },
+  { label: "뮤지컬·크로스오버", value: "" },
+  { label: "기타", value: "" },
 ];
+
+/** UI form field id -> API applicationConfig key */
+const FORM_TO_APPLICATION_CONFIG: Record<
+  string,
+  keyof ApplicationConfig | null
+> = {
+  name: "includeName",
+  birthYear: "includeBirth",
+  gender: "includeGender",
+  major: "includeMajor",
+  detailMajor: "includeMajorDetail",
+  education: "includeEducation",
+  participationSection: "includeCategory",
+  participatingSong: "includeMusic",
+  deliveryAddress: "includeAddress",
+  photoVideoFile: "includeFile",
+  link: "includeLink",
+  affiliatedDepartment: "includeDepartment",
+  experience: "includeCareer",
+  selfIntroduction: "includeIntroduce",
+  academyOrAdvisor: null,
+};
+
+function buildApplicationConfig(
+  formFields: Record<string, { included: boolean; required: boolean }>,
+): ApplicationConfig {
+  const config: ApplicationConfig = {
+    includeName: false,
+    includeBirth: false,
+    includeGender: false,
+    includeMajor: false,
+    includeMajorDetail: false,
+    includeEducation: false,
+    includeCategory: false,
+    includeMusic: false,
+    includeAddress: false,
+    includeFile: false,
+    includeLink: false,
+    includeDepartment: false,
+    includeCareer: false,
+    includeIntroduce: false,
+  };
+  Object.entries(FORM_TO_APPLICATION_CONFIG).forEach(([fieldId, configKey]) => {
+    if (configKey && formFields[fieldId]?.included) {
+      config[configKey] = true;
+    }
+  });
+  return config;
+}
+
+function formatDateDisplay(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}.${m}.${day}`;
+}
+
+function formatTimeDisplay(d: Date): string {
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+function dateToISO(d: Date, timeOverride?: string): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const [hh = "00", mm = "00"] = (timeOverride ?? formatTimeDisplay(d)).split(":");
+  return `${y}-${m}-${day}T${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00.000Z`;
+}
 
 const APPLICATION_FORM_FIELDS = [
   { id: "name", label: "이름" },
@@ -97,12 +180,20 @@ const AnnouncementRegistrationScreen = () => {
 
   // 공고 작성 필드
   const [title, setTitle] = useState("");
-  const [scheduledDate, setScheduledDate] = useState("");
-  const [scheduledTime, setScheduledTime] = useState("");
-  const [deadline, setDeadline] = useState("");
+  const now = new Date();
+  const defaultScheduled = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0, 0);
+  const defaultDeadline = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+  const [scheduledDate, setScheduledDate] = useState<Date>(defaultScheduled);
+  const [scheduledTime, setScheduledTime] = useState<Date>(defaultScheduled);
+  const [deadline, setDeadline] = useState<Date>(defaultDeadline);
+  const [showScheduledDatePicker, setShowScheduledDatePicker] = useState(false);
+  const [showScheduledTimePicker, setShowScheduledTimePicker] = useState(false);
+  const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
   const [location, setLocation] = useState("");
-  const [announcementType, setAnnouncementType] = useState("");
-  const [recruitmentMajor, setRecruitmentMajor] = useState("");
+  const [announcementType, setAnnouncementType] = useState(
+    FALLBACK_CATEGORY_OPTIONS[0]?.value ?? "",
+  );
+  const [recruitmentMajors, setRecruitmentMajors] = useState<string[]>([]);
   const [content, setContent] = useState("");
 
   // 지원서 양식 구성
@@ -121,10 +212,206 @@ const AnnouncementRegistrationScreen = () => {
     });
     return initial;
   });
-  const [formConfigConfirmed, setFormConfigConfirmed] = useState(false);
+  const [formConfigConfirmed, setFormConfigConfirmed] = useState(true);
+  const [categoryOptions, setCategoryOptions] = useState(
+    FALLBACK_CATEGORY_OPTIONS,
+  );
+  const [majorOptions, setMajorOptions] = useState(FALLBACK_MAJOR_OPTIONS);
+  const [fileId, setFileId] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
 
-  const handleRegister = () => {
-    // TODO: 모집공고 등록 로직
+  useEffect(() => {
+    getAnnouncementCategories().then((list) => {
+      if (list.length > 0) {
+        const opts = list.map((c) => ({
+          label: c.name,
+          value:
+            (c as { categoryId?: string }).categoryId ??
+            (c as { id?: string }).id ??
+            "",
+        }));
+        setCategoryOptions(opts);
+        setAnnouncementType((prev) =>
+          prev === "" ? opts[0]?.value ?? "" : prev,
+        );
+      }
+    });
+    getMajors().then((list) => {
+      if (list.length > 0) {
+        setMajorOptions(
+          list.map((m) => ({
+            label: m.name,
+            value:
+              (m as { majorId?: string }).majorId ??
+              (m as { id?: string }).id ??
+              "",
+          })),
+        );
+      }
+    });
+  }, []);
+
+  const pickFileFromDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "application/pdf"],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      const uri = asset.uri;
+      const name = asset.name ?? "file.jpg";
+      const mimeType = asset.mimeType ?? "image/jpeg";
+      setFileName(name);
+      const fid = await uploadFile(uri, { name, type: mimeType });
+      setFileId(fid);
+    } catch (e) {
+      console.warn("[pickFileFromDocument]", e);
+      Alert.alert("알림", "파일 업로드에 실패했습니다.");
+    }
+  };
+
+  const pickImageFromAlbum = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: false,
+      });
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      setFileName(asset.fileName ?? "image.jpg");
+      const fid = await uploadFile(asset.uri, {
+        name: asset.fileName ?? "image.jpg",
+        type: asset.mimeType ?? "image/jpeg",
+      });
+      setFileId(fid);
+    } catch (e) {
+      console.warn("[pickImageFromAlbum]", e);
+      Alert.alert("알림", "이미지 업로드에 실패했습니다.");
+    }
+  };
+
+  const buildApplicationConfig = (): ApplicationConfig => {
+    const defaults: ApplicationConfig = {
+      includeName: false,
+      includeBirth: false,
+      includeGender: false,
+      includeMajor: false,
+      includeMajorDetail: false,
+      includeEducation: false,
+      includeCategory: false,
+      includeMusic: false,
+      includeAddress: false,
+      includeFile: false,
+      includeLink: false,
+      includeDepartment: false,
+      includeCareer: false,
+      includeIntroduce: false,
+    };
+    (
+      Object.entries(FORM_TO_APPLICATION_CONFIG) as [
+        string,
+        keyof ApplicationConfig | null,
+      ][]
+    ).forEach(([fieldId, configKey]) => {
+      if (configKey && formFields[fieldId]?.included) {
+        defaults[configKey] = true;
+      }
+    });
+    return defaults;
+  };
+
+  const handleRegister = async () => {
+    setSubmitAttempted(true);
+
+    const resolvedSched = dateToISO(
+      scheduledDate,
+      formatTimeDisplay(scheduledTime),
+    );
+    const resolvedDeadline = dateToISO(deadline, "23:59");
+    const hasTypeError = !categoryOptions.some(
+      (o) => o.value === announcementType,
+    );
+
+    if (
+      !title.trim() ||
+      hasTypeError ||
+      !content.trim() ||
+      !formConfigConfirmed
+    ) {
+      const missing: string[] = [];
+      if (!title.trim()) missing.push("공고명");
+      if (hasTypeError) missing.push("공고 유형");
+      if (!content.trim()) missing.push("내용");
+      if (!formConfigConfirmed) missing.push("지원서 양식 확인");
+      Alert.alert(
+        "입력 확인",
+        `다음 항목을 확인해주세요:\n\n${missing.join("\n")}`,
+      );
+      return;
+    }
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    const dto = {
+      title: title.trim(),
+      content: content.trim(),
+      deadlineAt: resolvedDeadline,
+      scheduledAt: resolvedSched,
+      address: location.trim() || "",
+      categoryId: announcementType,
+      status: "OPEN" as const,
+      applicationConfig: buildApplicationConfig(),
+      ...(fileId ? { fileId } : {}),
+      ...(recruitmentMajors.length > 0
+        ? {
+            majorIds: recruitmentMajors
+              .map((r) => {
+                const o = majorOptions.find(
+                  (m) => (m.value || m.label) === r,
+                );
+                return o?.value;
+              })
+              .filter((v): v is string => !!v),
+          }
+        : {}),
+    };
+
+    try {
+      const res = await createAnnouncement(dto);
+      setIsSubmitting(false);
+      if (res) {
+        (navigation as { dispatch?: (action: object) => void }).dispatch?.(
+          CommonActions.reset({
+            index: 0,
+            routes: [
+              {
+                name: RootRoutes.CONTENT_TAB,
+                params: { screen: ContentRoutes.ACTIVITY },
+              },
+            ],
+          }),
+        );
+      } else {
+        Alert.alert(
+          "등록 실패",
+          "모집공고 등록에 실패했습니다. 다시 시도해주세요.",
+        );
+      }
+    } catch (e) {
+      setIsSubmitting(false);
+      const msg =
+        e instanceof Error ? e.message : "모집공고 등록에 실패했습니다.";
+      Alert.alert("등록 실패", msg);
+    }
   };
 
   const updateFormField = (
@@ -144,13 +431,21 @@ const AnnouncementRegistrationScreen = () => {
   };
 
   const isFormValid =
-    title &&
-    scheduledDate &&
-    deadline &&
-    announcementType &&
-    recruitmentMajor &&
-    content &&
+    !!title.trim() &&
+    categoryOptions.some((o) => o.value === announcementType) &&
+    !!content.trim() &&
     formConfigConfirmed;
+
+  const err = {
+    title: submitAttempted && !title.trim(),
+    scheduledDate: false,
+    deadline: false,
+    announcementType:
+      submitAttempted &&
+      !categoryOptions.some((o) => o.value === announcementType),
+    content: submitAttempted && !content.trim(),
+    formConfig: submitAttempted && !formConfigConfirmed,
+  };
 
   return (
     <View style={styles.container}>
@@ -199,11 +494,12 @@ const AnnouncementRegistrationScreen = () => {
             <>
               <View style={styles.formSection}>
                 <View style={styles.formField}>
-                  <Form title="공고명" isRequired>
+                  <Form title="공고명" isRequired hasError={err.title}>
                     <FormTextInput
                       placeholder="공고명을 입력하세요"
                       value={title}
                       onChangeText={setTitle}
+                      hasError={err.title}
                     />
                   </Form>
                 </View>
@@ -212,69 +508,139 @@ const AnnouncementRegistrationScreen = () => {
                   <Form title="일정/장소" isRequired>
                     <View style={styles.scheduleLocationBox}>
                       <View style={styles.scheduleField}>
-                        <Form title="예정일" isRequired>
+                        <Form title="예정일" isRequired hasError={err.scheduledDate}>
                           <View>
-                            <FormTextInput
-                              placeholder="YYYY.MM.DD"
-                              value={scheduledDate}
-                              onChangeText={setScheduledDate}
-                            />
-                            <View style={styles.quickButtonRow}>
-                              <Pressable
-                                style={styles.quickButton}
-                                onPress={() => setScheduledDate("모집시 마감")}
-                              >
-                                <Text style={styles.quickButtonText}>
-                                  모집시 마감
-                                </Text>
-                              </Pressable>
-                              <Pressable
-                                style={styles.quickButton}
-                                onPress={() => setScheduledDate("마감됨")}
-                              >
-                                <Text style={styles.quickButtonText}>
-                                  마감됨
-                                </Text>
-                              </Pressable>
-                            </View>
+                            <Pressable
+                              style={[
+                                styles.datePickerField,
+                                err.scheduledDate && styles.inputErrorBorder,
+                              ]}
+                              onPress={() => setShowScheduledDatePicker(true)}
+                            >
+                              <Text style={styles.datePickerText}>
+                                {formatDateDisplay(scheduledDate)}
+                              </Text>
+                              <MaterialCommunityIcons
+                                name="calendar"
+                                size={20}
+                                color={GRAY.DARK_1}
+                              />
+                            </Pressable>
+                            {showScheduledDatePicker && (
+                              <>
+                                <DateTimePicker
+                                  value={scheduledDate}
+                                  mode="date"
+                                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                                  onChange={(_, selected) => {
+                                    if (selected) setScheduledDate(selected);
+                                    if (Platform.OS === "android")
+                                      setShowScheduledDatePicker(false);
+                                  }}
+                                />
+                                {Platform.OS === "ios" && (
+                                  <Pressable
+                                    style={styles.datePickerConfirmButton}
+                                    onPress={() => setShowScheduledDatePicker(false)}
+                                  >
+                                    <Text style={styles.datePickerConfirmText}>
+                                      확인
+                                    </Text>
+                                  </Pressable>
+                                )}
+                              </>
+                            )}
                           </View>
                         </Form>
                       </View>
                       <View style={styles.scheduleField}>
                         <Form title="예정 시간" isRequired={false}>
-                          <FormTextInput
-                            placeholder="00:00"
-                            value={scheduledTime}
-                            onChangeText={setScheduledTime}
-                          />
+                          <Pressable
+                            style={styles.datePickerField}
+                            onPress={() => setShowScheduledTimePicker(true)}
+                          >
+                            <Text style={styles.datePickerText}>
+                              {formatTimeDisplay(scheduledTime)}
+                            </Text>
+                            <MaterialCommunityIcons
+                              name="clock-outline"
+                              size={20}
+                              color={GRAY.DARK_1}
+                            />
+                          </Pressable>
+                          {showScheduledTimePicker && (
+                            <>
+                              <DateTimePicker
+                                value={scheduledTime}
+                                mode="time"
+                                display={
+                                  Platform.OS === "ios" ? "spinner" : "default"
+                                }
+                                onChange={(_, selected) => {
+                                  if (selected) setScheduledTime(selected);
+                                  if (Platform.OS === "android")
+                                    setShowScheduledTimePicker(false);
+                                }}
+                              />
+                              {Platform.OS === "ios" && (
+                                <Pressable
+                                  style={styles.datePickerConfirmButton}
+                                  onPress={() => setShowScheduledTimePicker(false)}
+                                >
+                                  <Text style={styles.datePickerConfirmText}>
+                                    확인
+                                  </Text>
+                                </Pressable>
+                              )}
+                            </>
+                          )}
                         </Form>
                       </View>
                       <View style={styles.scheduleField}>
-                        <Form title="공고 마감일" isRequired>
+                        <Form title="공고 마감일" isRequired hasError={err.deadline}>
                           <View>
-                            <FormTextInput
-                              placeholder="YYYY.MM.DD"
-                              value={deadline}
-                              onChangeText={setDeadline}
-                            />
-                            <View style={styles.quickButtonRow}>
-                              <Pressable
-                                style={styles.quickButton}
-                                onPress={() => setDeadline("모집시 마감")}
-                              >
-                                <Text style={styles.quickButtonText}>
-                                  모집시 마감
-                                </Text>
-                              </Pressable>
-                              <Pressable
-                                style={styles.quickButton}
-                                onPress={() => setDeadline("마감됨")}
-                              >
-                                <Text style={styles.quickButtonText}>
-                                  마감됨
-                                </Text>
-                              </Pressable>
-                            </View>
+                            <Pressable
+                              style={[
+                                styles.datePickerField,
+                                err.deadline && styles.inputErrorBorder,
+                              ]}
+                              onPress={() => setShowDeadlinePicker(true)}
+                            >
+                              <Text style={styles.datePickerText}>
+                                {formatDateDisplay(deadline)}
+                              </Text>
+                              <MaterialCommunityIcons
+                                name="calendar"
+                                size={20}
+                                color={GRAY.DARK_1}
+                              />
+                            </Pressable>
+                            {showDeadlinePicker && (
+                              <View>
+                                <DateTimePicker
+                                  value={deadline}
+                                  mode="date"
+                                  display={
+                                    Platform.OS === "ios" ? "spinner" : "default"
+                                  }
+                                  onChange={(_, selected) => {
+                                    if (selected) setDeadline(selected);
+                                    if (Platform.OS === "android")
+                                      setShowDeadlinePicker(false);
+                                  }}
+                                />
+                                {Platform.OS === "ios" && (
+                                  <Pressable
+                                    style={styles.datePickerConfirmButton}
+                                    onPress={() => setShowDeadlinePicker(false)}
+                                  >
+                                    <Text style={styles.datePickerConfirmText}>
+                                      확인
+                                    </Text>
+                                  </Pressable>
+                                )}
+                              </View>
+                            )}
                           </View>
                         </Form>
                       </View>
@@ -292,30 +658,44 @@ const AnnouncementRegistrationScreen = () => {
                 </View>
 
                 <View style={styles.formField}>
-                  <Form title="공고 유형" isRequired>
+                  <Form title="공고 유형" isRequired hasError={err.announcementType}>
                     <FormDropdownInput
                       placeholder="공고 유형을 선택하세요"
-                      data={announcementTypeOptions}
+                      data={categoryOptions}
                       value={announcementType}
                       onChange={(item) => setAnnouncementType(item.value)}
+                      hasError={err.announcementType}
                     />
                   </Form>
                 </View>
 
                 <View style={styles.formField}>
-                  <Form title="모집 전공" isRequired>
-                    <FormDropdownInput
-                      placeholder="모집 전공을 선택하세요"
-                      data={recruitmentMajorOptions}
-                      value={recruitmentMajor}
-                      onChange={(item) => setRecruitmentMajor(item.value)}
-                    />
+                  <Form title="모집 전공" isRequired={false}>
+                    <View style={styles.chipRow}>
+                      {majorOptions.map((opt) => {
+                        const optKey = opt.value || opt.label;
+                        return (
+                          <SelectableTag
+                            key={optKey}
+                            label={opt.label}
+                            selected={recruitmentMajors.includes(optKey)}
+                            onPress={() =>
+                              setRecruitmentMajors((prev) =>
+                                prev.includes(optKey)
+                                  ? prev.filter((v) => v !== optKey)
+                                  : [...prev, optKey],
+                              )
+                            }
+                          />
+                        );
+                      })}
+                    </View>
                   </Form>
                 </View>
 
                 <View style={styles.formField}>
-                  <Form title="내용" isRequired>
-                    <View style={styles.contentInputWrapper}>
+                  <Form title="내용" isRequired hasError={err.content}>
+                    <View style={[styles.contentInputWrapper, err.content && styles.inputErrorBorder]}>
                       <TextInput
                         style={styles.contentInput}
                         placeholder="연주자 모집, 대타 구인, 콩쿨, 입시평가회, 행사, 웨딩 오브리 등 모집 공고를 등록할 수 있어요."
@@ -335,7 +715,11 @@ const AnnouncementRegistrationScreen = () => {
                 <View style={styles.formField}>
                   <Form title="사진/영상/파일" isRequired={false}>
                     <View style={styles.fileOptions}>
-                      <Pressable style={styles.fileOptionItem} hitSlop={10}>
+                      <Pressable
+                        style={styles.fileOptionItem}
+                        hitSlop={10}
+                        onPress={pickFileFromDocument}
+                      >
                         <MaterialCommunityIcons
                           name="file-document-outline"
                           size={24}
@@ -348,7 +732,11 @@ const AnnouncementRegistrationScreen = () => {
                           color={GRAY.DARK_1}
                         />
                       </Pressable>
-                      <Pressable style={styles.fileOptionItem} hitSlop={10}>
+                      <Pressable
+                        style={styles.fileOptionItem}
+                        hitSlop={10}
+                        onPress={pickImageFromAlbum}
+                      >
                         <MaterialCommunityIcons
                           name="image-multiple-outline"
                           size={24}
@@ -362,6 +750,9 @@ const AnnouncementRegistrationScreen = () => {
                         />
                       </Pressable>
                     </View>
+                    {fileName ? (
+                      <Text style={styles.contentNote}>선택됨: {fileName}</Text>
+                    ) : null}
                   </Form>
                 </View>
               </View>
@@ -418,7 +809,7 @@ const AnnouncementRegistrationScreen = () => {
               ))}
 
               <Pressable
-                style={styles.confirmRow}
+                style={[styles.confirmRow, err.formConfig && styles.confirmRowError]}
                 onPress={() => setFormConfigConfirmed(!formConfigConfirmed)}
               >
                 <View
@@ -463,7 +854,6 @@ const AnnouncementRegistrationScreen = () => {
             !isFormValid && styles.registerButtonDisabled,
           ]}
           onPress={handleRegister}
-          disabled={!isFormValid}
         >
           <Text style={styles.registerButtonText}>등록하기</Text>
         </Pressable>

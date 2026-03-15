@@ -12,6 +12,7 @@ type FormDropdownInputProps = {
   data: DropdownItem[];
   value?: string;
   onChange?: (item: DropdownItem) => void;
+  hasError?: boolean;
 };
 
 const FormDropdownInput = ({
@@ -19,9 +20,14 @@ const FormDropdownInput = ({
   data,
   value,
   onChange,
+  hasError,
 }: FormDropdownInputProps) => {
   return (
-    <ShadowCardButton>
+    <ShadowCardButton
+      styles={{
+        container: hasError ? { borderWidth: 2, borderColor: "#EC1313" } : undefined,
+      }}
+    >
       <Dropdown
         style={styles.dropdown}
         placeholderStyle={styles.placeholderStyle}

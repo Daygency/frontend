@@ -52,6 +52,16 @@ const styles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 5,
   },
+  emptyState: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 48,
+  },
+  emptyStateText: {
+    fontSize: 15,
+    color: "#999",
+  },
 });
 
 export default styles;

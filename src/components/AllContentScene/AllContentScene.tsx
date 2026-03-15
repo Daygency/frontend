@@ -1,6 +1,7 @@
-import { ScrollView, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { useEffect, useState } from "react";
 import ImageScrollView from "../ImageScrollView/ImageScrollView";
 import Section from "../Section/Section";
 import AnnouncementCard from "../AnnouncementCard/AnnouncementCard";
@@ -8,6 +9,9 @@ import GrayCard from "../GrayCard/GrayCard";
 import EventScheduleCard from "../EventScheduleCard/EventScheduleCard";
 import ImageCarousel from "../ImageCarousel/ImageCarousel";
 import { ContentRoutes } from "../../navigations/routes";
+import { RootRoutes } from "../../navigations/routes";
+import { getAnnouncementList } from "../../lib/apis/announcement/announcementApi";
+import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
 
 type ContentTabParamList = {
   [ContentRoutes.HOME]: undefined;
@@ -19,26 +23,60 @@ type ContentTabParamList = {
 
 type NavigationProp = BottomTabNavigationProp<ContentTabParamList>;
 
+function parseDaysLeft(dDay: string): number {
+  const m = dDay.match(/D-?(\d+)/);
+  return m ? Number(m[1]) : 0;
+}
+
 const AllContentScene = () => {
   const navigation = useNavigation<NavigationProp>();
+  const [announcements, setAnnouncements] = useState<AnnouncementListItem[]>([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
+
+  useEffect(() => {
+    getAnnouncementList({ limit: 5 }).then((res) => {
+      setAnnouncementsLoading(false);
+      if (res?.items) setAnnouncements(res.items);
+    });
+  }, []);
 
   const handleAnnouncementMore = () => {
-    navigation.navigate(ContentRoutes.ACTIVITY);
+    (navigation as { navigate: (a: string, b?: object) => void }).navigate(
+      "ContentTab",
+      { screen: ContentRoutes.ACTIVITY },
+    );
   };
+
   return (
     <ScrollView>
-      {/* <ImageScrollView
-        styles={{ container: { marginBottom: 14 } }}
-        width={339}
-        height={183}
-        gap={5}
-      /> */}
       <ImageCarousel width={339} height={183} gap={5} />
-      {/* <SupplierList /> */}
       <Section title="모집공고" onPressMore={handleAnnouncementMore}>
-        <AnnouncementCard title="제목1" />
-        <AnnouncementCard title="제목2" />
-        <AnnouncementCard title="제목3" />
+        {announcementsLoading ? (
+          <View style={{ paddingVertical: 24, alignItems: "center" }}>
+            <ActivityIndicator size="small" color="#666" />
+          </View>
+        ) : announcements.length === 0 ? (
+          <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24 }}>모집공고가 없습니다</Text>
+        ) : (
+          announcements.slice(0, 5).map((item) => (
+            <AnnouncementCard
+              key={item.postId}
+              title={item.title}
+              type={item.type}
+              status={item.isRecruiting ? "모집중" : "모집마감"}
+              daysLeft={parseDaysLeft(item.dDay)}
+              onPress={() => {
+                (navigation as { navigate: (a: string, b?: object) => void }).navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
+                  title: item.title,
+                  type: item.type,
+                  status: item.isRecruiting ? "모집중" : "모집마감",
+                  daysLeft: parseDaysLeft(item.dDay),
+                  postId: item.postId,
+                });
+              }}
+            />
+          ))
+        )}
       </Section>
       <Section title="공연소식" styles={{ content: { paddingHorizontal: 0 } }}>
         <ImageScrollView

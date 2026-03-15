@@ -9,13 +9,14 @@ type FormProps = {
   title: string;
   example?: string;
   children: ReactNode;
+  hasError?: boolean;
 };
 
-const Form = ({ isRequired, title, example, children }: FormProps) => {
+const Form = ({ isRequired, title, example, children, hasError }: FormProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.titleContainer}>
-        <Text style={styles.title}>{title}</Text>
+        <Text style={[styles.title, hasError && styles.titleError]}>{title}</Text>
         {isRequired && (
           <Foundation
             name="asterisk"
