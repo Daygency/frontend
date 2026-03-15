@@ -1,4 +1,4 @@
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { useState } from "react";
 import {
   Pressable,
@@ -32,10 +32,23 @@ const categoryOptions = [
   { label: "자유게시판", value: "자유게시판" },
 ];
 
+const PLACEHOLDER_BY_CATEGORY: Record<string, string> = {
+  "학원·연습실 매매": "학원·연습실 매매와, 임대 정보를 주고받는 공간이에요!",
+  "음악 뉴스": "음악계 소식과 뉴스를 공유해주세요!",
+  자유게시판: "자유롭게 이야기를 나눠보세요.",
+};
+
+type CommunityRegistrationParams = { initialCategory?: string };
+
 const CommunityRegistrationScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute<RouteProp<{ CommunityRegistration: CommunityRegistrationParams }, "CommunityRegistration">>();
   const { bottom } = useSafeAreaInsets();
-  const [category, setCategory] = useState("학원·연습실 매매");
+  const initialCategory =
+    route.params?.initialCategory && categoryOptions.some((c) => c.value === route.params?.initialCategory)
+      ? route.params.initialCategory!
+      : "학원·연습실 매매";
+  const [category, setCategory] = useState(initialCategory);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const handleRegister = () => {
@@ -76,7 +89,7 @@ const CommunityRegistrationScreen = () => {
               <View style={styles.contentInputWrapper}>
                 <TextInput
                   style={styles.contentInput}
-                  placeholder="학원·연습실 매매와, 임대 정보를 주고받는 공간이에요!"
+                  placeholder={PLACEHOLDER_BY_CATEGORY[category] ?? PLACEHOLDER_BY_CATEGORY["학원·연습실 매매"]}
                   placeholderTextColor={GRAY.DARK_2}
                   multiline
                   value={content}

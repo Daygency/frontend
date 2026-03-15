@@ -1,394 +1,287 @@
-# Daygency API 문서
+# 공연소식(News) API 명세
 
 > Base URL: 개발 `http://localhost:3000`, 운영은 배포 URL 사용
-
----
-
-## 문서 목록
-
-| 문서 | 설명 |
-|------|------|
-| [auth-api.md](./auth-api.md) | **인증 API** – 소셜 로그인/회원가입, 토큰 사용법 |
-| [announcement-api.md](./announcement-api.md) | **공고 API** – 공고 CRUD, 목록/상세/필터 |
-| [api-readme.md](./api-readme.md) | **공통 API** – 활동아이디 중복확인, 공고 유형 목록 등 |
-
----
-
-## 인증 (토큰) 요약
-
-- **Access Token**: 1시간 | **Refresh Token**: 30일 (만료 시 `POST /auth/refresh`)
-- **저장**: `AsyncStorage`(React Native) / `SecureStore` 권장
-- **요청 헤더**: `Authorization: Bearer {accessToken}`
-
-자세한 스펙은 [auth-api.md](./auth-api.md)를 참고하세요.
-
-
-# 인증(Auth) API 명세
-
-> Base URL: 개발 `http://localhost:3000`, 운영은 배포 URL 사용
-
-모바일 앱에서 로그인·회원가입 시 사용하는 API입니다. **access token(1h) + refresh token(30d)** 구조로, 만료 시 refresh로 새 access token을 발급받아 앱처럼 장기간 로그인 상태가 유지됩니다.
 
 ---
 
 ## 목차
 
-1. [토큰 개요](#1-토큰-개요)
-2. [소셜 로그인](#2-소셜-로그인)
-3. [소셜 회원가입](#3-소셜-회원가입)
-4. [Access Token 갱신 (Refresh)](#4-access-token-갱신-refresh)
-5. [인증 헤더 사용법](#5-인증-헤더-사용법)
-6. [프론트 구현 가이드](#6-프론트-구현-가이드)
+1. [공연소식 목록 조회](#1-공연소식-목록-조회)
+2. [공연소식 상세 조회](#2-공연소식-상세-조회)
+3. [공연소식 작성](#3-공연소식-작성)
+4. [공연소식 수정](#4-공연소식-수정)
+5. [공연소식 삭제](#5-공연소식-삭제)
 
 ---
 
-## 1. 토큰 개요
+## 1. 공연소식 목록 조회
 
-| 토큰 | 만료 | 용도 |
-|------|------|------|
-| **Access Token** | 1시간 | API 요청 시 `Authorization` 헤더에 포함 |
-| **Refresh Token** | 30일 | access 만료 시 `POST /auth/refresh`로 새 access 발급 |
-
-### 토큰 발급 시점
-
-- 소셜 **로그인** 성공 시 → `accessToken`, `refreshToken`, `user` 반환
-- 소셜 **회원가입** 완료 시 → 동일
-
-### Access Token 만료 시 (1시간 후)
-
-1. **먼저** `POST /auth/refresh` 호출 (refreshToken 전달)
-2. 성공 → 새 accessToken 저장, 실패한 API 요청 재시도
-3. refresh도 401이면 → refreshToken 만료, 재로그인 필요
-
-### Refresh Token 만료 시 (30일 후)
-
-- `POST /auth/refresh` 401 응답
-- 소셜 로그인 API 다시 호출 필요
-
----
-
-## 2. 소셜 로그인
-
-카카오/구글/네이버에서 발급받은 **소셜 access token**으로 로그인합니다. 이미 Daygency 회원이면 토큰과 사용자 정보를 반환하고, 미가입이면 `needsSignup: true`로 회원가입 절차로 이동합니다.
+무한스크롤을 지원하는 공연소식 목록 조회 API입니다. 최신순 정렬됩니다.
 
 ### Endpoint
 
-| Provider | Endpoint |
-|----------|----------|
-| 카카오 | `POST /auth/kakao` |
-| 구글 | `POST /auth/google` |
-| 네이버 | `POST /auth/naver` |
-
-### Request Body
-
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| accessToken | string | O | 소셜 로그인 앱에서 발급받은 access token |
-
-### Response (로그인 성공)
-
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
-  "user": {
-    "userId": "ecfdc7fd-23be-4fa9-9cbd-e6f30d826349",
-    "nickname": "조규연",
-    "email": "user@example.com",
-    "profileImgUrl": "https://..."
-  }
-}
+```
+GET /news
 ```
 
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| accessToken | string | JWT (1시간 유효). API 호출 시 사용 |
-| refreshToken | string | JWT (30일 유효). access 만료 시 갱신용 |
-| user.userId | string | Daygency 사용자 UUID |
-| user.nickname | string | 닉네임 |
-| user.email | string | 이메일 |
-| user.profileImgUrl | string | 프로필 이미지 URL |
+### Query Parameters
 
-### Response (회원가입 필요)
+| 파라미터 | 타입   | 필수 | 설명                                           |
+|---------|--------|------|------------------------------------------------|
+| cursor  | string | X    | 마지막으로 조회한 news_id (없으면 첫 페이지)   |
+| limit   | number | X    | 한 번에 가져올 개수 (기본 20, 최대 50)         |
 
-```json
-{
-  "needsSignup": true,
-  "profile": {
-    "socialId": "1234567890",
-    "nickname": "카카오닉네임",
-    "email": "kakao@example.com",
-    "profileImgUrl": "https://..."
-  }
-}
-```
+### Response
 
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| needsSignup | boolean | `true`이면 회원가입 화면으로 이동 |
-| profile | object | 소셜 프로필 정보 (회원가입 API에 그대로 전달) |
+| 필드       | 타입             | 설명                    |
+|-----------|------------------|-------------------------|
+| items     | array            | 공연소식 목록           |
+| nextCursor| string \| null   | 다음 페이지 cursor (없으면 null) |
+| hasMore   | boolean          | 다음 페이지 존재 여부    |
 
-### Example
+#### items 각 항목
 
-**Request (카카오)**
-
-```
-POST /auth/kakao
-Content-Type: application/json
-
-{
-  "accessToken": "카카오에서_발급받은_액세스토큰"
-}
-```
-
-**Response (기존 회원)**
-
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "userId": "ecfdc7fd-23be-4fa9-9cbd-e6f30d826349",
-    "nickname": "조규연",
-    "email": "user@example.com",
-    "profileImgUrl": "https://..."
-  }
-}
-```
-
-**Response (신규 → 회원가입 필요)**
-
-```json
-{
-  "needsSignup": true,
-  "profile": {
-    "socialId": "1234567890",
-    "nickname": "홍길동",
-    "email": "hong@kakao.com",
-    "profileImgUrl": "https://..."
-  }
-}
-```
-
-### 에러
-
-| 상태 | 설명 |
-|------|------|
-| 401 | 소셜 access token 무효 또는 만료 |
-| 400 | 요청 형식 오류 |
-
----
-
-## 3. 소셜 회원가입
-
-`needsSignup: true` 응답을 받은 후, **동일한 소셜 access token**과 `activityName`(활동 아이디)을 보내 회원가입을 완료합니다.
-
-### Endpoint
-
-| Provider | Endpoint |
-|----------|----------|
-| 카카오 | `POST /auth/signup/kakao` |
-| 구글 | `POST /auth/signup/google` |
-| 네이버 | `POST /auth/signup/naver` |
-
-### Request Body
-
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| accessToken | string | O | 로그인 시 사용한 소셜 access token |
-| activityName | string | O | 활동 아이디 (고유, 20자 이내) |
-| nickname | string | X | 닉네임 (미입력 시 소셜 프로필 값 사용) |
-
-### Response (회원가입 성공)
-
-로그인과 동일한 형태로 `accessToken`, `refreshToken`, `user` 반환
-
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
-  "user": {
-    "userId": "ecfdc7fd-23be-4fa9-9cbd-e6f30d826349",
-    "nickname": "조규연",
-    "email": "user@example.com",
-    "profileImgUrl": "https://..."
-  }
-}
-```
+| 필드    | 타입   | 설명        |
+|---------|--------|-------------|
+| newsId  | string | 공연소식 ID |
+| title   | string | 제목        |
+| place   | string | 장소        |
+| startedAt | string | 공연 시작일시 (ISO 8601) |
 
 ### Example
 
 **Request**
 
 ```
-POST /auth/signup/kakao
-Content-Type: application/json
+GET /news?limit=20
+```
 
+**Response**
+
+```json
 {
-  "accessToken": "카카오에서_발급받은_액세스토큰",
-  "activityName": "my_activity_id",
-  "nickname": "조규연"
+  "items": [
+    {
+      "newsId": "d45ba94f-3e2a-4e2d-a25b-7b39b0c27a5c",
+      "title": "2025 봄 콘서트",
+      "place": "예술의전당",
+      "startedAt": "2025-04-01T19:00:00.000Z"
+    }
+  ],
+  "nextCursor": "d45ba94f-3e2a-4e2d-a25b-7b39b0c27a5c",
+  "hasMore": true
 }
 ```
 
-### 에러
+### 참고
 
-| 상태 | 설명 |
-|------|------|
-| 400 | activityName 미입력 또는 형식 오류 |
-| 401 | 소셜 access token 무효 |
-| 409 | activityName 또는 nickname 이미 사용 중 |
-
-### 사전 검증
-
-회원가입 전 `activityName` 중복 검사 권장:
-
-```
-GET /users/check-activity-name?activityName=my_activity_id
-```
-
-→ `available: true`이면 사용 가능, `false`이면 이미 사용 중
+- 인증 불필요 (public API)
+- 최신순 정렬 (newsId DESC)
 
 ---
 
-## 4. Access Token 갱신 (Refresh)
+## 2. 공연소식 상세 조회
 
-Access token이 만료되면 (1시간 후) refresh token으로 **새 access token**을 발급받습니다. refresh token은 30일 유효합니다.
+단일 공연소식 상세 정보를 조회합니다.
 
 ### Endpoint
 
 ```
-POST /auth/refresh
+GET /news/:id
 ```
+
+### Path Parameters
+
+| 파라미터 | 타입   | 필수 | 설명         |
+|---------|--------|------|--------------|
+| id      | string | O    | 공연소식 ID (news_id) |
+
+### Headers (선택)
+
+| 헤더          | 설명                                           |
+|--------------|------------------------------------------------|
+| Authorization| Bearer {accessToken} — 있을 경우 `isMine` 정확히 반환 |
+
+### Response
+
+공연소식 엔티티 정보 + `isMine` 필드
+
+| 필드       | 타입    | 설명                                         |
+|-----------|---------|----------------------------------------------|
+| newsId    | string  | 공연소식 ID                                  |
+| title     | string  | 제목                                         |
+| content   | string  | 내용                                         |
+| place     | string  | 장소                                         |
+| ticketPrice | number \| null | 티켓 가격 (null 가능)              |
+| startedAt | string  | 공연 시작일시 (ISO 8601)                      |
+| endedAt   | string \| null | 공연 종료일 (하루 공연이면 null)       |
+| contact   | string  | 문의처                                       |
+| createdAt | string  | 생성일                                       |
+| user      | object  | 작성자 정보                                  |
+| file      | object  | 대표 파일 정보 (썸네일)                       |
+| isMine    | boolean | 내가 쓴 글인지 여부. 로그인 시에만 의미 있음   |
+
+### 참고
+
+- 인증 불필요 (public API). 로그인 없이도 조회 가능
+- 로그인 후 `Authorization` 헤더를 보내면 `isMine`이 `true`/`false`로 정확히 반환됨
+
+---
+
+## 3. 공연소식 작성
+
+공연소식을 작성합니다.
+
+### Endpoint
+
+```
+POST /news
+```
+
+### Headers
+
+| 헤더          | 설명           |
+|--------------|----------------|
+| Authorization| Bearer {accessToken} |
 
 ### Request Body
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| refreshToken | string | O | 로그인/회원가입 시 발급받은 refresh token |
+| 필드       | 타입    | 필수 | 설명                              |
+|-----------|---------|------|-----------------------------------|
+| title     | string  | O    | 제목 (최대 100자)                 |
+| content   | string  | O    | 내용 (최대 255자)                 |
+| place     | string  | O    | 장소 (최대 100자)                 |
+| ticketPrice | number | X    | 티켓 가격 (null 가능)             |
+| startedAt | string  | O    | 공연 시작일시 (ISO 8601)          |
+| endedAt   | string  | X    | 공연 종료일 (하루 공연이면 null)  |
+| contact   | string  | O    | 문의처 (최대 30자)                |
+| fileId    | string  | O    | 대표 파일 ID (썸네일)             |
 
-### Response (성공)
+### Example
+
+**Request**
 
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-  "user": {
-    "userId": "ecfdc7fd-23be-4fa9-9cbd-e6f30d826349",
-    "nickname": "조규연",
-    "email": "user@example.com",
-    "profileImgUrl": "https://..."
-  }
+  "title": "2025 봄 콘서트",
+  "content": "올해 봄 시즌 오케스트라 공연",
+  "place": "예술의전당",
+  "ticketPrice": 30000,
+  "startedAt": "2025-04-01T19:00:00.000Z",
+  "endedAt": "2025-04-01T21:00:00.000Z",
+  "contact": "02-1234-5678",
+  "fileId": "550e8400-e29b-41d4-a716-446655440000"
+}
+```
+
+**Response (201)**
+
+```json
+{
+  "newsId": "d45ba94f-3e2a-4e2d-a25b-7b39b0c27a5c",
+  "title": "2025 봄 콘서트",
+  "place": "예술의전당",
+  "startedAt": "2025-04-01T19:00:00.000Z"
+}
+```
+
+### 참고
+
+- 인증 필요 (access token)
+- fileId는 필수 (대표 이미지/썸네일)
+
+---
+
+## 4. 공연소식 수정
+
+공연소식 정보를 수정합니다. **작성자만** 수정 가능합니다.
+
+### Endpoint
+
+```
+PATCH /news/:id
+```
+
+### Headers
+
+| 헤더          | 설명           |
+|--------------|----------------|
+| Authorization| Bearer {accessToken} |
+
+### Path Parameters
+
+| 파라미터 | 타입   | 필수 | 설명         |
+|---------|--------|------|--------------|
+| id      | string | O    | 공연소식 ID  |
+
+### Request Body
+
+CreateNewsDto의 모든 필드 **선택(partial)**. 수정할 필드만 보내면 됩니다.
+
+| 필드       | 타입    | 필수 | 설명                              |
+|-----------|---------|------|-----------------------------------|
+| title     | string  | X    | 제목                              |
+| content   | string  | X    | 내용                              |
+| place     | string  | X    | 장소                              |
+| ticketPrice | number | X    | 티켓 가격 (null 가능)             |
+| startedAt | string  | X    | 공연 시작일시 (ISO 8601)          |
+| endedAt   | string  | X    | 공연 종료일 (null 가능)           |
+| contact   | string  | X    | 문의처                            |
+| fileId    | string  | X    | 대표 파일 ID                      |
+
+### Response (200)
+
+```json
+{
+  "newsId": "d45ba94f-3e2a-4e2d-a25b-7b39b0c27a5c",
+  "title": "2025 봄 콘서트 (수정)",
+  "place": "예술의전당",
+  "startedAt": "2025-04-01T19:00:00.000Z"
 }
 ```
 
 ### 에러
 
-| 상태 | 설명 |
-|------|------|
-| 401 | refresh token 만료 또는 무효 → 재로그인 필요 |
-
-### 401 발생 시 프론트 처리
-
-1. API 호출 → 401 응답
-2. `POST /auth/refresh` 호출 (refreshToken 전달)
-3. 200이면 → 새 accessToken 저장 후 실패한 요청 재시도
-4. 401이면 → refreshToken도 만료, 토큰 삭제 후 로그인 화면 이동
+| 상태 | 설명                |
+|-----|---------------------|
+| 401 | 인증 필요           |
+| 403 | 수정 권한 없음 (작성자 아님) |
+| 404 | 공연소식을 찾을 수 없음  |
 
 ---
 
-## 5. 인증 헤더 사용법
+## 5. 공연소식 삭제
 
-인증이 필요한 API 호출 시 `Authorization` 헤더에 access token을 포함합니다.
+공연소식을 삭제합니다. 작성자 본인만 삭제 가능합니다.
 
-### 형식
-
-```
-Authorization: Bearer {accessToken}
-```
-
-### 적용 대상 API 예시
-
-- `GET /users/profile/my` — 내 프로필 조회
-- `PATCH /users/profile/my` — 프로필 수정
-- `POST /announcement` — 공고 작성
-- `PATCH /announcement/:id` — 공고 수정
-- `DELETE /announcement/:id` — 공고 삭제
-- `GET /announcement/:id` — 공고 상세 (선택 인증, 토큰 있으면 `isMine` 정확히 반환)
-
-### 예시 (React Native fetch)
-
-```javascript
-const token = await AsyncStorage.getItem('ACCESS_TOKEN_KEY');
-const res = await fetch(`${API_BASE}/users/profile/my`, {
-  headers: {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  },
-});
-```
-
-### 401 응답 시
-
-1. **먼저** `POST /auth/refresh` 호출 (refreshToken 전달)
-2. 성공 → 새 accessToken 저장, 실패했던 API 재요청
-3. refresh도 401 → 재로그인 필요 (토큰 삭제 후 로그인 화면)
-
----
-
-## 5. 프론트 구현 가이드
-
-### 권장 플로우
+### Endpoint
 
 ```
-[앱 실행]
-    ↓
-AsyncStorage에 accessToken 있음?
-    ├─ 있음 → 메인 화면 (토큰 포함 API 호출)
-    └─ 없음 → 로그인 화면
-              ↓
-         소셜 로그인 (카카오/구글/네이버)
-              ↓
-         POST /auth/{provider}
-              ↓
-         needsSignup?
-              ├─ true  → 회원가입 화면 → POST /auth/signup/{provider}
-              └─ false → accessToken, refreshToken, user 저장 → 메인
-
-[API 401 발생 시]
-    1. POST /auth/refresh (refreshToken)
-    2. 성공 → accessToken 갱신 저장, API 재시도
-    3. 실패 → 로그인 화면
+DELETE /news/:id
 ```
 
-### 토큰 저장 권장 방식
+### Headers
 
-| 환경 | 저장소 |
-|------|--------|
-| React Native | `AsyncStorage` 또는 `expo-secure-store` |
-| 저장 키 | `ACCESS_TOKEN_KEY` 등 고정 문자열 사용 |
+| 헤더          | 설명           |
+|--------------|----------------|
+| Authorization| Bearer {accessToken} |
 
-### 저장 예시
+### Path Parameters
 
-```javascript
-// 로그인/회원가입 성공 시
-await AsyncStorage.setItem('ACCESS_TOKEN_KEY', data.accessToken);
-await AsyncStorage.setItem('REFRESH_TOKEN_KEY', data.refreshToken);
-// user 정보도 필요 시 별도 저장 (userId, nickname 등)
-```
+| 파라미터 | 타입   | 필수 | 설명         |
+|---------|--------|------|--------------|
+| id      | string | O    | 공연소식 ID  |
 
-### API 호출 헤더 유틸
+### Response
 
-```javascript
-async function getAuthHeaders() {
-  const token = await AsyncStorage.getItem('토큰키');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
-```
+| 상태 | 설명                |
+|-----|---------------------|
+| 200 | 삭제 완료 (body 없음) |
+| 401 | 인증 필요           |
+| 403 | 삭제 권한 없음 (작성자 아님) |
+| 404 | 공연소식을 찾을 수 없음  |
 
-### 401 처리 권장
+### 참고
 
-1. API 호출 시 `res.status === 401` → 먼저 `POST /auth/refresh` 호출 (refreshToken 전달)
-2. refresh 성공 → 새 accessToken 저장, 실패한 요청 재시도
-3. refresh도 401 → refreshToken 만료. 토큰 삭제 후 로그인 화면으로 이동
+- 인증 필요 (access token)
+- 작성자 본인만 삭제 가능
