@@ -10,7 +10,6 @@ import Section from "../Section/Section";
 import AnnouncementCard from "../AnnouncementCard/AnnouncementCard";
 import EventNewsCard from "../EventNewsCard/EventNewsCard";
 import GrayCard from "../GrayCard/GrayCard";
-import EventScheduleCard from "../EventScheduleCard/EventScheduleCard";
 import ImageCarousel from "../ImageCarousel/ImageCarousel";
 import { ContentRoutes } from "../../navigations/routes";
 import { RootRoutes } from "../../navigations/routes";
@@ -188,11 +187,6 @@ const AllContentScene = () => {
             },
           ]}
         />
-      </Section>
-      <Section title="내 공연 일정" onPressMore={() => {}}>
-        <EventScheduleCard title="재즈 페스티벌 2025" daysLeft="D-12" />
-        <EventScheduleCard title="재즈 페스티벌 2025" daysLeft="D-12" />
-        <EventScheduleCard title="재즈 페스티벌 2025" daysLeft="D-12" />
       </Section>
     </ScrollView>
   );
