@@ -106,11 +106,6 @@ const MusicNewsRegistrationScreen = () => {
       return;
     }
 
-    if (!fileId) {
-      Alert.alert("입력 확인", "대표 이미지(썸네일)를 등록해주세요.");
-      return;
-    }
-
     if (isSubmitting) return;
     setIsSubmitting(true);
 
@@ -120,7 +115,7 @@ const MusicNewsRegistrationScreen = () => {
       place: place.trim().slice(0, 100),
       startedAt: dateToISO(startedAt),
       contact: contact.trim().slice(0, 30),
-      fileId,
+      ...(fileId ? { fileId } : {}),
       ...(ticketPrice.trim() ? { ticketPrice: parseInt(ticketPrice, 10) || undefined } : {}),
       ...(useEndDate && endedAt ? { endedAt: dateToISO(endedAt) } : {}),
     };
@@ -149,10 +144,9 @@ const MusicNewsRegistrationScreen = () => {
     content: submitAttempted && !content.trim(),
     place: submitAttempted && !place.trim(),
     contact: submitAttempted && !contact.trim(),
-    fileId: submitAttempted && !fileId,
   };
 
-  const isValid = !!title.trim() && !!content.trim() && !!place.trim() && !!contact.trim() && !!fileId;
+  const isValid = !!title.trim() && !!content.trim() && !!place.trim() && !!contact.trim();
 
   return (
     <View style={styles.container}>
@@ -162,14 +156,14 @@ const MusicNewsRegistrationScreen = () => {
       >
         <View style={styles.formSection}>
           <View style={styles.formField}>
-            <Form title="대표 이미지" isRequired hasError={err.fileId}>
-              <Pressable style={[styles.imageUploadBox, err.fileId && styles.inputErrorBorder]} onPress={pickImage}>
+            <Form title="대표 이미지" isRequired={false}>
+              <Pressable style={styles.imageUploadBox} onPress={pickImage}>
                 {fileId ? (
                   <Text style={styles.imageUploadText}>이미지가 선택되었습니다</Text>
                 ) : (
                   <>
                     <MaterialCommunityIcons name="image-plus" size={40} color={GRAY.DARK_2} />
-                    <Text style={styles.imageUploadText}>이미지를 선택해주세요 (썸네일)</Text>
+                    <Text style={styles.imageUploadText}>이미지를 선택해주세요 (선택, 없으면 기본 이미지)</Text>
                   </>
                 )}
               </Pressable>
