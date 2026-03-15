@@ -16,6 +16,10 @@ import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
 
+/** 메인 화면 공연소식 섹션과 동일한 기본 이미지 */
+const DEFAULT_NEWS_IMAGE_URL =
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
+
 function formatStartedAt(iso: string): string {
   try {
     const d = new Date(iso);
@@ -89,6 +93,7 @@ const MusicNewsScene = () => {
       title={item.title}
       place={item.place}
       dateRange={formatStartedAt(item.startedAt)}
+      imageUrl={item.imageUrl || DEFAULT_NEWS_IMAGE_URL}
       containerStyle={localStyles.card}
       onPress={() =>
         navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, { newsId: item.newsId })
@@ -98,17 +103,20 @@ const MusicNewsScene = () => {
 
   return (
     <View style={styles.newsSceneContainer}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.sortFilterContainer}
-        nestedScrollEnabled
-        directionalLockEnabled
-        scrollEventThrottle={16}
-        bounces={false}
-      >
-        <SelectableTag label="최신순" selected />
-      </ScrollView>
+      <View style={styles.sortFilterWrap}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.sortFilterContainer}
+          nestedScrollEnabled
+          directionalLockEnabled
+          scrollEventThrottle={16}
+          bounces={false}
+          style={localStyles.sortScrollView}
+        >
+          <SelectableTag label="최신순" selected />
+        </ScrollView>
+      </View>
       {loading ? (
         <View style={localStyles.loaderContainer}>
           <ActivityIndicator size="small" />
@@ -126,6 +134,7 @@ const MusicNewsScene = () => {
           data={items}
           keyExtractor={(item) => item.newsId}
           numColumns={2}
+          style={localStyles.flatList}
           columnWrapperStyle={localStyles.columnWrapper}
           contentContainerStyle={localStyles.listContent}
           renderItem={renderItem}
@@ -150,16 +159,30 @@ const MusicNewsScene = () => {
 };
 
 const localStyles = StyleSheet.create({
+  sortScrollView: {
+    flexGrow: 0,
+  },
+  flatList: {
+    flex: 1,
+    marginTop: 0,
+  },
   listContent: {
     paddingHorizontal: 12,
+    paddingTop: 0,
     paddingBottom: 24,
+    flexGrow: 1,
+    justifyContent: "flex-start",
+    alignSelf: "stretch",
   },
   columnWrapper: {
-    justifyContent: "space-between",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 12,
     marginBottom: 16,
   },
   card: {
-    width: "48%",
+    flex: 1,
+    maxWidth: "48%",
   },
   loaderContainer: {
     flex: 1,

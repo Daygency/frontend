@@ -10,6 +10,7 @@ export type NewsListItem = {
   title: string;
   place: string;
   startedAt: string;
+  imageUrl?: string;
 };
 
 /** 공연소식 목록 응답 */

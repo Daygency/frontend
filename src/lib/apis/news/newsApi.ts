@@ -70,22 +70,27 @@ export async function getNewsDetail(
   }
 }
 
-/** 공연소식 작성 (POST /news) */
+/** 공연소식 작성 (POST /news) - 401 시 토큰 갱신 후 재시도 */
 export async function createNews(
   dto: CreateNewsDto
 ): Promise<CreateNewsResponse | null> {
-  const headers = await getAuthHeadersRequired();
-  const res = await fetch(`${API_BASE}/news`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(dto),
-  });
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/news`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(dto),
+    });
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    console.warn("[createNews] 실패:", res.status, errText);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[createNews] 실패:", res.status, errText);
+      return null;
+    }
+
+    return res.json() as Promise<CreateNewsResponse>;
+  } catch (e) {
+    console.warn("[createNews] 에러:", e);
     return null;
   }
-
-  return res.json() as Promise<CreateNewsResponse>;
 }
