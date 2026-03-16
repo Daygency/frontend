@@ -17,6 +17,11 @@ import { getAnnouncementList } from "../../lib/apis/announcement/announcementApi
 import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
 import { getNewsList } from "../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../lib/apis/news/types";
+import {
+  getCommunityCategories,
+  getCommunityList,
+} from "../../lib/apis/community/communityApi";
+import type { CommunityCategory, CommunityListItem } from "../../lib/apis/community/types";
 
 type ContentTabParamList = {
   [ContentRoutes.HOME]: undefined;
@@ -51,12 +56,30 @@ function formatStartedAt(iso: string): string {
 const DEFAULT_NEWS_IMAGE_URL =
   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
 
+type HomeCommunityBoardConfig = {
+  boardName: string;
+  categoryName: string;
+};
+
+const HOME_COMMUNITY_BOARDS: HomeCommunityBoardConfig[] = [
+  { boardName: "자유게시판", categoryName: "자유게시판" },
+  { boardName: "강사·대타구인", categoryName: "구인" },
+  { boardName: "입시 정보", categoryName: "입시정보" },
+  { boardName: "유학 정보", categoryName: "유학정보" },
+  { boardName: "학원 운영", categoryName: "학원운용" },
+  { boardName: "학원·연습실", categoryName: "학원/연습실 매매" },
+];
+
 const AllContentScene = () => {
   const navigation = useNavigation<NavigationProp>();
   const [announcements, setAnnouncements] = useState<AnnouncementListItem[]>([]);
   const [announcementsLoading, setAnnouncementsLoading] = useState(true);
   const [newsItems, setNewsItems] = useState<NewsListItem[]>([]);
   const [newsLoading, setNewsLoading] = useState(true);
+  const [communityBoards, setCommunityBoards] = useState<
+    { boardName: string; latestPost: string; hasNew?: boolean }[]
+  >([]);
+  const [communityLoading, setCommunityLoading] = useState(true);
 
   useEffect(() => {
     getAnnouncementList({ limit: 5 }).then((res) => {
@@ -70,6 +93,48 @@ const AllContentScene = () => {
       setNewsLoading(false);
       if (res?.items) setNewsItems(res.items);
     });
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      setCommunityLoading(true);
+      try {
+        const categories = (await getCommunityCategories()) ?? [];
+        const categoryIdByName = new Map<string, string>(
+          categories.map((c: CommunityCategory) => [c.name, c.categoryId])
+        );
+
+        const results = await Promise.all(
+          HOME_COMMUNITY_BOARDS.map(async (cfg) => {
+            const categoryId = categoryIdByName.get(cfg.categoryName);
+            if (!categoryId) {
+              return { boardName: cfg.boardName, latestPost: "글이 없습니다." };
+            }
+
+            const list = await getCommunityList({ categoryId });
+            const safeList: CommunityListItem[] = Array.isArray(list) ? list : [];
+            if (safeList.length === 0) {
+              return { boardName: cfg.boardName, latestPost: "글이 없습니다." };
+            }
+
+            const latest = [...safeList].sort((a, b) => {
+              const at = new Date(a.createdAt).getTime();
+              const bt = new Date(b.createdAt).getTime();
+              return (isNaN(bt) ? 0 : bt) - (isNaN(at) ? 0 : at);
+            })[0];
+
+            return {
+              boardName: cfg.boardName,
+              latestPost: latest?.title ? String(latest.title) : "글이 없습니다.",
+            };
+          })
+        );
+
+        setCommunityBoards(results);
+      } finally {
+        setCommunityLoading(false);
+      }
+    })();
   }, []);
 
   const handleAnnouncementMore = () => {
@@ -158,35 +223,26 @@ const AllContentScene = () => {
       <Section
         title="커뮤니티"
         onPressMore={() => {
-          (navigation as { navigate: (a: string, b?: object) => void }).navigate(
-            "ContentTab",
-            { screen: ContentRoutes.CHAT },
-          );
+          // 이미 ContentTab 내부라 탭으로 직접 이동하는 게 가장 확실합니다.
+          (navigation as any).navigate(ContentRoutes.CHAT, { initialTab: "커뮤니티" });
         }}
       >
-        <GrayCard
-          items={[
-            {
-              boardName: "자유게시판",
-              latestPost: "공연 무사히 마무리했습니다!",
-              hasNew: true,
-            },
-            {
-              boardName: "강사·대타구인",
-              latestPost: "00월 00일 스탭 구합니다.",
-            },
-            { boardName: "입시 정보", latestPost: "입시 정보 공유해주세요!" },
-            { boardName: "유학 정보", latestPost: "유학 질문 드립니다." },
-            {
-              boardName: "학원 운영",
-              latestPost: "학원을 운영하려고 하는데 도움이 필요합니다!",
-            },
-            {
-              boardName: "학원·연습실",
-              latestPost: "연습실 내놓습니다.",
-            },
-          ]}
-        />
+        {communityLoading ? (
+          <View style={{ paddingVertical: 24, alignItems: "center" }}>
+            <ActivityIndicator size="small" color="#666" />
+          </View>
+        ) : (
+          <GrayCard
+            items={
+              communityBoards.length > 0
+                ? communityBoards
+                : HOME_COMMUNITY_BOARDS.map((b) => ({
+                    boardName: b.boardName,
+                    latestPost: "글이 없습니다.",
+                  }))
+            }
+          />
+        )}
       </Section>
     </ScrollView>
   );
