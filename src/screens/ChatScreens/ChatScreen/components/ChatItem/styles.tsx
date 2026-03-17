@@ -67,17 +67,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginLeft: 0,
   },
-  groupMeta: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginLeft: 4,
-  },
-  groupMetaText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: GRAY.DARK,
-  },
   timestamp: {
     fontSize: 13,
     color: "#A0AEC0",

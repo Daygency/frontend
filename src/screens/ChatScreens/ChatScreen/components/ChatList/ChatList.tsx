@@ -4,6 +4,8 @@ import { useNavigation } from "@react-navigation/native";
 import ChatItem from "../ChatItem/ChatItem";
 import { RootRoutes } from "../../../../../navigations/routes";
 import type { ChatFilter } from "../../types";
+import { Text } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const MOCK_CHATS = [
   {
@@ -52,7 +54,10 @@ const MOCK_CHATS = [
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
 
-function matchesTopTab(chat: (typeof MOCK_CHATS)[0], topTab: ChatTopTab): boolean {
+function matchesTopTab(
+  chat: (typeof MOCK_CHATS)[0],
+  topTab: ChatTopTab,
+): boolean {
   return topTab === "일반"
     ? !chat.isMyPosted && !chat.isApplication
     : topTab === "내 공고"
@@ -67,6 +72,27 @@ export function getUnreadCountByTopTabMock(topTab: ChatTopTab): number {
   }, 0);
 }
 
+const MOCK_MY_POSTS = [
+  {
+    postId: "post-1",
+    title: "교향악단 바이올린 객원단원 채용",
+    typeTag: "오디션(연주자 모집)",
+    statusTag: "모집중",
+    dDay: "D-20",
+    roomsCount: 3,
+    unreadTotal: 3,
+  },
+  {
+    postId: "post-2",
+    title: "하반기 발레 공고",
+    typeTag: "오디션(무용수 모집)",
+    statusTag: "모집중",
+    dDay: "D-7",
+    roomsCount: 5,
+    unreadTotal: 1,
+  },
+] as const;
+
 interface ChatListProps {
   topTab: ChatTopTab;
   filter?: ChatFilter;
@@ -74,6 +100,174 @@ interface ChatListProps {
 
 const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
   const navigation = useNavigation<any>();
+
+  if (topTab === "내 공고") {
+    return (
+      <FlatList
+        data={MOCK_MY_POSTS}
+        keyExtractor={(p) => p.postId}
+        renderItem={({ item }) => (
+          <Pressable
+            onPress={() =>
+              navigation.navigate(RootRoutes.MY_POSTED_CHAT_ROOMS, {
+                postId: item.postId,
+                title: item.title,
+                typeTag: item.typeTag,
+                statusTag: item.statusTag,
+                dDay: item.dDay,
+              })
+            }
+            style={{
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              backgroundColor: "#FFFFFF",
+              borderBottomWidth: 1,
+              borderBottomColor: "#EFEFEF",
+            }}
+          >
+            <View
+              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+            >
+              <View
+                style={{
+                  width: 44,
+                  height: 44,
+                  borderRadius: 10,
+                  backgroundColor: "#D1D5DB",
+                }}
+              />
+              <View style={{ flex: 1, minWidth: 0 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: 10,
+                  }}
+                >
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 8,
+                      flex: 1,
+                      minWidth: 0,
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 15,
+                        fontWeight: "600",
+                        color: "#111827",
+                      }}
+                      numberOfLines={1}
+                    >
+                      {item.title}
+                    </Text>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        gap: 2,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <MaterialIcons name="person" size={18} color="#9CA3AF" />
+                      <Text
+                        style={{
+                          fontSize: 16,
+                          fontWeight: "500",
+                          color: "#9CA3AF",
+                        }}
+                      >
+                        {item.roomsCount}
+                      </Text>
+                    </View>
+                  </View>
+                  {item.unreadTotal > 0 && (
+                    <View
+                      style={{
+                        minWidth: 18,
+                        height: 18,
+                        borderRadius: 9,
+                        backgroundColor: "#E11D48",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        paddingHorizontal: 5,
+                        flexShrink: 0,
+                      }}
+                    >
+                      <Text
+                        style={{
+                          color: "#FFFFFF",
+                          fontSize: 12,
+                          fontWeight: "700",
+                        }}
+                      >
+                        {item.unreadTotal > 99
+                          ? "99+"
+                          : String(item.unreadTotal)}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    gap: 8,
+                    marginTop: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <View
+                    style={{
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 14,
+                      height: 28,
+                      paddingHorizontal: 10,
+                      justifyContent: "center",
+                      borderWidth: 1,
+                      borderColor: "#D1D5DB",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#111827",
+                        fontSize: 13,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {item.statusTag}
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      backgroundColor: "#1F2A44",
+                      borderRadius: 14,
+                      height: 28,
+                      paddingHorizontal: 10,
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#FFFFFF",
+                        fontSize: 13,
+                        fontWeight: "700",
+                      }}
+                    >
+                      {item.dDay}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+          </Pressable>
+        )}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      />
+    );
+  }
 
   const filteredChats = useMemo(() => {
     return MOCK_CHATS.filter((chat) => {
@@ -106,8 +300,7 @@ const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
             isOnline={item.isOnline}
             isMusic={item.isMusic}
             isVerified={item.isVerified}
-            variant={topTab === "내 공고" ? "group" : "default"}
-            memberCount={(item as any).memberCount}
+            variant="default"
           />
         </Pressable>
       )}

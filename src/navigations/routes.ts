@@ -36,6 +36,7 @@ export const RootRoutes = {
   WITHDRAW_CONFIRM: "WithdrawConfirm",
   CHAT_ROOM: "ChatRoom",
   CHAT_ROOM_OPTIONS: "ChatRoomOptions",
+  MY_POSTED_CHAT_ROOMS: "MyPostedChatRooms",
   PROFILE_EDIT: "ProfileEdit",
   ARTIST_PORTFOLIO: "ArtistPortfolio",
   SEARCH: "Search",
