@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -11,15 +11,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: WHITE,
-    borderRadius: 18,
+    borderRadius: 100,
     borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    paddingHorizontal: 15,
-    gap: 5,
+    borderColor: MAIN.DEFAULT,
+    paddingHorizontal: 12,
+    gap: 6,
     height: 36,
   },
   buttonText: {
-    color: BLACK,
+    color: MAIN.DEFAULT,
     fontSize: 14,
     fontWeight: "500",
     includeFontPadding: false,
@@ -31,57 +31,85 @@ const styles = StyleSheet.create({
   },
   sortButton: {
     backgroundColor: WHITE,
-    borderRadius: 8,
+    borderRadius: 100,
     borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
+    borderColor: MAIN.DEFAULT,
     paddingHorizontal: 12,
-    paddingTop: 6,
-    paddingBottom: 10,
     flexShrink: 0,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 36,
+    height: 36,
   },
   sortButtonText: {
-    color: BLACK,
+    color: MAIN.DEFAULT,
     fontSize: 14,
     fontWeight: "500",
     includeFontPadding: false,
     textAlignVertical: "center",
     lineHeight: 20,
   },
-  modalOverlay: {
+  sheetContainer: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-    justifyContent: "flex-start",
-    paddingTop: 100,
-  },
-  dropdownContainer: {
     backgroundColor: WHITE,
-    borderRadius: 8,
-    marginHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
-    shadowColor: BLACK,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
   },
-  option: {
-    paddingHorizontal: 16,
+  sheetHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: GRAY.DEFAULT,
+  },
+  sheetTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
+  },
+  optionsScroll: {
+    flex: 1,
+  },
+  optionsContent: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    padding: 20,
+    gap: 12,
+  },
+  tag: {
+    paddingHorizontal: 18,
     paddingVertical: 12,
+    borderRadius: 100,
+    backgroundColor: WHITE,
+    borderWidth: 1,
+    borderColor: MAIN.DEFAULT,
   },
-  optionSelected: {
-    backgroundColor: GRAY.DEFAULT,
+  tagSelected: {
+    backgroundColor: MAIN.DEFAULT,
+    borderColor: MAIN.DEFAULT,
   },
-  optionText: {
-    color: BLACK,
+  tagText: {
     fontSize: 14,
     fontWeight: "400",
+    color: MAIN.DEFAULT,
   },
-  optionTextSelected: {
+  tagTextSelected: {
+    color: WHITE,
+    fontWeight: "500",
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: GRAY.DEFAULT,
+  },
+  confirmButton: {
+    backgroundColor: MAIN.DEFAULT,
+    borderRadius: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  confirmButtonText: {
+    color: WHITE,
+    fontSize: 16,
     fontWeight: "600",
   },
 });

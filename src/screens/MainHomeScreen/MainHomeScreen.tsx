@@ -32,8 +32,8 @@ const MainHomeScreen = () => {
   const categoryToSearchTag: Record<string, string | null> = {
     전체: null,
     아티스트: "아티스트",
-    공연장: "공연장정보",
-    기획사: "기획자",
+    공연장: "공연장",
+    기획사: "기획사",
   };
   const initialTag = categoryToSearchTag[routes[index].key] ?? null;
 

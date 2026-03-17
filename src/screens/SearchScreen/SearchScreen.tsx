@@ -29,9 +29,9 @@ import { GRAY } from "../../color";
 
 const SUGGESTED_TAGS = [
   "아티스트",
-  "공연장정보",
+  "공연장",
   "대관소식",
-  "기획자",
+  "기획사",
   "모집공고",
   "공연소식",
   "커뮤니티",
@@ -42,8 +42,10 @@ const TAG_TO_CATEGORY: Record<
   { key: string; title: string; initialTab?: "info" | "news" }
 > = {
   아티스트: { key: "아티스트", title: "아티스트" },
+  공연장: { key: "공연장", title: "공연장" },
   공연장정보: { key: "공연장", title: "공연장" },
   대관소식: { key: "공연장", title: "공연장", initialTab: "news" },
+  기획사: { key: "기획사", title: "기획사" },
   기획자: { key: "기획사", title: "기획사" },
   모집공고: { key: "모집공고", title: "모집공고" },
   채용: { key: "모집공고", title: "모집공고" },
