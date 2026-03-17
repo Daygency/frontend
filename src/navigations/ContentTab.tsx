@@ -11,6 +11,7 @@ import {
   Feather,
   Ionicons,
   MaterialCommunityIcons,
+  MaterialIcons,
   Octicons,
 } from "@expo/vector-icons";
 
@@ -87,11 +88,7 @@ const ContentTab = () => {
         component={PortfolioScreen}
         options={{
           tabBarIcon: ({ focused }) => (
-            <MaterialCommunityIcons
-              name="notebook"
-              size={24}
-              color={focused ? "black" : "gray"}
-            />
+            <MaterialIcons name="account-circle" size={24} color={focused ? "black" : "gray"} />
           ),
           title: "포트폴리오",
         }}

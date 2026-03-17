@@ -528,4 +528,4 @@ DELETE /community/:id
 
 - 인증 필요 (access token)
 - 작성자 본인만 삭제 가능
-g
+g 
