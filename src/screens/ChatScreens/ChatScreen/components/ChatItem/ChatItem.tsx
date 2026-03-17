@@ -37,11 +37,11 @@ const ChatItem = ({
             <Text style={styles.name}>{name}</Text>
             {isMusic ? (
               <View style={styles.badge}>
-                <FontAwesome name="music" size={10} color="#FFFFFF" />
+                <FontAwesome name="music" size={8} color="#FFFFFF" />
               </View>
             ) : isVerified ? (
               <View style={styles.badge}>
-                <MaterialIcons name="verified" size={13} color="#FFFFFF" />
+                <MaterialIcons name="verified" size={8} color="#FFFFFF" />
               </View>
             ) : null}
           </View>
@@ -64,4 +64,3 @@ const ChatItem = ({
 };
 
 export default ChatItem;
-

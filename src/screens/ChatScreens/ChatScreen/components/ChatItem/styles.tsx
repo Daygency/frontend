@@ -55,17 +55,17 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "600",
     color: "#1A202C",
   },
   badge: {
-    width: 18,
-    height: 18,
+    width: 15,
+    height: 15,
     borderRadius: 9,
     backgroundColor: "#1F2A44",
     alignItems: "center",
     justifyContent: "center",
-    marginLeft: 2,
+    marginLeft: 0,
   },
   timestamp: {
     fontSize: 13,
