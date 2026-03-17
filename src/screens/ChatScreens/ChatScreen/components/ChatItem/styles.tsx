@@ -51,12 +51,21 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
   },
   name: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
     color: "#1A202C",
+  },
+  badge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: "#1F2A44",
+    alignItems: "center",
+    justifyContent: "center",
+    marginLeft: 2,
   },
   timestamp: {
     fontSize: 13,
@@ -85,7 +94,7 @@ const styles = StyleSheet.create({
   },
   message: {
     flex: 1,
-    fontSize: 15,
+    fontSize: 14,
     color: "#718096",
     fontWeight: "500",
   },

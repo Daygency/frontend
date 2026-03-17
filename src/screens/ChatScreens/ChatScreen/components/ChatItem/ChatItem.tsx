@@ -35,12 +35,15 @@ const ChatItem = ({
         <View style={styles.headerRow}>
           <View style={styles.nameRow}>
             <Text style={styles.name}>{name}</Text>
-            {isMusic && (
-              <FontAwesome name="music" size={16} color="#111827" />
-            )}
-            {isVerified && (
-              <MaterialIcons name="verified" size={18} color="#111827" />
-            )}
+            {isMusic ? (
+              <View style={styles.badge}>
+                <FontAwesome name="music" size={10} color="#FFFFFF" />
+              </View>
+            ) : isVerified ? (
+              <View style={styles.badge}>
+                <MaterialIcons name="verified" size={13} color="#FFFFFF" />
+              </View>
+            ) : null}
           </View>
           <Text style={styles.timestamp}>{timestamp}</Text>
         </View>
