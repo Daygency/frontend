@@ -8,29 +8,31 @@ import type { ChatFilter } from "../../types";
 const MOCK_CHATS = [
   {
     id: "1",
-    name: "세종문화회관",
+    name: "교향악단 바이올린 객원단용 채용",
     handle: "sejongculture",
     lastMessage: "리허설 일정 조율 부탁드립니다",
-    timestamp: "어제",
+    timestamp: "오전 7시 40분",
     unreadCount: 2,
     isOnline: false,
     isMyPosted: true,
     isApplication: false,
     isMusic: false,
     isVerified: false,
+    memberCount: 3,
   },
   {
     id: "2",
-    name: "사운드스테이지",
+    name: "하반기 발레 공고",
     handle: "soundstage",
     lastMessage: "음향 장비 세팅 완료했습니다",
-    timestamp: "09.28",
+    timestamp: "오전 6시 10분",
     unreadCount: 1,
     isOnline: true,
     isMyPosted: false,
     isApplication: true,
     isMusic: true,
     isVerified: false,
+    memberCount: 5,
   },
   {
     id: "3",
@@ -44,6 +46,7 @@ const MOCK_CHATS = [
     isApplication: true,
     isMusic: true,
     isVerified: true,
+    memberCount: 2,
   },
 ];
 
@@ -103,6 +106,8 @@ const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
             isOnline={item.isOnline}
             isMusic={item.isMusic}
             isVerified={item.isVerified}
+            variant={topTab === "내 공고" ? "group" : "default"}
+            memberCount={(item as any).memberCount}
           />
         </Pressable>
       )}

@@ -11,6 +11,8 @@ interface ChatItemProps {
   isOnline?: boolean;
   isMusic?: boolean;
   isVerified?: boolean;
+  variant?: "default" | "group";
+  memberCount?: number;
 }
 
 const ChatItem = ({
@@ -21,27 +23,38 @@ const ChatItem = ({
   isOnline = false,
   isMusic = false,
   isVerified = false,
+  variant = "default",
+  memberCount,
 }: ChatItemProps) => {
   return (
     <View style={styles.container}>
-      <View style={styles.avatarContainer}>
-        <View style={styles.avatar}>
-          <MaterialIcons name="person" size={28} color={GRAY.MEDIUM_2} />
+      {variant === "default" && (
+        <View style={styles.avatarContainer}>
+          <View style={styles.avatar}>
+            <MaterialIcons name="person" size={28} color={GRAY.MEDIUM_2} />
+          </View>
+          {isOnline && <View style={styles.onlineIndicator} />}
         </View>
-        {isOnline && <View style={styles.onlineIndicator} />}
-      </View>
+      )}
 
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
           <View style={styles.nameRow}>
             <Text style={styles.name}>{name}</Text>
-            {isMusic ? (
+            {variant === "group" ? (
+              <View style={styles.groupMeta}>
+                <MaterialIcons name="person" size={18} color={GRAY.DARK} />
+                <Text style={styles.groupMetaText}>
+                  {typeof memberCount === "number" ? memberCount : 0}
+                </Text>
+              </View>
+            ) : isMusic ? (
               <View style={styles.badge}>
-                <FontAwesome name="music" size={8} color="#FFFFFF" />
+                <FontAwesome name="music" size={10} color="#FFFFFF" />
               </View>
             ) : isVerified ? (
               <View style={styles.badge}>
-                <MaterialIcons name="verified" size={8} color="#FFFFFF" />
+                <MaterialIcons name="verified" size={13} color="#FFFFFF" />
               </View>
             ) : null}
           </View>
