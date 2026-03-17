@@ -10,6 +10,10 @@ import {
 import styles from "../ImageScrollView/styles";
 import { GRAY } from "../../color";
 
+/** 메인 화면 공연소식 섹션과 동일한 기본 이미지 */
+export const DEFAULT_NEWS_IMAGE_URI =
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
+
 interface EventNewsCardProps {
   title: string;
   place: string;
@@ -37,17 +41,11 @@ const EventNewsCard = ({
       onPress={onPress}
       disabled={!onPress}
     >
-      {imageUrl ? (
-        <Image
-          source={{ uri: imageUrl }}
-          style={[styles.image, { height }]}
-          resizeMode="cover"
-        />
-      ) : (
-        <View
-          style={[styles.image, { height, backgroundColor: GRAY.MEDIUM }]}
-        />
-      )}
+      <Image
+        source={{ uri: imageUrl || DEFAULT_NEWS_IMAGE_URI }}
+        style={[styles.image, { height }]}
+        resizeMode="cover"
+      />
       <Text style={styles.imageTitle} numberOfLines={2} ellipsizeMode="tail">
         {title}
       </Text>

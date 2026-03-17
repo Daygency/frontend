@@ -1,23 +1,14 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, View, ActivityIndicator } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { GRAY } from "../../color";
+import { useEffect, useState } from "react";
+import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
 import styles from "./styles";
-
-type CommunityPost = {
-  id: string;
-  tag: string;
-  title: string;
-  contentPreview: string;
-  author?: string;
-  date: string;
-  likes: number;
-  comments: number;
-  scraps: number;
-};
+import { getCommunityDetail } from "../../lib/apis/community/communityApi";
+import type { CommunityDetailResponse } from "../../lib/apis/community/types";
 
 type CommunityDetailRouteParams = {
-  post: CommunityPost;
+  communityId: string;
 };
 
 type CommunityDetailRouteProp = RouteProp<
@@ -27,8 +18,39 @@ type CommunityDetailRouteProp = RouteProp<
 
 const CommunityDetailScreen = () => {
   const route = useRoute<CommunityDetailRouteProp>();
-  const { post } = route.params;
+  const { communityId } = route.params;
   const { bottom } = useSafeAreaInsets();
+  const [data, setData] = useState<CommunityDetailResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    (async () => {
+      setLoading(true);
+      const res = await getCommunityDetail(communityId);
+      setData(res);
+      setLoading(false);
+    })();
+  }, [communityId]);
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.scrollContent, { alignItems: "center", justifyContent: "center" }]}>
+          <ActivityIndicator />
+        </View>
+      </View>
+    );
+  }
+
+  if (!data) {
+    return (
+      <View style={styles.container}>
+        <View style={[styles.scrollContent, { alignItems: "center", justifyContent: "center" }]}>
+          <Text>게시글을 불러오지 못했습니다.</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -39,24 +61,19 @@ const CommunityDetailScreen = () => {
       >
         <View style={styles.header}>
           <View style={styles.tagBadge}>
-            <Text style={styles.tagText}>{post.tag}</Text>
+            <Text style={styles.tagText}>{data.category?.name}</Text>
           </View>
-          <Text style={styles.title}>{post.title}</Text>
+          <Text style={styles.title}>{data.title}</Text>
           <Text style={styles.meta}>
-            {post.author ?? "알수없음"} · {post.date}
+            {data.user && (data.user as any).nickname
+              ? String((data.user as any).nickname)
+              : "알수없음"}{" "}
+            · {new Date(data.createdAt).toLocaleDateString()}
           </Text>
         </View>
 
         <View style={styles.body}>
-          <Text style={styles.bodyText}>{post.contentPreview}</Text>
-        </View>
-
-        <View style={styles.statsRow}>
-          <Text style={styles.statText}>좋아요 {post.likes}</Text>
-          <Text style={styles.dot}>·</Text>
-          <Text style={styles.statText}>댓글 {post.comments}</Text>
-          <Text style={styles.dot}>·</Text>
-          <Text style={styles.statText}>스크랩 {post.scraps}</Text>
+          <Text style={styles.bodyText}>{data.content}</Text>
         </View>
 
         <View style={styles.firstCommentPlaceholder}>
@@ -70,18 +87,7 @@ const CommunityDetailScreen = () => {
           { paddingBottom: (bottom || 0) + 10 },
         ]}
       >
-        <View style={styles.anonymousToggle}>
-          <View style={styles.checkbox} />
-          <Text style={styles.anonymousText}>익명</Text>
-        </View>
-        <View style={styles.inputWrapper}>
-          <TextInput
-            style={styles.commentInput}
-            placeholder="댓글을 입력해주세요"
-            placeholderTextColor={GRAY.DARK_2}
-            multiline
-          />
-        </View>
+        <CommentInputBar placeholder="댓글을 입력해주세요" />
       </View>
     </View>
   );

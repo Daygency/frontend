@@ -1,394 +1,531 @@
-# Daygency API 문서
+## 커뮤니티(Community) API 명세
 
 > Base URL: 개발 `http://localhost:3000`, 운영은 배포 URL 사용
-
----
-
-## 문서 목록
-
-| 문서 | 설명 |
-|------|------|
-| [auth-api.md](./auth-api.md) | **인증 API** – 소셜 로그인/회원가입, 토큰 사용법 |
-| [announcement-api.md](./announcement-api.md) | **공고 API** – 공고 CRUD, 목록/상세/필터 |
-| [api-readme.md](./api-readme.md) | **공통 API** – 활동아이디 중복확인, 공고 유형 목록 등 |
-
----
-
-## 인증 (토큰) 요약
-
-- **Access Token**: 1시간 | **Refresh Token**: 30일 (만료 시 `POST /auth/refresh`)
-- **저장**: `AsyncStorage`(React Native) / `SecureStore` 권장
-- **요청 헤더**: `Authorization: Bearer {accessToken}`
-
-자세한 스펙은 [auth-api.md](./auth-api.md)를 참고하세요.
-
-
-# 인증(Auth) API 명세
-
-> Base URL: 개발 `http://localhost:3000`, 운영은 배포 URL 사용
-
-모바일 앱에서 로그인·회원가입 시 사용하는 API입니다. **access token(1h) + refresh token(30d)** 구조로, 만료 시 refresh로 새 access token을 발급받아 앱처럼 장기간 로그인 상태가 유지됩니다.
 
 ---
 
 ## 목차
 
-1. [토큰 개요](#1-토큰-개요)
-2. [소셜 로그인](#2-소셜-로그인)
-3. [소셜 회원가입](#3-소셜-회원가입)
-4. [Access Token 갱신 (Refresh)](#4-access-token-갱신-refresh)
-5. [인증 헤더 사용법](#5-인증-헤더-사용법)
-6. [프론트 구현 가이드](#6-프론트-구현-가이드)
+1. [커뮤니티 목록 조회](#1-커뮤니티-목록-조회)
+2. [커뮤니티 상세 조회](#2-커뮤니티-상세-조회)
+3. [커뮤니티 작성](#3-커뮤니티-작성)
+4. [커뮤니티 수정](#4-커뮤니티-수정)
+5. [커뮤니티 삭제](#5-커뮤니티-삭제)
 
 ---
 
-## 1. 토큰 개요
+## 1. 커뮤니티 목록 조회
 
-| 토큰 | 만료 | 용도 |
-|------|------|------|
-| **Access Token** | 1시간 | API 요청 시 `Authorization` 헤더에 포함 |
-| **Refresh Token** | 30일 | access 만료 시 `POST /auth/refresh`로 새 access 발급 |
-
-### 토큰 발급 시점
-
-- 소셜 **로그인** 성공 시 → `accessToken`, `refreshToken`, `user` 반환
-- 소셜 **회원가입** 완료 시 → 동일
-
-### Access Token 만료 시 (1시간 후)
-
-1. **먼저** `POST /auth/refresh` 호출 (refreshToken 전달)
-2. 성공 → 새 accessToken 저장, 실패한 API 요청 재시도
-3. refresh도 401이면 → refreshToken 만료, 재로그인 필요
-
-### Refresh Token 만료 시 (30일 후)
-
-- `POST /auth/refresh` 401 응답
-- 소셜 로그인 API 다시 호출 필요
-
----
-
-## 2. 소셜 로그인
-
-카카오/구글/네이버에서 발급받은 **소셜 access token**으로 로그인합니다. 이미 Daygency 회원이면 토큰과 사용자 정보를 반환하고, 미가입이면 `needsSignup: true`로 회원가입 절차로 이동합니다.
+커뮤니티 게시글 전체 목록을 조회합니다. 생성일 최신순으로 정렬됩니다.
 
 ### Endpoint
 
-| Provider | Endpoint |
-|----------|----------|
-| 카카오 | `POST /auth/kakao` |
-| 구글 | `POST /auth/google` |
-| 네이버 | `POST /auth/naver` |
+```
+GET /community
+```
+
+### 인증
+
+- 인증 불필요 (public API)
+
+### Response
+
+`Community` 엔티티 배열이 반환됩니다.
+
+각 항목 예시 스키마:
+
+| 필드        | 타입    | 설명                     |
+|------------|---------|--------------------------|
+| communityId| string  | 커뮤니티 ID (UUID)       |
+| title      | string  | 제목                     |
+| content    | string  | 내용                     |
+| createdAt  | string  | 생성일시 (ISO 8601)     |
+| user       | object  | 작성자 정보 (`User`)     |
+| category   | object  | 커뮤니티 카테고리 정보   |
+| file       | object  | 첨부 파일 정보 (선택적)  |
+
+---
+
+## 2. 커뮤니티 상세 조회
+
+단일 커뮤니티 게시글 상세 정보를 조회합니다.
+
+### Endpoint
+
+```
+GET /community/:id
+```
+
+### Path Parameters
+
+| 파라미터 | 타입   | 필수 | 설명                    |
+|---------|--------|------|-------------------------|
+| id      | string | O    | 커뮤니티 ID (communityId) |
+
+### 인증
+
+- 인증 불필요 (public API)
+
+### Response
+
+`Community` 엔티티 한 건이 그대로 반환됩니다.
+
+| 필드        | 타입    | 설명                     |
+|------------|---------|--------------------------|
+| communityId| string  | 커뮤니티 ID (UUID)       |
+| title      | string  | 제목                     |
+| content    | string  | 내용                     |
+| createdAt  | string  | 생성일시 (ISO 8601)     |
+| user       | object  | 작성자 정보 (`User`)     |
+| category   | object  | 커뮤니티 카테고리 정보   |
+| file       | object  | 첨부 파일 정보 (선택적)  |
+
+존재하지 않는 ID인 경우:
+
+- `404 Not Found` + `"존재하지 않는 커뮤니티 게시글입니다."`
+
+---
+
+## 3. 커뮤니티 작성
+
+새 커뮤니티 게시글을 작성합니다.
+
+### Endpoint
+
+```
+POST /community
+```
+
+### Headers
+
+| 헤더          | 설명                    |
+|--------------|-------------------------|
+| Authorization| Bearer {accessToken}    |
+
+### 인증
+
+- **필수**
+- `AuthGuard('access')` 사용
 
 ### Request Body
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| accessToken | string | O | 소셜 로그인 앱에서 발급받은 access token |
+`CreateCommunityDto` 기준:
 
-### Response (로그인 성공)
+| 필드      | 타입    | 필수 | 설명                             |
+|----------|---------|------|----------------------------------|
+| title    | string  | O    | 제목 (최대 100자)                |
+| content  | string  | O    | 내용 (최대 255자)                |
+| categoryId | string| O    | 커뮤니티 카테고리 ID (`CommunityCategory.categoryId`) |
+| fileId   | string  | X    | 첨부 파일 ID (없으면 null/생략)  |
 
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
-  "user": {
-    "userId": "ecfdc7fd-23be-4fa9-9cbd-e6f30d826349",
-    "nickname": "조규연",
-    "email": "user@example.com",
-    "profileImgUrl": "https://..."
-  }
-}
-```
+### Response (201)
 
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| accessToken | string | JWT (1시간 유효). API 호출 시 사용 |
-| refreshToken | string | JWT (30일 유효). access 만료 시 갱신용 |
-| user.userId | string | Daygency 사용자 UUID |
-| user.nickname | string | 닉네임 |
-| user.email | string | 이메일 |
-| user.profileImgUrl | string | 프로필 이미지 URL |
+저장된 `Community` 엔티티 전체가 반환됩니다.
 
-### Response (회원가입 필요)
+예시:
 
 ```json
 {
-  "needsSignup": true,
-  "profile": {
-    "socialId": "1234567890",
-    "nickname": "카카오닉네임",
-    "email": "kakao@example.com",
-    "profileImgUrl": "https://..."
-  }
-}
-```
-
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| needsSignup | boolean | `true`이면 회원가입 화면으로 이동 |
-| profile | object | 소셜 프로필 정보 (회원가입 API에 그대로 전달) |
-
-### Example
-
-**Request (카카오)**
-
-```
-POST /auth/kakao
-Content-Type: application/json
-
-{
-  "accessToken": "카카오에서_발급받은_액세스토큰"
-}
-```
-
-**Response (기존 회원)**
-
-```json
-{
-  "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "userId": "ecfdc7fd-23be-4fa9-9cbd-e6f30d826349",
-    "nickname": "조규연",
-    "email": "user@example.com",
-    "profileImgUrl": "https://..."
-  }
-}
-```
-
-**Response (신규 → 회원가입 필요)**
-
-```json
-{
-  "needsSignup": true,
-  "profile": {
-    "socialId": "1234567890",
-    "nickname": "홍길동",
-    "email": "hong@kakao.com",
-    "profileImgUrl": "https://..."
-  }
+  "communityId": "b6b8d8e0-2f3c-4a8b-9c1d-1234567890ab",
+  "title": "첫 번째 커뮤니티 글",
+  "content": "내용입니다.",
+  "createdAt": "2025-04-01T12:00:00.000Z",
+  "user": { /* 작성자 정보 */ },
+  "category": { /* 카테고리 정보 */ },
+  "file": null
 }
 ```
 
 ### 에러
 
-| 상태 | 설명 |
-|------|------|
-| 401 | 소셜 access token 무효 또는 만료 |
-| 400 | 요청 형식 오류 |
+| 상태 | 설명                                 |
+|------|--------------------------------------|
+| 401  | 인증 필요                            |
+| 404  | 존재하지 않는 커뮤니티 카테고리      |
 
 ---
 
-## 3. 소셜 회원가입
+## 4. 커뮤니티 수정
 
-`needsSignup: true` 응답을 받은 후, **동일한 소셜 access token**과 `activityName`(활동 아이디)을 보내 회원가입을 완료합니다.
+커뮤니티 게시글을 수정합니다. **작성자 본인만** 수정할 수 있습니다.
 
 ### Endpoint
 
-| Provider | Endpoint |
-|----------|----------|
-| 카카오 | `POST /auth/signup/kakao` |
-| 구글 | `POST /auth/signup/google` |
-| 네이버 | `POST /auth/signup/naver` |
+```
+PATCH /community/:id
+```
+
+### Headers
+
+| 헤더          | 설명                    |
+|--------------|-------------------------|
+| Authorization| Bearer {accessToken}    |
+
+### Path Parameters
+
+| 파라미터 | 타입   | 필수 | 설명          |
+|---------|--------|------|---------------|
+| id      | string | O    | 커뮤니티 ID   |
+
+### 인증 / 권한
+
+- **인증 필수**
+- 로그인 유저가 해당 게시글의 작성자가 아닐 경우 `403 Forbidden`
 
 ### Request Body
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| accessToken | string | O | 로그인 시 사용한 소셜 access token |
-| activityName | string | O | 활동 아이디 (고유, 20자 이내) |
-| nickname | string | X | 닉네임 (미입력 시 소셜 프로필 값 사용) |
+`UpdateCommunityDto` 기준, 모든 필드는 선택입니다.
 
-### Response (회원가입 성공)
+| 필드      | 타입    | 필수 | 설명                             |
+|----------|---------|------|----------------------------------|
+| title    | string  | X    | 제목                             |
+| content  | string  | X    | 내용                             |
+| categoryId | string| X    | 커뮤니티 카테고리 ID             |
+| fileId   | string  | X    | 첨부 파일 ID                     |
 
-로그인과 동일한 형태로 `accessToken`, `refreshToken`, `user` 반환
+### Response (200)
+
+수정된 `Community` 엔티티 전체가 반환됩니다.
+
+### 에러
+
+| 상태 | 설명                                 |
+|------|--------------------------------------|
+| 401  | 인증 필요                            |
+| 403  | 수정 권한 없음 (작성자 아님)         |
+| 404  | 커뮤니티를 찾을 수 없음              |
+
+---
+
+## 5. 커뮤니티 삭제
+
+커뮤니티 게시글을 삭제합니다. **작성자 본인만** 삭제할 수 있습니다.
+
+### Endpoint
+
+```
+DELETE /community/:id
+```
+
+### Headers
+
+| 헤더          | 설명                    |
+|--------------|-------------------------|
+| Authorization| Bearer {accessToken}    |
+
+### Path Parameters
+
+| 파라미터 | 타입   | 필수 | 설명          |
+|---------|--------|------|---------------|
+| id      | string | O    | 커뮤니티 ID   |
+
+### 인증 / 권한
+
+- **인증 필수**
+- 로그인 유저가 해당 게시글의 작성자가 아닐 경우 `403 Forbidden`
+
+### Response
+
+성공 시:
 
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-  "refreshToken": "eyJhbGciOiJIUzI1NiIs...",
-  "user": {
-    "userId": "ecfdc7fd-23be-4fa9-9cbd-e6f30d826349",
-    "nickname": "조규연",
-    "email": "user@example.com",
-    "profileImgUrl": "https://..."
-  }
+  "success": true
 }
 ```
+
+### 에러
+
+| 상태 | 설명                                 |
+|------|--------------------------------------|
+| 401  | 인증 필요                            |
+| 403  | 삭제 권한 없음 (작성자 아님)         |
+| 404  | 커뮤니티를 찾을 수 없음              |
+
+# 커뮤니티(Community) API 명세
+
+> Base URL: 개발 `http://localhost:3000`, 운영은 배포 URL 사용
+
+---
+
+## 목차
+
+1. [커뮤니티 카테고리 목록 조회](#1-커뮤니티-카테고리-목록-조회)
+2. [커뮤니티 목록 조회](#2-커뮤니티-목록-조회)
+3. [커뮤니티 상세 조회](#3-커뮤니티-상세-조회)
+4. [커뮤니티 게시글 작성](#4-커뮤니티-게시글-작성)
+5. [커뮤니티 게시글 수정](#5-커뮤니티-게시글-수정)
+6. [커뮤니티 게시글 삭제](#6-커뮤니티-게시글-삭제)
+
+---
+
+## 커뮤니티 카테고리 (community_category)
+
+게시판 카테고리 마스터 데이터. 애플리케이션 시작 시 자동 시드됩니다.
+
+| 카테고리명         |
+|-------------------|
+| 자유게시판        |
+| 구인              |
+| 입시정보          |
+| 학원운용          |
+| 학원/연습실 매매  |
+
+---
+
+## 1. 커뮤니티 카테고리 목록 조회
+
+커뮤니티 작성/필터 시 사용하는 카테고리 목록을 반환합니다.
+
+### Endpoint
+
+```
+GET /community/categories
+```
+
+### Query Parameters
+
+없음
+
+### Response
+
+| 필드       | 타입   | 설명                |
+|-----------|--------|---------------------|
+| categoryId | string | 카테고리 ID (UUID)  |
+| name      | string | 카테고리명          |
 
 ### Example
 
 **Request**
 
 ```
-POST /auth/signup/kakao
-Content-Type: application/json
-
-{
-  "accessToken": "카카오에서_발급받은_액세스토큰",
-  "activityName": "my_activity_id",
-  "nickname": "조규연"
-}
+GET /community/categories
 ```
 
-### 에러
+**Response**
 
-| 상태 | 설명 |
-|------|------|
-| 400 | activityName 미입력 또는 형식 오류 |
-| 401 | 소셜 access token 무효 |
-| 409 | activityName 또는 nickname 이미 사용 중 |
-
-### 사전 검증
-
-회원가입 전 `activityName` 중복 검사 권장:
-
-```
-GET /users/check-activity-name?activityName=my_activity_id
+```json
+[
+  { "categoryId": "uuid-1", "name": "자유게시판" },
+  { "categoryId": "uuid-2", "name": "구인" },
+  { "categoryId": "uuid-3", "name": "입시정보" },
+  { "categoryId": "uuid-4", "name": "학원운용" },
+  { "categoryId": "uuid-5", "name": "학원/연습실 매매" }
+]
 ```
 
-→ `available: true`이면 사용 가능, `false`이면 이미 사용 중
+### 참고
+
+- 인증 불필요 (public API)
+- name 오름차순 정렬
 
 ---
 
-## 4. Access Token 갱신 (Refresh)
+## 2. 커뮤니티 목록 조회
 
-Access token이 만료되면 (1시간 후) refresh token으로 **새 access token**을 발급받습니다. refresh token은 30일 유효합니다.
+무한스크롤 + 필터를 지원하는 커뮤니티 게시글 목록 조회 API입니다.
 
 ### Endpoint
 
 ```
-POST /auth/refresh
+GET /community
 ```
+
+### Query Parameters
+
+| 파라미터   | 타입   | 필수 | 설명                                           |
+|-----------|--------|------|------------------------------------------------|
+| cursor    | string | X    | 마지막으로 조회한 community_id (없으면 첫 페이지) |
+| limit     | number | X    | 한 번에 가져올 개수 (기본 20, 최대 50)         |
+| categoryId| string | X    | 카테고리 ID (필터)                              |
+
+### Response
+
+| 필드       | 타입             | 설명                    |
+|-----------|------------------|-------------------------|
+| items     | array            | 게시글 목록             |
+| nextCursor| string \| null   | 다음 페이지 cursor (없으면 null) |
+| hasMore   | boolean          | 다음 페이지 존재 여부    |
+
+#### items 각 항목
+
+| 필드        | 타입   | 설명              |
+|------------|--------|-------------------|
+| communityId| string | 게시글 ID         |
+| title      | string | 제목              |
+| category   | string | 카테고리명        |
+| createdAt  | string | 작성일 (ISO 8601) |
+
+### 참고
+
+- 인증 불필요 (public API)
+- 최신순 정렬
+
+---
+
+## 3. 커뮤니티 상세 조회
+
+단일 커뮤니티 게시글 상세 정보를 조회합니다.
+
+### Endpoint
+
+```
+GET /community/:id
+```
+
+### Path Parameters
+
+| 파라미터 | 타입   | 필수 | 설명       |
+|---------|--------|------|------------|
+| id      | string | O    | 게시글 ID (community_id) |
+
+### Headers (선택)
+
+| 헤더          | 설명                                           |
+|--------------|------------------------------------------------|
+| Authorization| Bearer {accessToken} — 있을 경우 `isMine` 정확히 반환 |
+
+### Response
+
+게시글 엔티티 정보 + `isMine` 필드
+
+| 필드        | 타입    | 설명                                         |
+|------------|---------|----------------------------------------------|
+| communityId| string  | 게시글 ID                                    |
+| title      | string  | 제목                                        |
+| content    | string  | 내용                                        |
+| createdAt  | string  | 작성일                                      |
+| user       | object  | 작성자 정보                                 |
+| category   | object  | 카테고리 정보                               |
+| file       | object  | 대표 파일 정보 (썸네일)                     |
+| isMine     | boolean | 내가 쓴 글인지 여부                         |
+
+### 참고
+
+- 인증 불필요 (public API). 로그인 없이도 조회 가능
+
+---
+
+## 4. 커뮤니티 게시글 작성
+
+커뮤니티 게시글을 작성합니다.
+
+### Endpoint
+
+```
+POST /community
+```
+
+### Headers
+
+| 헤더          | 설명           |
+|--------------|----------------|
+| Authorization| Bearer {accessToken} |
 
 ### Request Body
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| refreshToken | string | O | 로그인/회원가입 시 발급받은 refresh token |
+| 필드       | 타입    | 필수 | 설명                  |
+|-----------|---------|------|-----------------------|
+| title     | string  | O    | 제목 (최대 100자)     |
+| content   | string  | O    | 내용 (최대 255자)     |
+| categoryId| string  | O    | 카테고리 ID           |
+| fileId    | string  | O    | 대표 파일 ID (썸네일) |
 
-### Response (성공)
+### Example
+
+**Request**
 
 ```json
 {
-  "accessToken": "eyJhbGciOiJIUzI1NiIs...",
-  "user": {
-    "userId": "ecfdc7fd-23be-4fa9-9cbd-e6f30d826349",
-    "nickname": "조규연",
-    "email": "user@example.com",
-    "profileImgUrl": "https://..."
-  }
+  "title": "연주자 구인합니다",
+  "content": "오케스트라 단원 모집합니다.",
+  "categoryId": "550e8400-e29b-41d4-a716-446655440000",
+  "fileId": "550e8400-e29b-41d4-a716-446655440001"
 }
 ```
+
+### 참고
+
+- 인증 필요 (access token)
+
+---
+
+## 5. 커뮤니티 게시글 수정
+
+커뮤니티 게시글 정보를 수정합니다. **작성자만** 수정 가능합니다.
+
+### Endpoint
+
+```
+PATCH /community/:id
+```
+
+### Headers
+
+| 헤더          | 설명           |
+|--------------|----------------|
+| Authorization| Bearer {accessToken} |
+
+### Path Parameters
+
+| 파라미터 | 타입   | 필수 | 설명       |
+|---------|--------|------|------------|
+| id      | string | O    | 게시글 ID  |
+
+### Request Body
+
+CreateCommunityDto의 모든 필드 **선택(partial)**.
+
+| 필드       | 타입   | 필수 | 설명        |
+|-----------|--------|------|-------------|
+| title     | string | X    | 제목        |
+| content   | string | X    | 내용        |
+| categoryId| string | X    | 카테고리 ID |
+| fileId    | string | X    | 대표 파일 ID|
 
 ### 에러
 
-| 상태 | 설명 |
-|------|------|
-| 401 | refresh token 만료 또는 무효 → 재로그인 필요 |
-
-### 401 발생 시 프론트 처리
-
-1. API 호출 → 401 응답
-2. `POST /auth/refresh` 호출 (refreshToken 전달)
-3. 200이면 → 새 accessToken 저장 후 실패한 요청 재시도
-4. 401이면 → refreshToken도 만료, 토큰 삭제 후 로그인 화면 이동
+| 상태 | 설명                |
+|-----|---------------------|
+| 401 | 인증 필요           |
+| 403 | 수정 권한 없음 (작성자 아님) |
+| 404 | 게시글을 찾을 수 없음  |
 
 ---
 
-## 5. 인증 헤더 사용법
+## 6. 커뮤니티 게시글 삭제
 
-인증이 필요한 API 호출 시 `Authorization` 헤더에 access token을 포함합니다.
+커뮤니티 게시글을 삭제합니다. 작성자 본인만 삭제 가능합니다.
 
-### 형식
-
-```
-Authorization: Bearer {accessToken}
-```
-
-### 적용 대상 API 예시
-
-- `GET /users/profile/my` — 내 프로필 조회
-- `PATCH /users/profile/my` — 프로필 수정
-- `POST /announcement` — 공고 작성
-- `PATCH /announcement/:id` — 공고 수정
-- `DELETE /announcement/:id` — 공고 삭제
-- `GET /announcement/:id` — 공고 상세 (선택 인증, 토큰 있으면 `isMine` 정확히 반환)
-
-### 예시 (React Native fetch)
-
-```javascript
-const token = await AsyncStorage.getItem('ACCESS_TOKEN_KEY');
-const res = await fetch(`${API_BASE}/users/profile/my`, {
-  headers: {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  },
-});
-```
-
-### 401 응답 시
-
-1. **먼저** `POST /auth/refresh` 호출 (refreshToken 전달)
-2. 성공 → 새 accessToken 저장, 실패했던 API 재요청
-3. refresh도 401 → 재로그인 필요 (토큰 삭제 후 로그인 화면)
-
----
-
-## 5. 프론트 구현 가이드
-
-### 권장 플로우
+### Endpoint
 
 ```
-[앱 실행]
-    ↓
-AsyncStorage에 accessToken 있음?
-    ├─ 있음 → 메인 화면 (토큰 포함 API 호출)
-    └─ 없음 → 로그인 화면
-              ↓
-         소셜 로그인 (카카오/구글/네이버)
-              ↓
-         POST /auth/{provider}
-              ↓
-         needsSignup?
-              ├─ true  → 회원가입 화면 → POST /auth/signup/{provider}
-              └─ false → accessToken, refreshToken, user 저장 → 메인
-
-[API 401 발생 시]
-    1. POST /auth/refresh (refreshToken)
-    2. 성공 → accessToken 갱신 저장, API 재시도
-    3. 실패 → 로그인 화면
+DELETE /community/:id
 ```
 
-### 토큰 저장 권장 방식
+### Headers
 
-| 환경 | 저장소 |
-|------|--------|
-| React Native | `AsyncStorage` 또는 `expo-secure-store` |
-| 저장 키 | `ACCESS_TOKEN_KEY` 등 고정 문자열 사용 |
+| 헤더          | 설명           |
+|--------------|----------------|
+| Authorization| Bearer {accessToken} |
 
-### 저장 예시
+### Path Parameters
 
-```javascript
-// 로그인/회원가입 성공 시
-await AsyncStorage.setItem('ACCESS_TOKEN_KEY', data.accessToken);
-await AsyncStorage.setItem('REFRESH_TOKEN_KEY', data.refreshToken);
-// user 정보도 필요 시 별도 저장 (userId, nickname 등)
-```
+| 파라미터 | 타입   | 필수 | 설명       |
+|---------|--------|------|------------|
+| id      | string | O    | 게시글 ID  |
 
-### API 호출 헤더 유틸
+### Response
 
-```javascript
-async function getAuthHeaders() {
-  const token = await AsyncStorage.getItem('토큰키');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
-```
+| 상태 | 설명                |
+|-----|---------------------|
+| 200 | 삭제 완료 (body 없음) |
+| 401 | 인증 필요           |
+| 403 | 삭제 권한 없음 (작성자 아님) |
+| 404 | 게시글을 찾을 수 없음  |
 
-### 401 처리 권장
+### 참고
 
-1. API 호출 시 `res.status === 401` → 먼저 `POST /auth/refresh` 호출 (refreshToken 전달)
-2. refresh 성공 → 새 accessToken 저장, 실패한 요청 재시도
-3. refresh도 401 → refreshToken 만료. 토큰 삭제 후 로그인 화면으로 이동
+- 인증 필요 (access token)
+- 작성자 본인만 삭제 가능
+g 

@@ -1,13 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Pressable,
+  ScrollView,
   Text,
   View,
   Modal,
-  TouchableOpacity,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { BLACK } from "../../color";
+import { MAIN } from "../../color";
 import styles from "./styles";
 
 interface FilterDropdownProps {
@@ -26,10 +27,22 @@ const FilterDropdown = ({
   isSortButton = false,
 }: FilterDropdownProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [draftValue, setDraftValue] = useState<string | undefined>(selectedValue);
+  const { bottom } = useSafeAreaInsets();
+  const closeSheet = () => setIsOpen(false);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setDraftValue(selectedValue);
+  }, [isOpen, selectedValue]);
 
   const handleSelect = (value: string) => {
-    onSelect(value);
-    setIsOpen(false);
+    setDraftValue(value);
+  };
+
+  const handleConfirm = () => {
+    if (draftValue) onSelect(draftValue);
+    closeSheet();
   };
 
   if (isSortButton) {
@@ -49,7 +62,10 @@ const FilterDropdown = ({
     <View style={styles.container}>
       <Pressable
         style={styles.button}
-        onPress={() => setIsOpen(!isOpen)}
+        onPress={() => {
+          if (isOpen) closeSheet();
+          else setIsOpen(true);
+        }}
       >
         <Text style={styles.buttonText}>
           {selectedValue || label}
@@ -58,44 +74,49 @@ const FilterDropdown = ({
           <MaterialCommunityIcons
             name={isOpen ? "chevron-up" : "chevron-down"}
             size={16}
-            color={BLACK}
+            color={MAIN.DEFAULT}
           />
         </View>
       </Pressable>
 
       <Modal
         visible={isOpen}
-        transparent={true}
-        animationType="fade"
-        onRequestClose={() => setIsOpen(false)}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={closeSheet}
       >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={() => setIsOpen(false)}
-        >
-          <View style={styles.dropdownContainer}>
-            {options.map((option, index) => (
-              <Pressable
-                key={index}
-                style={[
-                  styles.option,
-                  selectedValue === option && styles.optionSelected,
-                ]}
-                onPress={() => handleSelect(option)}
-              >
-                <Text
-                  style={[
-                    styles.optionText,
-                    selectedValue === option && styles.optionTextSelected,
-                  ]}
-                >
-                  {option}
-                </Text>
-              </Pressable>
-            ))}
+        <View style={styles.sheetContainer}>
+          <View style={styles.sheetHeader}>
+            <Text style={styles.sheetTitle}>{label} 선택</Text>
           </View>
-        </TouchableOpacity>
+
+          <ScrollView
+            style={styles.optionsScroll}
+            contentContainerStyle={styles.optionsContent}
+            showsVerticalScrollIndicator={false}
+          >
+            {options.map((option) => {
+              const isSelected = draftValue === option;
+              return (
+                <Pressable
+                  key={option}
+                  style={[styles.tag, isSelected && styles.tagSelected]}
+                  onPress={() => handleSelect(option)}
+                >
+                  <Text style={[styles.tagText, isSelected && styles.tagTextSelected]}>
+                    {option}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+
+          <View style={[styles.footer, { paddingBottom: bottom + 16 }]}>
+            <Pressable style={styles.confirmButton} onPress={handleConfirm}>
+              <Text style={styles.confirmButtonText}>선택 완료</Text>
+            </Pressable>
+          </View>
+        </View>
       </Modal>
     </View>
   );

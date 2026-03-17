@@ -13,9 +13,10 @@ interface ImageScrollViewProp {
   gap: number;
   images?: string[];
   type?: "withText" | "default";
+  onCardPress?: () => void;
 }
 
-const ImageScrollView = ({ styles, width, height, gap, images, type = "default" }: ImageScrollViewProp) => {
+const ImageScrollView = ({ styles, width, height, gap, images, type = "default", onCardPress }: ImageScrollViewProp) => {
   const imageLinkList = images || [
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
     "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
@@ -43,6 +44,7 @@ const ImageScrollView = ({ styles, width, height, gap, images, type = "default" 
           containerStyle={{
             marginRight: index === imageLinkList.length - 1 ? 12 : 0,
           }}
+          onPress={onCardPress}
         />
       ))}
     </ScrollView>

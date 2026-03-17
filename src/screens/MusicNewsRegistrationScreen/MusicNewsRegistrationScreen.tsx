@@ -1,0 +1,352 @@
+import { useNavigation } from "@react-navigation/native";
+import { CommonActions } from "@react-navigation/native";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+  Platform,
+} from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import Form from "../../components/Form/Form";
+import FormTextInput from "../../components/FormTextInput/FormTextInput";
+import { GRAY, MAIN, WHITE } from "../../color";
+import styles from "./styles";
+import { createNews } from "../../lib/apis/news/newsApi";
+import { uploadFile } from "../../lib/apis/fileApi";
+import { RootRoutes, ContentRoutes } from "../../navigations/routes";
+
+function formatDateDisplay(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}.${m}.${day}`;
+}
+
+function formatTimeDisplay(d: Date): string {
+  const h = String(d.getHours()).padStart(2, "0");
+  const m = String(d.getMinutes()).padStart(2, "0");
+  return `${h}:${m}`;
+}
+
+function dateToISO(d: Date, timeOverride?: string): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const [hh = "00", mm = "00"] = (timeOverride ?? formatTimeDisplay(d)).split(":");
+  return `${y}-${m}-${day}T${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00.000Z`;
+}
+
+const MusicNewsRegistrationScreen = () => {
+  const navigation = useNavigation<any>();
+  const { bottom } = useSafeAreaInsets();
+
+  const now = new Date();
+  const defaultStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 19, 0, 0);
+
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [place, setPlace] = useState("");
+  const [ticketPrice, setTicketPrice] = useState("");
+  const [startedAt, setStartedAt] = useState<Date>(defaultStart);
+  const [endedAt, setEndedAt] = useState<Date | null>(null);
+  const [useEndDate, setUseEndDate] = useState(false);
+  const [contact, setContact] = useState("");
+  const [fileId, setFileId] = useState<string | null>(null);
+
+  const [showStartDatePicker, setShowStartDatePicker] = useState(false);
+  const [showStartTimePicker, setShowStartTimePicker] = useState(false);
+  const [showEndDatePicker, setShowEndDatePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitAttempted, setSubmitAttempted] = useState(false);
+
+  const pickImage = async () => {
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: false,
+      });
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      const fid = await uploadFile(asset.uri, {
+        name: asset.fileName ?? "image.jpg",
+        type: asset.mimeType ?? "image/jpeg",
+      });
+      if (fid) setFileId(fid);
+      else Alert.alert("알림", "이미지 업로드에 실패했습니다.");
+    } catch (e) {
+      console.warn("[pickImage]", e);
+      Alert.alert("알림", "이미지 업로드에 실패했습니다.");
+    }
+  };
+
+  const handleRegister = async () => {
+    setSubmitAttempted(true);
+
+    if (!title.trim() || !content.trim() || !place.trim() || !contact.trim()) {
+      const missing: string[] = [];
+      if (!title.trim()) missing.push("제목");
+      if (!content.trim()) missing.push("내용");
+      if (!place.trim()) missing.push("장소");
+      if (!contact.trim()) missing.push("문의처");
+      Alert.alert("입력 확인", `다음 항목을 확인해주세요:\n\n${missing.join("\n")}`);
+      return;
+    }
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    const dto = {
+      title: title.trim(),
+      content: content.trim().slice(0, 255),
+      place: place.trim().slice(0, 100),
+      startedAt: dateToISO(startedAt),
+      contact: contact.trim().slice(0, 30),
+      ...(fileId ? { fileId } : {}),
+      ...(ticketPrice.trim() ? { ticketPrice: parseInt(ticketPrice, 10) || undefined } : {}),
+      ...(useEndDate && endedAt ? { endedAt: dateToISO(endedAt) } : {}),
+    };
+
+    try {
+      const res = await createNews(dto);
+      setIsSubmitting(false);
+      if (res) {
+        navigation.dispatch?.(
+          CommonActions.reset({
+            index: 0,
+            routes: [{ name: RootRoutes.CONTENT_TAB, params: { screen: ContentRoutes.CHAT } }],
+          })
+        );
+      } else {
+        Alert.alert("등록 실패", "공연소식 등록에 실패했습니다. 다시 시도해주세요.");
+      }
+    } catch (e) {
+      setIsSubmitting(false);
+      Alert.alert("등록 실패", "공연소식 등록에 실패했습니다. 다시 시도해주세요.");
+    }
+  };
+
+  const err = {
+    title: submitAttempted && !title.trim(),
+    content: submitAttempted && !content.trim(),
+    place: submitAttempted && !place.trim(),
+    contact: submitAttempted && !contact.trim(),
+  };
+
+  const isValid = !!title.trim() && !!content.trim() && !!place.trim() && !!contact.trim();
+
+  return (
+    <View style={styles.container}>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: (bottom || 0) + 100 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.formSection}>
+          <View style={styles.formField}>
+            <Form title="대표 이미지" isRequired={false}>
+              <Pressable style={styles.imageUploadBox} onPress={pickImage}>
+                {fileId ? (
+                  <Text style={styles.imageUploadText}>이미지가 선택되었습니다</Text>
+                ) : (
+                  <>
+                    <MaterialCommunityIcons name="image-plus" size={40} color={GRAY.DARK_2} />
+                    <Text style={styles.imageUploadText}>이미지를 선택해주세요 (선택, 없으면 기본 이미지)</Text>
+                  </>
+                )}
+              </Pressable>
+            </Form>
+          </View>
+
+          <View style={styles.formField}>
+            <Form title="제목" isRequired hasError={err.title}>
+              <FormTextInput
+                placeholder="공연 제목을 입력하세요 (최대 100자)"
+                value={title}
+                onChangeText={setTitle}
+                maxLength={100}
+                hasError={err.title}
+              />
+            </Form>
+          </View>
+
+          <View style={styles.formField}>
+            <Form title="내용" isRequired hasError={err.content}>
+              <View style={[styles.contentInputWrapper, err.content && styles.inputErrorBorder]}>
+                <TextInput
+                  style={styles.contentInput}
+                  placeholder="공연 소개, 일정 안내 등 내용을 입력하세요 (최대 255자)"
+                  placeholderTextColor={GRAY.DARK_2}
+                  multiline
+                  value={content}
+                  onChangeText={setContent}
+                  maxLength={255}
+                  textAlignVertical="top"
+                />
+                <Text style={styles.charCount}>{content.length}/255</Text>
+              </View>
+            </Form>
+          </View>
+
+          <View style={styles.formField}>
+            <Form title="장소" isRequired hasError={err.place}>
+              <FormTextInput
+                placeholder="공연 장소를 입력하세요"
+                value={place}
+                onChangeText={setPlace}
+                maxLength={100}
+                hasError={err.place}
+              />
+            </Form>
+          </View>
+
+          <View style={styles.formField}>
+            <Form title="티켓 가격" isRequired={false}>
+              <FormTextInput
+                placeholder="금액만 입력 (선택, 예: 30000)"
+                value={ticketPrice}
+                onChangeText={setTicketPrice}
+                keyboardType="number-pad"
+              />
+            </Form>
+          </View>
+
+          <View style={styles.formField}>
+            <Form title="공연 시작일시" isRequired>
+              <View style={styles.datetimeRow}>
+                <Pressable
+                  style={styles.datePickerField}
+                  onPress={() => setShowStartDatePicker(true)}
+                >
+                  <Text style={styles.datePickerText}>{formatDateDisplay(startedAt)}</Text>
+                  <MaterialCommunityIcons name="calendar" size={20} color={GRAY.DARK_1} />
+                </Pressable>
+                <Pressable style={styles.datePickerField} onPress={() => setShowStartTimePicker(true)}>
+                  <Text style={styles.datePickerText}>{formatTimeDisplay(startedAt)}</Text>
+                  <MaterialCommunityIcons name="clock-outline" size={20} color={GRAY.DARK_1} />
+                </Pressable>
+              </View>
+              {showStartDatePicker && (
+                <DateTimePicker
+                  value={startedAt}
+                  mode="date"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  onChange={(_, selected) => {
+                    if (selected) setStartedAt(selected);
+                    if (Platform.OS === "android") setShowStartDatePicker(false);
+                  }}
+                />
+              )}
+              {showStartTimePicker && (
+                <DateTimePicker
+                  value={startedAt}
+                  mode="time"
+                  display={Platform.OS === "ios" ? "spinner" : "default"}
+                  onChange={(_, selected) => {
+                    if (selected) setStartedAt(selected);
+                    if (Platform.OS === "android") setShowStartTimePicker(false);
+                  }}
+                />
+              )}
+            </Form>
+          </View>
+
+          <View style={styles.formField}>
+            <View style={styles.endDateToggleRow}>
+              <Form title="공연 종료일시" isRequired={false} />
+              <Pressable
+                style={styles.toggleButton}
+                onPress={() => {
+                  setUseEndDate(!useEndDate);
+                  if (!useEndDate && !endedAt) setEndedAt(startedAt);
+                }}
+              >
+                <Text style={styles.toggleText}>{useEndDate ? "사용함" : "사용 안 함"}</Text>
+                <MaterialCommunityIcons
+                  name={useEndDate ? "checkbox-marked" : "checkbox-blank-outline"}
+                  size={20}
+                  color={MAIN.DEFAULT}
+                />
+              </Pressable>
+            </View>
+            {useEndDate && endedAt && (
+              <View style={styles.datetimeRow}>
+                <Pressable style={styles.datePickerField} onPress={() => setShowEndDatePicker(true)}>
+                  <Text style={styles.datePickerText}>{formatDateDisplay(endedAt)}</Text>
+                  <MaterialCommunityIcons name="calendar" size={20} color={GRAY.DARK_1} />
+                </Pressable>
+                <Pressable style={styles.datePickerField} onPress={() => setShowEndTimePicker(true)}>
+                  <Text style={styles.datePickerText}>{formatTimeDisplay(endedAt)}</Text>
+                  <MaterialCommunityIcons name="clock-outline" size={20} color={GRAY.DARK_1} />
+                </Pressable>
+              </View>
+            )}
+            {useEndDate && showEndDatePicker && endedAt && (
+              <DateTimePicker
+                value={endedAt}
+                mode="date"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={(_, selected) => {
+                  if (selected) setEndedAt(selected);
+                  if (Platform.OS === "android") setShowEndDatePicker(false);
+                }}
+              />
+            )}
+            {useEndDate && showEndTimePicker && endedAt && (
+              <DateTimePicker
+                value={endedAt}
+                mode="time"
+                display={Platform.OS === "ios" ? "spinner" : "default"}
+                onChange={(_, selected) => {
+                  if (selected) setEndedAt(selected);
+                  if (Platform.OS === "android") setShowEndTimePicker(false);
+                }}
+              />
+            )}
+          </View>
+
+          <View style={styles.formField}>
+            <Form title="문의처" isRequired hasError={err.contact}>
+              <FormTextInput
+                placeholder="연락처를 입력하세요 (최대 30자)"
+                value={contact}
+                onChangeText={setContact}
+                maxLength={30}
+                keyboardType="phone-pad"
+                hasError={err.contact}
+              />
+            </Form>
+          </View>
+        </View>
+      </ScrollView>
+
+      <View style={[styles.footer, { paddingBottom: (bottom || 0) + 16 }]}>
+        <Pressable
+          style={[styles.registerButton, (!isValid || isSubmitting) && styles.registerButtonDisabled]}
+          onPress={handleRegister}
+          disabled={!isValid || isSubmitting}
+        >
+          {isSubmitting ? (
+            <ActivityIndicator size="small" color={WHITE} />
+          ) : (
+            <Text style={styles.registerButtonText}>등록하기</Text>
+          )}
+        </Pressable>
+      </View>
+    </View>
+  );
+};
+
+export default MusicNewsRegistrationScreen;

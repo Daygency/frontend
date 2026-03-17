@@ -1,5 +1,5 @@
-import { useNavigation } from "@react-navigation/native";
-import { useState } from "react";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { useEffect, useMemo, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -15,6 +15,8 @@ import FormTextInput from "../../components/FormTextInput/FormTextInput";
 import FormDropdownInput from "../../components/FormDropdownInput/FormDropdownInput";
 import { BLACK, GRAY, WHITE } from "../../color";
 import styles from "./styles";
+import { getCommunityCategories, createCommunity } from "../../lib/apis/community/communityApi";
+import type { CommunityCategory } from "../../lib/apis/community/types";
 
 const COMMUNITY_GUIDELINES = [
   "서로를 존중해주세요. 비방·명예훼손 내용은 제한될 수 있어요.",
@@ -26,22 +28,74 @@ const COMMUNITY_GUIDELINES = [
   "규정을 어기면 게시물 삭제 또는 이용 제한이 적용될 수 있어요.",
 ];
 
-const categoryOptions = [
-  { label: "학원·연습실 매매", value: "학원·연습실 매매" },
-  { label: "음악 뉴스", value: "음악 뉴스" },
-  { label: "자유게시판", value: "자유게시판" },
-];
+const PLACEHOLDER_BY_CATEGORY: Record<string, string> = {
+  "학원/연습실 매매": "학원·연습실 매매와, 임대 정보를 주고받는 공간이에요!",
+  자유게시판: "자유롭게 이야기를 나눠보세요.",
+  구인: "구인/모집 관련 정보를 공유해주세요.",
+  입시정보: "입시 관련 정보를 공유해주세요.",
+  학원운용: "학원 운영과 관련된 정보를 공유해주세요.",
+};
+
+type CommunityRegistrationParams = { initialCategory?: string };
 
 const CommunityRegistrationScreen = () => {
   const navigation = useNavigation();
+  const route = useRoute<RouteProp<{ CommunityRegistration: CommunityRegistrationParams }, "CommunityRegistration">>();
   const { bottom } = useSafeAreaInsets();
-  const [category, setCategory] = useState("학원·연습실 매매");
+  const [categories, setCategories] = useState<CommunityCategory[]>([]);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [isAnonymous, setIsAnonymous] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleRegister = () => {
-    // TODO: 등록 로직
+  const categoryOptions = useMemo(
+    () =>
+      categories.map((c) => ({
+        label: c.name,
+        value: c.categoryId,
+      })),
+    [categories]
+  );
+
+  useEffect(() => {
+    (async () => {
+      const cats = await getCommunityCategories();
+      if (cats && cats.length > 0) {
+        setCategories(cats);
+        const fromRoute = route.params?.initialCategory;
+        if (fromRoute) {
+          const match = cats.find((c) => c.name === fromRoute);
+          if (match) {
+            setCategoryId(match.categoryId);
+            return;
+          }
+        }
+        setCategoryId(cats[0].categoryId);
+      }
+    })();
+  }, [route.params?.initialCategory]);
+
+  const selectedCategoryName =
+    categories.find((c) => c.categoryId === categoryId)?.name ?? "";
+
+  const handleRegister = async () => {
+    if (!categoryId || !title || !content || submitting) return;
+    try {
+      setSubmitting(true);
+      const res = await createCommunity({
+        title,
+        content,
+        categoryId,
+        fileId: null,
+      });
+      if (!res) {
+        console.warn("커뮤니티 게시글 등록 실패");
+        return;
+      }
+      navigation.goBack();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -58,8 +112,8 @@ const CommunityRegistrationScreen = () => {
             <FormDropdownInput
               placeholder="카테고리를 선택하세요"
               data={categoryOptions}
-              value={category}
-              onChange={(item) => setCategory(item.value)}
+              value={categoryId}
+              onChange={(item) => setCategoryId(item.value)}
             />
           </Form>
 
@@ -78,7 +132,10 @@ const CommunityRegistrationScreen = () => {
               <View style={styles.contentInputWrapper}>
                 <TextInput
                   style={styles.contentInput}
-                  placeholder="학원·연습실 매매와, 임대 정보를 주고받는 공간이에요!"
+                  placeholder={
+                    PLACEHOLDER_BY_CATEGORY[selectedCategoryName] ??
+                    PLACEHOLDER_BY_CATEGORY["학원/연습실 매매"]
+                  }
                   placeholderTextColor={GRAY.DARK_2}
                   multiline
                   value={content}
@@ -127,29 +184,12 @@ const CommunityRegistrationScreen = () => {
         ]}
       >
         <Pressable
-          style={styles.anonymousToggle}
-          onPress={() => setIsAnonymous(!isAnonymous)}
-        >
-          <View
-            style={[
-              styles.checkbox,
-              isAnonymous && styles.checkboxChecked,
-            ]}
-          >
-            {isAnonymous && (
-              <MaterialCommunityIcons
-                name="check"
-                size={14}
-                color={WHITE}
-              />
-            )}
-          </View>
-          <Text style={styles.anonymousText}>익명</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.registerButton, !(title && content && category) && styles.registerButtonDisabled]}
+          style={[
+            styles.registerButton,
+            !(title && content && categoryId) && styles.registerButtonDisabled,
+          ]}
           onPress={handleRegister}
-          disabled={!(title && content && category)}
+          disabled={!(title && content && categoryId) || submitting}
         >
           <Text style={styles.registerButtonText}>등록하기</Text>
         </Pressable>

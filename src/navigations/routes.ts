@@ -40,4 +40,6 @@ export const RootRoutes = {
   ARTIST_PORTFOLIO: "ArtistPortfolio",
   SEARCH: "Search",
   SEARCH_RESULTS: "SearchResults",
+  MUSIC_NEWS_DETAIL: "MusicNewsDetail",
+  MUSIC_NEWS_REGISTRATION: "MusicNewsRegistration",
 } as const;

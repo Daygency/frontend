@@ -1,7 +1,7 @@
 import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useMemo, useState } from "react";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import styles from "./styles";
 import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
 import FabButton from "../../components/FabButton/FabButton";
@@ -11,15 +11,29 @@ import MusicNewsScene from "./components/MusicNewsScene";
 import CommunityScene from "./components/CommunityScene";
 import { RootRoutes } from "../../navigations/routes";
 
+type LoungeRouteParams = {
+  initialTab?: "음악계 소식" | "커뮤니티";
+};
+
 const LoungeScreen = () => {
   const navigation = useNavigation<any>();
+  const route = useRoute<RouteProp<{ Lounge: LoungeRouteParams }, "Lounge">>();
   const { top } = useSafeAreaInsets();
   const layout = useWindowDimensions();
-  const [index, setIndex] = useState(0);
   const [routes] = useState([
     { key: "음악계 소식", title: "음악계 소식" },
     { key: "커뮤니티", title: "커뮤니티" },
   ]);
+
+  const initialIndex = useMemo(() => {
+    const desired = route.params?.initialTab;
+    if (!desired) return 0;
+    const idx = routes.findIndex((r) => r.key === desired);
+    return idx >= 0 ? idx : 0;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.params?.initialTab]);
+
+  const [index, setIndex] = useState(initialIndex);
 
   const tabToSearchTag: Record<string, string> = {
     "음악계 소식": "공연소식",
@@ -52,7 +66,11 @@ const LoungeScreen = () => {
         style={styles.tabView}
       />
       <FabButton
-        onPress={() => navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION)}
+        onPress={() =>
+          navigation.navigate(
+            index === 0 ? RootRoutes.MUSIC_NEWS_REGISTRATION : RootRoutes.COMMUNITY_REGISTRATION
+          )
+        }
       />
     </View>
   );

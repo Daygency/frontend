@@ -15,9 +15,14 @@ const styles = StyleSheet.create({
   sortFilterContainer: {
     flexDirection: "row",
     paddingHorizontal: 12,
-    paddingTop: 13,
-    paddingBottom: 9,
+    paddingTop: 8,
+    paddingBottom: 12,
     gap: 8,
+    alignItems: "center",
+  },
+  sortFilterWrap: {
+    flexGrow: 0,
+    flexShrink: 0,
   },
 });
 
