@@ -26,7 +26,7 @@ const ChatItem = ({
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
-          <MaterialIcons name="account-circle" size={44} color={GRAY.MEDIUM_2} />
+          <MaterialIcons name="person" size={28} color={GRAY.MEDIUM_2} />
         </View>
         {isOnline && <View style={styles.onlineIndicator} />}
       </View>
