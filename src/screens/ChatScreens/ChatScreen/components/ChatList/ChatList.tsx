@@ -222,9 +222,9 @@ const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
                   <View
                     style={{
                       backgroundColor: "#FFFFFF",
-                      borderRadius: 14,
-                      height: 28,
-                      paddingHorizontal: 10,
+                      borderRadius: 12,
+                      height: 24,
+                      paddingHorizontal: 8,
                       justifyContent: "center",
                       borderWidth: 1,
                       borderColor: "#D1D5DB",
@@ -233,7 +233,7 @@ const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
                     <Text
                       style={{
                         color: "#111827",
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: "600",
                       }}
                     >
@@ -243,16 +243,16 @@ const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
                   <View
                     style={{
                       backgroundColor: "#1F2A44",
-                      borderRadius: 14,
-                      height: 28,
-                      paddingHorizontal: 10,
+                      borderRadius: 12,
+                      height: 24,
+                      paddingHorizontal: 8,
                       justifyContent: "center",
                     }}
                   >
                     <Text
                       style={{
                         color: "#FFFFFF",
-                        fontSize: 13,
+                        fontSize: 12,
                         fontWeight: "700",
                       }}
                     >

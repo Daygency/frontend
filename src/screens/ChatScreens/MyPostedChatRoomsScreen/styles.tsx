@@ -44,14 +44,14 @@ export default StyleSheet.create({
     flexWrap: "wrap",
   },
   tagChip: {
-    paddingHorizontal: 10,
-    height: 28,
-    borderRadius: 14,
+    paddingHorizontal: 8,
+    height: 24,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   tagText: {
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "600",
   },
   tagChipOrange: {
