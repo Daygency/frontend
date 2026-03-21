@@ -258,7 +258,7 @@ const CommunityDetailScreen = () => {
       <View
         style={[
           styles.commentInputContainer,
-          { paddingBottom: (bottom || 0) + 10 },
+          { paddingBottom: bottom || 16 },
         ]}
       >
         <CommentInputBar placeholder="댓글을 입력해주세요" />

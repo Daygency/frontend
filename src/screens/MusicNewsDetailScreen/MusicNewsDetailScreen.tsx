@@ -469,7 +469,7 @@ const MusicNewsDetailScreen = () => {
       <View
         style={[
           styles.commentInputWrapper,
-          { paddingBottom: (bottom || 0) + 10 },
+          { paddingBottom: bottom || 16 },
         ]}
       >
         <CommentInputBar placeholder="댓글을 입력하세요" />

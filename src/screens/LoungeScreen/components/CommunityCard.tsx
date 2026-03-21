@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { BLACK, GRAY, RED } from "../../../color";
 
 type CommunityCardProps = {
+  tag?: string;
   title: string;
   contentPreview: string;
   author?: string;
@@ -14,6 +15,7 @@ type CommunityCardProps = {
 };
 
 const CommunityCard = ({
+  tag,
   title,
   contentPreview,
   author = "알수없음",
@@ -27,6 +29,13 @@ const CommunityCard = ({
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.row}>
         <View style={styles.textContainer}>
+          {!!tag && (
+            <View style={styles.tagBadge}>
+              <Text style={styles.tagText} numberOfLines={1}>
+                {tag}
+              </Text>
+            </View>
+          )}
           <Text style={styles.title} numberOfLines={1}>
             {title}
           </Text>
@@ -76,6 +85,19 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     marginRight: 8,
+  },
+  tagBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: GRAY.MEDIUM,
+    marginBottom: 6,
+  },
+  tagText: {
+    fontSize: 11,
+    color: BLACK,
+    fontWeight: "500",
   },
   title: {
     fontSize: 15,

@@ -219,12 +219,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    minHeight: 90,
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    justifyContent: "center",
-    flexDirection: "row",
-    alignItems: "center",
     backgroundColor: WHITE,
   },
   inputWrapper: {
