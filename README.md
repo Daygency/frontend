@@ -1,82 +1,225 @@
-# Backend API 변경사항 (2026-03-21)
+# 스크랩(Scrap) API 명세
 
-최근 반영된 API 수정사항 요약입니다.
-
-## 1) 댓글(Comment) API 추가
-
-- 엔티티: `comment`
-- 댓글 대상 enum: `NEWS`, `COMMUNITY` (두 게시판만 허용)
-- 대댓글 지원: `parentId`
-- 삭제 방식: soft delete (`deleted_at`)
-
-### 엔드포인트
-
-- `POST /comment` 댓글/대댓글 작성 (인증 필요)
-- `GET /comment?targetType={NEWS|COMMUNITY}&targetId={uuid}` 댓글 목록 조회
-- `GET /comment/:id` 댓글 단건 조회
-- `PATCH /comment/:id` 댓글 수정 (작성자만)
-- `DELETE /comment/:id` 댓글 삭제 (작성자만)
-
-문서: `docs/comment-api.md`
+> Base URL: 개발 `http://localhost:3000`, 운영은 배포 URL 사용
 
 ---
 
-## 2) 좋아요(Like) API 추가
+## 목차
 
-- 엔티티: `like`
-- 좋아요 대상 enum: `NEWS`, `COMMUNITY`, `ANNOUNCEMENT`, `COMMENT`
-- 중복 좋아요 방지: 같은 유저가 같은 대상에 중복 생성 시 `409 Conflict`
-
-### 엔드포인트
-
-- `POST /like` 좋아요 생성 (인증 필요)
-- `GET /like?likeType={...}&targetId={uuid}` 좋아요 목록 조회 (`count`, `items` 반환)
-- `GET /like/:id` 좋아요 단건 조회
-- `DELETE /like/:id` 좋아요 ID로 삭제 (본인만)
-- `DELETE /like?likeType={...}&targetId={uuid}` 대상 기준 좋아요 취소 (본인만)
-
-문서: `docs/like-api.md`
+1. [스크랩 목록 조회](#1-스크랩-목록-조회)
+2. [스크랩 단건 조회](#2-스크랩-단건-조회)
+3. [스크랩 생성](#3-스크랩-생성)
+4. [스크랩 삭제 (ID)](#4-스크랩-삭제-id)
+5. [스크랩 삭제 (대상 기준)](#5-스크랩-삭제-대상-기준)
 
 ---
 
-## 3) 뉴스/커뮤니티 목록 응답 확장
+## 스크랩 모델 요약
 
-목록 조회 시 각 항목에 아래 필드가 추가되었습니다.
-
-- `likeCount`: 해당 게시글 좋아요 수
-- `commentCount`: 해당 게시글 댓글 수
-
-적용 API:
-
-- `GET /news`
-- `GET /community`
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| id | string | 스크랩 ID (UUID) |
+| createdAt | string | 생성일시 (ISO 8601) |
+| targetType | enum | 스크랩 대상 타입 (`NEWS`, `COMMUNITY`, `ANNOUNCEMENT`) |
+| targetId | string | 스크랩 대상 ID |
+| user | object | 스크랩한 사용자 정보 (`User`) |
 
 ---
 
-## 4) 뉴스/커뮤니티 조회수(viewCount) 추가
+## 1. 스크랩 목록 조회
 
-엔티티 컬럼 추가:
+특정 대상(뉴스/커뮤니티/공고)의 스크랩 목록을 조회합니다.
 
-- `news.view_count` (기본값 0)
-- `community.view_count` (기본값 0)
+### Endpoint
 
-상세 조회 호출 시 동작:
+```
+GET /scrap
+```
 
-- 상세 조회가 호출될 때마다 `viewCount` 1 증가
+### Query Parameters
 
-적용 API:
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| targetType | enum | O | `NEWS`, `COMMUNITY`, `ANNOUNCEMENT` |
+| targetId | string | O | 스크랩 대상 ID (UUID) |
 
-- `GET /news/:id`
-- `GET /community/:id`
+### 인증
 
-상세 응답에 포함되는 주요 카운트 필드:
+- 인증 불필요 (public API)
 
-- `viewCount`
-- `likeCount`
-- `commentCount`
+### Response (200)
+
+```json
+{
+  "count": 2,
+  "items": [
+    {
+      "id": "uuid-scrap-1",
+      "createdAt": "2026-03-21T10:00:00.000Z",
+      "targetType": "COMMUNITY",
+      "targetId": "uuid-community-1",
+      "user": { "userId": "uuid-user-1" }
+    }
+  ]
+}
+```
+
+### 에러
+
+| 상태 | 설명 |
+|------|------|
+| 404 | 스크랩 대상 엔티티를 찾을 수 없음 |
 
 ---
 
-## 참고
+## 2. 스크랩 단건 조회
 
-- 현재 설정이 `TypeORM synchronize: true`이므로 서버 재시작 시 신규 컬럼(`view_count`)이 DB에 반영됩니다.
+스크랩 ID로 단건 조회합니다.
+
+### Endpoint
+
+```
+GET /scrap/:id
+```
+
+### Path Parameters
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| id | string | O | 스크랩 ID (UUID) |
+
+### 인증
+
+- 인증 불필요 (public API)
+
+### Response (200)
+
+`Scrap` 엔티티 1건 반환.
+
+### 에러
+
+| 상태 | 설명 |
+|------|------|
+| 404 | 스크랩을 찾을 수 없음 |
+
+---
+
+## 3. 스크랩 생성
+
+스크랩을 생성합니다. 같은 유저가 같은 대상에 중복 스크랩하면 실패합니다.
+
+### Endpoint
+
+```
+POST /scrap
+```
+
+### Headers
+
+| 헤더 | 설명 |
+|------|------|
+| Authorization | Bearer {accessToken} |
+
+### 인증
+
+- **필수**
+- `AuthGuard('access')` 사용
+
+### Request Body
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| targetType | enum | O | `NEWS`, `COMMUNITY`, `ANNOUNCEMENT` |
+| targetId | string | O | 스크랩 대상 ID (UUID) |
+
+### Response (201)
+
+생성된 `Scrap` 엔티티 반환.
+
+### 에러
+
+| 상태 | 설명 |
+|------|------|
+| 401 | 인증 필요 |
+| 404 | 스크랩 대상 엔티티를 찾을 수 없음 |
+| 409 | 이미 스크랩한 대상 |
+
+---
+
+## 4. 스크랩 삭제 (ID)
+
+스크랩 ID로 삭제합니다. **본인이 스크랩한 항목만** 삭제 가능합니다.
+
+### Endpoint
+
+```
+DELETE /scrap/:id
+```
+
+### Headers
+
+| 헤더 | 설명 |
+|------|------|
+| Authorization | Bearer {accessToken} |
+
+### Path Parameters
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| id | string | O | 스크랩 ID (UUID) |
+
+### Response (200)
+
+```json
+{
+  "success": true
+}
+```
+
+### 에러
+
+| 상태 | 설명 |
+|------|------|
+| 401 | 인증 필요 |
+| 403 | 삭제 권한 없음 (본인 스크랩 아님) |
+| 404 | 스크랩을 찾을 수 없음 |
+
+---
+
+## 5. 스크랩 삭제 (대상 기준)
+
+대상 타입/대상 ID 기준으로 현재 로그인 유저의 스크랩을 취소합니다.
+
+### Endpoint
+
+```
+DELETE /scrap?targetType={TARGET_TYPE}&targetId={UUID}
+```
+
+### Headers
+
+| 헤더 | 설명 |
+|------|------|
+| Authorization | Bearer {accessToken} |
+
+### Query Parameters
+
+| 파라미터 | 타입 | 필수 | 설명 |
+|----------|------|------|------|
+| targetType | enum | O | `NEWS`, `COMMUNITY`, `ANNOUNCEMENT` |
+| targetId | string | O | 스크랩 대상 ID (UUID) |
+
+### Response (200)
+
+```json
+{
+  "success": true
+}
+```
+
+### 에러
+
+| 상태 | 설명 |
+|------|------|
+| 401 | 인증 필요 |
+| 404 | 대상 엔티티 또는 내 스크랩을 찾을 수 없음 |

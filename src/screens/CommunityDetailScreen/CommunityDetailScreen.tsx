@@ -18,6 +18,11 @@ import {
   deleteLikeByTarget,
   getLikes,
 } from "../../lib/apis/like/likeApi";
+import {
+  createScrap,
+  deleteScrapByTarget,
+  getScraps,
+} from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
 
 type CommunityDetailRouteParams = {
@@ -140,12 +145,13 @@ const CommunityDetailScreen = () => {
   const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [scraped, setScraped] = useState(false);
+  const [scrapCount, setScrapCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const displayedComments = comments;
   const commentCount = Number(
     (data as any)?.commentCount ?? (data as any)?.commentsCount ?? comments.length
   );
-  const scrapCount = Number((data as any)?.scrapCount ?? (data as any)?.bookmarks ?? 0);
 
   useEffect(() => {
     (async () => {
@@ -182,6 +188,22 @@ const CommunityDetailScreen = () => {
     })();
   }, [communityId, user?.socialId]);
 
+  useEffect(() => {
+    (async () => {
+      const res = await getScraps({
+        targetType: "COMMUNITY",
+        targetId: communityId,
+      });
+      if (!res) return;
+      setScrapCount(res.count);
+      const myId = user?.socialId;
+      setScraped(
+        !!myId &&
+          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+      );
+    })();
+  }, [communityId, user?.socialId]);
+
   const handleToggleLike = async () => {
     if (liked) {
       const res = await deleteLikeByTarget({
@@ -206,6 +228,32 @@ const CommunityDetailScreen = () => {
     }
     setLiked(true);
     setLikeCount((prev) => prev + 1);
+  };
+
+  const handleToggleScrap = async () => {
+    if (scraped) {
+      const res = await deleteScrapByTarget({
+        targetType: "COMMUNITY",
+        targetId: communityId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "스크랩 취소에 실패했습니다.");
+        return;
+      }
+      setScraped(false);
+      setScrapCount((prev) => Math.max(0, prev - 1));
+      return;
+    }
+    const created = await createScrap({
+      targetType: "COMMUNITY",
+      targetId: communityId,
+    });
+    if (!created) {
+      Alert.alert("알림", "스크랩에 실패했습니다.");
+      return;
+    }
+    setScraped(true);
+    setScrapCount((prev) => prev + 1);
   };
 
   const handleCreateComment = async (content: string) => {
@@ -311,7 +359,13 @@ const CommunityDetailScreen = () => {
             <Text style={styles.actionCount}>{commentCount}</Text>
           </View>
           <View style={styles.actionItem}>
-            <Ionicons name="bookmark-outline" size={20} color="#FFC107" />
+            <Pressable onPress={handleToggleScrap} hitSlop={8}>
+              <Ionicons
+                name={scraped ? "bookmark" : "bookmark-outline"}
+                size={20}
+                color="#FFC107"
+              />
+            </Pressable>
             <Text style={styles.actionCount}>{scrapCount}</Text>
           </View>
         </View>
