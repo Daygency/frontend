@@ -11,7 +11,8 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { BLACK, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
+import { Ionicons } from "@expo/vector-icons";
 import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
 import { getNewsDetail } from "../../lib/apis/news/newsApi";
 import type { NewsDetailResponse } from "../../lib/apis/news/types";
@@ -31,6 +32,7 @@ export type MusicNewsDetailItem = {
   imageUrl?: string;
   likes: number;
   comments: number;
+  commentsData?: unknown[];
   attachments?: { name: string; size: string }[];
 };
 
@@ -43,6 +45,42 @@ type MusicNewsDetailRouteProp = RouteProp<
   { MusicNewsDetail: MusicNewsDetailRouteParams },
   "MusicNewsDetail"
 >;
+
+type CommentItem = {
+  id: string;
+  author: string;
+  createdAt: string;
+  content: string;
+  likeCount: number;
+  replyCount: number;
+  isLiked?: boolean;
+  isMine?: boolean;
+  replies?: Array<{
+    id: string;
+    author: string;
+    createdAt?: string;
+    content: string;
+  }>;
+};
+
+const DUMMY_COMMENT: CommentItem = {
+  id: "dummy-news-comment",
+  author: "익명1",
+  createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
+  content: "축하드려요! 저도 다음에 도전해봐야겠어요",
+  likeCount: 5,
+  replyCount: 1,
+  isLiked: true,
+  isMine: true,
+  replies: [
+    {
+      id: "dummy-news-reply-1",
+      author: "익명2",
+      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+      content: "저도 응원해요! 좋은 결과 있길 바라요 :)",
+    },
+  ],
+};
 
 function resolveFileUrl(file?: { url?: string } | null): string | undefined {
   const url = file?.url;
@@ -76,7 +114,48 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     imageUrl: resolveFileUrl(res.file),
     likes: 0,
     comments: 0,
+    commentsData: (res as any)?.comments,
   };
+}
+
+function formatTimeAgo(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  const diffMs = Date.now() - d.getTime();
+  const diffHours = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)));
+  if (diffHours < 24) return `${diffHours}시간`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays}일`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `${diffMonths}개월`;
+  return `${Math.floor(diffMonths / 12)}년`;
+}
+
+function normalizeComments(raw: unknown): CommentItem[] {
+  if (!Array.isArray(raw)) return [];
+  return raw.map((item, index) => {
+    const c = (item ?? {}) as Record<string, any>;
+    const user = (c.user ?? {}) as Record<string, any>;
+    return {
+      id: String(c.commentId ?? c.id ?? index),
+      author: String(user.nickname ?? c.nickname ?? c.author ?? "익명"),
+      createdAt: String(c.createdAt ?? ""),
+      content: String(c.content ?? ""),
+      likeCount: Number(c.likeCount ?? c.likes ?? 0),
+      replyCount: Number(c.replyCount ?? c.replies ?? 0),
+      isLiked: Boolean(c.isLiked),
+      isMine: Boolean(c.isMine),
+      replies: Array.isArray(c.replies)
+        ? c.replies.map((r: any, rIdx: number) => ({
+            id: String(r.replyId ?? r.id ?? `${c.commentId ?? c.id ?? index}-r-${rIdx}`),
+            author: String(r?.user?.nickname ?? r?.nickname ?? r?.author ?? "익명"),
+            createdAt: String(r?.createdAt ?? ""),
+            content: String(r?.content ?? ""),
+          }))
+        : undefined,
+    };
+  });
 }
 
 const MusicNewsDetailScreen = () => {
@@ -109,6 +188,11 @@ const MusicNewsDetailScreen = () => {
   }, [newsId, fetchDetail]);
 
   const { width } = Dimensions.get("window");
+  const comments = normalizeComments(news?.commentsData);
+  const displayedComments = comments.length > 0 ? comments : [DUMMY_COMMENT];
+  const likeCount = Number((news as any)?.likeCount ?? news?.likes ?? 0);
+  const commentCount = Number((news as any)?.commentCount ?? news?.comments ?? comments.length);
+  const scrapCount = Number((news as any)?.scrapCount ?? (news as any)?.bookmarks ?? 0);
 
   if (loading) {
     return (
@@ -198,15 +282,86 @@ const MusicNewsDetailScreen = () => {
             </View>
           )}
 
-          <View style={styles.statsRow}>
-            <MaterialCommunityIcons name="heart-outline" size={18} color={GRAY.DARK} />
-            <Text style={styles.statText}>좋아요 {news.likes}</Text>
-            <MaterialCommunityIcons name="comment-outline" size={18} color={GRAY.DARK} style={styles.statIcon} />
-            <Text style={styles.statText}>댓글 {news.comments}</Text>
+          <View style={styles.bodyDivider} />
+          <View style={styles.actionRow}>
+            <View style={styles.actionItem}>
+              <Ionicons name="heart-outline" size={21} color="#FFD6D6" />
+              <Text style={styles.actionCount}>{likeCount}</Text>
+            </View>
+            <View style={styles.actionItem}>
+              <Ionicons name="chatbubble-outline" size={19} color={GRAY.DARK_1} />
+              <Text style={styles.actionCount}>{commentCount}</Text>
+            </View>
+            <View style={styles.actionItem}>
+              <Ionicons name="bookmark-outline" size={20} color="#DDE5FF" />
+              <Text style={styles.actionCount}>{scrapCount}</Text>
+            </View>
           </View>
 
-          <View style={styles.firstCommentPlaceholder}>
-            <Text style={styles.firstCommentText}>첫 댓글을 남겨보세요.</Text>
+          <View style={styles.commentList}>
+            {displayedComments.map((comment) => (
+                <View
+                  key={comment.id}
+                  style={[
+                    styles.commentCard,
+                    comment.isMine && styles.myCommentCard,
+                  ]}
+                >
+                  <View style={styles.commentTopRow}>
+                    <View style={styles.commentAuthorRow}>
+                      <View style={styles.avatarCircle}>
+                        <Ionicons name="person-outline" size={18} color={GRAY.MEDIUM} />
+                      </View>
+                      <View style={styles.commentHeaderText}>
+                        <View style={styles.commentMetaRow}>
+                          <Text style={styles.commentAuthor}>{comment.author}</Text>
+                          {!!comment.createdAt && (
+                            <Text style={styles.commentDate}>{formatTimeAgo(comment.createdAt)}</Text>
+                          )}
+                        </View>
+                        <Text style={styles.commentContent}>{comment.content}</Text>
+                      </View>
+                    </View>
+                    <Ionicons name="ellipsis-vertical" size={18} color={MAIN.DEFAULT} />
+                  </View>
+
+                  <View style={styles.commentStats}>
+                    <Ionicons
+                      name={comment.isLiked ? "heart" : "heart-outline"}
+                      size={20}
+                      color={comment.isLiked ? RED.DEFAULT : "#FFCACA"}
+                    />
+                    <Text style={styles.commentCount}>{comment.likeCount}</Text>
+                    {comment.replyCount > 0 && (
+                      <>
+                        <Ionicons name="chatbubble-outline" size={18} color={MAIN.DEFAULT} />
+                        <Text style={styles.commentCount}>{comment.replyCount}</Text>
+                      </>
+                    )}
+                  </View>
+                  {!!comment.replies?.length && (
+                    <View style={styles.replyList}>
+                      {comment.replies.map((reply) => (
+                        <View key={reply.id} style={styles.replyRow}>
+                          <View style={styles.replyElbow} />
+                          <View style={styles.replyAvatarCircle}>
+                            <Ionicons name="person-outline" size={14} color={GRAY.MEDIUM} />
+                          </View>
+                          <View style={styles.replyBody}>
+                            <View style={styles.replyMetaRow}>
+                              <Text style={styles.replyAuthor}>{reply.author}</Text>
+                              {!!reply.createdAt && (
+                                <Text style={styles.replyDate}>{formatTimeAgo(reply.createdAt)}</Text>
+                              )}
+                            </View>
+                            <Text style={styles.replyContent}>{reply.content}</Text>
+                          </View>
+                        </View>
+                      ))}
+                    </View>
+                  )}
+                </View>
+            ))}
           </View>
         </View>
       </ScrollView>
