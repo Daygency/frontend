@@ -1,7 +1,12 @@
+import { useEffect, useMemo, useState } from "react";
 import { FlatList, Text, View } from "react-native";
-import { useRoute, RouteProp } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import CommunityCard from "../LoungeScreen/components/CommunityCard";
 import styles from "./styles";
+import { RootRoutes } from "../../navigations/routes";
+import { getMyPosts } from "../../lib/apis/userPosts/myPostsApi";
+import type { MyCommunityPostItem } from "../../lib/apis/userPosts/types";
 
 type MyActivityListParams = {
   type: "posts" | "comments";
@@ -36,12 +41,49 @@ const MOCK_COMMENTS = [
 
 type RootStackParamList = {
   MyActivityList: MyActivityListParams;
+  CommunityDetail: { communityId: string };
 };
 
 const MyActivityListScreen = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, "MyActivityList">>();
   const { type, source } = route.params;
-  const data = type === "posts" ? MOCK_POSTS : MOCK_COMMENTS;
+  const [myCommunityPosts, setMyCommunityPosts] = useState<MyCommunityPostItem[]>([]);
+
+  useEffect(() => {
+    if (type !== "posts" || source === "scrap") return;
+    (async () => {
+      const res = await getMyPosts();
+      if (!res) {
+        setMyCommunityPosts([]);
+        return;
+      }
+      setMyCommunityPosts(res.community);
+    })();
+  }, [type, source]);
+
+  const myPostsData = useMemo(
+    () =>
+      myCommunityPosts.map((item) => ({
+        id: item.communityId,
+        title: item.title,
+        contentPreview: item.category ?? "",
+        author: "나",
+        date: formatDate(item.createdAt),
+        likes: Number(item.likeCount ?? 0),
+        comments: Number(item.commentCount ?? 0),
+        scraps: 0,
+        views: Number(item.viewCount ?? 0),
+      })),
+    [myCommunityPosts],
+  );
+
+  const data =
+    type === "posts"
+      ? source === "scrap"
+        ? MOCK_POSTS
+        : myPostsData
+      : MOCK_COMMENTS;
 
   const getEmptyMessage = () => {
     if (source === "scrap") return "스크랩한 글이 없습니다.";
@@ -62,6 +104,12 @@ const MyActivityListScreen = () => {
             likes={item.likes}
             comments={item.comments}
             scraps={item.scraps}
+            views={item.views}
+            onPress={
+              type === "posts" && source !== "scrap"
+                ? () => navigation.navigate(RootRoutes.COMMUNITY_DETAIL, { communityId: item.id })
+                : undefined
+            }
           />
         )}
         contentContainerStyle={styles.listContent}
@@ -74,5 +122,14 @@ const MyActivityListScreen = () => {
     </View>
   );
 };
+
+function formatDate(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
 
 export default MyActivityListScreen;

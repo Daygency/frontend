@@ -16,6 +16,7 @@ import MyInfoScreen from "../screens/SettingsScreens/MyInfoScreen/MyInfoScreen";
 import MyActivityScreen from "../screens/SettingsScreens/MyActivityScreen/MyActivityScreen";
 import MyActivityListScreen from "../screens/MyActivityListScreen/MyActivityListScreen";
 import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActivityNewsListScreen";
+import MyActivityAnnouncementListScreen from "../screens/MyActivityAnnouncementListScreen/MyActivityAnnouncementListScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import NotificationSettingsScreen from "../screens/SettingsScreens/NotificationSettingsScreen/NotificationSettingsScreen";
 import MyDataArchiveScreen from "../screens/SettingsScreens/MyDataArchiveScreen/MyDataArchiveScreen";
@@ -544,6 +545,37 @@ const Navigation = () => {
                   style={[styles.title, { fontWeight: "700", fontSize: 18 }]}
                 >
                   커뮤니티
+                </Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.MY_ACTIVITY_ANNOUNCEMENT_LIST}
+          component={MyActivityAnnouncementListScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text
+                  style={[styles.title, { fontWeight: "700", fontSize: 18 }]}
+                >
+                  모집 공고
                 </Text>
               </View>
             ),
