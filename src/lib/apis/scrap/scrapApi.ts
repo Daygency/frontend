@@ -3,8 +3,10 @@ import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
 import type {
   CreateScrapDto,
+  GetMyScrappedAnnouncementsParams,
   GetScrapsParams,
   GetScrapsResponse,
+  MyScrappedAnnouncementsResponse,
   ScrapItem,
 } from "./types";
 
@@ -81,5 +83,36 @@ export async function deleteScrapByTarget(
   } catch (e) {
     console.warn("[deleteScrapByTarget] 에러:", e);
     return { success: false };
+  }
+}
+
+export async function getMyScrappedAnnouncements(
+  params?: GetMyScrappedAnnouncementsParams,
+): Promise<MyScrappedAnnouncementsResponse | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
+    const url = `${API_BASE}/users/posts/my/scraps/announcements${query ? `?${query}` : ""}`;
+    const res = await fetchWithAuth(url, {
+      method: "GET",
+      headers,
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[getMyScrappedAnnouncements] 실패:", res.status, errText);
+      return null;
+    }
+    const raw = (await res.json()) as Partial<MyScrappedAnnouncementsResponse>;
+    return {
+      items: Array.isArray(raw.items) ? raw.items : [],
+      nextCursor: raw.nextCursor ?? null,
+      hasMore: Boolean(raw.hasMore),
+    };
+  } catch (e) {
+    console.warn("[getMyScrappedAnnouncements] 에러:", e);
+    return null;
   }
 }

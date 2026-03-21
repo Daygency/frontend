@@ -1,51 +1,56 @@
-# 모집공고 스크랩 API
+# Backend API
 
-> Base URL: 개발 `http://localhost:3000`, 운영은 배포 URL 사용
+## 내가 스크랩한 모집공고 조회 (무한스크롤)
 
-모집공고를 스크랩(저장)하는 API입니다.  
-동일한 유저가 동일한 모집공고를 중복 스크랩하면 `409` 에러가 발생합니다.
+내가 스크랩한 모집공고만 커서 기반으로 조회합니다.
 
----
+- Method: `GET`
+- Path: `/users/posts/my/scraps/announcements`
+- Auth: `Authorization: Bearer {accessToken}`
 
-## 모집공고 스크랩 생성
+### Query Parameters
 
-### Endpoint
+| name | type | required | default | description |
+| --- | --- | --- | --- | --- |
+| cursor | string | X | - | 마지막으로 조회한 항목의 `scrappedAt` (ISO 8601) |
+| limit | number | X | 20 | 한 번에 가져올 개수 (1~50) |
 
-`POST /scrap`
-
-### Headers
-
-- `Authorization: Bearer {accessToken}`
-
-### 인증
-
-- 필수 (`AuthGuard('access')`)
-
-### Request Body
+### Response (200)
 
 ```json
 {
-  "targetType": "ANNOUNCEMENT",
-  "targetId": "모집공고 postId(UUID)"
+  "items": [
+    {
+      "scrapId": "0f78de53-d4b4-4e73-a46e-8b1d676e219f",
+      "scrappedAt": "2026-03-21T10:00:00.000Z",
+      "postId": "550e8400-e29b-41d4-a716-446655440000",
+      "title": "2026 상반기 오케스트라 단원 모집",
+      "type": "오디션",
+      "isRecruiting": true,
+      "dDay": "D-12"
+    }
+  ],
+  "nextCursor": "2026-03-21T10:00:00.000Z",
+  "hasMore": true
 }
 ```
 
-### Response (201) 예시
+### 무한스크롤 호출 예시
 
-```json
-{
-  "id": "uuid-scrap-1",
-  "createdAt": "2026-03-21T10:00:00.000Z",
-  "targetType": "ANNOUNCEMENT",
-  "targetId": "uuid-announcement-1",
-  "user": {
-    "userId": "uuid-user-1"
-  }
-}
+1. 첫 페이지
+
+```http
+GET /users/posts/my/scraps/announcements?limit=20
+Authorization: Bearer {accessToken}
 ```
 
-### 에러
+2. 다음 페이지 (`nextCursor` 사용)
 
-- `401 Unauthorized`: 인증 토큰이 없거나 유효하지 않음
-- `404 Not Found`: 대상 모집공고를 찾을 수 없음
-- `409 Conflict`: 이미 스크랩한 모집공고
+```http
+GET /users/posts/my/scraps/announcements?limit=20&cursor=2026-03-21T10:00:00.000Z
+Authorization: Bearer {accessToken}
+```
+
+### 정렬 기준
+
+- 최신 스크랩 순 (`scrappedAt DESC`)
