@@ -140,12 +140,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: MAIN.DEFAULT,
     fontWeight: "500",
-    marginBottom: 10,
+    marginBottom: 5,
   },
   commentStats: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
+    marginLeft: 50,
   },
   commentCount: {
     fontSize: 14,
@@ -206,6 +207,17 @@ const styles = StyleSheet.create({
   replyContent: {
     fontSize: 15,
     color: MAIN.DEFAULT,
+    marginBottom: 3,
+  },
+  replyStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  replyCount: {
+    fontSize: 13,
+    color: MAIN.DEFAULT,
+    fontWeight: "600",
   },
   commentInputContainer: {
     position: "absolute",

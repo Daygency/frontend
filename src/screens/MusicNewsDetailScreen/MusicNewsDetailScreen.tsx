@@ -60,6 +60,8 @@ type CommentItem = {
     author: string;
     createdAt?: string;
     content: string;
+    likeCount?: number;
+    isLiked?: boolean;
   }>;
 };
 
@@ -78,6 +80,8 @@ const DUMMY_COMMENT: CommentItem = {
       author: "익명2",
       createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
       content: "저도 응원해요! 좋은 결과 있길 바라요 :)",
+      likeCount: 2,
+      isLiked: false,
     },
   ],
 };
@@ -152,6 +156,8 @@ function normalizeComments(raw: unknown): CommentItem[] {
             author: String(r?.user?.nickname ?? r?.nickname ?? r?.author ?? "익명"),
             createdAt: String(r?.createdAt ?? ""),
             content: String(r?.content ?? ""),
+            likeCount: Number(r?.likeCount ?? r?.likes ?? 0),
+            isLiked: Boolean(r?.isLiked),
           }))
         : undefined,
     };
@@ -355,6 +361,14 @@ const MusicNewsDetailScreen = () => {
                               )}
                             </View>
                             <Text style={styles.replyContent}>{reply.content}</Text>
+                            <View style={styles.replyStats}>
+                              <Ionicons
+                                name={reply.isLiked ? "heart" : "heart-outline"}
+                                size={16}
+                                color={reply.isLiked ? RED.DEFAULT : "#FFCACA"}
+                              />
+                              <Text style={styles.replyCount}>{reply.likeCount ?? 0}</Text>
+                            </View>
                           </View>
                         </View>
                       ))}
