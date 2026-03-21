@@ -124,7 +124,8 @@ const CommunityScene = () => {
       <CommunityCard
         tag={selectedTag === "전체" ? categoryName : undefined}
         title={item.title}
-        contentPreview={""}
+          contentPreview={item.content ?? ""}
+          contentPreviewLines={1}
         author={undefined}
         date={relativeDate}
         likes={item.likeCount ?? 0}

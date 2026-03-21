@@ -6,6 +6,7 @@ type CommunityCardProps = {
   tag?: string;
   title: string;
   contentPreview: string;
+  contentPreviewLines?: number;
   author?: string;
   date: string;
   likes: number;
@@ -19,6 +20,7 @@ const CommunityCard = ({
   tag,
   title,
   contentPreview,
+  contentPreviewLines = 2,
   author = "알수없음",
   date,
   likes,
@@ -41,7 +43,7 @@ const CommunityCard = ({
           <Text style={styles.title} numberOfLines={1}>
             {title}
           </Text>
-          <Text style={styles.content} numberOfLines={2}>
+          <Text style={styles.content} numberOfLines={contentPreviewLines}>
             {contentPreview}
           </Text>
           <Text style={styles.metaText} numberOfLines={1}>
