@@ -220,8 +220,8 @@ const ScrapScene = () => {
 
   return (
     <View style={styles.postsCommentsContainer}>
-      <View style={styles.sortFilterContainer}>
-        <SelectableTag
+      <View style={[styles.sortFilterContainer, localStyles.topTabsContainer]}>
+        <SelectableTag 
           label="모집공고"
           selected={selectedTab === "모집공고"}
           onPress={() => setSelectedTab("모집공고")}
@@ -280,9 +280,12 @@ const localStyles = StyleSheet.create({
   filterContainer: {
     flexDirection: "row",
     paddingHorizontal: 12,
-    paddingTop: 13,
+    paddingTop: 4,
     paddingBottom: 9,
     gap: 8,
+  },
+  topTabsContainer: {
+    paddingBottom: 10,
   },
   announcementListScroll: {
     flex: 1,
