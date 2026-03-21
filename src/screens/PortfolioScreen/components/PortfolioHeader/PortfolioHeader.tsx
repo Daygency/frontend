@@ -62,8 +62,7 @@ const PortfolioHeader = () => {
           <Ionicons name="settings-outline" size={24} color="black" />
         </Pressable>
         <Pressable style={styles.iconButton}>
-          <MaterialIcons name="bookmark-add" size={24} color="black" />
-          <View style={styles.dotNew} />
+          <MaterialIcons name="bookmark-outline" size={24} color="black" />
         </Pressable>
         <Pressable style={styles.iconButton}>
           <Octicons name="share-android" size={23} color={MAIN.DEFAULT} />

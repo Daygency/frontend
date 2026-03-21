@@ -84,7 +84,6 @@ const ArtistScene = () => {
               category="현악"
               activityName="kimyeonju"
               musicNoteCount={47}
-              bookmarkCount={20}
               onPress={() =>
                 navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
                   activityName: "kimyeonju",
@@ -98,7 +97,6 @@ const ArtistScene = () => {
               category="현악"
               activityName="kimyeonju2"
               musicNoteCount={0}
-              bookmarkCount={0}
               onPress={() =>
                 navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
                   activityName: "kimyeonju2",
@@ -112,7 +110,6 @@ const ArtistScene = () => {
               category="현악"
               activityName="kimyeonju"
               musicNoteCount={47}
-              bookmarkCount={20}
               onPress={() =>
                 navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
                   activityName: "kimyeonju",

@@ -16,7 +16,7 @@ import FilterDropdown from "../../../../components/FilterDropdown/FilterDropdown
 import AnnouncementCard from "../../../../components/AnnouncementCard/AnnouncementCard";
 import styles from "../styles";
 
-type ScrapTab = "모집공고" | "프로필" | "라운지";
+type ScrapTab = "모집공고" | "라운지";
 
 const MOCK_SCRAP_POSTS = [
   {
@@ -218,12 +218,6 @@ const ScrapScene = () => {
     </View>
   );
 
-  const renderProfileContent = () => (
-    <View style={[localStyles.tabContent, styles.emptyContainer]}>
-      <Text style={styles.emptyText}>준비 중입니다.</Text>
-    </View>
-  );
-
   return (
     <View style={styles.postsCommentsContainer}>
       <View style={styles.sortFilterContainer}>
@@ -231,11 +225,6 @@ const ScrapScene = () => {
           label="모집공고"
           selected={selectedTab === "모집공고"}
           onPress={() => setSelectedTab("모집공고")}
-        />
-        <SelectableTag
-          label="프로필"
-          selected={selectedTab === "프로필"}
-          onPress={() => setSelectedTab("프로필")}
         />
         <SelectableTag
           label="라운지"
@@ -268,14 +257,6 @@ const ScrapScene = () => {
         {renderAnnouncementContent()}
       </View>
 
-      <View
-        style={[
-          localStyles.tabContent,
-          selectedTab !== "프로필" && localStyles.hidden,
-        ]}
-      >
-        {renderProfileContent()}
-      </View>
     </View>
   );
 };

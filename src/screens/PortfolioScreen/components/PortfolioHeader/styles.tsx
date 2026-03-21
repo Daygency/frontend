@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, RED, WHITE } from "../../../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../../../color";
 import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../styles";
 
 const styles = StyleSheet.create({
@@ -55,15 +55,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: GRAY.DARK,
     fontWeight: "600",
-  },
-  dotNew: {
-    position: "absolute",
-    top: -1,
-    right: -3,
-    width: 5,
-    height: 5,
-    borderRadius: 5,
-    backgroundColor: RED.DEFAULT,
   },
 });
 
