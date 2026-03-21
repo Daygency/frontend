@@ -10,7 +10,8 @@ type CommunityCardProps = {
   date: string;
   likes: number;
   comments: number;
-  scraps: number;
+  scraps?: number;
+  views?: number;
   onPress?: () => void;
 };
 
@@ -22,7 +23,8 @@ const CommunityCard = ({
   date,
   likes,
   comments,
-  scraps,
+  scraps = 0,
+  views,
   onPress,
 }: CommunityCardProps) => {
   return (
@@ -59,8 +61,12 @@ const CommunityCard = ({
           <Text style={styles.footerText}>{comments}</Text>
         </View>
         <View style={styles.footerItem}>
-          <Ionicons name="bookmark-outline" size={16} color={GRAY.DARK_100} />
-          <Text style={styles.footerText}>{scraps}</Text>
+          <Ionicons
+            name={views != null ? "eye-outline" : "bookmark-outline"}
+            size={16}
+            color={GRAY.DARK_100}
+          />
+          <Text style={styles.footerText}>{views ?? scraps}</Text>
         </View>
       </View>
     </Pressable>

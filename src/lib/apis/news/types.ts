@@ -10,6 +10,8 @@ export type NewsListItem = {
   title: string;
   place: string;
   startedAt: string;
+  likeCount?: number;
+  commentCount?: number;
   imageUrl?: string;
 };
 

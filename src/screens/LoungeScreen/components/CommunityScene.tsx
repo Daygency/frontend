@@ -127,9 +127,9 @@ const CommunityScene = () => {
         contentPreview={""}
         author={undefined}
         date={relativeDate}
-        likes={0}
-        comments={0}
-        scraps={0}
+        likes={item.likeCount ?? 0}
+        comments={item.commentCount ?? 0}
+        views={item.viewCount ?? 0}
         onPress={() =>
           navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
             communityId: item.communityId,

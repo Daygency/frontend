@@ -167,6 +167,35 @@ function buildCommentTree(raw: ApiCommentItem[]): CommentItem[] {
   return roots;
 }
 
+function updateCommentLikeState(
+  list: CommentItem[],
+  targetId: string,
+  nextLiked: boolean,
+): CommentItem[] {
+  return list.map((comment) => {
+    if (comment.id === targetId) {
+      const prevCount = Number(comment.likeCount ?? 0);
+      return {
+        ...comment,
+        isLiked: nextLiked,
+        likeCount: nextLiked ? prevCount + 1 : Math.max(0, prevCount - 1),
+      };
+    }
+
+    const replies = comment.replies?.map((reply) => {
+      if (reply.id !== targetId) return reply;
+      const prevCount = Number(reply.likeCount ?? 0);
+      return {
+        ...reply,
+        isLiked: nextLiked,
+        likeCount: nextLiked ? prevCount + 1 : Math.max(0, prevCount - 1),
+      };
+    });
+
+    return replies ? { ...comment, replies } : comment;
+  });
+}
+
 const MusicNewsDetailScreen = () => {
   const route = useRoute<MusicNewsDetailRouteProp>();
   const { user } = useAuth();
@@ -286,6 +315,31 @@ const MusicNewsDetailScreen = () => {
     });
     if (res) setComments(buildCommentTree(res));
     setReplyTarget(null);
+  };
+
+  const handleToggleCommentLike = async (targetId: string, currentLiked: boolean) => {
+    if (currentLiked) {
+      const res = await deleteLikeByTarget({
+        likeType: "COMMENT",
+        targetId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "댓글 좋아요 취소에 실패했습니다.");
+        return;
+      }
+      setComments((prev) => updateCommentLikeState(prev, targetId, false));
+      return;
+    }
+
+    const created = await createLike({
+      likeType: "COMMENT",
+      targetId,
+    });
+    if (!created) {
+      Alert.alert("알림", "댓글 좋아요에 실패했습니다.");
+      return;
+    }
+    setComments((prev) => updateCommentLikeState(prev, targetId, true));
   };
 
   if (loading) {
@@ -483,11 +537,18 @@ const MusicNewsDetailScreen = () => {
                 </View>
 
                 <View style={styles.commentStats}>
-                  <Ionicons
-                    name={comment.isLiked ? "heart" : "heart-outline"}
-                    size={20}
-                    color={comment.isLiked ? RED.DEFAULT : "#FFCACA"}
-                  />
+                  <Pressable
+                    onPress={() =>
+                      handleToggleCommentLike(comment.id, Boolean(comment.isLiked))
+                    }
+                    hitSlop={8}
+                  >
+                    <Ionicons
+                      name={comment.isLiked ? "heart" : "heart-outline"}
+                      size={20}
+                      color={comment.isLiked ? RED.DEFAULT : "#FFCACA"}
+                    />
+                  </Pressable>
                   <Text style={styles.commentCount}>{comment.likeCount}</Text>
                   {comment.replyCount > 0 && (
                     <>
@@ -548,11 +609,21 @@ const MusicNewsDetailScreen = () => {
                             {reply.content}
                           </Text>
                           <View style={styles.replyStats}>
-                            <Ionicons
-                              name={reply.isLiked ? "heart" : "heart-outline"}
-                              size={16}
-                              color={reply.isLiked ? RED.DEFAULT : "#FFCACA"}
-                            />
+                            <Pressable
+                              onPress={() =>
+                                handleToggleCommentLike(
+                                  reply.id,
+                                  Boolean(reply.isLiked),
+                                )
+                              }
+                              hitSlop={8}
+                            >
+                              <Ionicons
+                                name={reply.isLiked ? "heart" : "heart-outline"}
+                                size={16}
+                                color={reply.isLiked ? RED.DEFAULT : "#FFCACA"}
+                              />
+                            </Pressable>
                             <Text style={styles.replyCount}>
                               {reply.likeCount ?? 0}
                             </Text>
