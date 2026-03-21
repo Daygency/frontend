@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { initializeKakaoSDK } from "@react-native-kakao/core";
 import { AuthProvider } from "./contexts/AuthContext";
+import { promptPushPermissionOnFirstAppOpen } from "./lib/pushNotifications";
 import Navigation from "./navigations/Navigation";
 import SplashScreenView from "./screens/OnboardingScreens/SplashScreen/SplashScreen";
 
@@ -29,6 +30,11 @@ const App = () => {
     const timer = setTimeout(() => setIsReady(true), SPLASH_DURATION_MS);
     return () => clearTimeout(timer);
   }, []);
+
+  useEffect(() => {
+    if (!isReady) return;
+    void promptPushPermissionOnFirstAppOpen();
+  }, [isReady]);
 
   if (!isReady) {
     return <SplashScreenView />;

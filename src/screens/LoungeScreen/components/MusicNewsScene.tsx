@@ -20,19 +20,33 @@ import type { NewsListItem } from "../../../lib/apis/news/types";
 const DEFAULT_NEWS_IMAGE_URL =
   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
 
-function formatStartedAt(iso: string): string {
-  try {
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return iso;
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const h = String(d.getHours()).padStart(2, "0");
-    const min = String(d.getMinutes()).padStart(2, "0");
-    return `${y}.${m}.${day} ${h}:${min}`;
-  } catch {
-    return iso;
+function formatRelativeTime(iso?: string): string {
+  if (!iso) return "";
+  const target = new Date(iso);
+  if (Number.isNaN(target.getTime())) return "";
+
+  const diffMs = Date.now() - target.getTime();
+  if (diffMs < 0) return "방금전";
+
+  const hourMs = 1000 * 60 * 60;
+  const dayMs = hourMs * 24;
+  const monthMs = dayMs * 30;
+  const yearMs = dayMs * 365;
+
+  if (diffMs < dayMs) {
+    const hours = Math.max(1, Math.floor(diffMs / hourMs));
+    return `${hours}시간전`;
   }
+  if (diffMs < monthMs) {
+    const days = Math.floor(diffMs / dayMs);
+    return `${days}일전`;
+  }
+  if (diffMs < yearMs) {
+    const months = Math.floor(diffMs / monthMs);
+    return `${months}달전`;
+  }
+  const years = Math.floor(diffMs / yearMs);
+  return `${years}년전`;
 }
 
 const MusicNewsScene = () => {
@@ -92,8 +106,14 @@ const MusicNewsScene = () => {
     <EventNewsCard
       title={item.title}
       place={item.place}
-      dateRange={formatStartedAt(item.startedAt)}
+      dateRange=""
       imageUrl={item.imageUrl || DEFAULT_NEWS_IMAGE_URL}
+      likeCount={item.likeCount ?? 0}
+      commentCount={item.commentCount ?? 0}
+      viewCount={item.viewCount ?? 0}
+      relativeTimeText={formatRelativeTime(item.startedAt)}
+      showPlace={false}
+      showDate={false}
       containerStyle={localStyles.card}
       onPress={() =>
         navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, { newsId: item.newsId })

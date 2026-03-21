@@ -1,7 +1,7 @@
 import React from "react";
 import { Switch, Text, View } from "react-native";
 import styles from "./styles";
-import { GRAY } from "../../color";
+import { GRAY, MAIN } from "../../color";
 
 export interface ShadowCardListToggleItemProps {
   label: string;
@@ -9,6 +9,8 @@ export interface ShadowCardListToggleItemProps {
   value: boolean;
   onValueChange: (value: boolean) => void;
   isLast?: boolean;
+  /** true면 스위치 비활성 (예: 네이티브 모듈 없음) */
+  disabled?: boolean;
 }
 
 const ShadowCardListToggleItem = ({
@@ -17,6 +19,7 @@ const ShadowCardListToggleItem = ({
   value,
   onValueChange,
   isLast,
+  disabled = false,
 }: ShadowCardListToggleItemProps) => {
   return (
     <View style={[styles.item, isLast && styles.itemLast]}>
@@ -29,7 +32,8 @@ const ShadowCardListToggleItem = ({
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ true: GRAY.DEFAULT_1, false: GRAY.MEDIUM }}
+        disabled={disabled}
+        trackColor={{ true: MAIN.DEFAULT, false: GRAY.MEDIUM }}
         thumbColor="#fff"
       />
     </View>

@@ -1,16 +1,14 @@
 import React from "react";
 import { ScrollView } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ShadowCardList, { ShadowCardListItem } from "../../../components/ShadowCardList/ShadowCardList";
+import { GRAY } from "../../../color";
 import styles from "./styles";
-import { RootRoutes } from "../../../navigations/routes";
 
 const ORIGINAL_NAME = "김연주";
+/** 이름·이메일은 수정 불가 — 연한 회색으로 표시 */
+const READONLY_VALUE_COLOR = GRAY.MEDIUM_100;
 
 const MyInfoScreen = () => {
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
-
   return (
     <ScrollView
       style={styles.container}
@@ -21,14 +19,15 @@ const MyInfoScreen = () => {
         <ShadowCardListItem
           label="이름"
           value={ORIGINAL_NAME}
-          onPress={() =>
-            navigation.navigate(RootRoutes.CHANGE_NAME, {
-              originalName: ORIGINAL_NAME,
-            })
-          }
+          valueColor={READONLY_VALUE_COLOR}
         />
         <ShadowCardListItem label="연락처" value="010-1234-5678" />
-        <ShadowCardListItem label="이메일" value="dami**@naver.com" isLast />
+        <ShadowCardListItem
+          label="이메일"
+          value="dami**@naver.com"
+          valueColor={READONLY_VALUE_COLOR}
+          isLast
+        />
       </ShadowCardList>
     </ScrollView>
   );

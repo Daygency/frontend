@@ -3,34 +3,47 @@ import { Ionicons } from "@expo/vector-icons";
 import { BLACK, GRAY, RED } from "../../../color";
 
 type CommunityCardProps = {
+  tag?: string;
   title: string;
   contentPreview: string;
+  contentPreviewLines?: number;
   author?: string;
   date: string;
   likes: number;
   comments: number;
-  scraps: number;
+  scraps?: number;
+  views?: number;
   onPress?: () => void;
 };
 
 const CommunityCard = ({
+  tag,
   title,
   contentPreview,
+  contentPreviewLines = 2,
   author = "알수없음",
   date,
   likes,
   comments,
-  scraps,
+  scraps = 0,
+  views,
   onPress,
 }: CommunityCardProps) => {
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.row}>
         <View style={styles.textContainer}>
+          {!!tag && (
+            <View style={styles.tagBadge}>
+              <Text style={styles.tagText} numberOfLines={1}>
+                {tag}
+              </Text>
+            </View>
+          )}
           <Text style={styles.title} numberOfLines={1}>
             {title}
           </Text>
-          <Text style={styles.content} numberOfLines={2}>
+          <Text style={styles.content} numberOfLines={contentPreviewLines}>
             {contentPreview}
           </Text>
           <Text style={styles.metaText} numberOfLines={1}>
@@ -50,8 +63,12 @@ const CommunityCard = ({
           <Text style={styles.footerText}>{comments}</Text>
         </View>
         <View style={styles.footerItem}>
-          <Ionicons name="bookmark-outline" size={16} color={GRAY.DARK_100} />
-          <Text style={styles.footerText}>{scraps}</Text>
+          <Ionicons
+            name={views != null ? "eye-outline" : "bookmark-outline"}
+            size={16}
+            color={GRAY.DARK_100}
+          />
+          <Text style={styles.footerText}>{views ?? scraps}</Text>
         </View>
       </View>
     </Pressable>
@@ -76,6 +93,19 @@ const styles = StyleSheet.create({
     flex: 1,
     minWidth: 0,
     marginRight: 8,
+  },
+  tagBadge: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    backgroundColor: GRAY.MEDIUM,
+    marginBottom: 6,
+  },
+  tagText: {
+    fontSize: 11,
+    color: BLACK,
+    fontWeight: "500",
   },
   title: {
     fontSize: 15,

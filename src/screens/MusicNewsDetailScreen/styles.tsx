@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     color: BLACK,
-    marginBottom: 20,
+    marginBottom: 18,
   },
   attachmentsCard: {
     backgroundColor: GRAY.DEFAULT_1,
@@ -86,20 +86,24 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GRAY.DARK_2,
   },
-  statsRow: {
+  actionRow: {
+    height: 54,
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 24,
-    gap: 4,
+    gap: 44,
   },
-  statText: {
-    fontSize: 12,
-    color: GRAY.DARK_100,
+  actionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
-  statIcon: {
-    marginLeft: 12,
+  actionCount: {
+    fontSize: 16,
+    color: BLACK,
+    fontWeight: "600",
   },
   firstCommentPlaceholder: {
+    marginTop: 26,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -107,15 +111,155 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: GRAY.DARK_2,
   },
+  commentList: {
+    marginTop: 10,
+    gap: 14,
+  },
+  commentCard: {
+    paddingHorizontal: 4,
+    paddingVertical: 12,
+  },
+  myCommentCard: {
+    backgroundColor: "transparent",
+  },
+  commentTopRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+    marginBottom: 12,
+  },
+  commentAuthorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  avatarCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#102042",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  commentHeaderText: {
+    flex: 1,
+  },
+  commentMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 3,
+  },
+  commentAuthor: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: MAIN.DEFAULT,
+  },
+  commentDate: {
+    fontSize: 13,
+    color: "#717182",
+  },
+  commentContent: {
+    fontSize: 15,
+    color: MAIN.DEFAULT,
+    fontWeight: "500",
+    marginBottom: 5,
+  },
+  commentStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginLeft: 50,
+  },
+  commentCount: {
+    fontSize: 14,
+    color: MAIN.DEFAULT,
+    marginRight: 8,
+    fontWeight: "600",
+  },
+  replyList: {
+    marginTop: 10,
+    marginLeft: 18,
+    paddingLeft: 16,
+    gap: 8,
+  },
+  replyRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    position: "relative",
+  },
+  replyAvatarCircle: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#102042",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 1,
+  },
+  replyBody: {
+    flex: 1,
+    paddingTop: 1,
+  },
+  replyAuthor: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: MAIN.DEFAULT,
+  },
+  replyMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 2,
+  },
+  replyDate: {
+    fontSize: 13,
+    color: "#717182",
+  },
+  replyContent: {
+    fontSize: 15,
+    color: MAIN.DEFAULT,
+    marginBottom: 3,
+  },
+  replyStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+  },
+  replyCount: {
+    fontSize: 13,
+    color: MAIN.DEFAULT,
+    fontWeight: "600",
+  },
   commentInputWrapper: {
     position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
-    paddingTop: 12,
     backgroundColor: WHITE,
-    borderTopWidth: 1,
-    borderTopColor: GRAY.MEDIUM,
+  },
+  replyActionText: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+    fontWeight: "600",
+    marginLeft: 2,
+  },
+  replyComposerInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  replyComposerText: {
+    fontSize: 12,
+    color: GRAY.DARK_100,
+  },
+  replyComposerCancel: {
+    fontSize: 12,
+    color: MAIN.DEFAULT,
+    fontWeight: "600",
   },
 });
 

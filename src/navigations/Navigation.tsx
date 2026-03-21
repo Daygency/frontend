@@ -16,6 +16,7 @@ import MyInfoScreen from "../screens/SettingsScreens/MyInfoScreen/MyInfoScreen";
 import MyActivityScreen from "../screens/SettingsScreens/MyActivityScreen/MyActivityScreen";
 import MyActivityListScreen from "../screens/MyActivityListScreen/MyActivityListScreen";
 import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActivityNewsListScreen";
+import MyActivityAnnouncementListScreen from "../screens/MyActivityAnnouncementListScreen/MyActivityAnnouncementListScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import NotificationSettingsScreen from "../screens/SettingsScreens/NotificationSettingsScreen/NotificationSettingsScreen";
 import MyDataArchiveScreen from "../screens/SettingsScreens/MyDataArchiveScreen/MyDataArchiveScreen";
@@ -26,6 +27,7 @@ import AccountScreen from "../screens/SettingsScreens/AccountScreen/AccountScree
 import WithdrawConfirmScreen from "../screens/WithdrawConfirmScreen/WithdrawConfirmScreen";
 import ChatRoomScreen from "../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
 import ChatRoomOptionsScreen from "../screens/ChatScreens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
+import MyPostedChatRoomsScreen from "../screens/ChatScreens/MyPostedChatRoomsScreen/MyPostedChatRoomsScreen";
 import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
 import ArtistPortfolioScreen from "../screens/ArtistPortfolioScreen/ArtistPortfolioScreen";
 import SearchScreen from "../screens/SearchScreen/SearchScreen";
@@ -565,6 +567,37 @@ const Navigation = () => {
           })}
         />
         <Stack.Screen
+          name={RootRoutes.MY_ACTIVITY_ANNOUNCEMENT_LIST}
+          component={MyActivityAnnouncementListScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text
+                  style={[styles.title, { fontWeight: "700", fontSize: 18 }]}
+                >
+                  모집 공고
+                </Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => navigation.goBack()}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
           name={RootRoutes.MY_ACTIVITY}
           component={MyActivityScreen}
           options={({ navigation }) => ({
@@ -821,6 +854,35 @@ const Navigation = () => {
           name={RootRoutes.CHAT_ROOM}
           component={ChatRoomScreen}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name={RootRoutes.MY_POSTED_CHAT_ROOMS}
+          component={MyPostedChatRoomsScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>내가 올린 공고</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) navigation.goBack();
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
         />
         <Stack.Screen
           name={RootRoutes.CHAT_ROOM_OPTIONS}

@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
+  FlatList,
   ScrollView,
   View,
   Text,
@@ -9,90 +10,51 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Section from "../../../../components/Section/Section";
 import { RootRoutes } from "../../../../navigations/routes";
-import ImageScrollView from "../../../../components/ImageScrollView/ImageScrollView";
 import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
 import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
-import FilterDropdown from "../../../../components/FilterDropdown/FilterDropdown";
 import AnnouncementCard from "../../../../components/AnnouncementCard/AnnouncementCard";
 import styles from "../styles";
+import EventNewsCard, {
+  DEFAULT_NEWS_IMAGE_URI,
+} from "../../../../components/EventNewsCard/EventNewsCard";
+import {
+  getMyScrappedAnnouncements,
+  getMyScrappedHighlights,
+} from "../../../../lib/apis/scrap/scrapApi";
+import type {
+  MyScrappedAnnouncementItem,
+  MyScrappedCommunityItem,
+  MyScrappedNewsItem,
+} from "../../../../lib/apis/scrap/types";
 
-type ScrapTab = "모집공고" | "프로필" | "라운지";
-
-const MOCK_SCRAP_POSTS = [
-  {
-    id: "1",
-    title: "교향악단 바이올린 객원단원 채용",
-    contentPreview: "너무 떨렸는데 관객분들 반응이 좋아서 기분이 좋네",
-    author: "신바이올린",
-    date: "2025.11.20",
-    likes: 45,
-    comments: 5,
-    scraps: 45,
-  },
-];
-
-const MOCK_SCRAP_ANNOUNCEMENTS = [
-  {
-    title: "교향악단 바이올린 객원단원 채용",
-    type: "오디션(연주자 모집)",
-    status: "모집중",
-    daysLeft: 20,
-  },
-  {
-    title: "2025 서울 국제 피아노 콩쿨 모집",
-    type: "콩쿨(경연)",
-    status: "모집중",
-    daysLeft: 15,
-  },
-  {
-    title: "오케스트라 단원 모집 공고",
-    type: "오디션",
-    status: "모집중",
-    daysLeft: 8,
-  },
-];
+type ScrapTab = "모집공고" | "라운지";
 
 type RootStackParamList = {
   MyActivityList: { type: "posts"; source?: "scrap" };
   MyActivityNewsList: { source?: "scrap" };
-  AnnouncementDetail: { title: string; type: string; status: string; daysLeft: number };
+  CommunityDetail: { communityId: string };
+  MusicNewsDetail: { newsId: string };
+  AnnouncementDetail: {
+    postId?: string;
+    title: string;
+    type: string;
+    status: string;
+    daysLeft: number;
+  };
 };
 
 const ScrapScene = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedTab, setSelectedTab] = useState<ScrapTab>("라운지");
-  const [recruitmentStatus, setRecruitmentStatus] = useState<string | undefined>();
-  const [announcementType, setAnnouncementType] = useState<string | undefined>();
-  const [recruitmentMajor, setRecruitmentMajor] = useState<string | undefined>();
-  const [sortBy, setSortBy] = useState<string>("최신순");
-
-  const recruitmentStatusOptions = ["모집중", "모집마감"];
-  const announcementTypeOptions = [
-    "오디션(연주자모집)",
-    "콩쿨(경연)",
-    "입시평가회",
-    "마스터클래스",
-    "행사",
-    "스탭구인",
-    "기타",
-  ];
-  const recruitmentMajorOptions = [
-    "전공무관",
-    "건반악기",
-    "현악",
-    "관악",
-    "성악",
-    "타악",
-    "작곡",
-    "지휘",
-    "음악학",
-    "국악",
-    "무용",
-    "실용",
-    "뮤지컬·크로스오버",
-    "기타",
-  ];
-  const sortOptions = ["최신순", "스크랩수순"];
+  const [announcementItems, setAnnouncementItems] = useState<MyScrappedAnnouncementItem[]>([]);
+  const [latestCommunity, setLatestCommunity] = useState<MyScrappedCommunityItem | null>(
+    null,
+  );
+  const [latestNews, setLatestNews] = useState<MyScrappedNewsItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingInitial, setLoadingInitial] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const handlePressScrapCommunity = () => {
     navigation.navigate(RootRoutes.MY_ACTIVITY_LIST, {
@@ -105,6 +67,59 @@ const ScrapScene = () => {
     navigation.navigate(RootRoutes.MY_ACTIVITY_NEWS_LIST, { source: "scrap" });
   };
 
+  const loadAnnouncements = useCallback(
+    async (mode: "initial" | "more") => {
+      if (mode === "initial") {
+        setLoadingInitial(true);
+      } else {
+        if (loadingInitial || loadingMore || !hasMore) return;
+        setLoadingMore(true);
+      }
+
+      const res = await getMyScrappedAnnouncements({
+        limit: 20,
+        cursor: mode === "more" ? (nextCursor ?? undefined) : undefined,
+      });
+
+      if (!res) {
+        if (mode === "initial") {
+          setAnnouncementItems([]);
+          setHasMore(false);
+          setNextCursor(null);
+        }
+      } else {
+        setAnnouncementItems((prev) =>
+          mode === "initial" ? res.items : [...prev, ...res.items],
+        );
+        setHasMore(res.hasMore);
+        setNextCursor(res.nextCursor);
+      }
+
+      if (mode === "initial") setLoadingInitial(false);
+      else setLoadingMore(false);
+    },
+    [hasMore, loadingInitial, loadingMore, nextCursor],
+  );
+
+  useEffect(() => {
+    if (selectedTab !== "모집공고") return;
+    loadAnnouncements("initial");
+  }, [selectedTab, loadAnnouncements]);
+
+  useEffect(() => {
+    if (selectedTab !== "라운지") return;
+    (async () => {
+      const res = await getMyScrappedHighlights();
+      if (!res) {
+        setLatestCommunity(null);
+        setLatestNews([]);
+        return;
+      }
+      setLatestCommunity(res.latestScrappedCommunity);
+      setLatestNews(res.latestScrappedNews);
+    })();
+  }, [selectedTab]);
+
   const renderLoungeContent = () => (
     <>
       <Section
@@ -112,8 +127,19 @@ const ScrapScene = () => {
         onPressMore={handlePressScrapCommunity}
         styles={{ content: { paddingHorizontal: 0 } }}
       >
-        {MOCK_SCRAP_POSTS.length > 0 ? (
-          MOCK_SCRAP_POSTS.map((item) => (
+        {latestCommunity ? (
+          [
+            {
+              id: latestCommunity.communityId,
+              title: latestCommunity.title,
+              contentPreview: latestCommunity.category ?? "",
+              author: "나",
+              date: formatDate(latestCommunity.createdAt),
+              likes: Number(latestCommunity.likeCount ?? 0),
+              comments: Number(latestCommunity.commentCount ?? 0),
+              views: Number(latestCommunity.viewCount ?? 0),
+            },
+          ].map((item) => (
             <CommunityCard
               key={item.id}
               title={item.title}
@@ -122,7 +148,12 @@ const ScrapScene = () => {
               date={item.date}
               likes={item.likes}
               comments={item.comments}
-              scraps={item.scraps}
+              views={item.views}
+              onPress={() =>
+                navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
+                  communityId: item.id,
+                })
+              }
             />
           ))
         ) : (
@@ -136,106 +167,92 @@ const ScrapScene = () => {
         onPressMore={handlePressScrapNews}
         styles={{ content: { paddingHorizontal: 0 } }}
       >
-        <ImageScrollView
-          key="scrap-news"
-          styles={{ container: {} }}
-          width={138}
-          height={264}
-          gap={14}
-          type="withText"
-        />
+        {latestNews.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={localStyles.newsRow}
+          >
+            {latestNews.map((item) => (
+              <View key={item.scrapId} style={localStyles.newsCard}>
+                <EventNewsCard
+                  title={item.title}
+                  place={item.place ?? ""}
+                  dateRange={formatDate(item.createdAt)}
+                  imageUrl={DEFAULT_NEWS_IMAGE_URI}
+                  width={138}
+                  height={138}
+                  onPress={() =>
+                    navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
+                      newsId: item.newsId,
+                    })
+                  }
+                />
+              </View>
+            ))}
+          </ScrollView>
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>스크랩한 공연 소식이 없습니다.</Text>
+          </View>
+        )}
       </Section>
     </>
   );
 
   const renderAnnouncementContent = () => (
     <View style={localStyles.announcementContainer}>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={localStyles.filterContainer}
-        nestedScrollEnabled
-        directionalLockEnabled
-        scrollEventThrottle={16}
-        bounces={false}
-        style={localStyles.filterScrollView}
-      >
-        <FilterDropdown
-          label="모집 상태"
-          options={recruitmentStatusOptions}
-          selectedValue={recruitmentStatus}
-          onSelect={setRecruitmentStatus}
-        />
-        <FilterDropdown
-          label="공고 유형"
-          options={announcementTypeOptions}
-          selectedValue={announcementType}
-          onSelect={setAnnouncementType}
-        />
-        <FilterDropdown
-          label="모집 전공"
-          options={recruitmentMajorOptions}
-          selectedValue={recruitmentMajor}
-          onSelect={setRecruitmentMajor}
-        />
-        <FilterDropdown
-          label="정렬"
-          options={sortOptions}
-          selectedValue={sortBy}
-          onSelect={setSortBy}
-        />
-      </ScrollView>
-      <ScrollView
-        style={localStyles.announcementListScroll}
-        contentContainerStyle={localStyles.announcementScrollContent}
-        showsVerticalScrollIndicator={false}
-      >
-        {MOCK_SCRAP_ANNOUNCEMENTS.length > 0 ? (
-          MOCK_SCRAP_ANNOUNCEMENTS.map((announcement, index) => (
-            <View key={index} style={localStyles.cardWrapper}>
-              <AnnouncementCard
-                title={announcement.title}
-                type={announcement.type}
-                status={announcement.status}
-                daysLeft={announcement.daysLeft}
-                onPress={() => {
-                  navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
-                    title: announcement.title,
-                    type: announcement.type,
-                    status: announcement.status,
-                    daysLeft: announcement.daysLeft,
-                  });
-                }}
-              />
-            </View>
-          ))
-        ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>스크랩한 모집공고가 없습니다.</Text>
+      <FlatList
+        data={announcementItems}
+        keyExtractor={(item) => item.scrapId}
+        renderItem={({ item }) => (
+          <View style={localStyles.cardWrapper}>
+            <AnnouncementCard
+              title={item.title}
+              type={item.type}
+              status={item.isRecruiting ? "모집중" : "모집마감"}
+              daysLeft={parseDDay(item.dDay)}
+              onPress={() => {
+                navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
+                  postId: item.postId,
+                  title: item.title,
+                  type: item.type,
+                  status: item.isRecruiting ? "모집중" : "모집마감",
+                  daysLeft: parseDDay(item.dDay),
+                });
+              }}
+            />
           </View>
         )}
-      </ScrollView>
-    </View>
-  );
-
-  const renderProfileContent = () => (
-    <View style={[localStyles.tabContent, styles.emptyContainer]}>
-      <Text style={styles.emptyText}>준비 중입니다.</Text>
+        contentContainerStyle={localStyles.announcementScrollContent}
+        onEndReachedThreshold={0.4}
+        onEndReached={() => loadAnnouncements("more")}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          !loadingInitial ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>스크랩한 모집공고가 없습니다.</Text>
+            </View>
+          ) : null
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={localStyles.loadingMoreContainer}>
+              <Text style={styles.emptyText}>불러오는 중...</Text>
+            </View>
+          ) : null
+        }
+      />
     </View>
   );
 
   return (
     <View style={styles.postsCommentsContainer}>
-      <View style={styles.sortFilterContainer}>
-        <SelectableTag
+      <View style={[styles.sortFilterContainer, localStyles.topTabsContainer]}>
+        <SelectableTag 
           label="모집공고"
           selected={selectedTab === "모집공고"}
           onPress={() => setSelectedTab("모집공고")}
-        />
-        <SelectableTag
-          label="프로필"
-          selected={selectedTab === "프로필"}
-          onPress={() => setSelectedTab("프로필")}
         />
         <SelectableTag
           label="라운지"
@@ -268,14 +285,6 @@ const ScrapScene = () => {
         {renderAnnouncementContent()}
       </View>
 
-      <View
-        style={[
-          localStyles.tabContent,
-          selectedTab !== "프로필" && localStyles.hidden,
-        ]}
-      >
-        {renderProfileContent()}
-      </View>
     </View>
   );
 };
@@ -296,12 +305,8 @@ const localStyles = StyleSheet.create({
   filterScrollView: {
     flexGrow: 0,
   },
-  filterContainer: {
-    flexDirection: "row",
-    paddingHorizontal: 12,
-    paddingTop: 13,
-    paddingBottom: 9,
-    gap: 8,
+  topTabsContainer: {
+    paddingBottom: 10,
   },
   announcementListScroll: {
     flex: 1,
@@ -312,8 +317,35 @@ const localStyles = StyleSheet.create({
     paddingBottom: 24,
   },
   cardWrapper: {
+    paddingHorizontal: 12,
     marginBottom: 5,
   },
+  loadingMoreContainer: {
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  newsRow: {
+    paddingHorizontal: 12,
+    gap: 14,
+  },
+  newsCard: {
+    width: 138,
+  },
 });
+
+function parseDDay(value?: string): number {
+  if (!value) return 0;
+  const num = parseInt(value.replace(/\D/g, ""), 10);
+  return Number.isFinite(num) ? num : 0;
+}
+
+function formatDate(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
 
 export default ScrapScene;

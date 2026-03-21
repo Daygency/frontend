@@ -8,8 +8,11 @@ export type CommunityListItem = {
   title: string;
   content: string;
   createdAt: string;
+  viewCount?: number;
+  likeCount?: number;
+  commentCount?: number;
   user: Record<string, unknown>;
-  category: Record<string, unknown>;
+  category: { categoryId?: string; name?: string } | string;
   file: Record<string, unknown> | null;
 };
 

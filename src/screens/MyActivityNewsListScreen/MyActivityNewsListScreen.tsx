@@ -1,7 +1,12 @@
+import { useEffect, useMemo, useState } from "react";
 import { FlatList, Text, View, useWindowDimensions } from "react-native";
-import { useRoute, RouteProp } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import EventNewsCard from "../../components/EventNewsCard/EventNewsCard";
 import styles from "./styles";
+import { getMyScrappedNews } from "../../lib/apis/scrap/scrapApi";
+import type { MyScrappedNewsItem } from "../../lib/apis/scrap/types";
+import { RootRoutes } from "../../navigations/routes";
 
 const IMAGE_URL =
   "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
@@ -28,21 +33,65 @@ type MyActivityNewsListParams = {
 
 type RootStackParamList = {
   MyActivityNewsList: MyActivityNewsListParams | undefined;
+  MusicNewsDetail: { newsId: string };
 };
 
 const MyActivityNewsListScreen = () => {
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { width } = useWindowDimensions();
   const cardWidth = (width - HORIZONTAL_PADDING * 2 - CARD_GAP) / 2;
   const route = useRoute<RouteProp<RootStackParamList, "MyActivityNewsList">>();
   const source = route.params?.source;
+  const [scrappedNews, setScrappedNews] = useState<MyScrappedNewsItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingInitial, setLoadingInitial] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const emptyMessage =
     source === "scrap" ? "스크랩한 공연 소식이 없습니다." : "공연 소식이 없습니다.";
 
+  useEffect(() => {
+    if (source !== "scrap") return;
+    (async () => {
+      setLoadingInitial(true);
+      const res = await getMyScrappedNews({ limit: 20 });
+      if (!res) {
+        setScrappedNews([]);
+        setNextCursor(null);
+        setHasMore(false);
+        setLoadingInitial(false);
+        return;
+      }
+      setScrappedNews(res.items);
+      setNextCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+      setLoadingInitial(false);
+    })();
+  }, [source]);
+
+  const data = useMemo(
+    () =>
+      source === "scrap"
+        ? scrappedNews.map((item) => ({
+            id: item.newsId,
+            newsId: item.newsId,
+            title: item.title,
+            place: item.place ?? "",
+            dateRange: formatDate(item.createdAt),
+            imageUrl: IMAGE_URL,
+          }))
+        : MOCK_NEWS.map((item) => ({
+            ...item,
+            newsId: item.id,
+          })),
+    [source, scrappedNews],
+  );
+
   return (
     <View style={styles.container}>
       <FlatList
-        data={MOCK_NEWS}
+        data={data}
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
@@ -56,6 +105,11 @@ const MyActivityNewsListScreen = () => {
               imageUrl={item.imageUrl}
               width={cardWidth}
               height={138}
+              onPress={() =>
+                navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
+                  newsId: item.newsId,
+                })
+              }
             />
           </View>
         )}
@@ -64,9 +118,52 @@ const MyActivityNewsListScreen = () => {
             <Text style={styles.emptyText}>{emptyMessage}</Text>
           </View>
         }
+        onEndReachedThreshold={0.4}
+        onEndReached={async () => {
+          if (
+            source !== "scrap" ||
+            loadingInitial ||
+            loadingMore ||
+            !hasMore ||
+            !nextCursor
+          ) {
+            return;
+          }
+          setLoadingMore(true);
+          const res = await getMyScrappedNews({
+            limit: 20,
+            cursor: nextCursor ?? undefined,
+          });
+          if (res) {
+            setScrappedNews((prev) => {
+              const seen = new Set(prev.map((item) => item.scrapId));
+              const appended = res.items.filter((item) => !seen.has(item.scrapId));
+              return [...prev, ...appended];
+            });
+            setNextCursor(res.nextCursor);
+            setHasMore(res.hasMore);
+          }
+          setLoadingMore(false);
+        }}
+        ListFooterComponent={
+          source === "scrap" && loadingMore ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>불러오는 중...</Text>
+            </View>
+          ) : null
+        }
       />
     </View>
   );
 };
+
+function formatDate(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
 
 export default MyActivityNewsListScreen;

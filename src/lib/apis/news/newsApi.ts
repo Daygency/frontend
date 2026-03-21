@@ -42,7 +42,27 @@ export async function getNewsList(
       console.warn("[getNewsList] 실패:", res.status, url, errText);
       return null;
     }
-    return res.json() as Promise<NewsListResponse>;
+    const raw = await res.json();
+
+    // README 기준: 목록은 배열 또는 { items, nextCursor, hasMore } 형식 모두 호환
+    if (Array.isArray(raw)) {
+      return {
+        items: raw,
+        nextCursor: null,
+        hasMore: false,
+      } as NewsListResponse;
+    }
+
+    if (Array.isArray((raw as NewsListResponse)?.items)) {
+      return raw as NewsListResponse;
+    }
+
+    console.warn("[getNewsList] 알 수 없는 응답 형식:", raw);
+    return {
+      items: [],
+      nextCursor: null,
+      hasMore: false,
+    };
   } catch (e) {
     console.warn("[getNewsList] 네트워크 에러:", e);
     return null;

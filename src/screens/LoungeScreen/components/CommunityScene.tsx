@@ -115,15 +115,22 @@ const CommunityScene = () => {
   );
 
   const renderItem = ({ item }: { item: CommunityListItem }) => {
+    const rawCategory = (item as any).category;
+    const categoryName =
+      typeof rawCategory === "string" ? rawCategory : rawCategory?.name;
+    const relativeDate = formatRelativeTime(item.createdAt);
+
     return (
       <CommunityCard
+        tag={selectedTag === "전체" ? categoryName : undefined}
         title={item.title}
-        contentPreview={""}
+          contentPreview={item.content ?? ""}
+          contentPreviewLines={1}
         author={undefined}
-        date={new Date(item.createdAt).toLocaleDateString()}
-        likes={0}
-        comments={0}
-        scraps={0}
+        date={relativeDate}
+        likes={item.likeCount ?? 0}
+        comments={item.commentCount ?? 0}
+        views={item.viewCount ?? 0}
         onPress={() =>
           navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
             communityId: item.communityId,
@@ -175,6 +182,36 @@ const CommunityScene = () => {
     </View>
   );
 };
+
+function formatRelativeTime(createdAt?: string): string {
+  if (!createdAt) return "";
+
+  const created = new Date(createdAt);
+  if (Number.isNaN(created.getTime())) return "";
+
+  const diffMs = Date.now() - created.getTime();
+  if (diffMs < 0) return "방금 전";
+
+  const hourMs = 1000 * 60 * 60;
+  const dayMs = hourMs * 24;
+  const monthMs = dayMs * 30;
+  const yearMs = dayMs * 365;
+
+  if (diffMs < dayMs) {
+    const hours = Math.max(1, Math.floor(diffMs / hourMs));
+    return `${hours}시간 전`;
+  }
+  if (diffMs < monthMs) {
+    const days = Math.floor(diffMs / dayMs);
+    return `${days}일 전`;
+  }
+  if (diffMs < yearMs) {
+    const months = Math.floor(diffMs / monthMs);
+    return `${months}달 전`;
+  }
+  const years = Math.floor(diffMs / yearMs);
+  return `${years}년 전`;
+}
 
 const localStyles = StyleSheet.create({
   tagScroll: {

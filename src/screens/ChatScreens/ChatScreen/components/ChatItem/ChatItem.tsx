@@ -1,29 +1,33 @@
 import { Text, View } from "react-native";
-import Tag from "../../../../../components/Tag/Tag";
+import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import { GRAY } from "../../../../../color";
 import styles from "./styles";
 
 interface ChatItemProps {
   name: string;
-  tag: string;
   lastMessage: string;
   timestamp: string;
   unreadCount?: number;
   isOnline?: boolean;
+  isMusic?: boolean;
+  isVerified?: boolean;
+  variant?: "default";
 }
 
 const ChatItem = ({
   name,
-  tag,
   lastMessage,
   timestamp,
   unreadCount = 0,
   isOnline = false,
+  isMusic = false,
+  isVerified = false,
 }: ChatItemProps) => {
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>{name.charAt(0)}</Text>
+          <MaterialIcons name="person" size={28} color={GRAY.MEDIUM_2} />
         </View>
         {isOnline && <View style={styles.onlineIndicator} />}
       </View>
@@ -32,7 +36,15 @@ const ChatItem = ({
         <View style={styles.headerRow}>
           <View style={styles.nameRow}>
             <Text style={styles.name}>{name}</Text>
-            <Tag text={tag} />
+            {isMusic ? (
+              <View style={styles.badge}>
+                <FontAwesome name="music" size={10} color="#FFFFFF" />
+              </View>
+            ) : isVerified ? (
+              <View style={styles.badge}>
+                <MaterialIcons name="verified" size={13} color="#FFFFFF" />
+              </View>
+            ) : null}
           </View>
           <Text style={styles.timestamp}>{timestamp}</Text>
         </View>
@@ -53,4 +65,3 @@ const ChatItem = ({
 };
 
 export default ChatItem;
-

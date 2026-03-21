@@ -1,29 +1,24 @@
-import { useRef, useState } from "react";
-import { Pressable, ScrollView, View } from "react-native";
+import { useMemo, useState } from "react";
+import { Pressable, Text, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Logo from "../../../components/Logo/Logo";
 import { MAIN } from "../../../color";
-import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 import styles from "./styles";
-import ChatList from "./components/ChatList/ChatList";
-import type { ChatFilter } from "./types";
+import ChatList, { getUnreadCountByTopTabMock } from "./components/ChatList/ChatList";
 
-const CHAT_FILTER_OPTIONS: ChatFilter[] = ["전체", "안읽음", "내가올린공고", "지원공고"];
+type ChatTopTab = "일반" | "내 공고" | "지원 공고";
+const TOP_TABS: ChatTopTab[] = ["일반", "내 공고", "지원 공고"];
 
 const ChatScreen = () => {
   const { top } = useSafeAreaInsets();
-  const [selectedFilter, setSelectedFilter] = useState<ChatFilter>("전체");
-  const filterScrollRef = useRef<ScrollView>(null);
+  const [selectedTopTab, setSelectedTopTab] = useState<ChatTopTab>("일반");
 
-  const handleFilterPress = (filter: ChatFilter) => {
-    setSelectedFilter(filter);
-    if (filter === "전체") {
-      filterScrollRef.current?.scrollTo({ x: 0, animated: true });
-    } else if (filter === "지원공고") {
-      filterScrollRef.current?.scrollToEnd({ animated: true });
-    }
-  };
+  const unreadCountByTab = useMemo(() => {
+    const map = new Map<ChatTopTab, number>();
+    TOP_TABS.forEach((t) => map.set(t, getUnreadCountByTopTabMock(t)));
+    return map;
+  }, []);
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
@@ -35,25 +30,33 @@ const ChatScreen = () => {
           </Pressable>
         </View>
       </View>
-      <View style={styles.filterWrapper}>
-        <ScrollView
-          ref={filterScrollRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterScroll}
-          contentContainerStyle={styles.filterContent}
-        >
-        {CHAT_FILTER_OPTIONS.map((filter) => (
-          <SelectableTag
-            key={filter}
-            label={filter}
-            selected={selectedFilter === filter}
-            onPress={() => handleFilterPress(filter)}
-          />
-        ))}
-        </ScrollView>
+
+      <View style={styles.topTabsRow}>
+        {TOP_TABS.map((tab) => {
+          const selected = selectedTopTab === tab;
+          const unreadCount = unreadCountByTab.get(tab) ?? 0;
+          return (
+            <Pressable
+              key={tab}
+              style={[styles.topTab, selected && styles.topTabSelected]}
+              onPress={() => setSelectedTopTab(tab)}
+            >
+              <Text style={[styles.topTabText, selected && styles.topTabTextSelected]}>
+                {tab}
+              </Text>
+              {unreadCount > 0 && (
+                <View style={styles.unreadBadge}>
+                  <Text style={styles.unreadBadgeText}>
+                    {unreadCount > 99 ? "99+" : String(unreadCount)}
+                  </Text>
+                </View>
+              )}
+            </Pressable>
+          );
+        })}
       </View>
-      <ChatList filter={selectedFilter} />
+
+      <ChatList topTab={selectedTopTab} />
     </View>
   );
 };

@@ -1,7 +1,7 @@
 import { Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
-import { BLACK, WHITE } from "../../color";
+import { WHITE } from "../../color";
 import styles from "./styles";
 import MusicNoteIcon from "../../../assets/music_note.svg";
 interface ArtistCardProps {
@@ -9,7 +9,6 @@ interface ArtistCardProps {
   category: string;
   activityName?: string;
   musicNoteCount?: number;
-  bookmarkCount: number;
   onPress?: () => void;
 }
 
@@ -18,7 +17,6 @@ const ArtistCard = ({
   category,
   activityName,
   musicNoteCount = 0,
-  bookmarkCount,
   onPress,
 }: ArtistCardProps) => {
   return (
@@ -48,19 +46,11 @@ const ArtistCard = ({
           <Text style={styles.category}>{category}</Text>
         </View>
 
-        {/* Music Note & Bookmark Icons with Counts */}
+        {/* Music Note Icon with Count */}
         <View style={styles.iconsContainer}>
           <View style={styles.iconWithCount}>
             <MusicNoteIcon width={20} height={20} />
             <Text style={styles.musicNoteCount}>{musicNoteCount}</Text>
-          </View>
-          <View style={styles.iconWithCount}>
-            <MaterialCommunityIcons
-              name="bookmark-outline"
-              size={20}
-              color={BLACK}
-            />
-            <Text style={styles.bookmarkCount}>{bookmarkCount}</Text>
           </View>
         </View>
       </View>

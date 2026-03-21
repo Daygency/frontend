@@ -8,15 +8,33 @@ import {
   View,
   Pressable,
   Dimensions,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { BLACK, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
+import { Ionicons } from "@expo/vector-icons";
 import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
 import { getNewsDetail } from "../../lib/apis/news/newsApi";
 import type { NewsDetailResponse } from "../../lib/apis/news/types";
 import { API_BASE } from "../../lib/apis/api";
 import styles from "./styles";
+import {
+  createComment,
+  getComments,
+} from "../../lib/apis/comment/commentApi";
+import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
+import {
+  createLike,
+  deleteLikeByTarget,
+  getLikes,
+} from "../../lib/apis/like/likeApi";
+import {
+  createScrap,
+  deleteScrapByTarget,
+  getScraps,
+} from "../../lib/apis/scrap/scrapApi";
+import { useAuth } from "../../contexts/AuthContext";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -31,6 +49,7 @@ export type MusicNewsDetailItem = {
   imageUrl?: string;
   likes: number;
   comments: number;
+  commentsData?: unknown[];
   attachments?: { name: string; size: string }[];
 };
 
@@ -44,6 +63,25 @@ type MusicNewsDetailRouteProp = RouteProp<
   "MusicNewsDetail"
 >;
 
+type CommentItem = {
+  id: string;
+  author: string;
+  createdAt: string;
+  content: string;
+  likeCount: number;
+  replyCount: number;
+  isLiked?: boolean;
+  isMine?: boolean;
+  replies?: Array<{
+    id: string;
+    author: string;
+    createdAt?: string;
+    content: string;
+    likeCount?: number;
+    isLiked?: boolean;
+  }>;
+};
+
 function resolveFileUrl(file?: { url?: string } | null): string | undefined {
   const url = file?.url;
   if (!url) return undefined;
@@ -53,15 +91,16 @@ function resolveFileUrl(file?: { url?: string } | null): string | undefined {
 
 function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
   const d = new Date(res.startedAt);
-  const dateStr =
-    isNaN(d.getTime()) ? res.startedAt : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-  const timeStr =
-    isNaN(d.getTime()) ? "" : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const dateStr = isNaN(d.getTime())
+    ? res.startedAt
+    : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  const timeStr = isNaN(d.getTime())
+    ? ""
+    : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   const createdD = new Date(res.createdAt);
-  const uploadedStr =
-    isNaN(createdD.getTime())
-      ? res.createdAt
-      : `${createdD.getFullYear()}.${String(createdD.getMonth() + 1).padStart(2, "0")}.${String(createdD.getDate()).padStart(2, "0")}`;
+  const uploadedStr = isNaN(createdD.getTime())
+    ? res.createdAt
+    : `${createdD.getFullYear()}.${String(createdD.getMonth() + 1).padStart(2, "0")}.${String(createdD.getDate()).padStart(2, "0")}`;
 
   return {
     id: res.newsId,
@@ -76,16 +115,108 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     imageUrl: resolveFileUrl(res.file),
     likes: 0,
     comments: 0,
+    commentsData: (res as any)?.comments,
   };
+}
+
+function formatTimeAgo(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return "";
+  const diffMs = Date.now() - d.getTime();
+  const diffHours = Math.max(1, Math.floor(diffMs / (1000 * 60 * 60)));
+  if (diffHours < 24) return `${diffHours}시간`;
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays}일`;
+  const diffMonths = Math.floor(diffDays / 30);
+  if (diffMonths < 12) return `${diffMonths}개월`;
+  return `${Math.floor(diffMonths / 12)}년`;
+}
+
+function mapCommentToUi(comment: ApiCommentItem): CommentItem {
+  return {
+    id: String(comment.id),
+    author: String(comment.user?.nickname ?? "익명"),
+    createdAt: String(comment.createdAt ?? ""),
+    content: String(comment.content ?? ""),
+    likeCount: Number((comment as any)?.likeCount ?? 0),
+    replyCount: 0,
+    isLiked: Boolean((comment as any)?.isLiked),
+    isMine: Boolean((comment as any)?.isMine),
+    replies: [],
+  };
+}
+
+function buildCommentTree(raw: ApiCommentItem[]): CommentItem[] {
+  const roots: CommentItem[] = [];
+  const childrenByParent = new Map<string, CommentItem[]>();
+
+  raw.forEach((comment) => {
+    const ui = mapCommentToUi(comment);
+    const parentId = comment.parentId ? String(comment.parentId) : null;
+    if (!parentId) {
+      roots.push(ui);
+      return;
+    }
+    const siblings = childrenByParent.get(parentId) ?? [];
+    siblings.push(ui);
+    childrenByParent.set(parentId, siblings);
+  });
+
+  roots.forEach((root) => {
+    const replies = childrenByParent.get(root.id) ?? [];
+    root.replies = replies;
+    root.replyCount = replies.length;
+  });
+
+  return roots;
+}
+
+function updateCommentLikeState(
+  list: CommentItem[],
+  targetId: string,
+  nextLiked: boolean,
+): CommentItem[] {
+  return list.map((comment) => {
+    if (comment.id === targetId) {
+      const prevCount = Number(comment.likeCount ?? 0);
+      return {
+        ...comment,
+        isLiked: nextLiked,
+        likeCount: nextLiked ? prevCount + 1 : Math.max(0, prevCount - 1),
+      };
+    }
+
+    const replies = comment.replies?.map((reply) => {
+      if (reply.id !== targetId) return reply;
+      const prevCount = Number(reply.likeCount ?? 0);
+      return {
+        ...reply,
+        isLiked: nextLiked,
+        likeCount: nextLiked ? prevCount + 1 : Math.max(0, prevCount - 1),
+      };
+    });
+
+    return replies ? { ...comment, replies } : comment;
+  });
 }
 
 const MusicNewsDetailScreen = () => {
   const route = useRoute<MusicNewsDetailRouteProp>();
+  const { user } = useAuth();
   const { bottom } = useSafeAreaInsets();
   const newsId = route.params?.newsId;
   const newsFromParams = route.params?.news;
 
-  const [news, setNews] = useState<MusicNewsDetailItem | null>(newsFromParams ?? null);
+  const [news, setNews] = useState<MusicNewsDetailItem | null>(
+    newsFromParams ?? null,
+  );
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
+  const [scraped, setScraped] = useState(false);
+  const [scrapCount, setScrapCount] = useState(0);
   const [loading, setLoading] = useState(!!newsId);
   const [error, setError] = useState<string | null>(null);
 
@@ -109,20 +240,183 @@ const MusicNewsDetailScreen = () => {
   }, [newsId, fetchDetail]);
 
   const { width } = Dimensions.get("window");
+  const displayedComments = comments;
+  const targetNewsId = newsId ?? news?.id;
+  const commentCount = Number(
+    (news as any)?.commentCount ?? news?.comments ?? comments.length,
+  );
+
+  useEffect(() => {
+    if (!targetNewsId) return;
+    (async () => {
+      const res = await getComments({
+        targetType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (res) setComments(buildCommentTree(res));
+    })();
+  }, [targetNewsId]);
+
+  useEffect(() => {
+    if (!targetNewsId) return;
+    (async () => {
+      const res = await getLikes({
+        likeType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (!res) return;
+      setLikeCount(res.count);
+      const myId = user?.socialId;
+      setLiked(
+        !!myId &&
+          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+      );
+    })();
+  }, [targetNewsId, user?.socialId]);
+
+  useEffect(() => {
+    if (!targetNewsId) return;
+    (async () => {
+      const res = await getScraps({
+        targetType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (!res) return;
+      setScrapCount(res.count);
+      const myId = user?.socialId;
+      setScraped(
+        !!myId &&
+          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+      );
+    })();
+  }, [targetNewsId, user?.socialId]);
+
+  const handleToggleLike = async () => {
+    if (!targetNewsId) return;
+    if (liked) {
+      const res = await deleteLikeByTarget({
+        likeType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "좋아요 취소에 실패했습니다.");
+        return;
+      }
+      setLiked(false);
+      setLikeCount((prev) => Math.max(0, prev - 1));
+      return;
+    }
+    const created = await createLike({
+      likeType: "NEWS",
+      targetId: targetNewsId,
+    });
+    if (!created) {
+      Alert.alert("알림", "좋아요에 실패했습니다.");
+      return;
+    }
+    setLiked(true);
+    setLikeCount((prev) => prev + 1);
+  };
+
+  const handleToggleScrap = async () => {
+    if (!targetNewsId) return;
+    if (scraped) {
+      const res = await deleteScrapByTarget({
+        targetType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "스크랩 취소에 실패했습니다.");
+        return;
+      }
+      setScraped(false);
+      setScrapCount((prev) => Math.max(0, prev - 1));
+      return;
+    }
+    const created = await createScrap({
+      targetType: "NEWS",
+      targetId: targetNewsId,
+    });
+    if (!created) {
+      Alert.alert("알림", "스크랩에 실패했습니다.");
+      return;
+    }
+    setScraped(true);
+    setScrapCount((prev) => prev + 1);
+  };
+
+  const handleCreateComment = async (content: string) => {
+    if (!targetNewsId) return;
+    const created = await createComment({
+      content,
+      targetType: "NEWS",
+      targetId: targetNewsId,
+      parentId: replyTarget?.id,
+    });
+    if (!created) {
+      Alert.alert("알림", "댓글 작성에 실패했습니다.");
+      return;
+    }
+    const res = await getComments({
+      targetType: "NEWS",
+      targetId: targetNewsId,
+    });
+    if (res) setComments(buildCommentTree(res));
+    setReplyTarget(null);
+  };
+
+  const handleToggleCommentLike = async (targetId: string, currentLiked: boolean) => {
+    if (currentLiked) {
+      const res = await deleteLikeByTarget({
+        likeType: "COMMENT",
+        targetId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "댓글 좋아요 취소에 실패했습니다.");
+        return;
+      }
+      setComments((prev) => updateCommentLikeState(prev, targetId, false));
+      return;
+    }
+
+    const created = await createLike({
+      likeType: "COMMENT",
+      targetId,
+    });
+    if (!created) {
+      Alert.alert("알림", "댓글 좋아요에 실패했습니다.");
+      return;
+    }
+    setComments((prev) => updateCommentLikeState(prev, targetId, true));
+  };
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center", flex: 1 }]}>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center", flex: 1 },
+        ]}
+      >
         <ActivityIndicator size="large" color={GRAY.DARK} />
-        <Text style={{ marginTop: 12, fontSize: 14, color: GRAY.DARK_2 }}>공연소식을 불러오는 중...</Text>
+        <Text style={{ marginTop: 12, fontSize: 14, color: GRAY.DARK_2 }}>
+          공연소식을 불러오는 중...
+        </Text>
       </View>
     );
   }
 
   if (error || !news) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center", flex: 1 }]}>
-        <Text style={{ fontSize: 14, color: GRAY.DARK_2, textAlign: "center" }}>{error ?? "정보를 불러올 수 없습니다."}</Text>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center", flex: 1 },
+        ]}
+      >
+        <Text style={{ fontSize: 14, color: GRAY.DARK_2, textAlign: "center" }}>
+          {error ?? "정보를 불러올 수 없습니다."}
+        </Text>
         {newsId && (
           <Pressable onPress={fetchDetail} style={{ marginTop: 16 }}>
             <Text style={{ fontSize: 14, color: "#0057D9" }}>다시 시도</Text>
@@ -142,7 +436,9 @@ const MusicNewsDetailScreen = () => {
         <View style={styles.posterWrapper}>
           <Image
             source={{
-              uri: news.imageUrl || "https://via.placeholder.com/400x240?text=CLASSIC+ARTIST+CONCERT",
+              uri:
+                news.imageUrl ||
+                "https://via.placeholder.com/400x240?text=CLASSIC+ARTIST+CONCERT",
             }}
             style={[styles.posterImage, { width, height: width * 0.6 }]}
             resizeMode="cover"
@@ -158,24 +454,44 @@ const MusicNewsDetailScreen = () => {
           <View style={styles.infoCard}>
             {news.authorId && (
               <View style={styles.infoRow}>
-                <MaterialCommunityIcons name="account-outline" size={18} color={GRAY.DARK} />
+                <MaterialCommunityIcons
+                  name="account-outline"
+                  size={18}
+                  color={GRAY.DARK}
+                />
                 <Text style={styles.infoText}>{news.authorId}</Text>
               </View>
             )}
             <View style={styles.infoRow}>
-              <MaterialCommunityIcons name="calendar-outline" size={18} color={GRAY.DARK} />
+              <MaterialCommunityIcons
+                name="calendar-outline"
+                size={18}
+                color={GRAY.DARK}
+              />
               <Text style={styles.infoText}>예정일 : {news.date}</Text>
             </View>
             <View style={styles.infoRow}>
-              <MaterialCommunityIcons name="clock-outline" size={18} color={GRAY.DARK} />
+              <MaterialCommunityIcons
+                name="clock-outline"
+                size={18}
+                color={GRAY.DARK}
+              />
               <Text style={styles.infoText}>예정 시간 : {news.time}</Text>
             </View>
             <View style={styles.infoRow}>
-              <MaterialCommunityIcons name="map-marker-outline" size={18} color={GRAY.DARK} />
+              <MaterialCommunityIcons
+                name="map-marker-outline"
+                size={18}
+                color={GRAY.DARK}
+              />
               <Text style={styles.infoText}>장소: {news.place}</Text>
             </View>
             <View style={styles.infoRow}>
-              <MaterialCommunityIcons name="phone-outline" size={18} color={GRAY.DARK} />
+              <MaterialCommunityIcons
+                name="phone-outline"
+                size={18}
+                color={GRAY.DARK}
+              />
               <Text style={styles.infoText}>문의: {news.contact}</Text>
             </View>
           </View>
@@ -187,32 +503,230 @@ const MusicNewsDetailScreen = () => {
               <Text style={styles.attachmentsTitle}>첨부파일</Text>
               {news.attachments.map((file, index) => (
                 <Pressable key={index} style={styles.fileRow}>
-                  <MaterialCommunityIcons name="paperclip" size={18} color={GRAY.DARK} />
+                  <MaterialCommunityIcons
+                    name="paperclip"
+                    size={18}
+                    color={GRAY.DARK}
+                  />
                   <Text style={styles.fileName} numberOfLines={1}>
                     {file.name}
                   </Text>
                   <Text style={styles.fileSize}>{file.size}</Text>
-                  <MaterialCommunityIcons name="download" size={20} color={GRAY.DARK} />
+                  <MaterialCommunityIcons
+                    name="download"
+                    size={20}
+                    color={GRAY.DARK}
+                  />
                 </Pressable>
               ))}
             </View>
           )}
 
-          <View style={styles.statsRow}>
-            <MaterialCommunityIcons name="heart-outline" size={18} color={GRAY.DARK} />
-            <Text style={styles.statText}>좋아요 {news.likes}</Text>
-            <MaterialCommunityIcons name="comment-outline" size={18} color={GRAY.DARK} style={styles.statIcon} />
-            <Text style={styles.statText}>댓글 {news.comments}</Text>
+          <View style={styles.actionRow}>
+            <View style={styles.actionItem}>
+              <Pressable onPress={handleToggleLike} hitSlop={8}>
+                <Ionicons
+                  name={liked ? "heart" : "heart-outline"}
+                  size={21}
+                  color={RED.DEFAULT}
+                />
+              </Pressable>
+              <Text style={styles.actionCount}>{likeCount}</Text>
+            </View>
+            <View style={styles.actionItem}>
+              <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
+              <Text style={styles.actionCount}>{commentCount}</Text>
+            </View>
+            <View style={styles.actionItem}>
+              <Pressable onPress={handleToggleScrap} hitSlop={8}>
+                <Ionicons
+                  name={scraped ? "bookmark" : "bookmark-outline"}
+                  size={20}
+                  color="#FFC107"
+                />
+              </Pressable>
+              <Text style={styles.actionCount}>{scrapCount}</Text>
+            </View>
           </View>
 
-          <View style={styles.firstCommentPlaceholder}>
-            <Text style={styles.firstCommentText}>첫 댓글을 남겨보세요.</Text>
+          <View style={styles.commentList}>
+            {displayedComments.map((comment) => (
+              <View
+                key={comment.id}
+                style={[
+                  styles.commentCard,
+                  comment.isMine && styles.myCommentCard,
+                ]}
+              >
+                <View style={styles.commentTopRow}>
+                  <View style={styles.commentAuthorRow}>
+                    <View style={styles.avatarCircle}>
+                      <Ionicons
+                        name="person-outline"
+                        size={18}
+                        color={GRAY.MEDIUM}
+                      />
+                    </View>
+                    <View style={styles.commentHeaderText}>
+                      <View style={styles.commentMetaRow}>
+                        <Text style={styles.commentAuthor}>
+                          {comment.author}
+                        </Text>
+                        {!!comment.createdAt && (
+                          <Text style={styles.commentDate}>
+                            {formatTimeAgo(comment.createdAt)}
+                          </Text>
+                        )}
+                      </View>
+                      <Text style={styles.commentContent}>
+                        {comment.content}
+                      </Text>
+                    </View>
+                  </View>
+                  <Ionicons
+                    name="ellipsis-vertical"
+                    size={18}
+                    color={MAIN.DEFAULT}
+                  />
+                </View>
+
+                <View style={styles.commentStats}>
+                  <Pressable
+                    onPress={() =>
+                      handleToggleCommentLike(comment.id, Boolean(comment.isLiked))
+                    }
+                    hitSlop={8}
+                  >
+                    <Ionicons
+                      name={comment.isLiked ? "heart" : "heart-outline"}
+                      size={20}
+                      color={comment.isLiked ? RED.DEFAULT : "#FFCACA"}
+                    />
+                  </Pressable>
+                  <Text style={styles.commentCount}>{comment.likeCount}</Text>
+                  {comment.replyCount > 0 && (
+                    <>
+                      <Ionicons
+                        name="chatbubble-outline"
+                        size={18}
+                        color={MAIN.DEFAULT}
+                      />
+                      <Text style={styles.commentCount}>
+                        {comment.replyCount}
+                      </Text>
+                    </>
+                  )}
+                  <Pressable
+                    onPress={() =>
+                      setReplyTarget({
+                        id: comment.id,
+                        author: comment.author,
+                      })
+                    }
+                    hitSlop={8}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: GRAY.DARK_2,
+                        fontWeight: "600",
+                        marginLeft: 2,
+                      }}
+                    >
+                      답글달기
+                    </Text>
+                  </Pressable>
+                </View>
+                {!!comment.replies?.length && (
+                  <View style={styles.replyList}>
+                    {comment.replies.map((reply) => (
+                      <View key={reply.id} style={styles.replyRow}>
+                        <View style={styles.replyAvatarCircle}>
+                          <Ionicons
+                            name="person-outline"
+                            size={14}
+                            color={GRAY.MEDIUM}
+                          />
+                        </View>
+                        <View style={styles.replyBody}>
+                          <View style={styles.replyMetaRow}>
+                            <Text style={styles.replyAuthor}>
+                              {reply.author}
+                            </Text>
+                            {!!reply.createdAt && (
+                              <Text style={styles.replyDate}>
+                                {formatTimeAgo(reply.createdAt)}
+                              </Text>
+                            )}
+                          </View>
+                          <Text style={styles.replyContent}>
+                            {reply.content}
+                          </Text>
+                          <View style={styles.replyStats}>
+                            <Pressable
+                              onPress={() =>
+                                handleToggleCommentLike(
+                                  reply.id,
+                                  Boolean(reply.isLiked),
+                                )
+                              }
+                              hitSlop={8}
+                            >
+                              <Ionicons
+                                name={reply.isLiked ? "heart" : "heart-outline"}
+                                size={16}
+                                color={reply.isLiked ? RED.DEFAULT : "#FFCACA"}
+                              />
+                            </Pressable>
+                            <Text style={styles.replyCount}>
+                              {reply.likeCount ?? 0}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
+            ))}
           </View>
         </View>
       </ScrollView>
 
-      <View style={[styles.commentInputWrapper, { paddingBottom: (bottom || 0) + 10 }]}>
-        <CommentInputBar placeholder="댓글을 입력하세요" />
+      <View
+        style={[
+          styles.commentInputWrapper,
+          { paddingBottom: bottom || 16 },
+        ]}
+      >
+        {!!replyTarget && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingHorizontal: 20,
+              paddingTop: 10,
+            }}
+          >
+            <Text style={{ fontSize: 12, color: GRAY.DARK_100 }}>
+              {replyTarget.author}님에게 답글 작성 중
+            </Text>
+            <Pressable hitSlop={8} onPress={() => setReplyTarget(null)}>
+              <Text style={{ fontSize: 12, color: MAIN.DEFAULT, fontWeight: "600" }}>
+                취소
+              </Text>
+            </Pressable>
+          </View>
+        )}
+        <CommentInputBar
+          placeholder={
+            replyTarget
+              ? `${replyTarget.author}님에게 답글을 입력하세요`
+              : "댓글을 입력하세요"
+          }
+          onSubmit={handleCreateComment}
+        />
       </View>
     </View>
   );

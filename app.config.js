@@ -12,6 +12,13 @@ module.exports = {
     version: "1.0.0",
     plugins: [
       [
+        "expo-notifications",
+        {
+          color: "#1F2A44",
+          defaultChannel: "default",
+        },
+      ],
+      [
         "expo-build-properties",
         {
           android: {

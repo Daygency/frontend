@@ -1,13 +1,77 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView } from "react-native";
 import ShadowCardList, {
   ShadowCardListToggleItem,
 } from "../../../components/ShadowCardList/ShadowCardList";
+import {
+  getEmailOptOut,
+  getSmsOptOut,
+  setEmailOptOut,
+  setSmsOptOut,
+} from "../../../lib/notificationPreferences";
+import {
+  getOsPushPermission,
+  getPushReceivePreference,
+  isPushSupportedNative,
+  loadExpoNotifications,
+  requestOsPushPermission,
+  setPushReceivePreference,
+} from "../../../lib/pushNotifications";
 import styles from "./styles";
 
 const NotificationSettingsScreen = () => {
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [emailEnabled, setEmailEnabled] = useState(false);
+  const [pushOn, setPushOn] = useState(false);
+  const [smsOptOut, setSmsOptOutState] = useState(false);
+  const [emailOptOut, setEmailOptOutState] = useState(false);
+  /** null: 확인 전, false: ExpoPushTokenManager 등 네이티브 없음 */
+  const [pushModuleOk, setPushModuleOk] = useState<boolean | null>(null);
+
+  const refreshPushState = useCallback(async () => {
+    if (!isPushSupportedNative()) {
+      setPushModuleOk(false);
+      setPushOn(false);
+      return;
+    }
+    const mod = await loadExpoNotifications();
+    setPushModuleOk(mod != null);
+    if (!mod) {
+      setPushOn(false);
+      return;
+    }
+    const [pref, perm] = await Promise.all([
+      getPushReceivePreference(),
+      getOsPushPermission(),
+    ]);
+    setPushOn(pref && perm === "granted");
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      const [sms, email] = await Promise.all([getSmsOptOut(), getEmailOptOut()]);
+      setSmsOptOutState(sms);
+      setEmailOptOutState(email);
+      await refreshPushState();
+    })();
+  }, [refreshPushState]);
+
+  const onPushChange = async (value: boolean) => {
+    if (!isPushSupportedNative()) return;
+    if (!(await loadExpoNotifications())) return;
+    if (value) {
+      await setPushReceivePreference(true);
+      const perm = await requestOsPushPermission();
+      if (perm !== "granted") {
+        await setPushReceivePreference(false);
+        setPushOn(false);
+        return;
+      }
+      setPushOn(true);
+      return;
+    }
+    await setPushReceivePreference(false);
+    setPushOn(false);
+    await refreshPushState();
+  };
 
   return (
     <ScrollView
@@ -17,16 +81,29 @@ const NotificationSettingsScreen = () => {
     >
       <ShadowCardList>
         <ShadowCardListToggleItem
-          label="푸시 알림 중단"
-          description="알림이 비활성화됩니다"
-          value={pushEnabled}
-          onValueChange={setPushEnabled}
+          label="푸시 알림"
+          description="앱을 쓰지 않을 때도 화면 상단(배너) 등으로 뜨는 시스템 알림입니다."
+          value={pushOn}
+          onValueChange={onPushChange}
+          disabled={pushModuleOk === false}
+        />
+        <ShadowCardListToggleItem
+          label="SMS 수신 중단"
+          description="문자(SMS)로 보내는 안내를 받지 않습니다."
+          value={smsOptOut}
+          onValueChange={async (v) => {
+            setSmsOptOutState(v);
+            await setSmsOptOut(v);
+          }}
         />
         <ShadowCardListToggleItem
           label="이메일 알림 중단"
-          description="소식 받지 않기"
-          value={emailEnabled}
-          onValueChange={setEmailEnabled}
+          description="이메일로 보내는 알림을 받지 않습니다."
+          value={emailOptOut}
+          onValueChange={async (v) => {
+            setEmailOptOutState(v);
+            await setEmailOptOut(v);
+          }}
           isLast
         />
       </ShadowCardList>
