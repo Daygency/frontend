@@ -8,8 +8,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     backgroundColor: WHITE,
-    borderTopWidth: 1,
-    borderTopColor: GRAY.MEDIUM,
   },
   inputWrapper: {
     flex: 1,

@@ -95,15 +95,16 @@ function resolveFileUrl(file?: { url?: string } | null): string | undefined {
 
 function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
   const d = new Date(res.startedAt);
-  const dateStr =
-    isNaN(d.getTime()) ? res.startedAt : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-  const timeStr =
-    isNaN(d.getTime()) ? "" : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  const dateStr = isNaN(d.getTime())
+    ? res.startedAt
+    : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  const timeStr = isNaN(d.getTime())
+    ? ""
+    : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
   const createdD = new Date(res.createdAt);
-  const uploadedStr =
-    isNaN(createdD.getTime())
-      ? res.createdAt
-      : `${createdD.getFullYear()}.${String(createdD.getMonth() + 1).padStart(2, "0")}.${String(createdD.getDate()).padStart(2, "0")}`;
+  const uploadedStr = isNaN(createdD.getTime())
+    ? res.createdAt
+    : `${createdD.getFullYear()}.${String(createdD.getMonth() + 1).padStart(2, "0")}.${String(createdD.getDate()).padStart(2, "0")}`;
 
   return {
     id: res.newsId,
@@ -152,8 +153,12 @@ function normalizeComments(raw: unknown): CommentItem[] {
       isMine: Boolean(c.isMine),
       replies: Array.isArray(c.replies)
         ? c.replies.map((r: any, rIdx: number) => ({
-            id: String(r.replyId ?? r.id ?? `${c.commentId ?? c.id ?? index}-r-${rIdx}`),
-            author: String(r?.user?.nickname ?? r?.nickname ?? r?.author ?? "익명"),
+            id: String(
+              r.replyId ?? r.id ?? `${c.commentId ?? c.id ?? index}-r-${rIdx}`,
+            ),
+            author: String(
+              r?.user?.nickname ?? r?.nickname ?? r?.author ?? "익명",
+            ),
             createdAt: String(r?.createdAt ?? ""),
             content: String(r?.content ?? ""),
             likeCount: Number(r?.likeCount ?? r?.likes ?? 0),
@@ -170,7 +175,9 @@ const MusicNewsDetailScreen = () => {
   const newsId = route.params?.newsId;
   const newsFromParams = route.params?.news;
 
-  const [news, setNews] = useState<MusicNewsDetailItem | null>(newsFromParams ?? null);
+  const [news, setNews] = useState<MusicNewsDetailItem | null>(
+    newsFromParams ?? null,
+  );
   const [loading, setLoading] = useState(!!newsId);
   const [error, setError] = useState<string | null>(null);
 
@@ -197,22 +204,40 @@ const MusicNewsDetailScreen = () => {
   const comments = normalizeComments(news?.commentsData);
   const displayedComments = comments.length > 0 ? comments : [DUMMY_COMMENT];
   const likeCount = Number((news as any)?.likeCount ?? news?.likes ?? 0);
-  const commentCount = Number((news as any)?.commentCount ?? news?.comments ?? comments.length);
-  const scrapCount = Number((news as any)?.scrapCount ?? (news as any)?.bookmarks ?? 0);
+  const commentCount = Number(
+    (news as any)?.commentCount ?? news?.comments ?? comments.length,
+  );
+  const scrapCount = Number(
+    (news as any)?.scrapCount ?? (news as any)?.bookmarks ?? 0,
+  );
 
   if (loading) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center", flex: 1 }]}>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center", flex: 1 },
+        ]}
+      >
         <ActivityIndicator size="large" color={GRAY.DARK} />
-        <Text style={{ marginTop: 12, fontSize: 14, color: GRAY.DARK_2 }}>공연소식을 불러오는 중...</Text>
+        <Text style={{ marginTop: 12, fontSize: 14, color: GRAY.DARK_2 }}>
+          공연소식을 불러오는 중...
+        </Text>
       </View>
     );
   }
 
   if (error || !news) {
     return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center", flex: 1 }]}>
-        <Text style={{ fontSize: 14, color: GRAY.DARK_2, textAlign: "center" }}>{error ?? "정보를 불러올 수 없습니다."}</Text>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center", flex: 1 },
+        ]}
+      >
+        <Text style={{ fontSize: 14, color: GRAY.DARK_2, textAlign: "center" }}>
+          {error ?? "정보를 불러올 수 없습니다."}
+        </Text>
         {newsId && (
           <Pressable onPress={fetchDetail} style={{ marginTop: 16 }}>
             <Text style={{ fontSize: 14, color: "#0057D9" }}>다시 시도</Text>
@@ -232,7 +257,9 @@ const MusicNewsDetailScreen = () => {
         <View style={styles.posterWrapper}>
           <Image
             source={{
-              uri: news.imageUrl || "https://via.placeholder.com/400x240?text=CLASSIC+ARTIST+CONCERT",
+              uri:
+                news.imageUrl ||
+                "https://via.placeholder.com/400x240?text=CLASSIC+ARTIST+CONCERT",
             }}
             style={[styles.posterImage, { width, height: width * 0.6 }]}
             resizeMode="cover"
@@ -248,24 +275,44 @@ const MusicNewsDetailScreen = () => {
           <View style={styles.infoCard}>
             {news.authorId && (
               <View style={styles.infoRow}>
-                <MaterialCommunityIcons name="account-outline" size={18} color={GRAY.DARK} />
+                <MaterialCommunityIcons
+                  name="account-outline"
+                  size={18}
+                  color={GRAY.DARK}
+                />
                 <Text style={styles.infoText}>{news.authorId}</Text>
               </View>
             )}
             <View style={styles.infoRow}>
-              <MaterialCommunityIcons name="calendar-outline" size={18} color={GRAY.DARK} />
+              <MaterialCommunityIcons
+                name="calendar-outline"
+                size={18}
+                color={GRAY.DARK}
+              />
               <Text style={styles.infoText}>예정일 : {news.date}</Text>
             </View>
             <View style={styles.infoRow}>
-              <MaterialCommunityIcons name="clock-outline" size={18} color={GRAY.DARK} />
+              <MaterialCommunityIcons
+                name="clock-outline"
+                size={18}
+                color={GRAY.DARK}
+              />
               <Text style={styles.infoText}>예정 시간 : {news.time}</Text>
             </View>
             <View style={styles.infoRow}>
-              <MaterialCommunityIcons name="map-marker-outline" size={18} color={GRAY.DARK} />
+              <MaterialCommunityIcons
+                name="map-marker-outline"
+                size={18}
+                color={GRAY.DARK}
+              />
               <Text style={styles.infoText}>장소: {news.place}</Text>
             </View>
             <View style={styles.infoRow}>
-              <MaterialCommunityIcons name="phone-outline" size={18} color={GRAY.DARK} />
+              <MaterialCommunityIcons
+                name="phone-outline"
+                size={18}
+                color={GRAY.DARK}
+              />
               <Text style={styles.infoText}>문의: {news.contact}</Text>
             </View>
           </View>
@@ -277,110 +324,154 @@ const MusicNewsDetailScreen = () => {
               <Text style={styles.attachmentsTitle}>첨부파일</Text>
               {news.attachments.map((file, index) => (
                 <Pressable key={index} style={styles.fileRow}>
-                  <MaterialCommunityIcons name="paperclip" size={18} color={GRAY.DARK} />
+                  <MaterialCommunityIcons
+                    name="paperclip"
+                    size={18}
+                    color={GRAY.DARK}
+                  />
                   <Text style={styles.fileName} numberOfLines={1}>
                     {file.name}
                   </Text>
                   <Text style={styles.fileSize}>{file.size}</Text>
-                  <MaterialCommunityIcons name="download" size={20} color={GRAY.DARK} />
+                  <MaterialCommunityIcons
+                    name="download"
+                    size={20}
+                    color={GRAY.DARK}
+                  />
                 </Pressable>
               ))}
             </View>
           )}
 
-          <View style={styles.bodyDivider} />
           <View style={styles.actionRow}>
             <View style={styles.actionItem}>
-              <Ionicons name="heart-outline" size={21} color="#FFD6D6" />
+              <Ionicons name="heart-outline" size={21} color={RED.DEFAULT} />
               <Text style={styles.actionCount}>{likeCount}</Text>
             </View>
             <View style={styles.actionItem}>
-              <Ionicons name="chatbubble-outline" size={19} color={GRAY.DARK_1} />
+              <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
               <Text style={styles.actionCount}>{commentCount}</Text>
             </View>
             <View style={styles.actionItem}>
-              <Ionicons name="bookmark-outline" size={20} color="#DDE5FF" />
+              <Ionicons name="bookmark-outline" size={20} color="#FFC107" />
               <Text style={styles.actionCount}>{scrapCount}</Text>
             </View>
           </View>
 
           <View style={styles.commentList}>
             {displayedComments.map((comment) => (
-                <View
-                  key={comment.id}
-                  style={[
-                    styles.commentCard,
-                    comment.isMine && styles.myCommentCard,
-                  ]}
-                >
-                  <View style={styles.commentTopRow}>
-                    <View style={styles.commentAuthorRow}>
-                      <View style={styles.avatarCircle}>
-                        <Ionicons name="person-outline" size={18} color={GRAY.MEDIUM} />
-                      </View>
-                      <View style={styles.commentHeaderText}>
-                        <View style={styles.commentMetaRow}>
-                          <Text style={styles.commentAuthor}>{comment.author}</Text>
-                          {!!comment.createdAt && (
-                            <Text style={styles.commentDate}>{formatTimeAgo(comment.createdAt)}</Text>
-                          )}
-                        </View>
-                        <Text style={styles.commentContent}>{comment.content}</Text>
-                      </View>
+              <View
+                key={comment.id}
+                style={[
+                  styles.commentCard,
+                  comment.isMine && styles.myCommentCard,
+                ]}
+              >
+                <View style={styles.commentTopRow}>
+                  <View style={styles.commentAuthorRow}>
+                    <View style={styles.avatarCircle}>
+                      <Ionicons
+                        name="person-outline"
+                        size={18}
+                        color={GRAY.MEDIUM}
+                      />
                     </View>
-                    <Ionicons name="ellipsis-vertical" size={18} color={MAIN.DEFAULT} />
+                    <View style={styles.commentHeaderText}>
+                      <View style={styles.commentMetaRow}>
+                        <Text style={styles.commentAuthor}>
+                          {comment.author}
+                        </Text>
+                        {!!comment.createdAt && (
+                          <Text style={styles.commentDate}>
+                            {formatTimeAgo(comment.createdAt)}
+                          </Text>
+                        )}
+                      </View>
+                      <Text style={styles.commentContent}>
+                        {comment.content}
+                      </Text>
+                    </View>
                   </View>
+                  <Ionicons
+                    name="ellipsis-vertical"
+                    size={18}
+                    color={MAIN.DEFAULT}
+                  />
+                </View>
 
-                  <View style={styles.commentStats}>
-                    <Ionicons
-                      name={comment.isLiked ? "heart" : "heart-outline"}
-                      size={20}
-                      color={comment.isLiked ? RED.DEFAULT : "#FFCACA"}
-                    />
-                    <Text style={styles.commentCount}>{comment.likeCount}</Text>
-                    {comment.replyCount > 0 && (
-                      <>
-                        <Ionicons name="chatbubble-outline" size={18} color={MAIN.DEFAULT} />
-                        <Text style={styles.commentCount}>{comment.replyCount}</Text>
-                      </>
-                    )}
-                  </View>
-                  {!!comment.replies?.length && (
-                    <View style={styles.replyList}>
-                      {comment.replies.map((reply) => (
-                        <View key={reply.id} style={styles.replyRow}>
-                          <View style={styles.replyElbow} />
-                          <View style={styles.replyAvatarCircle}>
-                            <Ionicons name="person-outline" size={14} color={GRAY.MEDIUM} />
-                          </View>
-                          <View style={styles.replyBody}>
-                            <View style={styles.replyMetaRow}>
-                              <Text style={styles.replyAuthor}>{reply.author}</Text>
-                              {!!reply.createdAt && (
-                                <Text style={styles.replyDate}>{formatTimeAgo(reply.createdAt)}</Text>
-                              )}
-                            </View>
-                            <Text style={styles.replyContent}>{reply.content}</Text>
-                            <View style={styles.replyStats}>
-                              <Ionicons
-                                name={reply.isLiked ? "heart" : "heart-outline"}
-                                size={16}
-                                color={reply.isLiked ? RED.DEFAULT : "#FFCACA"}
-                              />
-                              <Text style={styles.replyCount}>{reply.likeCount ?? 0}</Text>
-                            </View>
-                          </View>
-                        </View>
-                      ))}
-                    </View>
+                <View style={styles.commentStats}>
+                  <Ionicons
+                    name={comment.isLiked ? "heart" : "heart-outline"}
+                    size={20}
+                    color={comment.isLiked ? RED.DEFAULT : "#FFCACA"}
+                  />
+                  <Text style={styles.commentCount}>{comment.likeCount}</Text>
+                  {comment.replyCount > 0 && (
+                    <>
+                      <Ionicons
+                        name="chatbubble-outline"
+                        size={18}
+                        color={MAIN.DEFAULT}
+                      />
+                      <Text style={styles.commentCount}>
+                        {comment.replyCount}
+                      </Text>
+                    </>
                   )}
                 </View>
+                {!!comment.replies?.length && (
+                  <View style={styles.replyList}>
+                    {comment.replies.map((reply) => (
+                      <View key={reply.id} style={styles.replyRow}>
+                        <View style={styles.replyElbow} />
+                        <View style={styles.replyAvatarCircle}>
+                          <Ionicons
+                            name="person-outline"
+                            size={14}
+                            color={GRAY.MEDIUM}
+                          />
+                        </View>
+                        <View style={styles.replyBody}>
+                          <View style={styles.replyMetaRow}>
+                            <Text style={styles.replyAuthor}>
+                              {reply.author}
+                            </Text>
+                            {!!reply.createdAt && (
+                              <Text style={styles.replyDate}>
+                                {formatTimeAgo(reply.createdAt)}
+                              </Text>
+                            )}
+                          </View>
+                          <Text style={styles.replyContent}>
+                            {reply.content}
+                          </Text>
+                          <View style={styles.replyStats}>
+                            <Ionicons
+                              name={reply.isLiked ? "heart" : "heart-outline"}
+                              size={16}
+                              color={reply.isLiked ? RED.DEFAULT : "#FFCACA"}
+                            />
+                            <Text style={styles.replyCount}>
+                              {reply.likeCount ?? 0}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                )}
+              </View>
             ))}
           </View>
         </View>
       </ScrollView>
 
-      <View style={[styles.commentInputWrapper, { paddingBottom: (bottom || 0) + 10 }]}>
+      <View
+        style={[
+          styles.commentInputWrapper,
+          { paddingBottom: (bottom || 0) + 10 },
+        ]}
+      >
         <CommentInputBar placeholder="댓글을 입력하세요" />
       </View>
     </View>

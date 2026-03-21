@@ -7,7 +7,7 @@ import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
 import styles from "./styles";
 import { getCommunityDetail } from "../../lib/apis/community/communityApi";
 import type { CommunityDetailResponse } from "../../lib/apis/community/types";
-import { GRAY, MAIN, RED } from "../../color";
+import { BLACK, GRAY, MAIN, RED } from "../../color";
 
 type CommunityDetailRouteParams = {
   communityId: string;
@@ -166,23 +166,20 @@ const CommunityDetailScreen = () => {
         <View style={styles.body}>
           <Text style={styles.bodyText}>{data.content}</Text>
         </View>
-        <View style={styles.bodyDivider} />
         <View style={styles.actionRow}>
           <View style={styles.actionItem}>
-            <Ionicons name="heart-outline" size={21} color="#FFD6D6" />
+            <Ionicons name="heart-outline" size={21} color={RED.DEFAULT} />
             <Text style={styles.actionCount}>{likeCount}</Text>
           </View>
           <View style={styles.actionItem}>
-            <Ionicons name="chatbubble-outline" size={19} color={GRAY.DARK_1} />
+            <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
             <Text style={styles.actionCount}>{commentCount}</Text>
           </View>
           <View style={styles.actionItem}>
-            <Ionicons name="bookmark-outline" size={20} color="#DDE5FF" />
+            <Ionicons name="bookmark-outline" size={20} color="#FFC107" />
             <Text style={styles.actionCount}>{scrapCount}</Text>
           </View>
         </View>
-        <View style={styles.actionDivider} />
-
         <View style={styles.commentList}>
           {displayedComments.map((comment) => (
               <View

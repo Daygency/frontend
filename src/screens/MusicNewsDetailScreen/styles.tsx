@@ -86,23 +86,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GRAY.DARK_2,
   },
-  bodyDivider: {
-    height: 1,
-    backgroundColor: GRAY.DARK_1,
-    marginBottom: 0,
-    marginHorizontal: -20,
-  },
   actionRow: {
     height: 54,
     flexDirection: "row",
     alignItems: "center",
     gap: 44,
-  },
-  actionDivider: {
-    height: 1,
-    backgroundColor: GRAY.MEDIUM,
-    marginHorizontal: -20,
-    marginBottom: 10,
   },
   actionItem: {
     flexDirection: "row",
@@ -111,7 +99,7 @@ const styles = StyleSheet.create({
   },
   actionCount: {
     fontSize: 16,
-    color: "#717182",
+    color: BLACK,
     fontWeight: "600",
   },
   firstCommentPlaceholder: {
@@ -261,8 +249,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingTop: 12,
     backgroundColor: WHITE,
-    borderTopWidth: 1,
-    borderTopColor: GRAY.MEDIUM,
   },
 });
 

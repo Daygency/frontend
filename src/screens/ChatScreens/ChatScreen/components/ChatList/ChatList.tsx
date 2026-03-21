@@ -172,12 +172,12 @@ const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
                         flexShrink: 0,
                       }}
                     >
-                      <MaterialIcons name="person" size={18} color="#9CA3AF" />
+                      <MaterialIcons name="person" size={18} color="#000000" />
                       <Text
                         style={{
                           fontSize: 16,
                           fontWeight: "500",
-                          color: "#9CA3AF",
+                          color: "#000000",
                         }}
                       >
                         {item.roomsCount}

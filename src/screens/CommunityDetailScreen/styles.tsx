@@ -44,23 +44,11 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: BLACK,
   },
-  bodyDivider: {
-    height: 1,
-    backgroundColor: GRAY.DARK_1,
-    marginTop: 18,
-    marginHorizontal: -20,
-  },
   actionRow: {
     height: 54,
     flexDirection: "row",
     alignItems: "center",
     gap: 44,
-  },
-  actionDivider: {
-    height: 1,
-    backgroundColor: GRAY.MEDIUM,
-    marginHorizontal: -20,
-    marginBottom: 10,
   },
   actionItem: {
     flexDirection: "row",
@@ -69,7 +57,7 @@ const styles = StyleSheet.create({
   },
   actionCount: {
     fontSize: 16,
-    color: "#717182",
+    color: BLACK,
     fontWeight: "600",
   },
   statsRow: {
@@ -238,8 +226,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: WHITE,
-    borderTopWidth: 1,
-    borderTopColor: GRAY.MEDIUM,
   },
   inputWrapper: {
     flex: 1,
