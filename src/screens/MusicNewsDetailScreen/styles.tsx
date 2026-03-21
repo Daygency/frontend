@@ -181,8 +181,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginLeft: 18,
     paddingLeft: 16,
-    borderLeftWidth: 1,
-    borderLeftColor: GRAY.MEDIUM,
     gap: 8,
   },
   replyRow: {
@@ -190,14 +188,6 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     gap: 8,
     position: "relative",
-  },
-  replyElbow: {
-    position: "absolute",
-    left: -16,
-    top: 12,
-    width: 12,
-    height: 1,
-    backgroundColor: GRAY.MEDIUM,
   },
   replyAvatarCircle: {
     width: 24,

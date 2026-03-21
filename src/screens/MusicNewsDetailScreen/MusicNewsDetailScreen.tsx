@@ -423,7 +423,6 @@ const MusicNewsDetailScreen = () => {
                   <View style={styles.replyList}>
                     {comment.replies.map((reply) => (
                       <View key={reply.id} style={styles.replyRow}>
-                        <View style={styles.replyElbow} />
                         <View style={styles.replyAvatarCircle}>
                           <Ionicons
                             name="person-outline"

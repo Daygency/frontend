@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TextInput, View, Pressable } from "react-native";
-import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../color";
 import styles from "./styles";
 
@@ -18,9 +18,6 @@ const CommentInputBar = ({
 
   return (
     <View style={[styles.container, { paddingBottom }]}>
-      <Pressable style={styles.addButton} hitSlop={10}>
-        <Feather name="plus" size={22} color="#666" />
-      </Pressable>
       <TextInput
         style={styles.input}
         value={text}

@@ -10,14 +10,6 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
     gap: 10,
   },
-  addButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: GRAY.MEDIUM,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   input: {
     flex: 1,
     minHeight: 40,
