@@ -1,225 +1,160 @@
-# 스크랩(Scrap) API 명세
+# 내가 쓴 글 조회 API
 
 > Base URL: 개발 `http://localhost:3000`, 운영은 배포 URL 사용
+>  
+> 아래 4개 API는 모두 로그인 사용자 기준이며 `Authorization: Bearer {accessToken}` 이 필요합니다.
 
 ---
 
-## 목차
-
-1. [스크랩 목록 조회](#1-스크랩-목록-조회)
-2. [스크랩 단건 조회](#2-스크랩-단건-조회)
-3. [스크랩 생성](#3-스크랩-생성)
-4. [스크랩 삭제 (ID)](#4-스크랩-삭제-id)
-5. [스크랩 삭제 (대상 기준)](#5-스크랩-삭제-대상-기준)
-
----
-
-## 스크랩 모델 요약
-
-| 필드 | 타입 | 설명 |
-|------|------|------|
-| id | string | 스크랩 ID (UUID) |
-| createdAt | string | 생성일시 (ISO 8601) |
-| targetType | enum | 스크랩 대상 타입 (`NEWS`, `COMMUNITY`, `ANNOUNCEMENT`) |
-| targetId | string | 스크랩 대상 ID |
-| user | object | 스크랩한 사용자 정보 (`User`) |
-
----
-
-## 1. 스크랩 목록 조회
-
-특정 대상(뉴스/커뮤니티/공고)의 스크랩 목록을 조회합니다.
+## 1) 내가 쓴 작성글 목록 API
 
 ### Endpoint
 
-```
-GET /scrap
-```
+`GET /users/posts/my`
 
-### Query Parameters
+### 설명
 
-| 파라미터 | 타입 | 필수 | 설명 |
-|----------|------|------|------|
-| targetType | enum | O | `NEWS`, `COMMUNITY`, `ANNOUNCEMENT` |
-| targetId | string | O | 스크랩 대상 ID (UUID) |
+- 내가 작성한 `커뮤니티`, `공연소식(news)`, `모집공고(announcement)`를 한 번에 조회합니다.
+- 타입별로 분리된 배열 형태로 반환합니다.
 
-### 인증
-
-- 인증 불필요 (public API)
-
-### Response (200)
+### Response (200) 예시
 
 ```json
 {
-  "count": 2,
-  "items": [
+  "community": [
     {
-      "id": "uuid-scrap-1",
-      "createdAt": "2026-03-21T10:00:00.000Z",
-      "targetType": "COMMUNITY",
-      "targetId": "uuid-community-1",
-      "user": { "userId": "uuid-user-1" }
+      "communityId": "uuid-community-1",
+      "title": "커뮤니티 글 제목",
+      "category": "자유게시판",
+      "createdAt": "2026-03-21T10:00:00.000Z"
+    }
+  ],
+  "news": [
+    {
+      "newsId": "uuid-news-1",
+      "title": "공연소식 제목",
+      "place": "예술의전당",
+      "createdAt": "2026-03-20T09:00:00.000Z"
+    }
+  ],
+  "announcements": [
+    {
+      "postId": "uuid-announcement-1",
+      "title": "모집공고 제목",
+      "category": "행사",
+      "scheduledAt": "2026-04-01T00:00:00.000Z",
+      "deadlineAt": "2026-03-28T00:00:00.000Z"
     }
   ]
 }
 ```
 
-### 에러
-
-| 상태 | 설명 |
-|------|------|
-| 404 | 스크랩 대상 엔티티를 찾을 수 없음 |
-
 ---
 
-## 2. 스크랩 단건 조회
-
-스크랩 ID로 단건 조회합니다.
+## 2) 내가 쓴 공연소식(news) 목록 API
 
 ### Endpoint
 
+`GET /users/posts/my/news`
+
+### 설명
+
+- 내가 작성한 공연소식만 최신순(`createdAt DESC`)으로 조회합니다.
+
+### Response (200) 예시
+
+```json
+[
+  {
+    "newsId": "uuid-news-2",
+    "title": "두번째 공연소식",
+    "place": "롯데콘서트홀",
+    "createdAt": "2026-03-21T12:00:00.000Z"
+  },
+  {
+    "newsId": "uuid-news-1",
+    "title": "첫번째 공연소식",
+    "place": "예술의전당",
+    "createdAt": "2026-03-20T09:00:00.000Z"
+  }
+]
 ```
-GET /scrap/:id
-```
-
-### Path Parameters
-
-| 파라미터 | 타입 | 필수 | 설명 |
-|----------|------|------|------|
-| id | string | O | 스크랩 ID (UUID) |
-
-### 인증
-
-- 인증 불필요 (public API)
-
-### Response (200)
-
-`Scrap` 엔티티 1건 반환.
-
-### 에러
-
-| 상태 | 설명 |
-|------|------|
-| 404 | 스크랩을 찾을 수 없음 |
 
 ---
 
-## 3. 스크랩 생성
-
-스크랩을 생성합니다. 같은 유저가 같은 대상에 중복 스크랩하면 실패합니다.
+## 3) 내가 쓴 모집공고 목록 API
 
 ### Endpoint
 
+`GET /users/posts/my/announcements`
+
+### 설명
+
+- 내가 작성한 모집공고만 조회합니다.
+- 현재 엔티티에 생성일 컬럼이 없어 최신순 기준은 `postId DESC`를 사용합니다.
+
+### Response (200) 예시
+
+```json
+[
+  {
+    "postId": "uuid-announcement-2",
+    "title": "두번째 공고",
+    "category": "오디션(연주자모집)",
+    "scheduledAt": "2026-04-10T00:00:00.000Z",
+    "deadlineAt": "2026-04-03T00:00:00.000Z",
+    "status": "OPEN"
+  }
+]
 ```
-POST /scrap
-```
-
-### Headers
-
-| 헤더 | 설명 |
-|------|------|
-| Authorization | Bearer {accessToken} |
-
-### 인증
-
-- **필수**
-- `AuthGuard('access')` 사용
-
-### Request Body
-
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| targetType | enum | O | `NEWS`, `COMMUNITY`, `ANNOUNCEMENT` |
-| targetId | string | O | 스크랩 대상 ID (UUID) |
-
-### Response (201)
-
-생성된 `Scrap` 엔티티 반환.
-
-### 에러
-
-| 상태 | 설명 |
-|------|------|
-| 401 | 인증 필요 |
-| 404 | 스크랩 대상 엔티티를 찾을 수 없음 |
-| 409 | 이미 스크랩한 대상 |
 
 ---
 
-## 4. 스크랩 삭제 (ID)
-
-스크랩 ID로 삭제합니다. **본인이 스크랩한 항목만** 삭제 가능합니다.
+## 4) 내가 쓴 최신 글 묶음 조회 API
 
 ### Endpoint
 
-```
-DELETE /scrap/:id
-```
+`GET /users/posts/my/highlights`
 
-### Headers
+### 설명
 
-| 헤더 | 설명 |
-|------|------|
-| Authorization | Bearer {accessToken} |
+- 한 번의 요청으로 아래를 동시에 조회합니다.
+  - 최신 커뮤니티 글 1개
+  - 최신 공연소식 5개
+  - 최신 모집공고 1개
+- 최신 모집공고 기준은 `postId DESC`를 사용합니다.
 
-### Path Parameters
-
-| 파라미터 | 타입 | 필수 | 설명 |
-|----------|------|------|------|
-| id | string | O | 스크랩 ID (UUID) |
-
-### Response (200)
+### Response (200) 예시
 
 ```json
 {
-  "success": true
+  "latestCommunity": {
+    "communityId": "uuid-community-9",
+    "title": "가장 최근 커뮤니티 글",
+    "category": "질문게시판",
+    "createdAt": "2026-03-21T13:00:00.000Z"
+  },
+  "recentNews": [
+    {
+      "newsId": "uuid-news-9",
+      "title": "가장 최근 공연소식",
+      "place": "세종문화회관",
+      "createdAt": "2026-03-21T12:30:00.000Z"
+    }
+  ],
+  "latestAnnouncement": {
+    "postId": "uuid-announcement-9",
+    "title": "가장 최근 모집공고",
+    "category": "행사",
+    "scheduledAt": "2026-04-20T00:00:00.000Z",
+    "deadlineAt": "2026-04-10T00:00:00.000Z"
+  }
 }
 ```
-
-### 에러
-
-| 상태 | 설명 |
-|------|------|
-| 401 | 인증 필요 |
-| 403 | 삭제 권한 없음 (본인 스크랩 아님) |
-| 404 | 스크랩을 찾을 수 없음 |
 
 ---
 
-## 5. 스크랩 삭제 (대상 기준)
+## 공통 에러
 
-대상 타입/대상 ID 기준으로 현재 로그인 유저의 스크랩을 취소합니다.
-
-### Endpoint
-
-```
-DELETE /scrap?targetType={TARGET_TYPE}&targetId={UUID}
-```
-
-### Headers
-
-| 헤더 | 설명 |
-|------|------|
-| Authorization | Bearer {accessToken} |
-
-### Query Parameters
-
-| 파라미터 | 타입 | 필수 | 설명 |
-|----------|------|------|------|
-| targetType | enum | O | `NEWS`, `COMMUNITY`, `ANNOUNCEMENT` |
-| targetId | string | O | 스크랩 대상 ID (UUID) |
-
-### Response (200)
-
-```json
-{
-  "success": true
-}
-```
-
-### 에러
-
-| 상태 | 설명 |
-|------|------|
-| 401 | 인증 필요 |
-| 404 | 대상 엔티티 또는 내 스크랩을 찾을 수 없음 |
+- `401 Unauthorized`: 인증 토큰이 없거나 유효하지 않음
+ 

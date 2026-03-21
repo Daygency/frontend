@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { Pressable } from "react-native";
 import styles from "./styles";
-import { MaterialIcons, Octicons, Ionicons } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MAIN } from "../../../../color";
 import Logo from "../../../../components/Logo/Logo";
 import { useAuth } from "../../../../contexts/AuthContext";
@@ -55,17 +55,21 @@ const PortfolioHeader = () => {
         ) : null}
       </View>
       <View style={styles.iconContainer}>
+        <Pressable style={styles.iconButton}>
+          <MaterialCommunityIcons
+            name="bookmark-outline"
+            size={23}
+            color={MAIN.DEFAULT}
+          />
+        </Pressable>
+        <Pressable style={styles.iconButton}>
+          <MaterialCommunityIcons name="share-variant" size={23} color={MAIN.DEFAULT} />
+        </Pressable>
         <Pressable
           style={styles.iconButton}
           onPress={() => navigation.navigate(RootRoutes.SETTINGS)}
         >
-          <Ionicons name="settings-outline" size={24} color="black" />
-        </Pressable>
-        <Pressable style={styles.iconButton}>
-          <MaterialIcons name="bookmark-outline" size={24} color="black" />
-        </Pressable>
-        <Pressable style={styles.iconButton}>
-          <Octicons name="share-android" size={23} color={MAIN.DEFAULT} />
+          <MaterialCommunityIcons name="cog-outline" size={23} color={MAIN.DEFAULT} />
         </Pressable>
       </View>
     </View>
