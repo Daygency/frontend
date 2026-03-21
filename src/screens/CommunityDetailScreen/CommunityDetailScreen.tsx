@@ -181,6 +181,7 @@ const CommunityDetailScreen = () => {
             <Text style={styles.actionCount}>{scrapCount}</Text>
           </View>
         </View>
+        <View style={styles.actionDivider} />
 
         <View style={styles.commentList}>
           {displayedComments.map((comment) => (

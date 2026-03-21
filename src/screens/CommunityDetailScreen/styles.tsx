@@ -46,14 +46,21 @@ const styles = StyleSheet.create({
   },
   bodyDivider: {
     height: 1,
-    backgroundColor: GRAY.MEDIUM,
+    backgroundColor: GRAY.DARK_1,
     marginTop: 18,
+    marginHorizontal: -20,
   },
   actionRow: {
     height: 54,
     flexDirection: "row",
     alignItems: "center",
     gap: 44,
+  },
+  actionDivider: {
+    height: 1,
+    backgroundColor: GRAY.MEDIUM,
+    marginHorizontal: -20,
+    marginBottom: 10,
   },
   actionItem: {
     flexDirection: "row",
