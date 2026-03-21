@@ -24,6 +24,12 @@ import {
   getComments,
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
+import {
+  createLike,
+  deleteLikeByTarget,
+  getLikes,
+} from "../../lib/apis/like/likeApi";
+import { useAuth } from "../../contexts/AuthContext";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -163,6 +169,7 @@ function buildCommentTree(raw: ApiCommentItem[]): CommentItem[] {
 
 const MusicNewsDetailScreen = () => {
   const route = useRoute<MusicNewsDetailRouteProp>();
+  const { user } = useAuth();
   const { bottom } = useSafeAreaInsets();
   const newsId = route.params?.newsId;
   const newsFromParams = route.params?.news;
@@ -172,6 +179,8 @@ const MusicNewsDetailScreen = () => {
   );
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
   const [loading, setLoading] = useState(!!newsId);
   const [error, setError] = useState<string | null>(null);
 
@@ -197,7 +206,6 @@ const MusicNewsDetailScreen = () => {
   const { width } = Dimensions.get("window");
   const displayedComments = comments;
   const targetNewsId = newsId ?? news?.id;
-  const likeCount = Number((news as any)?.likeCount ?? news?.likes ?? 0);
   const commentCount = Number(
     (news as any)?.commentCount ?? news?.comments ?? comments.length,
   );
@@ -215,6 +223,50 @@ const MusicNewsDetailScreen = () => {
       if (res) setComments(buildCommentTree(res));
     })();
   }, [targetNewsId]);
+
+  useEffect(() => {
+    if (!targetNewsId) return;
+    (async () => {
+      const res = await getLikes({
+        likeType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (!res) return;
+      setLikeCount(res.count);
+      const myId = user?.socialId;
+      setLiked(
+        !!myId &&
+          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+      );
+    })();
+  }, [targetNewsId, user?.socialId]);
+
+  const handleToggleLike = async () => {
+    if (!targetNewsId) return;
+    if (liked) {
+      const res = await deleteLikeByTarget({
+        likeType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "좋아요 취소에 실패했습니다.");
+        return;
+      }
+      setLiked(false);
+      setLikeCount((prev) => Math.max(0, prev - 1));
+      return;
+    }
+    const created = await createLike({
+      likeType: "NEWS",
+      targetId: targetNewsId,
+    });
+    if (!created) {
+      Alert.alert("알림", "좋아요에 실패했습니다.");
+      return;
+    }
+    setLiked(true);
+    setLikeCount((prev) => prev + 1);
+  };
 
   const handleCreateComment = async (content: string) => {
     if (!targetNewsId) return;
@@ -370,7 +422,13 @@ const MusicNewsDetailScreen = () => {
 
           <View style={styles.actionRow}>
             <View style={styles.actionItem}>
-              <Ionicons name="heart-outline" size={21} color={RED.DEFAULT} />
+              <Pressable onPress={handleToggleLike} hitSlop={8}>
+                <Ionicons
+                  name={liked ? "heart" : "heart-outline"}
+                  size={21}
+                  color={RED.DEFAULT}
+                />
+              </Pressable>
               <Text style={styles.actionCount}>{likeCount}</Text>
             </View>
             <View style={styles.actionItem}>

@@ -13,6 +13,12 @@ import {
   getComments,
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
+import {
+  createLike,
+  deleteLikeByTarget,
+  getLikes,
+} from "../../lib/apis/like/likeApi";
+import { useAuth } from "../../contexts/AuthContext";
 
 type CommunityDetailRouteParams = {
   communityId: string;
@@ -98,13 +104,15 @@ function buildCommentTree(raw: ApiCommentItem[]): CommentItem[] {
 const CommunityDetailScreen = () => {
   const route = useRoute<CommunityDetailRouteProp>();
   const { communityId } = route.params;
+  const { user } = useAuth();
   const { bottom } = useSafeAreaInsets();
   const [data, setData] = useState<CommunityDetailResponse | null>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
+  const [liked, setLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const displayedComments = comments;
-  const likeCount = Number((data as any)?.likeCount ?? (data as any)?.likes ?? 0);
   const commentCount = Number(
     (data as any)?.commentCount ?? (data as any)?.commentsCount ?? comments.length
   );
@@ -128,6 +136,48 @@ const CommunityDetailScreen = () => {
       if (res) setComments(buildCommentTree(res));
     })();
   }, [communityId]);
+
+  useEffect(() => {
+    (async () => {
+      const res = await getLikes({
+        likeType: "COMMUNITY",
+        targetId: communityId,
+      });
+      if (!res) return;
+      setLikeCount(res.count);
+      const myId = user?.socialId;
+      setLiked(
+        !!myId &&
+          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+      );
+    })();
+  }, [communityId, user?.socialId]);
+
+  const handleToggleLike = async () => {
+    if (liked) {
+      const res = await deleteLikeByTarget({
+        likeType: "COMMUNITY",
+        targetId: communityId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "좋아요 취소에 실패했습니다.");
+        return;
+      }
+      setLiked(false);
+      setLikeCount((prev) => Math.max(0, prev - 1));
+      return;
+    }
+    const created = await createLike({
+      likeType: "COMMUNITY",
+      targetId: communityId,
+    });
+    if (!created) {
+      Alert.alert("알림", "좋아요에 실패했습니다.");
+      return;
+    }
+    setLiked(true);
+    setLikeCount((prev) => prev + 1);
+  };
 
   const handleCreateComment = async (content: string) => {
     const created = await createComment({
@@ -193,7 +243,13 @@ const CommunityDetailScreen = () => {
         </View>
         <View style={styles.actionRow}>
           <View style={styles.actionItem}>
-            <Ionicons name="heart-outline" size={21} color={RED.DEFAULT} />
+            <Pressable onPress={handleToggleLike} hitSlop={8}>
+              <Ionicons
+                name={liked ? "heart" : "heart-outline"}
+                size={21}
+                color={RED.DEFAULT}
+              />
+            </Pressable>
             <Text style={styles.actionCount}>{likeCount}</Text>
           </View>
           <View style={styles.actionItem}>
