@@ -10,32 +10,30 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Section from "../../../../components/Section/Section";
 import { RootRoutes } from "../../../../navigations/routes";
-import ImageScrollView from "../../../../components/ImageScrollView/ImageScrollView";
 import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
 import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
 import AnnouncementCard from "../../../../components/AnnouncementCard/AnnouncementCard";
 import styles from "../styles";
-import { getMyScrappedAnnouncements } from "../../../../lib/apis/scrap/scrapApi";
-import type { MyScrappedAnnouncementItem } from "../../../../lib/apis/scrap/types";
+import EventNewsCard, {
+  DEFAULT_NEWS_IMAGE_URI,
+} from "../../../../components/EventNewsCard/EventNewsCard";
+import {
+  getMyScrappedAnnouncements,
+  getMyScrappedHighlights,
+} from "../../../../lib/apis/scrap/scrapApi";
+import type {
+  MyScrappedAnnouncementItem,
+  MyScrappedCommunityItem,
+  MyScrappedNewsItem,
+} from "../../../../lib/apis/scrap/types";
 
 type ScrapTab = "모집공고" | "라운지";
-
-const MOCK_SCRAP_POSTS = [
-  {
-    id: "1",
-    title: "교향악단 바이올린 객원단원 채용",
-    contentPreview: "너무 떨렸는데 관객분들 반응이 좋아서 기분이 좋네",
-    author: "신바이올린",
-    date: "2025.11.20",
-    likes: 45,
-    comments: 5,
-    scraps: 45,
-  },
-];
 
 type RootStackParamList = {
   MyActivityList: { type: "posts"; source?: "scrap" };
   MyActivityNewsList: { source?: "scrap" };
+  CommunityDetail: { communityId: string };
+  MusicNewsDetail: { newsId: string };
   AnnouncementDetail: {
     postId?: string;
     title: string;
@@ -49,6 +47,10 @@ const ScrapScene = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [selectedTab, setSelectedTab] = useState<ScrapTab>("라운지");
   const [announcementItems, setAnnouncementItems] = useState<MyScrappedAnnouncementItem[]>([]);
+  const [latestCommunity, setLatestCommunity] = useState<MyScrappedCommunityItem | null>(
+    null,
+  );
+  const [latestNews, setLatestNews] = useState<MyScrappedNewsItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingInitial, setLoadingInitial] = useState(false);
@@ -104,6 +106,20 @@ const ScrapScene = () => {
     loadAnnouncements("initial");
   }, [selectedTab, loadAnnouncements]);
 
+  useEffect(() => {
+    if (selectedTab !== "라운지") return;
+    (async () => {
+      const res = await getMyScrappedHighlights();
+      if (!res) {
+        setLatestCommunity(null);
+        setLatestNews([]);
+        return;
+      }
+      setLatestCommunity(res.latestScrappedCommunity);
+      setLatestNews(res.latestScrappedNews);
+    })();
+  }, [selectedTab]);
+
   const renderLoungeContent = () => (
     <>
       <Section
@@ -111,8 +127,19 @@ const ScrapScene = () => {
         onPressMore={handlePressScrapCommunity}
         styles={{ content: { paddingHorizontal: 0 } }}
       >
-        {MOCK_SCRAP_POSTS.length > 0 ? (
-          MOCK_SCRAP_POSTS.map((item) => (
+        {latestCommunity ? (
+          [
+            {
+              id: latestCommunity.communityId,
+              title: latestCommunity.title,
+              contentPreview: latestCommunity.category ?? "",
+              author: "나",
+              date: formatDate(latestCommunity.createdAt),
+              likes: Number(latestCommunity.likeCount ?? 0),
+              comments: Number(latestCommunity.commentCount ?? 0),
+              views: Number(latestCommunity.viewCount ?? 0),
+            },
+          ].map((item) => (
             <CommunityCard
               key={item.id}
               title={item.title}
@@ -121,7 +148,12 @@ const ScrapScene = () => {
               date={item.date}
               likes={item.likes}
               comments={item.comments}
-              scraps={item.scraps}
+              views={item.views}
+              onPress={() =>
+                navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
+                  communityId: item.id,
+                })
+              }
             />
           ))
         ) : (
@@ -135,14 +167,35 @@ const ScrapScene = () => {
         onPressMore={handlePressScrapNews}
         styles={{ content: { paddingHorizontal: 0 } }}
       >
-        <ImageScrollView
-          key="scrap-news"
-          styles={{ container: {} }}
-          width={138}
-          height={264}
-          gap={14}
-          type="withText"
-        />
+        {latestNews.length > 0 ? (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={localStyles.newsRow}
+          >
+            {latestNews.map((item) => (
+              <View key={item.scrapId} style={localStyles.newsCard}>
+                <EventNewsCard
+                  title={item.title}
+                  place={item.place ?? ""}
+                  dateRange={formatDate(item.createdAt)}
+                  imageUrl={DEFAULT_NEWS_IMAGE_URI}
+                  width={138}
+                  height={138}
+                  onPress={() =>
+                    navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
+                      newsId: item.newsId,
+                    })
+                  }
+                />
+              </View>
+            ))}
+          </ScrollView>
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>스크랩한 공연 소식이 없습니다.</Text>
+          </View>
+        )}
       </Section>
     </>
   );
@@ -271,12 +324,28 @@ const localStyles = StyleSheet.create({
     paddingVertical: 10,
     alignItems: "center",
   },
+  newsRow: {
+    paddingHorizontal: 12,
+    gap: 14,
+  },
+  newsCard: {
+    width: 138,
+  },
 });
 
 function parseDDay(value?: string): number {
   if (!value) return 0;
   const num = parseInt(value.replace(/\D/g, ""), 10);
   return Number.isFinite(num) ? num : 0;
+}
+
+function formatDate(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (isNaN(d.getTime())) return value;
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
 }
 
 export default ScrapScene;

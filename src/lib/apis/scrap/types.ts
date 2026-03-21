@@ -48,3 +48,54 @@ export type GetMyScrappedAnnouncementsParams = {
   cursor?: string;
   limit?: number;
 };
+
+export type MyScrappedCommunityItem = {
+  scrapId: string;
+  scrappedAt: string;
+  communityId: string;
+  title: string;
+  category?: string;
+  createdAt: string;
+  likeCount?: number;
+  viewCount?: number;
+  commentCount?: number;
+};
+
+export type MyScrappedNewsItem = {
+  scrapId: string;
+  scrappedAt: string;
+  newsId: string;
+  title: string;
+  place?: string;
+  createdAt: string;
+  likeCount?: number;
+  viewCount?: number;
+  commentCount?: number;
+};
+
+export type MyScrappedCommunityResponse = {
+  items: MyScrappedCommunityItem[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
+export type MyScrappedNewsResponse = {
+  items: MyScrappedNewsItem[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
+export type GetMyScrappedCommunityParams = {
+  cursor?: string;
+  limit?: number;
+};
+
+export type GetMyScrappedNewsParams = {
+  cursor?: string;
+  limit?: number;
+};
+
+export type MyScrappedHighlightsResponse = {
+  latestScrappedCommunity: MyScrappedCommunityItem | null;
+  latestScrappedNews: MyScrappedNewsItem[];
+};

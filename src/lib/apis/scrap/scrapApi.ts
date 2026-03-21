@@ -3,9 +3,14 @@ import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
 import type {
   CreateScrapDto,
+  GetMyScrappedCommunityParams,
   GetMyScrappedAnnouncementsParams,
+  GetMyScrappedNewsParams,
   GetScrapsParams,
   GetScrapsResponse,
+  MyScrappedCommunityResponse,
+  MyScrappedHighlightsResponse,
+  MyScrappedNewsResponse,
   MyScrappedAnnouncementsResponse,
   ScrapItem,
 } from "./types";
@@ -113,6 +118,72 @@ export async function getMyScrappedAnnouncements(
     };
   } catch (e) {
     console.warn("[getMyScrappedAnnouncements] 에러:", e);
+    return null;
+  }
+}
+
+export async function getMyScrappedCommunity(
+  params?: GetMyScrappedCommunityParams,
+): Promise<MyScrappedCommunityResponse | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
+    const url = `${API_BASE}/users/posts/my/scraps/community${query ? `?${query}` : ""}`;
+    const res = await fetchWithAuth(url, { method: "GET", headers });
+    if (!res.ok) return null;
+    const raw = (await res.json()) as Partial<MyScrappedCommunityResponse>;
+    return {
+      items: Array.isArray(raw.items) ? raw.items : [],
+      nextCursor: raw.nextCursor ?? null,
+      hasMore: Boolean(raw.hasMore),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getMyScrappedNews(
+  params?: GetMyScrappedNewsParams,
+): Promise<MyScrappedNewsResponse | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
+    const url = `${API_BASE}/users/posts/my/scraps/news${query ? `?${query}` : ""}`;
+    const res = await fetchWithAuth(url, { method: "GET", headers });
+    if (!res.ok) return null;
+    const raw = (await res.json()) as Partial<MyScrappedNewsResponse>;
+    return {
+      items: Array.isArray(raw.items) ? raw.items : [],
+      nextCursor: raw.nextCursor ?? null,
+      hasMore: Boolean(raw.hasMore),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export async function getMyScrappedHighlights(): Promise<MyScrappedHighlightsResponse | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/users/posts/my/scraps/highlights`, {
+      method: "GET",
+      headers,
+    });
+    if (!res.ok) return null;
+    const raw = (await res.json()) as Partial<MyScrappedHighlightsResponse>;
+    return {
+      latestScrappedCommunity:
+        (raw.latestScrappedCommunity as MyScrappedHighlightsResponse["latestScrappedCommunity"]) ??
+        null,
+      latestScrappedNews: Array.isArray(raw.latestScrappedNews) ? raw.latestScrappedNews : [],
+    };
+  } catch {
     return null;
   }
 }

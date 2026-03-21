@@ -7,6 +7,8 @@ import styles from "./styles";
 import { RootRoutes } from "../../navigations/routes";
 import { getMyPosts } from "../../lib/apis/userPosts/myPostsApi";
 import type { MyCommunityPostItem } from "../../lib/apis/userPosts/types";
+import { getMyScrappedCommunity } from "../../lib/apis/scrap/scrapApi";
+import type { MyScrappedCommunityItem } from "../../lib/apis/scrap/types";
 
 type MyActivityListParams = {
   type: "posts" | "comments";
@@ -49,6 +51,10 @@ const MyActivityListScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, "MyActivityList">>();
   const { type, source } = route.params;
   const [myCommunityPosts, setMyCommunityPosts] = useState<MyCommunityPostItem[]>([]);
+  const [scrappedCommunity, setScrappedCommunity] = useState<MyScrappedCommunityItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     if (type !== "posts" || source === "scrap") return;
@@ -59,6 +65,22 @@ const MyActivityListScreen = () => {
         return;
       }
       setMyCommunityPosts(res.community);
+    })();
+  }, [type, source]);
+
+  useEffect(() => {
+    if (type !== "posts" || source !== "scrap") return;
+    (async () => {
+      const res = await getMyScrappedCommunity({ limit: 20 });
+      if (!res) {
+        setScrappedCommunity([]);
+        setNextCursor(null);
+        setHasMore(false);
+        return;
+      }
+      setScrappedCommunity(res.items);
+      setNextCursor(res.nextCursor);
+      setHasMore(res.hasMore);
     })();
   }, [type, source]);
 
@@ -78,10 +100,26 @@ const MyActivityListScreen = () => {
     [myCommunityPosts],
   );
 
+  const scrappedPostsData = useMemo(
+    () =>
+      scrappedCommunity.map((item) => ({
+        id: item.communityId,
+        title: item.title,
+        contentPreview: item.category ?? "",
+        author: "나",
+        date: formatDate(item.createdAt),
+        likes: Number(item.likeCount ?? 0),
+        comments: Number(item.commentCount ?? 0),
+        scraps: 0,
+        views: Number(item.viewCount ?? 0),
+      })),
+    [scrappedCommunity],
+  );
+
   const data =
     type === "posts"
       ? source === "scrap"
-        ? MOCK_POSTS
+        ? scrappedPostsData
         : myPostsData
       : MOCK_COMMENTS;
 
@@ -106,13 +144,35 @@ const MyActivityListScreen = () => {
             scraps={item.scraps}
             views={item.views}
             onPress={
-              type === "posts" && source !== "scrap"
+              type === "posts"
                 ? () => navigation.navigate(RootRoutes.COMMUNITY_DETAIL, { communityId: item.id })
                 : undefined
             }
           />
         )}
         contentContainerStyle={styles.listContent}
+        onEndReachedThreshold={0.4}
+        onEndReached={async () => {
+          if (type !== "posts" || source !== "scrap" || loadingMore || !hasMore) return;
+          setLoadingMore(true);
+          const res = await getMyScrappedCommunity({
+            limit: 20,
+            cursor: nextCursor ?? undefined,
+          });
+          if (res) {
+            setScrappedCommunity((prev) => [...prev, ...res.items]);
+            setNextCursor(res.nextCursor);
+            setHasMore(res.hasMore);
+          }
+          setLoadingMore(false);
+        }}
+        ListFooterComponent={
+          type === "posts" && source === "scrap" && loadingMore ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>불러오는 중...</Text>
+            </View>
+          ) : null
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
