@@ -1,5 +1,5 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { ScrollView, Text, View, ActivityIndicator } from "react-native";
+import { ScrollView, Text, View, ActivityIndicator, Alert, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,6 +8,11 @@ import styles from "./styles";
 import { getCommunityDetail } from "../../lib/apis/community/communityApi";
 import type { CommunityDetailResponse } from "../../lib/apis/community/types";
 import { BLACK, GRAY, MAIN, RED } from "../../color";
+import {
+  createComment,
+  getComments,
+} from "../../lib/apis/comment/commentApi";
+import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
 
 type CommunityDetailRouteParams = {
   communityId: string;
@@ -37,27 +42,6 @@ type CommentItem = {
   }>;
 };
 
-const DUMMY_COMMENT: CommentItem = {
-  id: "dummy-community-comment",
-  author: "익명1",
-  createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-  content: "축하드려요! 저도 다음에 도전해봐야겠어요",
-  likeCount: 5,
-  replyCount: 1,
-  isLiked: true,
-  isMine: true,
-  replies: [
-    {
-      id: "dummy-community-reply-1",
-      author: "익명2",
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      content: "저도 응원해요! 좋은 결과 있길 바라요 :)",
-      likeCount: 2,
-      isLiked: false,
-    },
-  ],
-};
-
 function formatTimeAgo(value?: string): string {
   if (!value) return "";
   const d = new Date(value);
@@ -72,32 +56,43 @@ function formatTimeAgo(value?: string): string {
   return `${Math.floor(diffMonths / 12)}년`;
 }
 
-function normalizeComments(raw: unknown): CommentItem[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.map((item, index) => {
-    const c = (item ?? {}) as Record<string, any>;
-    const user = (c.user ?? {}) as Record<string, any>;
-    return {
-      id: String(c.commentId ?? c.id ?? index),
-      author: String(user.nickname ?? c.nickname ?? c.author ?? "익명"),
-      createdAt: String(c.createdAt ?? ""),
-      content: String(c.content ?? ""),
-      likeCount: Number(c.likeCount ?? c.likes ?? 0),
-      replyCount: Number(c.replyCount ?? c.replies ?? 0),
-      isLiked: Boolean(c.isLiked),
-      isMine: Boolean(c.isMine),
-      replies: Array.isArray(c.replies)
-        ? c.replies.map((r: any, rIdx: number) => ({
-            id: String(r.replyId ?? r.id ?? `${c.commentId ?? c.id ?? index}-r-${rIdx}`),
-            author: String(r?.user?.nickname ?? r?.nickname ?? r?.author ?? "익명"),
-            createdAt: String(r?.createdAt ?? ""),
-            content: String(r?.content ?? ""),
-            likeCount: Number(r?.likeCount ?? r?.likes ?? 0),
-            isLiked: Boolean(r?.isLiked),
-          }))
-        : undefined,
-    };
+function mapCommentToUi(comment: ApiCommentItem): CommentItem {
+  return {
+    id: String(comment.id),
+    author: String(comment.user?.nickname ?? "익명"),
+    createdAt: String(comment.createdAt ?? ""),
+    content: String(comment.content ?? ""),
+    likeCount: Number((comment as any)?.likeCount ?? 0),
+    replyCount: 0,
+    isLiked: Boolean((comment as any)?.isLiked),
+    isMine: Boolean((comment as any)?.isMine),
+    replies: [],
+  };
+}
+
+function buildCommentTree(raw: ApiCommentItem[]): CommentItem[] {
+  const roots: CommentItem[] = [];
+  const childrenByParent = new Map<string, CommentItem[]>();
+
+  raw.forEach((comment) => {
+    const ui = mapCommentToUi(comment);
+    const parentId = comment.parentId ? String(comment.parentId) : null;
+    if (!parentId) {
+      roots.push(ui);
+      return;
+    }
+    const siblings = childrenByParent.get(parentId) ?? [];
+    siblings.push(ui);
+    childrenByParent.set(parentId, siblings);
   });
+
+  roots.forEach((root) => {
+    const replies = childrenByParent.get(root.id) ?? [];
+    root.replies = replies;
+    root.replyCount = replies.length;
+  });
+
+  return roots;
 }
 
 const CommunityDetailScreen = () => {
@@ -105,9 +100,10 @@ const CommunityDetailScreen = () => {
   const { communityId } = route.params;
   const { bottom } = useSafeAreaInsets();
   const [data, setData] = useState<CommunityDetailResponse | null>(null);
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
   const [loading, setLoading] = useState(true);
-  const comments = normalizeComments((data as any)?.comments);
-  const displayedComments = comments.length > 0 ? comments : [DUMMY_COMMENT];
+  const displayedComments = comments;
   const likeCount = Number((data as any)?.likeCount ?? (data as any)?.likes ?? 0);
   const commentCount = Number(
     (data as any)?.commentCount ?? (data as any)?.commentsCount ?? comments.length
@@ -122,6 +118,35 @@ const CommunityDetailScreen = () => {
       setLoading(false);
     })();
   }, [communityId]);
+
+  useEffect(() => {
+    (async () => {
+      const res = await getComments({
+        targetType: "COMMUNITY",
+        targetId: communityId,
+      });
+      if (res) setComments(buildCommentTree(res));
+    })();
+  }, [communityId]);
+
+  const handleCreateComment = async (content: string) => {
+    const created = await createComment({
+      content,
+      targetType: "COMMUNITY",
+      targetId: communityId,
+      parentId: replyTarget?.id,
+    });
+    if (!created) {
+      Alert.alert("알림", "댓글 작성에 실패했습니다.");
+      return;
+    }
+    const res = await getComments({
+      targetType: "COMMUNITY",
+      targetId: communityId,
+    });
+    if (res) setComments(buildCommentTree(res));
+    setReplyTarget(null);
+  };
 
   if (loading) {
     return (
@@ -220,6 +245,17 @@ const CommunityDetailScreen = () => {
                       <Text style={styles.commentCount}>{comment.replyCount}</Text>
                     </>
                   )}
+                  <Pressable
+                    onPress={() =>
+                      setReplyTarget({
+                        id: comment.id,
+                        author: comment.author,
+                      })
+                    }
+                    hitSlop={8}
+                  >
+                    <Text style={styles.replyActionText}>답글달기</Text>
+                  </Pressable>
                 </View>
                 {!!comment.replies?.length && (
                   <View style={styles.replyList}>
@@ -260,7 +296,24 @@ const CommunityDetailScreen = () => {
           { paddingBottom: bottom || 16 },
         ]}
       >
-        <CommentInputBar placeholder="댓글을 입력해주세요" />
+        {!!replyTarget && (
+          <View style={styles.replyComposerInfo}>
+            <Text style={styles.replyComposerText}>
+              {replyTarget.author}님에게 답글 작성 중
+            </Text>
+            <Pressable hitSlop={8} onPress={() => setReplyTarget(null)}>
+              <Text style={styles.replyComposerCancel}>취소</Text>
+            </Pressable>
+          </View>
+        )}
+        <CommentInputBar
+          placeholder={
+            replyTarget
+              ? `${replyTarget.author}님에게 답글을 입력해주세요`
+              : "댓글을 입력해주세요"
+          }
+          onSubmit={handleCreateComment}
+        />
       </View>
     </View>
   );

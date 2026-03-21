@@ -8,6 +8,7 @@ import {
   View,
   Pressable,
   Dimensions,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -18,6 +19,11 @@ import { getNewsDetail } from "../../lib/apis/news/newsApi";
 import type { NewsDetailResponse } from "../../lib/apis/news/types";
 import { API_BASE } from "../../lib/apis/api";
 import styles from "./styles";
+import {
+  createComment,
+  getComments,
+} from "../../lib/apis/comment/commentApi";
+import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -63,27 +69,6 @@ type CommentItem = {
     likeCount?: number;
     isLiked?: boolean;
   }>;
-};
-
-const DUMMY_COMMENT: CommentItem = {
-  id: "dummy-news-comment",
-  author: "익명1",
-  createdAt: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(),
-  content: "축하드려요! 저도 다음에 도전해봐야겠어요",
-  likeCount: 5,
-  replyCount: 1,
-  isLiked: true,
-  isMine: true,
-  replies: [
-    {
-      id: "dummy-news-reply-1",
-      author: "익명2",
-      createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-      content: "저도 응원해요! 좋은 결과 있길 바라요 :)",
-      likeCount: 2,
-      isLiked: false,
-    },
-  ],
 };
 
 function resolveFileUrl(file?: { url?: string } | null): string | undefined {
@@ -137,36 +122,43 @@ function formatTimeAgo(value?: string): string {
   return `${Math.floor(diffMonths / 12)}년`;
 }
 
-function normalizeComments(raw: unknown): CommentItem[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.map((item, index) => {
-    const c = (item ?? {}) as Record<string, any>;
-    const user = (c.user ?? {}) as Record<string, any>;
-    return {
-      id: String(c.commentId ?? c.id ?? index),
-      author: String(user.nickname ?? c.nickname ?? c.author ?? "익명"),
-      createdAt: String(c.createdAt ?? ""),
-      content: String(c.content ?? ""),
-      likeCount: Number(c.likeCount ?? c.likes ?? 0),
-      replyCount: Number(c.replyCount ?? c.replies ?? 0),
-      isLiked: Boolean(c.isLiked),
-      isMine: Boolean(c.isMine),
-      replies: Array.isArray(c.replies)
-        ? c.replies.map((r: any, rIdx: number) => ({
-            id: String(
-              r.replyId ?? r.id ?? `${c.commentId ?? c.id ?? index}-r-${rIdx}`,
-            ),
-            author: String(
-              r?.user?.nickname ?? r?.nickname ?? r?.author ?? "익명",
-            ),
-            createdAt: String(r?.createdAt ?? ""),
-            content: String(r?.content ?? ""),
-            likeCount: Number(r?.likeCount ?? r?.likes ?? 0),
-            isLiked: Boolean(r?.isLiked),
-          }))
-        : undefined,
-    };
+function mapCommentToUi(comment: ApiCommentItem): CommentItem {
+  return {
+    id: String(comment.id),
+    author: String(comment.user?.nickname ?? "익명"),
+    createdAt: String(comment.createdAt ?? ""),
+    content: String(comment.content ?? ""),
+    likeCount: Number((comment as any)?.likeCount ?? 0),
+    replyCount: 0,
+    isLiked: Boolean((comment as any)?.isLiked),
+    isMine: Boolean((comment as any)?.isMine),
+    replies: [],
+  };
+}
+
+function buildCommentTree(raw: ApiCommentItem[]): CommentItem[] {
+  const roots: CommentItem[] = [];
+  const childrenByParent = new Map<string, CommentItem[]>();
+
+  raw.forEach((comment) => {
+    const ui = mapCommentToUi(comment);
+    const parentId = comment.parentId ? String(comment.parentId) : null;
+    if (!parentId) {
+      roots.push(ui);
+      return;
+    }
+    const siblings = childrenByParent.get(parentId) ?? [];
+    siblings.push(ui);
+    childrenByParent.set(parentId, siblings);
   });
+
+  roots.forEach((root) => {
+    const replies = childrenByParent.get(root.id) ?? [];
+    root.replies = replies;
+    root.replyCount = replies.length;
+  });
+
+  return roots;
 }
 
 const MusicNewsDetailScreen = () => {
@@ -178,6 +170,8 @@ const MusicNewsDetailScreen = () => {
   const [news, setNews] = useState<MusicNewsDetailItem | null>(
     newsFromParams ?? null,
   );
+  const [comments, setComments] = useState<CommentItem[]>([]);
+  const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
   const [loading, setLoading] = useState(!!newsId);
   const [error, setError] = useState<string | null>(null);
 
@@ -201,8 +195,8 @@ const MusicNewsDetailScreen = () => {
   }, [newsId, fetchDetail]);
 
   const { width } = Dimensions.get("window");
-  const comments = normalizeComments(news?.commentsData);
-  const displayedComments = comments.length > 0 ? comments : [DUMMY_COMMENT];
+  const displayedComments = comments;
+  const targetNewsId = newsId ?? news?.id;
   const likeCount = Number((news as any)?.likeCount ?? news?.likes ?? 0);
   const commentCount = Number(
     (news as any)?.commentCount ?? news?.comments ?? comments.length,
@@ -210,6 +204,37 @@ const MusicNewsDetailScreen = () => {
   const scrapCount = Number(
     (news as any)?.scrapCount ?? (news as any)?.bookmarks ?? 0,
   );
+
+  useEffect(() => {
+    if (!targetNewsId) return;
+    (async () => {
+      const res = await getComments({
+        targetType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (res) setComments(buildCommentTree(res));
+    })();
+  }, [targetNewsId]);
+
+  const handleCreateComment = async (content: string) => {
+    if (!targetNewsId) return;
+    const created = await createComment({
+      content,
+      targetType: "NEWS",
+      targetId: targetNewsId,
+      parentId: replyTarget?.id,
+    });
+    if (!created) {
+      Alert.alert("알림", "댓글 작성에 실패했습니다.");
+      return;
+    }
+    const res = await getComments({
+      targetType: "NEWS",
+      targetId: targetNewsId,
+    });
+    if (res) setComments(buildCommentTree(res));
+    setReplyTarget(null);
+  };
 
   if (loading) {
     return (
@@ -418,6 +443,26 @@ const MusicNewsDetailScreen = () => {
                       </Text>
                     </>
                   )}
+                  <Pressable
+                    onPress={() =>
+                      setReplyTarget({
+                        id: comment.id,
+                        author: comment.author,
+                      })
+                    }
+                    hitSlop={8}
+                  >
+                    <Text
+                      style={{
+                        fontSize: 12,
+                        color: GRAY.DARK_2,
+                        fontWeight: "600",
+                        marginLeft: 2,
+                      }}
+                    >
+                      답글달기
+                    </Text>
+                  </Pressable>
                 </View>
                 {!!comment.replies?.length && (
                   <View style={styles.replyList}>
@@ -471,7 +516,34 @@ const MusicNewsDetailScreen = () => {
           { paddingBottom: bottom || 16 },
         ]}
       >
-        <CommentInputBar placeholder="댓글을 입력하세요" />
+        {!!replyTarget && (
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              paddingHorizontal: 20,
+              paddingTop: 10,
+            }}
+          >
+            <Text style={{ fontSize: 12, color: GRAY.DARK_100 }}>
+              {replyTarget.author}님에게 답글 작성 중
+            </Text>
+            <Pressable hitSlop={8} onPress={() => setReplyTarget(null)}>
+              <Text style={{ fontSize: 12, color: MAIN.DEFAULT, fontWeight: "600" }}>
+                취소
+              </Text>
+            </Pressable>
+          </View>
+        )}
+        <CommentInputBar
+          placeholder={
+            replyTarget
+              ? `${replyTarget.author}님에게 답글을 입력하세요`
+              : "댓글을 입력하세요"
+          }
+          onSubmit={handleCreateComment}
+        />
       </View>
     </View>
   );

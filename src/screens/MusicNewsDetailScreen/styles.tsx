@@ -239,6 +239,28 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: WHITE,
   },
+  replyActionText: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+    fontWeight: "600",
+    marginLeft: 2,
+  },
+  replyComposerInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    paddingTop: 10,
+  },
+  replyComposerText: {
+    fontSize: 12,
+    color: GRAY.DARK_100,
+  },
+  replyComposerCancel: {
+    fontSize: 12,
+    color: MAIN.DEFAULT,
+    fontWeight: "600",
+  },
 });
 
 export default styles;
