@@ -59,6 +59,7 @@ export type MyScrappedCommunityItem = {
   likeCount?: number;
   viewCount?: number;
   commentCount?: number;
+  thumbnailUrl?: string | null;
 };
 
 export type MyScrappedNewsItem = {
@@ -71,6 +72,7 @@ export type MyScrappedNewsItem = {
   likeCount?: number;
   viewCount?: number;
   commentCount?: number;
+  thumbnailUrl?: string | null;
 };
 
 export type MyScrappedCommunityResponse = {

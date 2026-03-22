@@ -1,5 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE, AUTH_TOKEN_KEY } from "../api";
+import type { LocalImageAsset } from "../fileApi";
+import { postBoardMultipart } from "../multipartPost";
 import { fetchWithAuth } from "../fetchWithAuth";
 import type {
   CreateAnnouncementDto,
@@ -26,12 +28,12 @@ async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   };
 }
 
-/** 공고 작성 */
+/** 공고 작성 — 텍스트만 (README: `POST /announcement/json`) */
 export async function createAnnouncement(
   dto: CreateAnnouncementDto
 ): Promise<CreateAnnouncementResponse | null> {
   const headers = await getAuthHeadersRequired();
-  const res = await fetch(`${API_BASE}/announcement`, {
+  const res = await fetchWithAuth(`${API_BASE}/announcement/json`, {
     method: "POST",
     headers,
     body: JSON.stringify(dto),
@@ -44,6 +46,32 @@ export async function createAnnouncement(
   }
 
   return res.json() as Promise<CreateAnnouncementResponse>;
+}
+
+/**
+ * 모집공고 작성 — 이미지 포함 (README: `POST /announcement` + multipart)
+ */
+export async function createAnnouncementWithFiles(
+  dto: CreateAnnouncementDto,
+  files: LocalImageAsset[],
+): Promise<CreateAnnouncementResponse | null> {
+  if (files.length === 0) return createAnnouncement(dto);
+  try {
+    const res = await postBoardMultipart(
+      "/announcement",
+      dto as unknown as Record<string, unknown>,
+      files,
+    );
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[createAnnouncementWithFiles] 실패:", res.status, errText);
+      return null;
+    }
+    return res.json() as Promise<CreateAnnouncementResponse>;
+  } catch (e) {
+    console.warn("[createAnnouncementWithFiles] 에러:", e);
+    return null;
+  }
 }
 
 /** 내가 작성한 모집공고 목록 (`GET /announcement/my`) */

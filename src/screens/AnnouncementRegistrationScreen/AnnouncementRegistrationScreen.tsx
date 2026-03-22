@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Image,
   Pressable,
   ScrollView,
   Switch,
@@ -26,13 +27,15 @@ import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import {
   createAnnouncement,
+  createAnnouncementWithFiles,
   getAnnouncementDetail,
   updateAnnouncement,
 } from "../../lib/apis/announcement/announcementApi";
+import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
 import type { ApplicationConfig } from "../../lib/apis/announcement/types";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
-import { uploadFile } from "../../lib/apis/fileApi";
+import { getFileId, uploadFile, type LocalImageAsset } from "../../lib/apis/fileApi";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
 
 const FALLBACK_CATEGORY_OPTIONS = [
@@ -262,6 +265,11 @@ const AnnouncementRegistrationScreen = () => {
   const [majorOptions, setMajorOptions] = useState(FALLBACK_MAJOR_OPTIONS);
   const [fileId, setFileId] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
+  /** 신규 등록: README `POST /announcement` multipart (`payload` + `files`) */
+  const [createPostImages, setCreatePostImages] = useState<LocalImageAsset[]>(
+    [],
+  );
+  const MAX_POST_FILES = MAX_MULTIPART_FILES;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -384,12 +392,27 @@ const AnnouncementRegistrationScreen = () => {
       const uri = asset.uri;
       const name = asset.name ?? "file.jpg";
       const mimeType = asset.mimeType ?? "image/jpeg";
-      setFileName(name);
-      const fid = await uploadFile(uri, { name, type: mimeType });
-      setFileId(fid);
+      if (isEditMode) {
+        setFileName(name);
+        const up = await uploadFile(uri, { name, type: mimeType });
+        setFileId(getFileId(up));
+        if (!getFileId(up)) {
+          Alert.alert("알림", "파일 업로드에 실패했습니다.");
+        }
+      } else {
+        if (createPostImages.length >= MAX_POST_FILES) {
+          Alert.alert("알림", `첨부는 최대 ${MAX_POST_FILES}개까지입니다.`);
+          return;
+        }
+        setCreatePostImages((prev) => {
+          const next = [...prev, { uri, name, type: mimeType }];
+          setFileName(`${next.length}개 파일 선택됨`);
+          return next;
+        });
+      }
     } catch (e) {
       console.warn("[pickFileFromDocument]", e);
-      Alert.alert("알림", "파일 업로드에 실패했습니다.");
+      Alert.alert("알림", "파일 선택에 실패했습니다.");
     }
   };
 
@@ -404,18 +427,43 @@ const AnnouncementRegistrationScreen = () => {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: false,
+        allowsMultipleSelection: !isEditMode,
+        selectionLimit: isEditMode ? 1 : MAX_POST_FILES,
       });
       if (result.canceled) return;
-      const asset = result.assets[0];
-      setFileName(asset.fileName ?? "image.jpg");
-      const fid = await uploadFile(asset.uri, {
+
+      if (isEditMode) {
+        const asset = result.assets[0];
+        setFileName(asset.fileName ?? "image.jpg");
+        const up = await uploadFile(asset.uri, {
+          name: asset.fileName ?? "image.jpg",
+          type: asset.mimeType ?? "image/jpeg",
+        });
+        setFileId(getFileId(up));
+        if (!getFileId(up)) {
+          Alert.alert("알림", "이미지 업로드에 실패했습니다.");
+        }
+        return;
+      }
+
+      const remaining = MAX_POST_FILES - createPostImages.length;
+      if (remaining <= 0) {
+        Alert.alert("알림", `첨부는 최대 ${MAX_POST_FILES}개까지입니다.`);
+        return;
+      }
+      const toAdd = result.assets.slice(0, remaining).map((asset) => ({
+        uri: asset.uri,
         name: asset.fileName ?? "image.jpg",
         type: asset.mimeType ?? "image/jpeg",
+      }));
+      setCreatePostImages((prev) => {
+        const next = [...prev, ...toAdd];
+        setFileName(`${next.length}개 이미지 선택됨`);
+        return next;
       });
-      setFileId(fid);
     } catch (e) {
       console.warn("[pickImageFromAlbum]", e);
-      Alert.alert("알림", "이미지 업로드에 실패했습니다.");
+      Alert.alert("알림", "이미지 선택에 실패했습니다.");
     }
   };
 
@@ -518,7 +566,10 @@ const AnnouncementRegistrationScreen = () => {
           );
         }
       } else {
-        const res = await createAnnouncement(dto);
+        const res =
+          createPostImages.length > 0
+            ? await createAnnouncementWithFiles(dto, createPostImages)
+            : await createAnnouncement(dto);
         setIsSubmitting(false);
         if (res) {
           (navigation as { dispatch?: (action: object) => void }).dispatch?.(
@@ -931,9 +982,78 @@ const AnnouncementRegistrationScreen = () => {
                         />
                       </Pressable>
                     </View>
-                    {fileName ? (
-                      <Text style={styles.contentNote}>선택됨: {fileName}</Text>
-                    ) : null}
+                    {isEditMode ? (
+                      fileName ? (
+                        <Text style={styles.contentNote}>
+                          선택됨: {fileName}
+                        </Text>
+                      ) : null
+                    ) : (
+                      <>
+                        {fileName ? (
+                          <Text style={styles.contentNote}>{fileName}</Text>
+                        ) : null}
+                        {createPostImages.length > 0 ? (
+                          <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={{ marginTop: 8 }}
+                          >
+                            {createPostImages.map((img, idx) => (
+                              <View
+                                key={`${img.uri}-${idx}`}
+                                style={{
+                                  marginRight: 8,
+                                  position: "relative",
+                                }}
+                              >
+                                <Image
+                                  source={{ uri: img.uri }}
+                                  style={{
+                                    width: 72,
+                                    height: 72,
+                                    borderRadius: 8,
+                                    backgroundColor: GRAY.MEDIUM,
+                                  }}
+                                  resizeMode="cover"
+                                />
+                                <Pressable
+                                  onPress={() =>
+                                    setCreatePostImages((prev) => {
+                                      const next = prev.filter((_, i) => i !== idx);
+                                      setFileName(
+                                        next.length > 0
+                                          ? `${next.length}개 첨부`
+                                          : "",
+                                      );
+                                      return next;
+                                    })
+                                  }
+                                  style={{
+                                    position: "absolute",
+                                    top: -6,
+                                    right: -6,
+                                    backgroundColor: "#fff",
+                                    borderRadius: 12,
+                                  }}
+                                  hitSlop={8}
+                                >
+                                  <MaterialCommunityIcons
+                                    name="close-circle"
+                                    size={22}
+                                    color={MAIN.DEFAULT}
+                                  />
+                                </Pressable>
+                              </View>
+                            ))}
+                          </ScrollView>
+                        ) : null}
+                        <Text style={[styles.contentNote, { marginTop: 6 }]}>
+                          등록 시 게시글이 저장된 뒤 이미지가 순서대로 업로드됩니다. (최대{" "}
+                          {MAX_POST_FILES}장)
+                        </Text>
+                      </>
+                    )}
                   </Form>
                 </View>
               </View>

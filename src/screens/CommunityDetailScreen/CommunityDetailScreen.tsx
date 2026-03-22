@@ -1,7 +1,15 @@
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { ScrollView, Text, View, ActivityIndicator, Alert, Pressable } from "react-native";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ScrollView,
+  Text,
+  View,
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  Image,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
 import styles from "./styles";
@@ -24,6 +32,10 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  mapAttachmentsToImageUrls,
+  pickUrlFromFileLike,
+} from "../../lib/media/attachmentImageUrl";
 
 type CommunityDetailRouteParams = {
   communityId: string;
@@ -148,6 +160,14 @@ const CommunityDetailScreen = () => {
   const [scraped, setScraped] = useState(false);
   const [scrapCount, setScrapCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const imageUrls = useMemo(() => {
+    if (!data) return [];
+    const urls = mapAttachmentsToImageUrls(data.attachments);
+    const fromFile = data.file
+      ? pickUrlFromFileLike(data.file as Record<string, unknown>)
+      : undefined;
+    return urls.length > 0 ? urls : fromFile ? [fromFile] : [];
+  }, [data]);
   const displayedComments = comments;
   const commentCount = Number(
     (data as any)?.commentCount ?? (data as any)?.commentsCount ?? comments.length
@@ -343,6 +363,20 @@ const CommunityDetailScreen = () => {
         <View style={styles.body}>
           <Text style={styles.bodyText}>{data.content}</Text>
         </View>
+
+        {imageUrls.length > 0 ? (
+          <View style={styles.imageGallery}>
+            {imageUrls.map((uri, idx) => (
+              <Image
+                key={`${uri}-${idx}`}
+                source={{ uri }}
+                style={styles.contentImage}
+                resizeMode="cover"
+              />
+            ))}
+          </View>
+        ) : null}
+
         <View style={styles.actionRow}>
           <View style={styles.actionItem}>
             <Pressable onPress={handleToggleLike} hitSlop={8}>

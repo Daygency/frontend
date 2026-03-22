@@ -9,9 +9,8 @@ import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
 import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
 import styles from "../styles";
 import AnnouncementCard from "../../../../components/AnnouncementCard/AnnouncementCard";
-import EventNewsCard, {
-  DEFAULT_NEWS_IMAGE_URI,
-} from "../../../../components/EventNewsCard/EventNewsCard";
+import EventNewsCard from "../../../../components/EventNewsCard/EventNewsCard";
+import { normalizeListThumbnailUrl } from "../../../../lib/media/listThumbnailUrl";
 import { getMyPostHighlights } from "../../../../lib/apis/userPosts/myPostsApi";
 import type {
   MyAnnouncementPostItem,
@@ -58,6 +57,7 @@ type ActivityCardItem = {
   comments: number;
   scraps: number;
   views?: number;
+  thumbnailUrl?: string;
 };
 
 const PostsCommentsScene = () => {
@@ -85,6 +85,7 @@ const PostsCommentsScene = () => {
                 comments: Number(latestCommunity.commentCount ?? 0),
                 scraps: 0,
                 views: Number(latestCommunity.viewCount ?? 0),
+                thumbnailUrl: normalizeListThumbnailUrl(latestCommunity.thumbnailUrl),
               },
             ]
           : []
@@ -145,6 +146,7 @@ const PostsCommentsScene = () => {
             comments={item.comments}
             scraps={item.scraps}
             views={item.views}
+            thumbnailUrl={item.thumbnailUrl}
             onPress={onPressItem ? () => onPressItem(item) : undefined}
           />
         ))
@@ -176,7 +178,7 @@ const PostsCommentsScene = () => {
                   title={item.title}
                   place={item.place ?? ""}
                   dateRange={formatDate(item.createdAt)}
-                  imageUrl={DEFAULT_NEWS_IMAGE_URI}
+                  imageUrl={normalizeListThumbnailUrl(item.thumbnailUrl)}
                   width={138}
                   height={138}
                 />

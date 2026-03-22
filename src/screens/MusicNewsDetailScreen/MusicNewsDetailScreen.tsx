@@ -17,7 +17,6 @@ import { Ionicons } from "@expo/vector-icons";
 import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
 import { getNewsDetail } from "../../lib/apis/news/newsApi";
 import type { NewsDetailResponse } from "../../lib/apis/news/types";
-import { API_BASE } from "../../lib/apis/api";
 import styles from "./styles";
 import {
   createComment,
@@ -35,6 +34,10 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
+import {
+  mapAttachmentsToImageUrls,
+  pickUrlFromFileLike,
+} from "../../lib/media/attachmentImageUrl";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -46,7 +49,10 @@ export type MusicNewsDetailItem = {
   authorId?: string;
   uploadedAt: string;
   description: string;
+  /** @deprecated 첫 이미지 — `imageUrls[0]`과 동일 */
   imageUrl?: string;
+  /** README `attachments` / `file` 에서 수집한 이미지 URL */
+  imageUrls?: string[];
   likes: number;
   comments: number;
   commentsData?: unknown[];
@@ -82,13 +88,6 @@ type CommentItem = {
   }>;
 };
 
-function resolveFileUrl(file?: { url?: string } | null): string | undefined {
-  const url = file?.url;
-  if (!url) return undefined;
-  if (url.startsWith("/")) return `${API_BASE}${url}`;
-  return url;
-}
-
 function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
   const d = new Date(res.startedAt);
   const dateStr = isNaN(d.getTime())
@@ -102,6 +101,17 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     ? res.createdAt
     : `${createdD.getFullYear()}.${String(createdD.getMonth() + 1).padStart(2, "0")}.${String(createdD.getDate()).padStart(2, "0")}`;
 
+  const fromAttachments = mapAttachmentsToImageUrls(res.attachments);
+  const fromFile = pickUrlFromFileLike(
+    res.file ? (res.file as Record<string, unknown>) : null,
+  );
+  const imageUrls =
+    fromAttachments.length > 0
+      ? fromAttachments
+      : fromFile
+        ? [fromFile]
+        : [];
+
   return {
     id: res.newsId,
     title: res.title,
@@ -112,7 +122,8 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     authorId: res.user?.nickname ?? res.user?.userId,
     uploadedAt: uploadedStr,
     description: res.content,
-    imageUrl: resolveFileUrl(res.file),
+    imageUrl: imageUrls[0],
+    imageUrls,
     likes: 0,
     comments: 0,
     commentsData: (res as any)?.comments,
@@ -433,17 +444,25 @@ const MusicNewsDetailScreen = () => {
         bounces={false}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.posterWrapper}>
-          <Image
-            source={{
-              uri:
-                news.imageUrl ||
-                "https://via.placeholder.com/400x240?text=CLASSIC+ARTIST+CONCERT",
-            }}
-            style={[styles.posterImage, { width, height: width * 0.6 }]}
-            resizeMode="cover"
-          />
-        </View>
+        {news.imageUrls && news.imageUrls.length > 0 ? (
+          <View style={styles.posterWrapper}>
+            {news.imageUrls.map((uri, idx) => (
+              <Image
+                key={`${uri}-${idx}`}
+                source={{ uri }}
+                style={[
+                  styles.posterImage,
+                  {
+                    width,
+                    height: width * 0.56,
+                    marginBottom: idx < news.imageUrls!.length - 1 ? 8 : 0,
+                  },
+                ]}
+                resizeMode="cover"
+              />
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.contentSection}>
           <View style={styles.titleRow}>

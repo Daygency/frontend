@@ -7,6 +7,7 @@ import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 import { RootRoutes } from "../../../navigations/routes";
 import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
 import type { CommunityCategory, CommunityListItem } from "../../../lib/apis/community/types";
+import { pickCommunityListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
 
 type TagOption =
   | "전체"
@@ -131,6 +132,7 @@ const CommunityScene = () => {
         likes={item.likeCount ?? 0}
         comments={item.commentCount ?? 0}
         views={item.viewCount ?? 0}
+        thumbnailUrl={pickCommunityListThumbnailUrl(item)}
         onPress={() =>
           navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
             communityId: item.communityId,

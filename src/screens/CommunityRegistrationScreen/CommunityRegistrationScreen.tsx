@@ -1,6 +1,8 @@
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Alert,
+  Image,
   Pressable,
   ScrollView,
   Text,
@@ -10,12 +12,19 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/Form/Form";
 import FormTextInput from "../../components/FormTextInput/FormTextInput";
 import FormDropdownInput from "../../components/FormDropdownInput/FormDropdownInput";
-import { BLACK, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
-import { getCommunityCategories, createCommunity } from "../../lib/apis/community/communityApi";
+import {
+  getCommunityCategories,
+  createCommunity,
+  createCommunityWithFiles,
+} from "../../lib/apis/community/communityApi";
+import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
+import type { LocalImageAsset } from "../../lib/apis/fileApi";
 import type { CommunityCategory } from "../../lib/apis/community/types";
 
 const COMMUNITY_GUIDELINES = [
@@ -47,6 +56,8 @@ const CommunityRegistrationScreen = () => {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
+  const MAX_IMAGES = MAX_MULTIPART_FILES;
 
   const categoryOptions = useMemo(
     () =>
@@ -78,18 +89,51 @@ const CommunityRegistrationScreen = () => {
   const selectedCategoryName =
     categories.find((c) => c.categoryId === categoryId)?.name ?? "";
 
+  const pickImages = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
+        return;
+      }
+      const remaining = MAX_IMAGES - pendingImages.length;
+      if (remaining <= 0) {
+        Alert.alert("알림", `이미지는 최대 ${MAX_IMAGES}장까지입니다.`);
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: false,
+        allowsMultipleSelection: true,
+        selectionLimit: remaining,
+      });
+      if (result.canceled) return;
+      const toAdd = result.assets.slice(0, remaining).map((a) => ({
+        uri: a.uri,
+        name: a.fileName ?? "image.jpg",
+        type: a.mimeType ?? "image/jpeg",
+      }));
+      setPendingImages((prev) => [...prev, ...toAdd]);
+    } catch (e) {
+      console.warn("[pickImages]", e);
+      Alert.alert("알림", "이미지 선택에 실패했습니다.");
+    }
+  };
+
   const handleRegister = async () => {
     if (!categoryId || !title || !content || submitting) return;
     try {
       setSubmitting(true);
-      const res = await createCommunity({
-        title,
-        content,
-        categoryId,
-        fileId: null,
-      });
-      if (!res) {
-        console.warn("커뮤니티 게시글 등록 실패");
+      const res =
+        pendingImages.length > 0
+          ? await createCommunityWithFiles(
+              { title, content, categoryId },
+              pendingImages,
+            )
+          : await createCommunity({ title, content, categoryId });
+      if (!res?.communityId) {
+        Alert.alert("등록 실패", "게시글을 등록하지 못했습니다.");
         return;
       }
       navigation.goBack();
@@ -112,7 +156,7 @@ const CommunityRegistrationScreen = () => {
             <FormDropdownInput
               placeholder="카테고리를 선택하세요"
               data={categoryOptions}
-              value={categoryId}
+              value={categoryId ?? undefined}
               onChange={(item) => setCategoryId(item.value)}
             />
           </Form>
@@ -142,7 +186,11 @@ const CommunityRegistrationScreen = () => {
                   onChangeText={setContent}
                   textAlignVertical="top"
                 />
-                <Pressable style={styles.imageAttachButton} hitSlop={10}>
+                <Pressable
+                  style={styles.imageAttachButton}
+                  hitSlop={10}
+                  onPress={pickImages}
+                >
                   <MaterialCommunityIcons
                     name="image-outline"
                     size={24}
@@ -150,6 +198,61 @@ const CommunityRegistrationScreen = () => {
                   />
                 </Pressable>
               </View>
+              {pendingImages.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ marginTop: 10 }}
+                >
+                  {pendingImages.map((img, idx) => (
+                    <View
+                      key={`${img.uri}-${idx}`}
+                      style={{ marginRight: 8, position: "relative" }}
+                    >
+                      <Image
+                        source={{ uri: img.uri }}
+                        style={{
+                          width: 72,
+                          height: 72,
+                          borderRadius: 8,
+                          backgroundColor: GRAY.MEDIUM,
+                        }}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        onPress={() =>
+                          setPendingImages((prev) =>
+                            prev.filter((_, i) => i !== idx),
+                          )
+                        }
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          backgroundColor: "#fff",
+                          borderRadius: 12,
+                        }}
+                        hitSlop={8}
+                      >
+                        <MaterialCommunityIcons
+                          name="close-circle"
+                          size={22}
+                          color={MAIN.DEFAULT}
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : null}
+              <Text
+                style={{
+                  marginTop: 6,
+                  fontSize: 12,
+                  color: GRAY.DARK_2,
+                }}
+              >
+                사진은 글 등록 후 업로드됩니다 (최대 {MAX_IMAGES}장).
+              </Text>
             </Form>
           </View>
         </View>

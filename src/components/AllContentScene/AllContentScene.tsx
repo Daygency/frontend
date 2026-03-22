@@ -22,6 +22,7 @@ import {
   getCommunityList,
 } from "../../lib/apis/community/communityApi";
 import type { CommunityCategory, CommunityListItem } from "../../lib/apis/community/types";
+import { pickNewsListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 
 type ContentTabParamList = {
   [ContentRoutes.HOME]: undefined;
@@ -52,9 +53,6 @@ function formatStartedAt(iso: string): string {
     return iso;
   }
 }
-
-const DEFAULT_NEWS_IMAGE_URL =
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
 
 type HomeCommunityBoardConfig = {
   boardName: string;
@@ -208,7 +206,7 @@ const AllContentScene = () => {
                 title={item.title}
                 place={item.place}
                 dateRange={formatStartedAt(item.startedAt)}
-                imageUrl={item.imageUrl || DEFAULT_NEWS_IMAGE_URL}
+                imageUrl={pickNewsListThumbnailUrl(item)}
                 onPress={() => {
                   (navigation as { navigate: (a: string, b?: object) => void }).navigate(
                     RootRoutes.MUSIC_NEWS_DETAIL,

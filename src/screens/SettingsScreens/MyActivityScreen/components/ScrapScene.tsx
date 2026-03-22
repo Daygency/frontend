@@ -14,9 +14,8 @@ import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
 import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
 import AnnouncementCard from "../../../../components/AnnouncementCard/AnnouncementCard";
 import styles from "../styles";
-import EventNewsCard, {
-  DEFAULT_NEWS_IMAGE_URI,
-} from "../../../../components/EventNewsCard/EventNewsCard";
+import EventNewsCard from "../../../../components/EventNewsCard/EventNewsCard";
+import { normalizeListThumbnailUrl } from "../../../../lib/media/listThumbnailUrl";
 import {
   getMyScrappedAnnouncements,
   getMyScrappedHighlights,
@@ -138,6 +137,7 @@ const ScrapScene = () => {
               likes: Number(latestCommunity.likeCount ?? 0),
               comments: Number(latestCommunity.commentCount ?? 0),
               views: Number(latestCommunity.viewCount ?? 0),
+              thumbnailUrl: normalizeListThumbnailUrl(latestCommunity.thumbnailUrl),
             },
           ].map((item) => (
             <CommunityCard
@@ -149,6 +149,7 @@ const ScrapScene = () => {
               likes={item.likes}
               comments={item.comments}
               views={item.views}
+              thumbnailUrl={item.thumbnailUrl}
               onPress={() =>
                 navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
                   communityId: item.id,
@@ -179,7 +180,7 @@ const ScrapScene = () => {
                   title={item.title}
                   place={item.place ?? ""}
                   dateRange={formatDate(item.createdAt)}
-                  imageUrl={DEFAULT_NEWS_IMAGE_URI}
+                  imageUrl={normalizeListThumbnailUrl(item.thumbnailUrl)}
                   width={138}
                   height={138}
                   onPress={() =>

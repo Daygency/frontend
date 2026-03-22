@@ -15,10 +15,7 @@ import EventNewsCard from "../../../components/EventNewsCard/EventNewsCard";
 import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
-
-/** 메인 화면 공연소식 섹션과 동일한 기본 이미지 */
-const DEFAULT_NEWS_IMAGE_URL =
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
+import { pickNewsListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
 
 function formatRelativeTime(iso?: string): string {
   if (!iso) return "";
@@ -107,7 +104,7 @@ const MusicNewsScene = () => {
       title={item.title}
       place={item.place}
       dateRange=""
-      imageUrl={item.imageUrl || DEFAULT_NEWS_IMAGE_URL}
+      imageUrl={pickNewsListThumbnailUrl(item)}
       likeCount={item.likeCount ?? 0}
       commentCount={item.commentCount ?? 0}
       viewCount={item.viewCount ?? 0}

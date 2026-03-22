@@ -6,6 +6,7 @@ export type MyCommunityPostItem = {
   likeCount?: number;
   viewCount?: number;
   commentCount?: number;
+  thumbnailUrl?: string | null;
 };
 
 export type MyNewsPostItem = {
@@ -16,6 +17,7 @@ export type MyNewsPostItem = {
   likeCount?: number;
   viewCount?: number;
   commentCount?: number;
+  thumbnailUrl?: string | null;
 };
 
 export type MyAnnouncementPostItem = {

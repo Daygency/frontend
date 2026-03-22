@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable } from "react-native";
+import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BLACK, GRAY, RED } from "../../../color";
 
@@ -13,6 +13,8 @@ type CommunityCardProps = {
   comments: number;
   scraps?: number;
   views?: number;
+  /** README 목록 썸네일 — 없으면 회색 플레이스홀더 없음 */
+  thumbnailUrl?: string;
   onPress?: () => void;
 };
 
@@ -27,12 +29,20 @@ const CommunityCard = ({
   comments,
   scraps = 0,
   views,
+  thumbnailUrl,
   onPress,
 }: CommunityCardProps) => {
+  const showThumb = Boolean(thumbnailUrl?.trim());
+
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.row}>
-        <View style={styles.textContainer}>
+        <View
+          style={[
+            styles.textContainer,
+            showThumb ? styles.textContainerWithThumb : styles.textContainerFull,
+          ]}
+        >
           {!!tag && (
             <View style={styles.tagBadge}>
               <Text style={styles.tagText} numberOfLines={1}>
@@ -50,7 +60,13 @@ const CommunityCard = ({
             ({author})  {date}
           </Text>
         </View>
-        <View style={styles.thumbnail} />
+        {showThumb ? (
+          <Image
+            source={{ uri: thumbnailUrl! }}
+            style={styles.thumbnail}
+            resizeMode="cover"
+          />
+        ) : null}
       </View>
 
       <View style={styles.footer}>
@@ -92,7 +108,12 @@ const styles = StyleSheet.create({
   textContainer: {
     flex: 1,
     minWidth: 0,
+  },
+  textContainerWithThumb: {
     marginRight: 8,
+  },
+  textContainerFull: {
+    marginRight: 0,
   },
   tagBadge: {
     alignSelf: "flex-start",
@@ -129,6 +150,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     borderRadius: 8,
     backgroundColor: GRAY.MEDIUM,
+    overflow: "hidden",
   },
   footer: {
     flexDirection: "row",

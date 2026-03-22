@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  Image,
   Pressable,
   ScrollView,
   Text,
@@ -19,8 +20,9 @@ import Form from "../../components/Form/Form";
 import FormTextInput from "../../components/FormTextInput/FormTextInput";
 import { GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
-import { createNews } from "../../lib/apis/news/newsApi";
-import { uploadFile } from "../../lib/apis/fileApi";
+import { createNews, createNewsWithFiles } from "../../lib/apis/news/newsApi";
+import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
+import type { LocalImageAsset } from "../../lib/apis/fileApi";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
 
 function formatDateDisplay(d: Date): string {
@@ -59,7 +61,9 @@ const MusicNewsRegistrationScreen = () => {
   const [endedAt, setEndedAt] = useState<Date | null>(null);
   const [useEndDate, setUseEndDate] = useState(false);
   const [contact, setContact] = useState("");
-  const [fileId, setFileId] = useState<string | null>(null);
+  /** README: multipart 한 번에 `payload` + `files` */
+  const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
+  const MAX_NEWS_IMAGES = MAX_MULTIPART_FILES;
 
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
@@ -75,21 +79,27 @@ const MusicNewsRegistrationScreen = () => {
         Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
         return;
       }
+      const remaining = MAX_NEWS_IMAGES - pendingImages.length;
+      if (remaining <= 0) {
+        Alert.alert("알림", `이미지는 최대 ${MAX_NEWS_IMAGES}장까지입니다.`);
+        return;
+      }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: false,
+        allowsMultipleSelection: true,
+        selectionLimit: remaining,
       });
       if (result.canceled) return;
-      const asset = result.assets[0];
-      const fid = await uploadFile(asset.uri, {
+      const toAdd = result.assets.slice(0, remaining).map((asset) => ({
+        uri: asset.uri,
         name: asset.fileName ?? "image.jpg",
         type: asset.mimeType ?? "image/jpeg",
-      });
-      if (fid) setFileId(fid);
-      else Alert.alert("알림", "이미지 업로드에 실패했습니다.");
+      }));
+      setPendingImages((prev) => [...prev, ...toAdd]);
     } catch (e) {
       console.warn("[pickImage]", e);
-      Alert.alert("알림", "이미지 업로드에 실패했습니다.");
+      Alert.alert("알림", "이미지 선택에 실패했습니다.");
     }
   };
 
@@ -115,13 +125,15 @@ const MusicNewsRegistrationScreen = () => {
       place: place.trim().slice(0, 100),
       startedAt: dateToISO(startedAt),
       contact: contact.trim().slice(0, 30),
-      ...(fileId ? { fileId } : {}),
       ...(ticketPrice.trim() ? { ticketPrice: parseInt(ticketPrice, 10) || undefined } : {}),
       ...(useEndDate && endedAt ? { endedAt: dateToISO(endedAt) } : {}),
     };
 
     try {
-      const res = await createNews(dto);
+      const res =
+        pendingImages.length > 0
+          ? await createNewsWithFiles(dto, pendingImages)
+          : await createNews(dto);
       setIsSubmitting(false);
       if (res) {
         navigation.dispatch?.(
@@ -156,17 +168,59 @@ const MusicNewsRegistrationScreen = () => {
       >
         <View style={styles.formSection}>
           <View style={styles.formField}>
-            <Form title="대표 이미지" isRequired={false}>
+            <Form title="이미지" isRequired={false}>
               <Pressable style={styles.imageUploadBox} onPress={pickImage}>
-                {fileId ? (
-                  <Text style={styles.imageUploadText}>이미지가 선택되었습니다</Text>
-                ) : (
-                  <>
-                    <MaterialCommunityIcons name="image-plus" size={40} color={GRAY.DARK_2} />
-                    <Text style={styles.imageUploadText}>이미지를 선택해주세요 (선택, 없으면 기본 이미지)</Text>
-                  </>
-                )}
+                <MaterialCommunityIcons name="image-plus" size={40} color={GRAY.DARK_2} />
+                <Text style={styles.imageUploadText}>
+                  이미지 추가 (선택, 최대 {MAX_NEWS_IMAGES}장) — 등록 후 업로드
+                </Text>
               </Pressable>
+              {pendingImages.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={{ marginTop: 10 }}
+                >
+                  {pendingImages.map((img, idx) => (
+                    <View
+                      key={`${img.uri}-${idx}`}
+                      style={{ marginRight: 8, position: "relative" }}
+                    >
+                      <Image
+                        source={{ uri: img.uri }}
+                        style={{
+                          width: 80,
+                          height: 80,
+                          borderRadius: 8,
+                          backgroundColor: GRAY.MEDIUM,
+                        }}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        onPress={() =>
+                          setPendingImages((prev) =>
+                            prev.filter((_, i) => i !== idx),
+                          )
+                        }
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          backgroundColor: "#fff",
+                          borderRadius: 12,
+                        }}
+                        hitSlop={8}
+                      >
+                        <MaterialCommunityIcons
+                          name="close-circle"
+                          size={22}
+                          color={MAIN.DEFAULT}
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : null}
             </Form>
           </View>
 

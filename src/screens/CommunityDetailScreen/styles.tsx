@@ -44,6 +44,15 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: BLACK,
   },
+  imageGallery: {
+    marginTop: 16,
+  },
+  contentImage: {
+    width: "100%",
+    height: 220,
+    borderRadius: 12,
+    marginBottom: 10,
+  },
   actionRow: {
     height: 54,
     flexDirection: "row",

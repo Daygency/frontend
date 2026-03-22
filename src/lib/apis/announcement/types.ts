@@ -40,6 +40,8 @@ export type AnnouncementListItem = {
   type: string;
   isRecruiting: boolean;
   dDay: string;
+  /** 목록 썸네일 (백엔드가 내려줄 때) */
+  thumbnailUrl?: string | null;
 };
 
 export type AnnouncementListResponse = {

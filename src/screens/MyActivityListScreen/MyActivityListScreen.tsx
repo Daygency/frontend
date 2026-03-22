@@ -9,6 +9,7 @@ import { getMyPosts } from "../../lib/apis/userPosts/myPostsApi";
 import type { MyCommunityPostItem } from "../../lib/apis/userPosts/types";
 import { getMyScrappedCommunity } from "../../lib/apis/scrap/scrapApi";
 import type { MyScrappedCommunityItem } from "../../lib/apis/scrap/types";
+import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 
 type MyActivityListParams = {
   type: "posts" | "comments";
@@ -44,6 +45,19 @@ const MOCK_COMMENTS = [
 type RootStackParamList = {
   MyActivityList: MyActivityListParams;
   CommunityDetail: { communityId: string };
+};
+
+type CommunityRow = {
+  id: string;
+  title: string;
+  contentPreview: string;
+  author: string;
+  date: string;
+  likes: number;
+  comments: number;
+  scraps: number;
+  views?: number;
+  thumbnailUrl?: string;
 };
 
 const MyActivityListScreen = () => {
@@ -85,7 +99,7 @@ const MyActivityListScreen = () => {
   }, [type, source]);
 
   const myPostsData = useMemo(
-    () =>
+    (): CommunityRow[] =>
       myCommunityPosts.map((item) => ({
         id: item.communityId,
         title: item.title,
@@ -96,12 +110,13 @@ const MyActivityListScreen = () => {
         comments: Number(item.commentCount ?? 0),
         scraps: 0,
         views: Number(item.viewCount ?? 0),
+        thumbnailUrl: normalizeListThumbnailUrl(item.thumbnailUrl),
       })),
     [myCommunityPosts],
   );
 
   const scrappedPostsData = useMemo(
-    () =>
+    (): CommunityRow[] =>
       scrappedCommunity.map((item) => ({
         id: item.communityId,
         title: item.title,
@@ -112,11 +127,12 @@ const MyActivityListScreen = () => {
         comments: Number(item.commentCount ?? 0),
         scraps: 0,
         views: Number(item.viewCount ?? 0),
+        thumbnailUrl: normalizeListThumbnailUrl(item.thumbnailUrl),
       })),
     [scrappedCommunity],
   );
 
-  const data =
+  const data: CommunityRow[] =
     type === "posts"
       ? source === "scrap"
         ? scrappedPostsData
@@ -143,6 +159,7 @@ const MyActivityListScreen = () => {
             comments={item.comments}
             scraps={item.scraps}
             views={item.views}
+            thumbnailUrl={item.thumbnailUrl}
             onPress={
               type === "posts"
                 ? () => navigation.navigate(RootRoutes.COMMUNITY_DETAIL, { communityId: item.id })
