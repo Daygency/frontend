@@ -181,6 +181,7 @@ const ArtistScene = () => {
                 onPress={() =>
                   navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
                     activityName: item.activityName,
+                    userId: item.userId,
                   })
                 }
               />

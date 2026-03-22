@@ -14,8 +14,11 @@ import styles from "../PortfolioScreen/styles";
 const ArtistPortfolioScreen = () => {
   const { top } = useSafeAreaInsets();
   const layout = useWindowDimensions();
-  const route = useRoute<{ params?: { activityName?: string } }>();
+  const route = useRoute<{
+    params?: { activityName?: string; userId?: string };
+  }>();
   const activityName = route.params?.activityName ?? "";
+  const targetUserId = route.params?.userId?.trim() ?? "";
 
   const [index, setIndex] = useState(0);
   const [routes] = useState([
@@ -39,7 +42,10 @@ const ArtistPortfolioScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <ArtistPortfolioHeader activityName={activityName} />
+      <ArtistPortfolioHeader
+        activityName={activityName}
+        targetUserId={targetUserId || undefined}
+      />
       <Profile />
 
       <TabView
