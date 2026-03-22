@@ -1,13 +1,30 @@
-import { FlatList, Pressable, Text, View } from "react-native";
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
+import { useCallback, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import ChatItem from "../ChatScreen/components/ChatItem/ChatItem";
 import styles from "./styles";
 import { RootRoutes } from "../../../navigations/routes";
+import { getRoomsByPost } from "../../../lib/apis/chat/chatApi";
+import type { ChatRoomListItem } from "../../../lib/apis/chat/types";
+import { formatChatListTime } from "../../../lib/chat/formatChatTime";
+import { chatRoomItemToParams } from "../../../lib/chat/chatRoomNavigation";
 
 type Params = {
   postId: string;
   title: string;
-  // mock 용도: 화면 상단에 보여줄 값들
   typeTag?: string;
   statusTag?: string;
   dDay?: string;
@@ -15,71 +32,81 @@ type Params = {
 
 type RouteParams = RouteProp<{ MyPostedChatRooms: Params }, "MyPostedChatRooms">;
 
-const MOCK_ROOMS_BY_POST_ID: Record<
-  string,
-  {
-    id: string;
-    name: string;
-    lastMessage: string;
-    timestamp: string;
-    unreadCount: number;
-    isOnline?: boolean;
-    isMusic?: boolean;
-    isVerified?: boolean;
-  }[]
-> = {
-  "post-1": [
-    {
-      id: "r1",
-      name: "김연주자",
-      lastMessage: "혹시 오디션 일정은 어떻게 되는 걸까요?",
-      timestamp: "오전 7시 40분",
-      unreadCount: 2,
-      isOnline: false,
-      isMusic: true,
-      isVerified: false,
-    },
-    {
-      id: "r2",
-      name: "데이전시",
-      lastMessage: "오디션 일정이 확정되었습니다.",
-      timestamp: "오후 8시 10분",
-      unreadCount: 1,
-      isOnline: false,
-      isMusic: false,
-      isVerified: true,
-    },
-    {
-      id: "r3",
-      name: "이연주자",
-      lastMessage: "답변 감사합니다.",
-      timestamp: "오전 7시 40분",
-      unreadCount: 0,
-      isOnline: false,
-      isMusic: true,
-      isVerified: false,
-    },
-  ],
-  "post-2": [
-    {
-      id: "r4",
-      name: "지원자A",
-      lastMessage: "지원서 제출했습니다.",
-      timestamp: "오전 6시 10분",
-      unreadCount: 1,
-      isOnline: false,
-      isMusic: false,
-      isVerified: false,
-    },
-  ],
-};
-
 export default function MyPostedChatRoomsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteParams>();
   const { postId, title, typeTag, statusTag, dDay } = route.params;
 
-  const rooms = MOCK_ROOMS_BY_POST_ID[postId] ?? [];
+  const [rooms, setRooms] = useState<ChatRoomListItem[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const fetchFirst = useCallback(async () => {
+    if (!postId) {
+      setRooms([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const res = await getRoomsByPost(postId, { limit: 30 });
+    if (res) {
+      setRooms(res.items);
+      setCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    } else {
+      setRooms([]);
+      setCursor(null);
+      setHasMore(false);
+    }
+    setLoading(false);
+  }, [postId]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void fetchFirst();
+    }, [fetchFirst]),
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchFirst();
+    setRefreshing(false);
+  };
+
+  const onEndReached = async () => {
+    if (!hasMore || !cursor || loadingMore || loading) return;
+    setLoadingMore(true);
+    const res = await getRoomsByPost(postId, { cursor, limit: 30 });
+    if (res) {
+      setRooms((prev) => [...prev, ...res.items]);
+      setCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    }
+    setLoadingMore(false);
+  };
+
+  const openRoom = (room: ChatRoomListItem) => {
+    const params = chatRoomItemToParams(room);
+    if (!params.peerUserId) {
+      Alert.alert(
+        "채팅방",
+        "상대 정보를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.",
+      );
+      return;
+    }
+    navigation.navigate(RootRoutes.CHAT_ROOM, params);
+  };
+
+  if (loading && rooms.length === 0) {
+    return (
+      <View style={[styles.container, { justifyContent: "center" }]}>
+        <ActivityIndicator size="large" color="#1F2A44" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -109,37 +136,55 @@ export default function MyPostedChatRoomsScreen() {
         </View>
       </View>
 
-      <Text style={styles.roomsCountLabel}>채팅방 {rooms.length}</Text>
+      <Text style={styles.roomsCountLabel}>
+        채팅방 {rooms.length}
+        {hasMore ? " · 더 불러오기" : ""}
+      </Text>
 
       <FlatList
         data={rooms}
         keyExtractor={(i) => i.id}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() =>
-              navigation.navigate(RootRoutes.CHAT_ROOM, {
-                name: item.name,
-                handle: item.id,
-                isOnline: item.isOnline,
-              })
-            }
-          >
-            <ChatItem
-              name={item.name}
-              lastMessage={item.lastMessage}
-              timestamp={item.timestamp}
-              unreadCount={item.unreadCount}
-              isOnline={item.isOnline}
-              isMusic={item.isMusic}
-              isVerified={item.isVerified}
-              variant="default"
-            />
-          </Pressable>
-        )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.4}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={{ padding: 16 }}>
+              <ActivityIndicator color="#1F2A44" />
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={
+          <View style={{ padding: 24, alignItems: "center" }}>
+            <Text style={{ color: "#888" }}>이 공고에 열린 채팅방이 없습니다.</Text>
+          </View>
+        }
+        renderItem={({ item }) => {
+          const peer = item.peer;
+          const displayName =
+            peer?.nickname ?? peer?.activityName ?? "지원자";
+          const last = item.lastMessage?.content ?? "";
+          const ts = formatChatListTime(item.lastMessage?.createdAt);
+          return (
+            <Pressable onPress={() => openRoom(item)}>
+              <ChatItem
+                name={displayName}
+                lastMessage={last}
+                timestamp={ts}
+                unreadCount={0}
+                isOnline={false}
+                isMusic={false}
+                isVerified={false}
+                variant="default"
+              />
+            </Pressable>
+          );
+        }}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={styles.listContent}
       />
     </View>
   );
 }
-

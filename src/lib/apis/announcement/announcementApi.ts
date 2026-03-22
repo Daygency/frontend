@@ -46,6 +46,42 @@ export async function createAnnouncement(
   return res.json() as Promise<CreateAnnouncementResponse>;
 }
 
+/** 내가 작성한 모집공고 목록 (`GET /announcement/my`) */
+export async function getMyAnnouncementList(
+  params?: AnnouncementListParams,
+): Promise<AnnouncementListResponse | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    if (params?.status) q.set("status", params.status);
+    if (params?.categoryId) q.set("categoryId", params.categoryId);
+    if (params?.majorIds) q.set("majorIds", params.majorIds);
+
+    const query = q.toString();
+    const url = `${API_BASE}/announcement/my${query ? `?${query}` : ""}`;
+
+    const res = await fetchWithAuth(url, { method: "GET", headers });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[getMyAnnouncementList] 실패:", res.status, url, errText);
+      return null;
+    }
+
+    const data = (await res.json()) as AnnouncementListResponse;
+    const items = Array.isArray(data?.items) ? data.items : [];
+    return {
+      items,
+      nextCursor: data?.nextCursor ?? null,
+      hasMore: Boolean(data?.hasMore),
+    };
+  } catch (e) {
+    console.warn("[getMyAnnouncementList] 네트워크 에러:", e);
+    return null;
+  }
+}
+
 /** 공고 목록 조회 */
 export async function getAnnouncementList(
   params?: AnnouncementListParams

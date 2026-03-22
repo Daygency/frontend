@@ -1,320 +1,440 @@
-import { useMemo } from "react";
-import { FlatList, Pressable, View } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useCallback, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  View,
+} from "react-native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import ChatItem from "../ChatItem/ChatItem";
 import { RootRoutes } from "../../../../../navigations/routes";
 import type { ChatFilter } from "../../types";
 import { Text } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
-
-const MOCK_CHATS = [
-  {
-    id: "1",
-    name: "교향악단 바이올린 객원단용 채용",
-    handle: "sejongculture",
-    lastMessage: "리허설 일정 조율 부탁드립니다",
-    timestamp: "오전 7시 40분",
-    unreadCount: 2,
-    isOnline: false,
-    isMyPosted: true,
-    isApplication: false,
-    isMusic: false,
-    isVerified: false,
-    memberCount: 3,
-  },
-  {
-    id: "2",
-    name: "하반기 발레 공고",
-    handle: "soundstage",
-    lastMessage: "음향 장비 세팅 완료했습니다",
-    timestamp: "오전 6시 10분",
-    unreadCount: 1,
-    isOnline: true,
-    isMyPosted: false,
-    isApplication: true,
-    isMusic: true,
-    isVerified: false,
-    memberCount: 5,
-  },
-  {
-    id: "3",
-    name: "블루노트 서울",
-    handle: "bluenote",
-    lastMessage: "공연 피드백 감사합니다!",
-    timestamp: "09.25",
-    unreadCount: 0,
-    isOnline: false,
-    isMyPosted: true,
-    isApplication: true,
-    isMusic: true,
-    isVerified: true,
-    memberCount: 2,
-  },
-];
+import { useAuth } from "../../../../../contexts/AuthContext";
+import { getCoffeeRooms, getAppliedRooms } from "../../../../../lib/apis/chat/chatApi";
+import type { ChatRoomListItem } from "../../../../../lib/apis/chat/types";
+import { getMyAnnouncementList } from "../../../../../lib/apis/announcement/announcementApi";
+import type { AnnouncementListItem } from "../../../../../lib/apis/announcement/types";
+import { formatChatListTime } from "../../../../../lib/chat/formatChatTime";
+import { chatRoomItemToParams } from "../../../../../lib/chat/chatRoomNavigation";
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
 
-function matchesTopTab(
-  chat: (typeof MOCK_CHATS)[0],
-  topTab: ChatTopTab,
-): boolean {
-  return topTab === "일반"
-    ? !chat.isMyPosted && !chat.isApplication
-    : topTab === "내 공고"
-      ? chat.isMyPosted
-      : chat.isApplication;
+/** 탭별 안읽음 배지 — 서버에 unread 필드 없음 */
+export function getUnreadCountByTopTabMock(_topTab: ChatTopTab): number {
+  return 0;
 }
-
-export function getUnreadCountByTopTabMock(topTab: ChatTopTab): number {
-  return MOCK_CHATS.reduce((sum, c) => {
-    if (!matchesTopTab(c, topTab)) return sum;
-    return sum + (c.unreadCount > 0 ? c.unreadCount : 0);
-  }, 0);
-}
-
-const MOCK_MY_POSTS = [
-  {
-    postId: "post-1",
-    title: "교향악단 바이올린 객원단원 채용",
-    typeTag: "오디션(연주자 모집)",
-    statusTag: "모집중",
-    dDay: "D-20",
-    roomsCount: 3,
-    unreadTotal: 3,
-  },
-  {
-    postId: "post-2",
-    title: "하반기 발레 공고",
-    typeTag: "오디션(무용수 모집)",
-    statusTag: "모집중",
-    dDay: "D-7",
-    roomsCount: 5,
-    unreadTotal: 1,
-  },
-] as const;
 
 interface ChatListProps {
   topTab: ChatTopTab;
   filter?: ChatFilter;
 }
 
-const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
+function ChatRoomsFlatList({
+  mode,
+  filter,
+}: {
+  mode: "coffee" | "applied";
+  filter: ChatFilter;
+}) {
   const navigation = useNavigation<any>();
+  const { isLoggedIn } = useAuth();
+  const [items, setItems] = useState<ChatRoomListItem[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  if (topTab === "내 공고") {
+  const fetchFirst = useCallback(async () => {
+    if (!isLoggedIn) {
+      setItems([]);
+      setCursor(null);
+      setHasMore(false);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const fn = mode === "coffee" ? getCoffeeRooms : getAppliedRooms;
+    const res = await fn({ limit: 30 });
+    if (res) {
+      setItems(res.items);
+      setCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    } else {
+      setItems([]);
+      setCursor(null);
+      setHasMore(false);
+    }
+    setLoading(false);
+  }, [isLoggedIn, mode]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void fetchFirst();
+    }, [fetchFirst]),
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchFirst();
+    setRefreshing(false);
+  };
+
+  const onEndReached = async () => {
+    if (!isLoggedIn || !hasMore || !cursor || loadingMore || loading) return;
+    setLoadingMore(true);
+    const fn = mode === "coffee" ? getCoffeeRooms : getAppliedRooms;
+    const res = await fn({ cursor, limit: 30 });
+    if (res) {
+      setItems((prev) => [...prev, ...res.items]);
+      setCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    }
+    setLoadingMore(false);
+  };
+
+  const filteredItems = useMemo(() => {
+    if (filter === "안읽음") return [];
+    return items;
+  }, [items, filter]);
+
+  const openRoom = (room: ChatRoomListItem) => {
+    const params = chatRoomItemToParams(room);
+    if (!params.peerUserId) {
+      Alert.alert(
+        "채팅방",
+        "상대 정보를 불러오지 못했습니다. 앱을 다시 실행하거나 잠시 후 다시 시도해 주세요.",
+      );
+      return;
+    }
+    navigation.navigate(RootRoutes.CHAT_ROOM, params);
+  };
+
+  if (!isLoggedIn) {
     return (
-      <FlatList
-        data={MOCK_MY_POSTS}
-        keyExtractor={(p) => p.postId}
-        renderItem={({ item }) => (
-          <Pressable
-            onPress={() =>
-              navigation.navigate(RootRoutes.MY_POSTED_CHAT_ROOMS, {
-                postId: item.postId,
-                title: item.title,
-                typeTag: item.typeTag,
-                statusTag: item.statusTag,
-                dDay: item.dDay,
-              })
-            }
-            style={{
-              paddingHorizontal: 16,
-              paddingVertical: 14,
-              backgroundColor: "#FFFFFF",
-              borderBottomWidth: 1,
-              borderBottomColor: "#EFEFEF",
-            }}
-          >
-            <View
-              style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
-            >
-              <View
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 10,
-                  backgroundColor: "#D1D5DB",
-                }}
-              />
-              <View style={{ flex: 1, minWidth: 0 }}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    gap: 10,
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 8,
-                      flex: 1,
-                      minWidth: 0,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 15,
-                        fontWeight: "600",
-                        color: "#111827",
-                      }}
-                      numberOfLines={1}
-                    >
-                      {item.title}
-                    </Text>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        gap: 2,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <MaterialIcons name="person" size={18} color="#000000" />
-                      <Text
-                        style={{
-                          fontSize: 16,
-                          fontWeight: "500",
-                          color: "#000000",
-                        }}
-                      >
-                        {item.roomsCount}
-                      </Text>
-                    </View>
-                  </View>
-                  {item.unreadTotal > 0 && (
-                    <View
-                      style={{
-                        minWidth: 18,
-                        height: 18,
-                        borderRadius: 9,
-                        backgroundColor: "#E11D48",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        paddingHorizontal: 5,
-                        flexShrink: 0,
-                      }}
-                    >
-                      <Text
-                        style={{
-                          color: "#FFFFFF",
-                          fontSize: 12,
-                          fontWeight: "700",
-                        }}
-                      >
-                        {item.unreadTotal > 99
-                          ? "99+"
-                          : String(item.unreadTotal)}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: 8,
-                    marginTop: 8,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <View
-                    style={{
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: 12,
-                      height: 24,
-                      paddingHorizontal: 8,
-                      justifyContent: "center",
-                      borderWidth: 1,
-                      borderColor: "#D1D5DB",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#111827",
-                        fontSize: 12,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {item.statusTag}
-                    </Text>
-                  </View>
-                  <View
-                    style={{
-                      backgroundColor: "#1F2A44",
-                      borderRadius: 12,
-                      height: 24,
-                      paddingHorizontal: 8,
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#FFFFFF",
-                        fontSize: 12,
-                        fontWeight: "700",
-                      }}
-                    >
-                      {item.dDay}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            </View>
-          </Pressable>
-        )}
-        contentContainerStyle={{ paddingBottom: 20 }}
-      />
+      <View style={{ padding: 24, alignItems: "center" }}>
+        <Text style={{ color: "#888", textAlign: "center" }}>
+          로그인 후 채팅 목록을 불러올 수 있습니다.
+        </Text>
+      </View>
     );
   }
 
-  const filteredChats = useMemo(() => {
-    return MOCK_CHATS.filter((chat) => {
-      if (!matchesTopTab(chat, topTab)) return false;
+  if (loading && items.length === 0) {
+    return (
+      <View style={{ paddingTop: 48, alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#1F2A44" />
+      </View>
+    );
+  }
 
-      if (filter === "안읽음") return chat.unreadCount > 0;
-      return true; // "전체"
-    });
-  }, [filter, topTab]);
-
-  const handleChatPress = (item: (typeof MOCK_CHATS)[0]) => {
-    navigation.navigate(RootRoutes.CHAT_ROOM, {
-      name: item.name,
-      handle: item.handle,
-      isOnline: item.isOnline,
-    });
-  };
+  if (filter === "안읽음") {
+    return (
+      <View style={{ padding: 24, alignItems: "center" }}>
+        <Text style={{ color: "#888", textAlign: "center" }}>
+          안읽음 필터는 서버 연동 후 제공 예정입니다.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <FlatList
-      data={filteredChats}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <Pressable onPress={() => handleChatPress(item)}>
-          <ChatItem
-            name={item.name}
-            lastMessage={item.lastMessage}
-            timestamp={item.timestamp}
-            unreadCount={item.unreadCount}
-            isOnline={item.isOnline}
-            isMusic={item.isMusic}
-            isVerified={item.isVerified}
-            variant="default"
-          />
-        </Pressable>
-      )}
+      data={filteredItems}
+      keyExtractor={(r) => r.id}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.4}
+      ListFooterComponent={
+        loadingMore ? (
+          <View style={{ padding: 16 }}>
+            <ActivityIndicator color="#1F2A44" />
+          </View>
+        ) : null
+      }
+      ListEmptyComponent={
+        <View style={{ padding: 24, alignItems: "center" }}>
+          <Text style={{ color: "#888" }}>채팅방이 없습니다.</Text>
+        </View>
+      }
+      renderItem={({ item }) => {
+        const peer = item.peer;
+        const titleFromPost = item.post?.title;
+        const displayName =
+          item.kind === "ANNOUNCEMENT" && titleFromPost
+            ? titleFromPost
+            : peer?.nickname ?? peer?.activityName ?? "채팅";
+        const last = item.lastMessage?.content ?? "";
+        const ts = formatChatListTime(item.lastMessage?.createdAt);
+        return (
+          <Pressable onPress={() => openRoom(item)}>
+            <ChatItem
+              name={displayName}
+              lastMessage={last}
+              timestamp={ts}
+              unreadCount={0}
+              isOnline={false}
+              isMusic={false}
+              isVerified={false}
+              variant="default"
+            />
+          </Pressable>
+        );
+      }}
       ItemSeparatorComponent={() => (
-        <View
-          style={{
-            height: 1,
-            backgroundColor: "#F0F0F0",
-          }}
-        />
+        <View style={{ height: 1, backgroundColor: "#F0F0F0" }} />
       )}
       contentContainerStyle={{ paddingBottom: 20 }}
     />
   );
+}
+
+function MyAnnouncementsList() {
+  const navigation = useNavigation<any>();
+  const { isLoggedIn } = useAuth();
+  const [posts, setPosts] = useState<AnnouncementListItem[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const fetchFirst = useCallback(async () => {
+    if (!isLoggedIn) {
+      setPosts([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const res = await getMyAnnouncementList({ limit: 20 });
+    if (res) {
+      setPosts(res.items);
+      setCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    } else {
+      setPosts([]);
+      setCursor(null);
+      setHasMore(false);
+    }
+    setLoading(false);
+  }, [isLoggedIn]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void fetchFirst();
+    }, [fetchFirst]),
+  );
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchFirst();
+    setRefreshing(false);
+  };
+
+  const onEndReached = async () => {
+    if (!isLoggedIn || !hasMore || !cursor || loadingMore || loading) return;
+    setLoadingMore(true);
+    const res = await getMyAnnouncementList({ cursor, limit: 20 });
+    if (res) {
+      setPosts((prev) => [...prev, ...res.items]);
+      setCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    }
+    setLoadingMore(false);
+  };
+
+  if (!isLoggedIn) {
+    return (
+      <View style={{ padding: 24, alignItems: "center" }}>
+        <Text style={{ color: "#888", textAlign: "center" }}>
+          로그인 후 내 공고 목록을 불러올 수 있습니다.
+        </Text>
+      </View>
+    );
+  }
+
+  if (loading && posts.length === 0) {
+    return (
+      <View style={{ paddingTop: 48, alignItems: "center" }}>
+        <ActivityIndicator size="large" color="#1F2A44" />
+      </View>
+    );
+  }
+
+  return (
+    <FlatList
+      data={posts}
+      keyExtractor={(p) => p.postId}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+      onEndReached={onEndReached}
+      onEndReachedThreshold={0.4}
+      ListFooterComponent={
+        loadingMore ? (
+          <View style={{ padding: 16 }}>
+            <ActivityIndicator color="#1F2A44" />
+          </View>
+        ) : null
+      }
+      ListEmptyComponent={
+        <View style={{ padding: 24, alignItems: "center" }}>
+          <Text style={{ color: "#888" }}>작성한 공고가 없습니다.</Text>
+        </View>
+      }
+      renderItem={({ item }) => (
+        <Pressable
+          onPress={() =>
+            navigation.navigate(RootRoutes.MY_POSTED_CHAT_ROOMS, {
+              postId: item.postId,
+              title: item.title,
+              typeTag: item.type,
+              statusTag: item.isRecruiting ? "모집중" : "마감",
+              dDay: item.dDay,
+            })
+          }
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            backgroundColor: "#FFFFFF",
+            borderBottomWidth: 1,
+            borderBottomColor: "#EFEFEF",
+          }}
+        >
+          <View
+            style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
+          >
+            <View
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 10,
+                backgroundColor: "#D1D5DB",
+              }}
+            />
+            <View style={{ flex: 1, minWidth: 0 }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 8,
+                    flex: 1,
+                    minWidth: 0,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 15,
+                      fontWeight: "600",
+                      color: "#111827",
+                    }}
+                    numberOfLines={1}
+                  >
+                    {item.title}
+                  </Text>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 2,
+                      flexShrink: 0,
+                    }}
+                  >
+                    <MaterialIcons name="person" size={18} color="#000000" />
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: "500",
+                        color: "#000000",
+                      }}
+                    >
+                      –
+                    </Text>
+                  </View>
+                </View>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  gap: 8,
+                  marginTop: 8,
+                  flexWrap: "wrap",
+                }}
+              >
+                <View
+                  style={{
+                    backgroundColor: "#FFFFFF",
+                    borderRadius: 12,
+                    height: 24,
+                    paddingHorizontal: 8,
+                    justifyContent: "center",
+                    borderWidth: 1,
+                    borderColor: "#D1D5DB",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#111827",
+                      fontSize: 12,
+                      fontWeight: "600",
+                    }}
+                  >
+                    {item.isRecruiting ? "모집중" : "마감"}
+                  </Text>
+                </View>
+                <View
+                  style={{
+                    backgroundColor: "#1F2A44",
+                    borderRadius: 12,
+                    height: 24,
+                    paddingHorizontal: 8,
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#FFFFFF",
+                      fontSize: 12,
+                      fontWeight: "700",
+                    }}
+                  >
+                    {item.dDay}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </Pressable>
+      )}
+      contentContainerStyle={{ paddingBottom: 20 }}
+    />
+  );
+}
+
+const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
+  if (topTab === "내 공고") {
+    return <MyAnnouncementsList />;
+  }
+
+  if (topTab === "일반") {
+    return <ChatRoomsFlatList mode="coffee" filter={filter} />;
+  }
+
+  return <ChatRoomsFlatList mode="applied" filter={filter} />;
 };
 
 export default ChatList;

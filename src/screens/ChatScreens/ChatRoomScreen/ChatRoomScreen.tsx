@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,15 +10,24 @@ import {
   Platform,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { RootRoutes } from "../../../navigations/routes";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
-import { GRAY, WHITE } from "../../../color";
+import { GRAY, MAIN } from "../../../color";
 import styles from "./styles";
+import { getChatMessages } from "../../../lib/apis/chat/chatApi";
+import { createChatSocket } from "../../../lib/chat/createChatSocket";
+import type { Socket } from "socket.io-client";
 
 export type ChatRoomParams = {
+  /** 백엔드 채팅방 UUID */
+  chatRoomId: string;
+  /** 상대 user UUID (내 메시지 판별용) */
+  peerUserId: string;
   name: string;
   handle: string;
   isOnline?: boolean;
@@ -31,6 +40,14 @@ type MessageItem = {
   timestamp: string;
 };
 
+type WsMessagePayload = {
+  id?: string;
+  chatRoomId?: string;
+  userId?: string;
+  content?: string | null;
+  createdAt?: string;
+};
+
 const formatTime = (date: Date) => {
   const hours = date.getHours();
   const minutes = date.getMinutes();
@@ -40,46 +57,141 @@ const formatTime = (date: Date) => {
 };
 
 const ChatRoomScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<{ ChatRoom: ChatRoomParams }, "ChatRoom">>();
   const { top, bottom } = useSafeAreaInsets();
-  const { name, handle = "", isOnline = false } = route.params ?? {};
+  const {
+    chatRoomId = "",
+    peerUserId = "",
+    name,
+    handle = "",
+    isOnline = false,
+  } = route.params ?? {};
 
   const [message, setMessage] = useState("");
-  const [messages, setMessages] = useState<MessageItem[]>([
-    {
-      id: "1",
-      text: "다음주 오디션 일정이 어떻게 되나요?",
-      isFromMe: true,
-      timestamp: "오전 9:33",
-    },
-    {
-      id: "2",
-      text: "10월 15일 14시로 확정되었습니다. 장소는 강남 연습실입니다.",
-      isFromMe: false,
-      timestamp: "오전 9:35",
-    },
-    {
-      id: "3",
-      text: "감사합니다! 준비해서 가겠습니다.",
-      isFromMe: true,
-      timestamp: "오전 9:36",
-    },
-  ]);
+  const [messages, setMessages] = useState<MessageItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sendReady, setSendReady] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const socketRef = useRef<Socket | null>(null);
+
+  const appendFromSocket = useCallback(
+    (payload: WsMessagePayload) => {
+      const id = String(payload.id ?? "");
+      const uid = String(payload.userId ?? "");
+      const createdAt = payload.createdAt;
+      if (!id || !createdAt) return;
+      const text = payload.content ?? "";
+      const isFromMe = uid !== String(peerUserId);
+      const timestamp = formatTime(new Date(createdAt));
+      setMessages((prev) => {
+        if (prev.some((m) => m.id === id)) return prev;
+        return [...prev, { id, text, isFromMe, timestamp }];
+      });
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 50);
+    },
+    [peerUserId],
+  );
+
+  useEffect(() => {
+    if (!chatRoomId || !peerUserId) {
+      setLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const page = await getChatMessages(chatRoomId, { page: 1, limit: 100 });
+      if (cancelled) return;
+      const items = page?.items ?? [];
+      const chronological = [...items].reverse();
+      setMessages(
+        chronological.map((m) => ({
+          id: m.id,
+          text: m.content ?? "",
+          isFromMe: String(m.userId) !== String(peerUserId),
+          timestamp: formatTime(new Date(m.createdAt)),
+        })),
+      );
+      setLoading(false);
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: false });
+      }, 80);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [chatRoomId, peerUserId]);
+
+  useEffect(() => {
+    if (!chatRoomId || !peerUserId) return;
+
+    let cancelled = false;
+
+    (async () => {
+      const socket = await createChatSocket();
+      if (cancelled) {
+        socket?.disconnect();
+        return;
+      }
+      socketRef.current = socket;
+      if (!socket) {
+        setSendReady(false);
+        return;
+      }
+
+      const join = () => {
+        socket.emit("joinRoom", { chatRoomId });
+      };
+
+      const onConnect = () => {
+        join();
+        setSendReady(true);
+      };
+
+      socket.on("connect", onConnect);
+      socket.on("disconnect", () => setSendReady(false));
+      if (socket.connected) onConnect();
+
+      socket.on("message", (payload: WsMessagePayload) => {
+        if (String(payload.chatRoomId) !== String(chatRoomId)) return;
+        appendFromSocket(payload);
+      });
+
+      socket.on("connect_error", (err) => {
+        console.warn("[chat socket] connect_error", err?.message);
+        setSendReady(false);
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+      const s = socketRef.current;
+      if (s) {
+        s.emit("leaveRoom", { chatRoomId });
+        s.removeAllListeners();
+        s.disconnect();
+      }
+      socketRef.current = null;
+      setSendReady(false);
+    };
+  }, [chatRoomId, peerUserId, appendFromSocket]);
 
   const sendMessage = () => {
     const trimmed = message.trim();
-    if (!trimmed) return;
-    const newMsg: MessageItem = {
-      id: Date.now().toString(),
-      text: trimmed,
-      isFromMe: true,
-      timestamp: formatTime(new Date()),
-    };
-    setMessages((prev) => [...prev, newMsg]);
+    if (!trimmed || !chatRoomId) return;
+    const socket = socketRef.current;
+    if (!socket?.connected) {
+      Alert.alert("연결 대기", "채팅 서버에 연결된 뒤 다시 시도해 주세요.");
+      return;
+    }
+    socket.emit("sendMessage", { chatRoomId, content: trimmed });
     setMessage("");
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -122,6 +234,19 @@ const ChatRoomScreen = () => {
       hideSub.remove();
     };
   }, []);
+
+  if (!chatRoomId || !peerUserId) {
+    return (
+      <View style={[styles.container, { paddingTop: top, justifyContent: "center", alignItems: "center", paddingHorizontal: 24 }]}>
+        <Text style={{ color: GRAY.DARK_2, textAlign: "center" }}>
+          채팅방 정보가 없습니다. 목록에서 다시 들어와 주세요.
+        </Text>
+        <Pressable onPress={() => navigation.goBack()} style={{ marginTop: 16 }}>
+          <Text style={{ color: "#2563EB", fontWeight: "600" }}>돌아가기</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -172,50 +297,56 @@ const ChatRoomScreen = () => {
 
       {/* Message area */}
       <View style={styles.messageArea}>
-        <ScrollView
-          ref={scrollViewRef}
-          style={styles.messageAreaScroll}
-          contentContainerStyle={styles.messageAreaContent}
-          keyboardShouldPersistTaps="handled"
-          onContentSizeChange={() =>
-            scrollViewRef.current?.scrollToEnd({ animated: false })
-          }
-        >
-          {messages.map((msg) =>
-            msg.isFromMe ? (
-              <View
-                key={msg.id}
-                style={[styles.messageRow, styles.messageRowFromMe]}
-              >
-                <Text style={[styles.messageTime, styles.messageTimeBeforeBubble]}>
-                  {msg.timestamp}
-                </Text>
-                <View style={styles.messageBubbleMe}>
-                  <Text style={[styles.messageText, styles.messageTextMe]}>
-                    {msg.text}
+        {loading ? (
+          <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+            <ActivityIndicator size="large" color={MAIN.DEFAULT} />
+          </View>
+        ) : (
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.messageAreaScroll}
+            contentContainerStyle={styles.messageAreaContent}
+            keyboardShouldPersistTaps="handled"
+            onContentSizeChange={() =>
+              scrollViewRef.current?.scrollToEnd({ animated: false })
+            }
+          >
+            {messages.map((msg) =>
+              msg.isFromMe ? (
+                <View
+                  key={msg.id}
+                  style={[styles.messageRow, styles.messageRowFromMe]}
+                >
+                  <Text style={[styles.messageTime, styles.messageTimeBeforeBubble]}>
+                    {msg.timestamp}
+                  </Text>
+                  <View style={styles.messageBubbleMe}>
+                    <Text style={[styles.messageText, styles.messageTextMe]}>
+                      {msg.text}
+                    </Text>
+                  </View>
+                </View>
+              ) : (
+                <View
+                  key={msg.id}
+                  style={[styles.messageRow, styles.messageRowFromOther]}
+                >
+                  <View style={styles.otherAvatar}>
+                    <Text style={styles.otherAvatarText}>
+                      {name?.charAt(0) ?? "?"}
+                    </Text>
+                  </View>
+                  <View style={styles.messageBubbleOther}>
+                    <Text style={styles.messageText}>{msg.text}</Text>
+                  </View>
+                  <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
+                    {msg.timestamp}
                   </Text>
                 </View>
-              </View>
-            ) : (
-              <View
-                key={msg.id}
-                style={[styles.messageRow, styles.messageRowFromOther]}
-              >
-                <View style={styles.otherAvatar}>
-                  <Text style={styles.otherAvatarText}>
-                    {name?.charAt(0) ?? "?"}
-                  </Text>
-                </View>
-                <View style={styles.messageBubbleOther}>
-                  <Text style={styles.messageText}>{msg.text}</Text>
-                </View>
-                <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
-                  {msg.timestamp}
-                </Text>
-              </View>
-            )
-          )}
-        </ScrollView>
+              ),
+            )}
+          </ScrollView>
+        )}
         {isAttachmentMenuOpen && (
           <Pressable
             style={styles.dismissOverlay}
@@ -268,7 +399,7 @@ const ChatRoomScreen = () => {
           onChangeText={setMessage}
           onKeyPress={handleKeyPress}
           onSubmitEditing={sendMessage}
-          placeholder="메시지를 입력하세요"
+          placeholder={sendReady ? "메시지를 입력하세요" : "연결 중…"}
           placeholderTextColor={GRAY.DARK_2}
           multiline
           maxLength={500}
@@ -281,13 +412,13 @@ const ChatRoomScreen = () => {
             styles.sendButton,
             !message.trim() && styles.sendButtonDisabled,
           ]}
-          disabled={!message.trim()}
+          disabled={!message.trim() || !sendReady}
           onPress={sendMessage}
         >
           <MaterialCommunityIcons
             name="send"
             size={22}
-            color={message.trim() ? "#000" : GRAY.DARK_2}
+            color={message.trim() && sendReady ? "#000" : GRAY.DARK_2}
           />
         </Pressable>
       </View>
