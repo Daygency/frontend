@@ -49,6 +49,7 @@ const EventNewsCard = ({
   const showCounts =
     likeCount != null || commentCount != null || viewCount != null;
   const hasImage = Boolean(imageUrl?.trim());
+  const logoSize = Math.round(Math.min(56, Math.max(32, height * 0.26)));
 
   return (
     <Pressable
@@ -62,9 +63,21 @@ const EventNewsCard = ({
           style={[styles.image, { height }]}
           resizeMode="cover"
         />
-      ) : null}
+      ) : (
+        <View
+          style={[styles.image, localStyles.noImagePlaceholder, { height }]}
+          accessibilityRole="image"
+          accessibilityLabel="이미지 없음"
+        >
+          <Image
+            source={require("../../../assets/logo.png")}
+            style={{ width: logoSize, height: logoSize }}
+            resizeMode="contain"
+          />
+        </View>
+      )}
       <Text
-        style={[styles.imageTitle, !hasImage && localStyles.titleNoImage]}
+        style={styles.imageTitle}
         numberOfLines={2}
         ellipsizeMode="tail"
       >
@@ -104,8 +117,11 @@ const EventNewsCard = ({
 };
 
 const localStyles = StyleSheet.create({
-  titleNoImage: {
-    marginTop: 0,
+  noImagePlaceholder: {
+    backgroundColor: GRAY.MEDIUM,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
   },
   statsRow: {
     flexDirection: "row",

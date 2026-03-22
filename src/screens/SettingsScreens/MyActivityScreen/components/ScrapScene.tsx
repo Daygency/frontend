@@ -326,7 +326,7 @@ const localStyles = StyleSheet.create({
     alignItems: "center",
   },
   newsRow: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 20,
     gap: 14,
   },
   newsCard: {

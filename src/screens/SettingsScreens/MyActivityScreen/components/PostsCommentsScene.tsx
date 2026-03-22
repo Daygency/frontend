@@ -288,7 +288,7 @@ const localStyles = StyleSheet.create({
     display: "none",
   },
   newsRow: {
-    paddingHorizontal: 0,
+    paddingHorizontal: 20,
     gap: 14,
   },
   newsCard: {

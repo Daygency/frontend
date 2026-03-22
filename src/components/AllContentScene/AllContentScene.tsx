@@ -186,15 +186,14 @@ const AllContentScene = () => {
             <ActivityIndicator size="small" color="#666" />
           </View>
         ) : newsItems.length === 0 ? (
-          <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24, paddingHorizontal: 12 }}>공연소식이 없습니다</Text>
+          <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24, paddingHorizontal: 20 }}>공연소식이 없습니다</Text>
         ) : (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
               gap: NEWS_CARD_GAP,
-              paddingHorizontal: 12,
-              paddingRight: 12,
+              paddingHorizontal: 20,
             }}
             style={{ marginTop: 5 }}
           >

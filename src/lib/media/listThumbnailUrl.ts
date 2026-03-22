@@ -31,7 +31,11 @@ export function pickNewsListThumbnailUrl(item: NewsListItem): string | undefined
 export function pickCommunityListThumbnailUrl(
   item: CommunityListItem,
 ): string | undefined {
-  const direct = normalizeListThumbnailUrl(item.thumbnailUrl ?? undefined);
+  const direct = normalizeListThumbnailUrl(
+    item.thumbnailUrl ??
+      (item as CommunityListItem & { imageUrl?: string }).imageUrl ??
+      undefined,
+  );
   if (direct) return direct;
   const fromAtt = pickFirstAttachmentImgUrl(
     (item as CommunityListItem & { attachments?: unknown }).attachments,

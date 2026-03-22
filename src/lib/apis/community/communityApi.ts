@@ -30,6 +30,14 @@ function pickOptionalString(...vals: unknown[]): string | null | undefined {
   return undefined;
 }
 
+/** 목록 썸네일: null/빈 문자열은 건너뛰고 첫 유효 URL (thumbnailUrl·imageUrl 등 별칭) */
+function pickFirstThumbnailUrlString(...vals: unknown[]): string | undefined {
+  for (const v of vals) {
+    if (typeof v === "string" && v.trim()) return v;
+  }
+  return undefined;
+}
+
 function normalizeCommunityListItem(raw: unknown): CommunityListItem {
   const r = raw as Record<string, unknown>;
   const fileVal = r.file;
@@ -48,7 +56,12 @@ function normalizeCommunityListItem(raw: unknown): CommunityListItem {
     viewCount: pickNumber(r.viewCount, r.view_count),
     likeCount: pickNumber(r.likeCount, r.like_count),
     commentCount: pickNumber(r.commentCount, r.comment_count),
-    thumbnailUrl: pickOptionalString(r.thumbnailUrl, r.thumbnail_url),
+    thumbnailUrl: pickFirstThumbnailUrlString(
+      r.thumbnailUrl,
+      r.thumbnail_url,
+      r.imageUrl,
+      r.image_url,
+    ),
     attachments: r.attachments,
     user:
       r.user && typeof r.user === "object"
