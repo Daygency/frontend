@@ -1,7 +1,8 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
+  DeviceEventEmitter,
   FlatList,
   Pressable,
   RefreshControl,
@@ -20,6 +21,7 @@ import { getMyAnnouncementList } from "../../../../../lib/apis/announcement/anno
 import type { AnnouncementListItem } from "../../../../../lib/apis/announcement/types";
 import { formatChatListTime } from "../../../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../../../lib/chat/chatRoomNavigation";
+import { CHAT_APPLIED_ROOMS_REFRESH } from "../../../../../lib/chat/chatRoomsEvents";
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
 
@@ -77,6 +79,15 @@ function ChatRoomsFlatList({
       void fetchFirst();
     }, [fetchFirst]),
   );
+
+  /** README: 지원서 제출 후 `GET /chat/rooms/applied` 목록 동기화 */
+  useEffect(() => {
+    if (mode !== "applied") return;
+    const sub = DeviceEventEmitter.addListener(CHAT_APPLIED_ROOMS_REFRESH, () => {
+      void fetchFirst();
+    });
+    return () => sub.remove();
+  }, [mode, fetchFirst]);
 
   const onRefresh = async () => {
     setRefreshing(true);

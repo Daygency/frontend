@@ -56,6 +56,12 @@ export function mergePeerFromRoomRow(r: Record<string, unknown>): ChatPeerSummar
     r.member,
     r.chatPartner,
     r.chat_partner,
+    r.host,
+    r.organizer,
+    r.producer,
+    r.publisher,
+    r.owner,
+    r.creator,
   ].filter((x) => x != null && typeof x === "object");
 
   let userId = "";
@@ -88,6 +94,12 @@ export function mergePeerFromRoomRow(r: Record<string, unknown>): ChatPeerSummar
         r.receiverId ??
         r.receiver_id ??
         r.counterpartUserId ??
+        r.hostUserId ??
+        r.host_user_id ??
+        r.organizerUserId ??
+        r.organizer_user_id ??
+        r.producerUserId ??
+        r.producer_user_id ??
         "",
     ).trim();
   }

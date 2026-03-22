@@ -110,7 +110,7 @@ export async function getMyAnnouncementList(
   }
 }
 
-/** 공고 목록 조회 */
+/** 공고 목록 일괄 조회 — `GET /announcement` (cursor·limit·필터, 메인 홈 미리보기 등) */
 export async function getAnnouncementList(
   params?: AnnouncementListParams
 ): Promise<AnnouncementListResponse | null> {

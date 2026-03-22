@@ -1,210 +1,70 @@
-# mbackend — 게시글 API (프론트 개발용)
+# Daygency Backend
 
-> Base URL (로컬): `http://localhost:3000`  
-> 상세 스키마·Try it: **`http://localhost:3000/api`** (Swagger)
-
-## 공통
+NestJS API 서버입니다.
 
 | 항목 | 값 |
 |------|-----|
-| 인증 (작성·수정·삭제) | `Authorization: Bearer <access_token>` |
-| JSON 필드명 | **camelCase** |
-| 이미지 포함 작성 | `multipart/form-data` |
-| 텍스트만 작성 | `POST …/json` + `Content-Type: application/json` |
+| 기본 포트 | `3000` (`PORT` 환경변수) |
+| Swagger | `http://localhost:3000/api` |
+| 인증 | `Authorization: Bearer <access_token>` |
 
----
-
-## 1. 이미지와 함께 글 쓰기 — `multipart/form-data`
-
-세 게시판 모두 동일한 패턴입니다.
-
-| 게시판 | URL | 메서드 |
-|--------|-----|--------|
-| 공연소식 | `/news` | `POST` |
-| 모집공고 | `/announcement` | `POST` |
-| 커뮤니티 | `/community` | `POST` |
-
-### Form 필드
-
-| 이름 | 필수 | 설명 |
-|------|------|------|
-| `payload` | O | 아래 **해당 DTO와 같은 키**를 가진 객체를 `JSON.stringify` 한 **문자열** |
-| `files` | 아니오 | 이미지 파일. **같은 필드명 `files`로 여러 번** append (최대 20장) |
-
-- `Content-Type` 헤더는 **직접 넣지 말 것** — 브라우저/React Native가 boundary 포함해 설정.
-- 업로드한 파일이 있으면, **`payload.fileId`가 없을 때** 첫 번째 파일이 글의 **대표 이미지(`file_id`)** 로 저장됩니다.
-
-### 응답에 항상 포함 — `attachments`
-
-업로드한 파일이 있으면 저장 결과가 배열로 옵니다. 없으면 `[]`.
-
-```ts
-type AttachmentItem = {
-  fileId: string;
-  imgUrl: string;      // S3 공개 URL (버킷 정책에 따라 접근)
-  sortOrder: number;   // 같은 글 안 순서 (0부터)
-};
+```bash
+npm install
+# .env 에 DATABASE_*, JWT 등 설정 후
+npm run start:dev
 ```
 
 ---
 
-## 2. 이미지 없이 글만 — `application/json`
+## 공고 상세 — `applicationConfig` 포함
 
-| 게시판 | URL |
-|--------|-----|
-| 공연소식 | `POST /news/json` |
-| 모집공고 | `POST /announcement/json` |
-| 커뮤니티 | `POST /community/json` |
+`GET /announcement/:id` (공고 상세 조회) 응답에 **`applicationConfig`** 가 함께 내려옵니다. 지원서 양식이 없는 공고면 `applicationConfig` 가 `null` 일 수 있습니다.
 
-Body = 아래 해당 **Create DTO JSON** 그대로. 응답에도 `attachments`는 보통 `[]` 입니다.
+`applicationConfig` 필드 의미 (각각 해당 항목을 지원 폼에 **포함할지** 여부, DB는 tinyint/boolean):
 
----
+| 필드 | 설명 |
+|------|------|
+| `postId` | 공고 ID와 동일 |
+| `includeName` | 이름 |
+| `includeBirth` | 출생연도 |
+| `includeGender` | 성별 |
+| `includeMajor` | 전공 |
+| `includeMajorDetail` | 세부전공 |
+| `includeEducation` | 학력 |
+| `includeCategory` | 참가부문 |
+| `includeMusic` | 참가곡 |
+| `includeAddress` | 주소 |
+| `includeFile` | 파일 첨부 여부 |
+| `includeLink` | 링크 |
+| `includeDepartment` | 소속학부 |
+| `includeCareer` | 경력 |
+| `includeIntroduce` | 자기소개/지원동기 |
 
-## 3. `payload` / Body JSON 스키마 (TypeScript)
-
-### 공연소식 — `CreateNewsDto`
-
-```ts
-interface CreateNewsDto {
-  title: string;           // max 100
-  content: string;        // max 255
-  place: string;          // max 100
-  ticketPrice?: number | null;
-  startedAt: string;      // ISO 8601
-  endedAt?: string | null;
-  contact: string;        // max 30
-  fileId?: string | null;   // 이미 존재하는 file UUID (선택). multipart로 파일 보내면 생략 가능
-}
-```
-
-### 커뮤니티 — `CreateCommunityDto`
-
-```ts
-interface CreateCommunityDto {
-  title: string;
-  content: string;
-  categoryId: string;     // 커뮤니티 카테고리 UUID
-  fileId?: string;        // 선택, 기존 등록 파일 id
-}
-```
-
-### 모집공고 — `CreateAnnouncementDto`
-
-`applicationConfig` 는 지원서 항목 포함 여부입니다. Swagger의 `ApplicationConfigDto` 와 동일합니다.
-
-```ts
-type AnnouncementStatus = 'OPEN' | 'CLOSED';
-
-interface CreateAnnouncementDto {
-  title: string;
-  content: string;
-  deadlineAt: string;       // ISO 8601
-  scheduledAt: string;
-  status?: AnnouncementStatus;
-  address: string;
-  fileId?: string | null;
-  categoryId: string;       // 공고 유형 category UUID
-  majorIds?: string[];      // 전공 UUID 배열, 선택
-  applicationConfig: {
-    includeName?: boolean;
-    includeBirth?: boolean;
-    includeGender?: boolean;
-    includeMajor?: boolean;
-    includeMajorDetail?: boolean;
-    includeEducation?: boolean;
-    includeCategory?: boolean;
-    includeMusic?: boolean;
-    includeAddress?: boolean;
-    includeFile?: boolean;
-    includeLink?: boolean;
-    // … Swagger 참고
-  };
-}
-```
+프론트에서는 이 값으로 지원 폼 필드를 노출·필수 처리한 뒤, `POST /applications` 등에 응답 값을 맞춰 보내면 됩니다. 상세 응답에는 `category`, `majors`, 로그인 시 `isMine` 도 포함됩니다.
 
 ---
 
-## 4. 작성 응답 예시
+## 모집 지원서 API (`/applications`)
 
-### 공연소식 `POST /news` (또는 `/news/json`)
+지원서를 **제출하면**(`POST /applications` 성공 시) 다음이 자동으로 처리됩니다.
 
-```json
-{
-  "newsId": "uuid",
-  "title": "…",
-  "place": "…",
-  "startedAt": "2025-04-01T19:00:00.000Z",
-  "attachments": [
-    { "fileId": "…", "imgUrl": "https://…", "sortOrder": 0 }
-  ]
-}
-```
+1. 해당 공고와 지원자 1:1 **공고 전용 채팅방**(`chat_room`, `kind: ANNOUNCEMENT`)이 없으면 생성합니다. (이미 있으면 재사용만 하며, 첫 메시지는 중복 전송하지 않습니다.)
+2. 지원자가 다음 **첫 메시지**를 보냅니다. (공고 제목이 반영됩니다.)
 
-### 모집공고 `POST /announcement` (또는 `/announcement/json`)
+   `[{공고 제목}] 공고에 신청하였습니다.`
 
-```json
-{
-  "postId": "uuid",
-  "title": "…",
-  "type": "행사",
-  "isRecruiting": true,
-  "dDay": "D-7",
-  "attachments": []
-}
-```
+프론트는 지원 완료 후 `GET /chat/rooms/applied` 또는 `GET /chat/rooms/by-post/:postId` 등으로 방 목록을 새로고침하고, 소켓 `namespace /chat`에서 `joinRoom` 후 `message` 이벤트로 실시간 수신을 맞추면 됩니다.
 
-### 커뮤니티 `POST /community` (또는 `/community/json`)
+| Method | URL | 설명 |
+|--------|-----|------|
+| `POST` | `/applications` | 지원서 제출 (공고당·유저당 1건) |
+| `GET` | `/applications/post/:postId/me` | 해당 공고에 내 지원서 |
+| `GET` | `/applications/post/:postId` | 해당 공고 지원 목록 (작성자만) |
+| `GET` | `/applications/:id` | 지원서 단건 (지원자 또는 공고 작성자) |
+| `PATCH` | `/applications/:id` | 지원서 수정 (지원자 본인, 마감 전·OPEN) |
 
-저장된 글 엔티티 필드 + `attachments` 배열이 붙습니다.
+Body 스키마·에러 코드는 Swagger `applications` 태그를 참고하세요.
 
 ---
 
-## 5. 프론트 코드 예시 (이미지 포함)
-
-```ts
-const API = 'http://localhost:3000';
-const token = '…'; // access_token
-
-const payload: CreateNewsDto = {
-  title: '제목',
-  content: '본문',
-  place: '서울',
-  startedAt: new Date().toISOString(),
-  contact: '010-0000-0000',
-};
-
-const form = new FormData();
-form.append('payload', JSON.stringify(payload));
-imageFiles.forEach((file) => form.append('files', file));
-
-const res = await fetch(`${API}/news`, {
-  method: 'POST',
-  headers: { Authorization: `Bearer ${token}` },
-  body: form,
-});
-
-const data = await res.json();
-// data.attachments[0].imgUrl 등 사용
-```
-
----
-
-## 6. 목록·썸네일 (참고)
-
-- `GET /news` — `items[].thumbnailUrl` (목록 카드용)
-- `GET /community` — 각 항목 `thumbnailUrl`
-
-규칙: `file` 테이블에서 해당 글에 붙은 이미지 중 **`order` 최소 1장**, 없으면 대표 `file_id` 이미지.
-
----
-
-## 7. 오류
-
-| 코드 | 대표 원인 |
-|------|-----------|
-| 400 | `payload` 가 JSON이 아님, 유효성 실패 (필드 누락·형식) |
-| 401 | 토큰 없음·만료 |
-
----
-
-기타(팔로우, 프로필, 인증 상세): [docs/README.md](./docs/README.md)
+기타 엔드포인트는 `http://localhost:3000/api` 에서 확인할 수 있습니다.

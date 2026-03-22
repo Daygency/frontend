@@ -15,6 +15,7 @@ import {
   Image,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { useAuth } from "../../../contexts/AuthContext";
 import { RootRoutes } from "../../../navigations/routes";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
@@ -28,8 +29,8 @@ import type { Socket } from "socket.io-client";
 export type ChatRoomParams = {
   /** 백엔드 채팅방 UUID */
   chatRoomId: string;
-  /** 상대 user UUID (내 메시지 판별용) */
-  peerUserId: string;
+  /** 상대 user UUID (내 메시지 판별용). 없으면 첫 메시지 로드 시 추론 */
+  peerUserId?: string;
   name: string;
   handle: string;
   isOnline?: boolean;
@@ -63,15 +64,41 @@ const formatTime = (date: Date) => {
 const ChatRoomScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<{ ChatRoom: ChatRoomParams }, "ChatRoom">>();
+  const { user } = useAuth();
   const { top, bottom } = useSafeAreaInsets();
   const {
     chatRoomId = "",
-    peerUserId = "",
+    peerUserId: peerUserIdParam = "",
     name,
     handle = "",
     isOnline = false,
     peerAvatarUrl: peerAvatarUrlParam,
   } = route.params ?? {};
+
+  const myUserId = String(user?.socialId ?? "");
+  const [peerUserId, setPeerUserId] = useState(peerUserIdParam || "");
+
+  /** 지원 직후 등 목록에 peer 가 비어 있을 때, 메시지에서 상대 ID 추론 */
+  useEffect(() => {
+    if (!chatRoomId || peerUserId) return;
+    let cancelled = false;
+    (async () => {
+      const page = await getChatMessages(chatRoomId, { page: 1, limit: 50 });
+      if (cancelled || !page?.items?.length) return;
+      for (const m of page.items) {
+        const uid = String(m.userId ?? "").trim();
+        if (uid && uid !== myUserId) {
+          setPeerUserId(uid);
+          return;
+        }
+      }
+      const u0 = String(page.items[0]?.userId ?? "").trim();
+      if (u0) setPeerUserId(u0);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [chatRoomId, peerUserId, myUserId]);
 
   const peerAvatarDisplay = usePeerAvatarUrl(
     peerUserId || undefined,

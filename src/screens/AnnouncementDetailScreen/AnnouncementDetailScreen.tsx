@@ -23,6 +23,11 @@ import RoundButton from "../../components/RoundButton/RoundButton";
 import { RootRoutes } from "../../navigations/routes";
 import { getAnnouncementDetail } from "../../lib/apis/announcement/announcementApi";
 import { deleteAnnouncement } from "../../lib/apis/announcement/announcementApi";
+import type { ApplicationConfig } from "../../lib/apis/announcement/types";
+import {
+  extractApplicationConfigRaw,
+  parseApplicationConfig,
+} from "../../lib/application/parseApplicationConfig";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./styles";
 
@@ -33,6 +38,8 @@ export type AnnouncementDetailParams = {
   daysLeft: number;
   postId?: string;
   postedDate?: string;
+  /** 공고 상세에서 받은 지원 양식 설정 (지원서 화면으로 전달) */
+  applicationConfig?: ApplicationConfig | null;
 };
 
 type RootStackParamList = {
@@ -63,6 +70,7 @@ const AnnouncementDetailScreen = () => {
     type: string;
     status: string;
     daysLeft: number;
+    applicationConfig: ApplicationConfig | null;
   } | null>(null);
 
   const fetchDetail = useCallback(() => {
@@ -94,7 +102,14 @@ const AnnouncementDetailScreen = () => {
           : params.status ?? "모집중";
       const dDay = get("dDay") ?? get("d_day") ?? `D-${params.daysLeft ?? 0}`;
       const daysLeft = parseInt(dDay.replace(/\D/g, ""), 10) || params.daysLeft || 0;
-      setDetailData({ title: String(title), type: String(type), status, daysLeft });
+      const applicationConfig = parseApplicationConfig(extractApplicationConfigRaw(d));
+      setDetailData({
+        title: String(title),
+        type: String(type),
+        status,
+        daysLeft,
+        applicationConfig,
+      });
     });
   }, [
     params.postId,
@@ -303,11 +318,22 @@ const AnnouncementDetailScreen = () => {
           <Pressable
             style={styles.btnApply}
             onPress={() => {
+              if (!isLoggedIn) {
+                Alert.alert("알림", "로그인 후 지원서를 작성할 수 있습니다.");
+                return;
+              }
+              if (!params.postId) {
+                Alert.alert("알림", "공고 정보가 없습니다.");
+                return;
+              }
               navigation.navigate(RootRoutes.APPLICATION, {
                 title: displayTitle,
                 type: displayType,
                 status: displayStatus,
                 daysLeft: displayDaysLeft,
+                postId: params.postId,
+                applicationConfig:
+                  detailData?.applicationConfig ?? params.applicationConfig ?? null,
               });
             }}
           >

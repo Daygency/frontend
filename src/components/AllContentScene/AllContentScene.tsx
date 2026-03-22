@@ -68,6 +68,9 @@ const HOME_COMMUNITY_BOARDS: HomeCommunityBoardConfig[] = [
   { boardName: "학원·연습실", categoryName: "학원/연습실 매매" },
 ];
 
+/** 메인 홈 모집공고 미리보기 개수 — `GET /announcement?limit=` 일괄 조회 (`getAnnouncementList`) */
+const HOME_ANNOUNCEMENT_PREVIEW_LIMIT = 3;
+
 const AllContentScene = () => {
   const navigation = useNavigation<NavigationProp>();
   const [announcements, setAnnouncements] = useState<AnnouncementListItem[]>([]);
@@ -80,7 +83,7 @@ const AllContentScene = () => {
   const [communityLoading, setCommunityLoading] = useState(true);
 
   useEffect(() => {
-    getAnnouncementList({ limit: 5 }).then((res) => {
+    getAnnouncementList({ limit: HOME_ANNOUNCEMENT_PREVIEW_LIMIT }).then((res) => {
       setAnnouncementsLoading(false);
       if (res?.items) setAnnouncements(res.items);
     });
@@ -160,7 +163,7 @@ const AllContentScene = () => {
         ) : announcements.length === 0 ? (
           <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24 }}>모집공고가 없습니다</Text>
         ) : (
-          announcements.slice(0, 5).map((item) => (
+          announcements.slice(0, HOME_ANNOUNCEMENT_PREVIEW_LIMIT).map((item) => (
             <AnnouncementCard
               key={item.postId}
               title={item.title}
