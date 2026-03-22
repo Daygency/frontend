@@ -56,7 +56,9 @@ const ChatScreen = () => {
         })}
       </View>
 
-      <ChatList topTab={selectedTopTab} />
+      <View style={{ flex: 1 }}>
+        <ChatList topTab={selectedTopTab} />
+      </View>
     </View>
   );
 };

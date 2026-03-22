@@ -126,7 +126,13 @@ function ChatRoomsFlatList({
 
   if (loading && items.length === 0) {
     return (
-      <View style={{ paddingTop: 48, alignItems: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" color="#1F2A44" />
       </View>
     );
@@ -142,8 +148,11 @@ function ChatRoomsFlatList({
     );
   }
 
+  const isEmpty = filteredItems.length === 0;
+
   return (
     <FlatList
+      style={{ flex: 1 }}
       data={filteredItems}
       keyExtractor={(r) => r.id}
       refreshControl={
@@ -159,8 +168,10 @@ function ChatRoomsFlatList({
         ) : null
       }
       ListEmptyComponent={
-        <View style={{ padding: 24, alignItems: "center" }}>
-          <Text style={{ color: "#888" }}>채팅방이 없습니다.</Text>
+        <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
+          <Text style={{ color: "#888", textAlign: "center" }}>
+            채팅방이 없습니다.
+          </Text>
         </View>
       }
       renderItem={({ item }) => {
@@ -190,7 +201,10 @@ function ChatRoomsFlatList({
       ItemSeparatorComponent={() => (
         <View style={{ height: 1, backgroundColor: "#F0F0F0" }} />
       )}
-      contentContainerStyle={{ paddingBottom: 20 }}
+      contentContainerStyle={[
+        { paddingBottom: 20 },
+        isEmpty && { flexGrow: 1, justifyContent: "center" },
+      ]}
     />
   );
 }
@@ -261,14 +275,23 @@ function MyAnnouncementsList() {
 
   if (loading && posts.length === 0) {
     return (
-      <View style={{ paddingTop: 48, alignItems: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" color="#1F2A44" />
       </View>
     );
   }
 
+  const isEmpty = posts.length === 0;
+
   return (
     <FlatList
+      style={{ flex: 1 }}
       data={posts}
       keyExtractor={(p) => p.postId}
       refreshControl={
@@ -284,8 +307,10 @@ function MyAnnouncementsList() {
         ) : null
       }
       ListEmptyComponent={
-        <View style={{ padding: 24, alignItems: "center" }}>
-          <Text style={{ color: "#888" }}>작성한 공고가 없습니다.</Text>
+        <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
+          <Text style={{ color: "#888", textAlign: "center" }}>
+            작성한 공고가 없습니다.
+          </Text>
         </View>
       }
       renderItem={({ item }) => (
@@ -420,7 +445,10 @@ function MyAnnouncementsList() {
           </View>
         </Pressable>
       )}
-      contentContainerStyle={{ paddingBottom: 20 }}
+      contentContainerStyle={[
+        { paddingBottom: 20 },
+        isEmpty && { flexGrow: 1, justifyContent: "center" },
+      ]}
     />
   );
 }

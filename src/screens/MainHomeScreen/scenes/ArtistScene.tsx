@@ -1,11 +1,20 @@
-import { Pressable, ScrollView, Text, View } from "react-native";
-import { useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  View,
+} from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import ArtistCard from "../../../components/ArtistCard/ArtistCard";
 import MajorTagFilter from "../../../components/MajorTagFilter/MajorTagFilter";
 import MajorTagSelectModal from "../../../components/MajorTagSelectModal/MajorTagSelectModal";
 import styles from "./artistStyles";
 import { RootRoutes } from "../../../navigations/routes";
+import { getMajors, type Major } from "../../../lib/apis/announcement/majorApi";
+import { getUsers } from "../../../lib/apis/users/usersApi";
+import type { UserListItem } from "../../../lib/apis/users/types";
 
 const MAJOR_OPTIONS = [
   "건반악기",
@@ -23,18 +32,85 @@ const MAJOR_OPTIONS = [
   "기타",
 ];
 
-const ARTIST_LIST = [
-  { name: "김연주", category: "현악", activityName: "kimyeonju", musicNoteCount: 47, bookmarkCount: 20 },
-  { name: "김연주", category: "현악", activityName: "kimyeonju2", musicNoteCount: 0, bookmarkCount: 0 },
-  { name: "김연주", category: "현악", activityName: "kimyeonju", musicNoteCount: 47, bookmarkCount: 20 },
-] as const;
-
 const ArtistScene = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
   const [isMajorModalVisible, setIsMajorModalVisible] = useState(false);
-  const [sortBy, setSortBy] = useState<string>("예술템포순");
-  const sortOptions = ["예술템포순", "스크랩수순"] as const;
+  const [majors, setMajors] = useState<Major[]>([]);
+
+  const [users, setUsers] = useState<UserListItem[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+
+  const majorOptions = useMemo(
+    () => (majors.length > 0 ? majors.map((m) => m.name) : MAJOR_OPTIONS),
+    [majors],
+  );
+
+  const majorIdsQuery = useMemo(() => {
+    if (!selectedMajors.length || !majors.length) return undefined;
+    const ids = majors
+      .filter((m) => selectedMajors.includes(m.name))
+      .map((m) => m.majorId);
+    return ids.length ? ids.join(",") : undefined;
+  }, [selectedMajors, majors]);
+
+  useEffect(() => {
+    getMajors().then((list) => {
+      if (list.length) setMajors(list);
+    });
+  }, []);
+
+  const reloadUsers = useCallback(
+    async (opts?: { skipLoadingSpinner?: boolean }) => {
+      if (!opts?.skipLoadingSpinner) setLoading(true);
+      const res = await getUsers({
+        limit: 20,
+        ...(majorIdsQuery ? { majorIds: majorIdsQuery } : {}),
+      });
+      if (!opts?.skipLoadingSpinner) setLoading(false);
+      if (!res) {
+        setUsers([]);
+        setCursor(null);
+        setHasMore(false);
+        return;
+      }
+      setUsers(res.items);
+      setCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    },
+    [majorIdsQuery],
+  );
+
+  useEffect(() => {
+    void reloadUsers();
+  }, [reloadUsers]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await reloadUsers({ skipLoadingSpinner: true });
+    setRefreshing(false);
+  };
+
+  const onEndReached = useCallback(async () => {
+    if (!hasMore || !cursor || loadingMore || loading) return;
+    setLoadingMore(true);
+    const res = await getUsers({
+      limit: 20,
+      cursor,
+      ...(majorIdsQuery ? { majorIds: majorIdsQuery } : {}),
+    });
+    setLoadingMore(false);
+    if (!res) return;
+    setUsers((prev) => [...prev, ...res.items]);
+    setCursor(res.nextCursor);
+    setHasMore(res.hasMore);
+  }, [hasMore, cursor, loadingMore, loading, majorIdsQuery]);
+
+  const isEmpty = !loading && users.length === 0;
 
   return (
     <View style={styles.container}>
@@ -44,84 +120,80 @@ const ArtistScene = () => {
             selectedValues={selectedMajors}
             onPress={() => setIsMajorModalVisible(true)}
           />
-          {sortOptions.map((option) => (
-            <Pressable
-              key={option}
-              style={[styles.sortTab, sortBy === option && styles.sortTabActive]}
-              onPress={() => setSortBy(option)}
-            >
-              <Text
-                style={[
-                  styles.sortTabText,
-                  sortBy === option && styles.sortTabTextActive,
-                ]}
-              >
-                {option}
-              </Text>
-            </Pressable>
-          ))}
         </View>
       </View>
 
       <MajorTagSelectModal
         visible={isMajorModalVisible}
-        options={MAJOR_OPTIONS}
+        options={majorOptions}
         selectedValues={selectedMajors}
         onToggle={(value) => {
           setSelectedMajors((prev) =>
             prev.includes(value)
               ? prev.filter((v) => v !== value)
-              : [...prev, value]
+              : [...prev, value],
           );
         }}
         onComplete={() => setIsMajorModalVisible(false)}
       />
-      <View style={styles.scrollContentWrapper}>
-        <ScrollView contentContainerStyle={styles.scrollContent}>
-          <View style={styles.cardWrapper}>
-            <ArtistCard
-              name="김연주"
-              category="현악"
-              activityName="kimyeonju"
-              musicNoteCount={47}
-              onPress={() =>
-                navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
-                  activityName: "kimyeonju",
-                })
-              }
-            />
-          </View>
-          <View style={styles.cardWrapper}>
-            <ArtistCard
-              name="김연주"
-              category="현악"
-              activityName="kimyeonju2"
-              musicNoteCount={0}
-              onPress={() =>
-                navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
-                  activityName: "kimyeonju2",
-                })
-              }
-            />
-          </View>
-          <View style={styles.cardWrapper}>
-            <ArtistCard
-              name="김연주"
-              category="현악"
-              activityName="kimyeonju"
-              musicNoteCount={47}
-              onPress={() =>
-                navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
-                  activityName: "kimyeonju",
-                })
-              }
-            />
-          </View>
-        </ScrollView>
-      </View>
+
+      {loading && users.length === 0 ? (
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <ActivityIndicator size="large" color="#1F2A44" />
+        </View>
+      ) : (
+        <FlatList
+          style={{ flex: 1 }}
+          data={users}
+          keyExtractor={(item) => item.userId}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.35}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={{ paddingVertical: 16 }}>
+                <ActivityIndicator color="#1F2A44" />
+              </View>
+            ) : null
+          }
+          ListEmptyComponent={
+            <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
+              <Text style={{ color: "#888", textAlign: "center" }}>
+                유저가 없습니다.
+              </Text>
+            </View>
+          }
+          renderItem={({ item }) => (
+            <View style={styles.cardWrapper}>
+              <ArtistCard
+                name={item.nickname || "이름 없음"}
+                category={item.major?.name ?? "전공 미설정"}
+                activityName={item.activityName}
+                musicNoteCount={0}
+                onPress={() =>
+                  navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+                    activityName: item.activityName,
+                  })
+                }
+              />
+            </View>
+          )}
+          contentContainerStyle={[
+            styles.scrollContent,
+            isEmpty && { flexGrow: 1, justifyContent: "center" },
+          ]}
+        />
+      )}
     </View>
   );
 };
 
 export default ArtistScene;
-

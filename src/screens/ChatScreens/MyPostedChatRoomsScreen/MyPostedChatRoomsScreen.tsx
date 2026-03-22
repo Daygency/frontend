@@ -102,7 +102,12 @@ export default function MyPostedChatRoomsScreen() {
 
   if (loading && rooms.length === 0) {
     return (
-      <View style={[styles.container, { justifyContent: "center" }]}>
+      <View
+        style={[
+          styles.container,
+          { justifyContent: "center", alignItems: "center" },
+        ]}
+      >
         <ActivityIndicator size="large" color="#1F2A44" />
       </View>
     );
@@ -142,6 +147,7 @@ export default function MyPostedChatRoomsScreen() {
       </Text>
 
       <FlatList
+        style={{ flex: 1 }}
         data={rooms}
         keyExtractor={(i) => i.id}
         refreshControl={
@@ -157,8 +163,10 @@ export default function MyPostedChatRoomsScreen() {
           ) : null
         }
         ListEmptyComponent={
-          <View style={{ padding: 24, alignItems: "center" }}>
-            <Text style={{ color: "#888" }}>이 공고에 열린 채팅방이 없습니다.</Text>
+          <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
+            <Text style={{ color: "#888", textAlign: "center" }}>
+              이 공고에 열린 채팅방이 없습니다.
+            </Text>
           </View>
         }
         renderItem={({ item }) => {
@@ -183,7 +191,10 @@ export default function MyPostedChatRoomsScreen() {
           );
         }}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          rooms.length === 0 && { flexGrow: 1, justifyContent: "center" },
+        ]}
       />
     </View>
   );
