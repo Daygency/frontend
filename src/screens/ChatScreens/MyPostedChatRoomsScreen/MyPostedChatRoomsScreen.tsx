@@ -186,6 +186,8 @@ export default function MyPostedChatRoomsScreen() {
                 isMusic={false}
                 isVerified={false}
                 variant="default"
+                peerUserId={peer?.userId}
+                initialAvatarUrl={peer?.profileImageUrl}
               />
             </Pressable>
           );

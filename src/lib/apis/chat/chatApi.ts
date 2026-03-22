@@ -8,6 +8,7 @@ import type {
   CreateAnnouncementRoomBody,
   CreateCoffeeRoomBody,
 } from "./types";
+import { mergePeerFromRoomRow } from "../../chat/peerImageFields";
 
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
@@ -20,28 +21,6 @@ async function getAuthHeadersRequired(): Promise<Record<string, string>> {
 
 function asRecord(v: unknown): Record<string, unknown> {
   return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
-}
-
-function normalizePeer(raw: unknown): ChatRoomListItem["peer"] {
-  const p = asRecord(raw);
-  const userId = String(p.userId ?? p.user_id ?? "");
-  if (!userId) return null;
-  return {
-    userId,
-    nickname: typeof p.nickname === "string" ? p.nickname : undefined,
-    activityName:
-      typeof p.activityName === "string"
-        ? p.activityName
-        : typeof p.activity_name === "string"
-          ? p.activity_name
-          : undefined,
-    profileImageUrl:
-      typeof p.profileImageUrl === "string"
-        ? p.profileImageUrl
-        : typeof p.profile_image_url === "string"
-          ? p.profile_image_url
-          : undefined,
-  };
 }
 
 function normalizePost(raw: unknown): ChatRoomListItem["post"] {
@@ -81,7 +60,7 @@ function normalizeRoomItem(raw: unknown): ChatRoomListItem | null {
     id,
     kind,
     post: normalizePost(r.post),
-    peer: normalizePeer(r.peer),
+    peer: mergePeerFromRoomRow(r),
     lastMessage: normalizeLastMessage(r.lastMessage ?? r.last_message),
     createdAt:
       typeof r.createdAt === "string"

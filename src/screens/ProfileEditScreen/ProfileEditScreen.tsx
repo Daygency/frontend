@@ -14,7 +14,10 @@ import { TabView } from "react-native-tab-view";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../color";
-import { getMyProfile } from "../../lib/apis/portfolio/profileApi";
+import {
+  getMyProfile,
+  pickFollowCountsFromApiJson,
+} from "../../lib/apis/portfolio/profileApi";
 import type {
   EducationEntry,
   CareerEntry,
@@ -463,9 +466,13 @@ const ProfileEditScreen = () => {
       if (fresh) {
         await saveProfileCache(fresh as any);
       } else {
+        const patchCounts = pickFollowCountsFromApiJson(
+          updated as Record<string, unknown>,
+        );
         const updatedProfileForCache: any = {
           ...(profile as any),
           ...(updated as any),
+          ...patchCounts,
           nickname,
           activityName,
           aboutMe,

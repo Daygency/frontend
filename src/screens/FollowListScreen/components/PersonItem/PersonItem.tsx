@@ -1,48 +1,72 @@
 import { View, Text, Image, Pressable } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import Tag from "../../../../components/Tag/Tag";
 import styles from "./styles";
-import { BLACK, WHITE } from "../../../../color";
+import { GRAY } from "../../../../color";
+import type { FollowListItemDto } from "../../../../lib/apis/follow/followListTypes";
+import { resolveProfileImageUrlForDisplay } from "../../../../lib/chat/resolveProfileImageUrl";
+import { RootRoutes } from "../../../../navigations/routes";
+import { useState, useEffect } from "react";
 
 interface PersonItemProps {
-  person: {
-    name: string;
-    tag: string;
-    introduction: string;
-    profileImage: string | null;
-  };
+  person: FollowListItemDto;
 }
 
 const PersonItem = ({ person }: PersonItemProps) => {
-  const isArtist = person.tag === "예술가";
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const [imgErr, setImgErr] = useState(false);
+  const displayUri = resolveProfileImageUrlForDisplay(person.profileImgUrl);
+
+  useEffect(() => {
+    setImgErr(false);
+  }, [person.userId, person.profileImgUrl]);
+
+  const displayName = person.nickname?.trim() || "이름 없음";
+  const sub = person.activityName?.trim();
+
+  const onPress = () => {
+    navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+      userId: person.userId,
+      activityName: sub ?? "",
+    });
+  };
 
   return (
-    <View style={styles.container}>
-      {person.profileImage ? (
+    <Pressable
+      style={({ pressed }) => [styles.container, pressed && styles.pressed]}
+      onPress={onPress}
+    >
+      {displayUri && !imgErr ? (
         <Image
-          source={{ uri: person.profileImage }}
+          source={{ uri: displayUri }}
           style={styles.profileImage}
+          resizeMode="cover"
+          onError={() => setImgErr(true)}
         />
       ) : (
-        <View style={styles.placeholderImage} />
+        <View style={styles.placeholderImage}>
+          <MaterialCommunityIcons name="account" size={36} color={GRAY.MEDIUM_2} />
+        </View>
       )}
 
       <View style={styles.infoContainer}>
-        <View style={styles.nameRow}>
-          <Text style={styles.name}>{person.name}</Text>
-          <Tag
-            text={person.tag}
-            backgroundColor={isArtist ? "#EBBF4B" : "#6A36FF"}
-            textColor={WHITE}
-          />
-        </View>
-        <Text style={styles.introduction}>{person.introduction}</Text>
+        <Text style={styles.name} numberOfLines={1}>
+          {displayName}
+        </Text>
+        {sub ? (
+          <Text style={styles.subtitle} numberOfLines={1}>
+            {sub}
+          </Text>
+        ) : null}
       </View>
 
-      <Pressable style={styles.deleteButton} onPress={() => {}}>
-        <MaterialCommunityIcons name="close" size={24} color={BLACK} />
-      </Pressable>
-    </View>
+      <MaterialCommunityIcons
+        name="chevron-right"
+        size={22}
+        color={GRAY.MEDIUM_2}
+      />
+    </Pressable>
   );
 };
 

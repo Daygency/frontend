@@ -12,6 +12,7 @@ import {
   TextInputKeyPressEventData,
   ActivityIndicator,
   Alert,
+  Image,
 } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { RootRoutes } from "../../../navigations/routes";
@@ -21,6 +22,7 @@ import { GRAY, MAIN } from "../../../color";
 import styles from "./styles";
 import { getChatMessages } from "../../../lib/apis/chat/chatApi";
 import { createChatSocket } from "../../../lib/chat/createChatSocket";
+import { usePeerAvatarUrl } from "../../../lib/chat/usePeerAvatarUrl";
 import type { Socket } from "socket.io-client";
 
 export type ChatRoomParams = {
@@ -31,6 +33,8 @@ export type ChatRoomParams = {
   name: string;
   handle: string;
   isOnline?: boolean;
+  /** 상대 프로필 이미지 (목록/프로필에서 전달) */
+  peerAvatarUrl?: string;
 };
 
 type MessageItem = {
@@ -66,7 +70,14 @@ const ChatRoomScreen = () => {
     name,
     handle = "",
     isOnline = false,
+    peerAvatarUrl: peerAvatarUrlParam,
   } = route.params ?? {};
+
+  const peerAvatarDisplay = usePeerAvatarUrl(
+    peerUserId || undefined,
+    peerAvatarUrlParam,
+  );
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<MessageItem[]>([]);
@@ -235,6 +246,10 @@ const ChatRoomScreen = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setAvatarLoadError(false);
+  }, [peerAvatarDisplay]);
+
   if (!chatRoomId || !peerUserId) {
     return (
       <View style={[styles.container, { paddingTop: top, justifyContent: "center", alignItems: "center", paddingHorizontal: 24 }]}>
@@ -267,7 +282,16 @@ const ChatRoomScreen = () => {
         <View style={styles.userInfo}>
           <View style={styles.avatarContainer}>
             <View style={styles.avatar}>
-              <Text style={styles.avatarText}>{name?.charAt(0) ?? "?"}</Text>
+              {peerAvatarDisplay && !avatarLoadError ? (
+                <Image
+                  source={{ uri: peerAvatarDisplay }}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                  onError={() => setAvatarLoadError(true)}
+                />
+              ) : (
+                <Text style={styles.avatarText}>{name?.charAt(0) ?? "?"}</Text>
+              )}
             </View>
             {isOnline && <View style={styles.onlineIndicator} />}
           </View>
@@ -332,9 +356,18 @@ const ChatRoomScreen = () => {
                   style={[styles.messageRow, styles.messageRowFromOther]}
                 >
                   <View style={styles.otherAvatar}>
-                    <Text style={styles.otherAvatarText}>
-                      {name?.charAt(0) ?? "?"}
-                    </Text>
+                    {peerAvatarDisplay && !avatarLoadError ? (
+                      <Image
+                        source={{ uri: peerAvatarDisplay }}
+                        style={styles.otherAvatarImage}
+                        resizeMode="cover"
+                        onError={() => setAvatarLoadError(true)}
+                      />
+                    ) : (
+                      <Text style={styles.otherAvatarText}>
+                        {name?.charAt(0) ?? "?"}
+                      </Text>
+                    )}
                   </View>
                   <View style={styles.messageBubbleOther}>
                     <Text style={styles.messageText}>{msg.text}</Text>

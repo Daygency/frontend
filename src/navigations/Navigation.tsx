@@ -8,6 +8,7 @@ import SplashScreenView from "../screens/OnboardingScreens/SplashScreen/SplashSc
 import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
 import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
 import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
+import type { FollowListParams } from "../screens/FollowListScreen/types";
 import CommunityDetailScreen from "../screens/CommunityDetailScreen";
 import CommunityRegistrationScreen from "../screens/CommunityRegistrationScreen";
 import AnnouncementRegistrationScreen from "../screens/AnnouncementRegistrationScreen";
@@ -170,10 +171,14 @@ const Navigation = () => {
         <Stack.Screen
           name={RootRoutes.FOLLOW_LIST}
           component={FollowListScreen}
-          options={({ navigation }) => ({
+          options={({ navigation, route }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={styles.title}>팔로잉 / 팔로워</Text>
+                <Text style={styles.title} numberOfLines={1}>
+                  {(route.params as FollowListParams | undefined)?.titleName
+                    ? `${(route.params as FollowListParams).titleName} · 팔로우`
+                    : "팔로잉 / 팔로워"}
+                </Text>
               </View>
             ),
             headerShadowVisible: false,

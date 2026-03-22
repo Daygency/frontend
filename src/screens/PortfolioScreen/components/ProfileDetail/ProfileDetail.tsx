@@ -1,60 +1,99 @@
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { useState, useEffect, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useRoute } from "@react-navigation/native";
 import styles from "./styles";
 import { GRAY, BLACK, MAIN } from "../../../../color";
 import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
-import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
+import {
+  getMyProfile,
+  getUserPublicProfile,
+} from "../../../../lib/apis/portfolio/profileApi";
+import type {
+  ProfileResponseDto,
+  PublicProfileResponseDto,
+} from "../../../../lib/apis/portfolio/types";
 import {
   getProfileCache,
   saveProfileCache,
 } from "../../../../lib/profileCache";
 import { useAuth } from "../../../../contexts/AuthContext";
+import { RootRoutes } from "../../../../navigations/routes";
+
+type LoadedProfile = ProfileResponseDto | PublicProfileResponseDto | null;
 
 const ProfileDetail = () => {
   const { user } = useAuth();
-  const [profile, setProfile] =
-    useState<Awaited<ReturnType<typeof getMyProfile>>>(null);
+  const route = useRoute();
+  const routeParams = (route.params ?? {}) as { userId?: string };
+  const viewingUserId = routeParams.userId?.trim() ?? "";
+  const isArtistPortfolio =
+    route.name === RootRoutes.ARTIST_PORTFOLIO;
+  const isOtherProfile = Boolean(viewingUserId);
+  const isInvalidOtherRoute = isArtistPortfolio && !viewingUserId;
+
+  const [profile, setProfile] = useState<LoadedProfile>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadProfile = useCallback((skipCache = false) => {
-    let cancelled = false;
-    const apiResponded = { current: false };
-    setIsLoading(true);
+  const loadProfile = useCallback(
+    (skipCache = false) => {
+      let cancelled = false;
+      const apiResponded = { current: false };
+      setIsLoading(true);
 
-    if (!skipCache) {
-      getProfileCache().then((cached) => {
-        if (!cancelled && cached && !apiResponded.current) {
-          setProfile(cached);
+      if (isInvalidOtherRoute) {
+        setProfile(null);
+        setIsLoading(false);
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      if (isOtherProfile && viewingUserId) {
+        getUserPublicProfile(viewingUserId).then((data) => {
+          if (!cancelled) {
+            setProfile(data);
+            setIsLoading(false);
+          }
+        });
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      if (!skipCache) {
+        getProfileCache().then((cached) => {
+          if (!cancelled && cached && !apiResponded.current) {
+            setProfile(cached);
+            setIsLoading(false);
+          }
+        });
+      }
+
+      getMyProfile().then((data) => {
+        if (!cancelled) {
+          apiResponded.current = true;
+          if (data) saveProfileCache(data);
+          setProfile(data);
           setIsLoading(false);
         }
       });
-    }
 
-    getMyProfile().then((data) => {
-      if (!cancelled) {
-        apiResponded.current = true;
-        if (data) saveProfileCache(data);
-        setProfile(data);
-        setIsLoading(false);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      return () => {
+        cancelled = true;
+      };
+    },
+    [isOtherProfile, viewingUserId, isInvalidOtherRoute],
+  );
 
   useEffect(() => {
     loadProfile(false);
   }, [loadProfile]);
 
-  // 포커스 시 캐시 건너뛰고 API에서 바로 조회 → 프로필 수정 후 최신 selfIntroduction 반영
   useFocusEffect(
     useCallback(() => {
       loadProfile(true);
       return () => {};
-    }, [loadProfile])
+    }, [loadProfile]),
   );
 
   const getSectionText = (value: unknown, fallback: string) => {
@@ -167,12 +206,41 @@ const ProfileDetail = () => {
     );
   }
 
+  if (isInvalidOtherRoute) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.contentContainer,
+          { padding: 24, justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text style={{ color: GRAY.DARK, textAlign: "center" }}>
+          프로필 상세를 불러올 수 없습니다.
+        </Text>
+      </View>
+    );
+  }
+
+  const p = profile as any;
   const aboutMe =
-    getSectionText((profile as any)?.selfIntroduction, "") ||
-    getSectionText((profile as any)?.aboutMe, "소개가 없습니다.");
-  const email = profile?.contact?.email ?? user?.email ?? "";
-  const phoneNumber = profile?.contact?.phoneNumber ?? "";
-  const hasContact = email || phoneNumber;
+    getSectionText(p?.selfIntroduction, "") ||
+    getSectionText(p?.aboutMe, "소개가 없습니다.");
+
+  const email = !isOtherProfile
+    ? profile?.contact?.email ?? user?.email ?? ""
+    : "";
+  const phoneNumber = !isOtherProfile
+    ? profile?.contact?.phoneNumber ?? ""
+    : "";
+  const hasContact = !isOtherProfile && (email || phoneNumber);
+
+  const educationList =
+    p?.educationEntries ?? p?.educations ?? [];
+  const careerList = p?.careerEntries ?? p?.careers ?? [];
+  const awardList = p?.awardEntries ?? p?.awards ?? [];
+  const certList =
+    p?.certificateEntries ?? p?.certificates ?? [];
 
   return (
     <ScrollView
@@ -204,7 +272,7 @@ const ProfileDetail = () => {
         <Text style={styles.sectionTitle}>학력</Text>
         <Text style={styles.sectionContent}>
           {formatEntriesWithPeriod(
-            (profile as any)?.educationEntries ?? (profile as any)?.educations ?? [],
+            educationList,
             "정보가 없습니다.",
           )}
         </Text>
@@ -222,7 +290,7 @@ const ProfileDetail = () => {
         <Text style={styles.sectionTitle}>경력</Text>
         <Text style={styles.sectionContent}>
           {formatEntriesWithPeriod(
-            (profile as any)?.careerEntries ?? (profile as any)?.careers ?? [],
+            careerList,
             "정보가 없습니다.",
           )}
         </Text>
@@ -240,7 +308,7 @@ const ProfileDetail = () => {
         <Text style={styles.sectionTitle}>수상 경력</Text>
         <Text style={styles.sectionContent}>
           {formatAwardsWithDate(
-            (profile as any)?.awardEntries ?? (profile as any)?.awards ?? [],
+            awardList,
             "정보가 없습니다.",
           )}
         </Text>
@@ -258,37 +326,37 @@ const ProfileDetail = () => {
         <Text style={styles.sectionTitle}>수료증 / 자격증</Text>
         <Text style={styles.sectionContent}>
           {formatCertificatesWithDate(
-            (profile as any)?.certificateEntries ??
-              (profile as any)?.certificates ??
-              [],
+            certList,
             "정보가 없습니다.",
           )}
         </Text>
       </ShadowCardButton>
 
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
-        <Text style={styles.sectionTitle}>연락처</Text>
-        {hasContact ? (
-          <>
-            {email ? (
-              <Text style={styles.sectionContent}>Email: {email}</Text>
-            ) : null}
-            {phoneNumber ? (
-              <Text style={styles.sectionContent}>Phone: {phoneNumber}</Text>
-            ) : null}
-          </>
-        ) : (
-          <Text style={styles.sectionContent}>연락처 정보가 없습니다.</Text>
-        )}
-      </ShadowCardButton>
+      {!isOtherProfile ? (
+        <ShadowCardButton
+          styles={{
+            container: {
+              paddingTop: 16,
+              paddingBottom: 17,
+              paddingHorizontal: 16,
+            },
+          }}
+        >
+          <Text style={styles.sectionTitle}>연락처</Text>
+          {hasContact ? (
+            <>
+              {email ? (
+                <Text style={styles.sectionContent}>Email: {email}</Text>
+              ) : null}
+              {phoneNumber ? (
+                <Text style={styles.sectionContent}>Phone: {phoneNumber}</Text>
+              ) : null}
+            </>
+          ) : (
+            <Text style={styles.sectionContent}>연락처 정보가 없습니다.</Text>
+          )}
+        </ShadowCardButton>
+      ) : null}
     </ScrollView>
   );
 };

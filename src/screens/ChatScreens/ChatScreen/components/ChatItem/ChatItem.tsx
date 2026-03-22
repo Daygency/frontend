@@ -1,6 +1,8 @@
-import { Text, View } from "react-native";
+import { Text, View, Image } from "react-native";
+import { useState, useEffect } from "react";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../../../color";
+import { usePeerAvatarUrl } from "../../../../../lib/chat/usePeerAvatarUrl";
 import styles from "./styles";
 
 interface ChatItemProps {
@@ -12,6 +14,10 @@ interface ChatItemProps {
   isMusic?: boolean;
   isVerified?: boolean;
   variant?: "default";
+  /** 상대 userId — 이미지 URL이 없을 때 공개 프로필로 보조 조회 */
+  peerUserId?: string;
+  /** API에서 온 원본 프로필 이미지 URL(상대경로 가능) */
+  initialAvatarUrl?: string;
 }
 
 const ChatItem = ({
@@ -22,12 +28,30 @@ const ChatItem = ({
   isOnline = false,
   isMusic = false,
   isVerified = false,
+  peerUserId,
+  initialAvatarUrl,
 }: ChatItemProps) => {
+  const avatarUrl = usePeerAvatarUrl(peerUserId, initialAvatarUrl);
+  const [imgErr, setImgErr] = useState(false);
+
+  useEffect(() => {
+    setImgErr(false);
+  }, [avatarUrl]);
+
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
-          <MaterialIcons name="person" size={28} color={GRAY.MEDIUM_2} />
+          {avatarUrl && !imgErr ? (
+            <Image
+              source={{ uri: avatarUrl }}
+              style={styles.avatarImage}
+              resizeMode="cover"
+              onError={() => setImgErr(true)}
+            />
+          ) : (
+            <MaterialIcons name="person" size={28} color={GRAY.MEDIUM_2} />
+          )}
         </View>
         {isOnline && <View style={styles.onlineIndicator} />}
       </View>

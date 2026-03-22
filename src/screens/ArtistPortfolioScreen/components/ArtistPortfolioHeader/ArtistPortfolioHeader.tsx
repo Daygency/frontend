@@ -1,21 +1,14 @@
 import { useState } from "react";
-import {
-  View,
-  Text,
-  Pressable,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import styles from "./styles";
 import { useAuth } from "../../../../contexts/AuthContext";
-import { followUser, unfollowUser } from "../../../../lib/apis/follow/followApi";
 import { blockUser } from "../../../../lib/apis/block/blockApi";
 
 interface ArtistPortfolioHeaderProps {
   activityName: string;
-  /** 다른 유저 포트폴리오일 때만 전달 (팔로우/차단 API용 UUID) */
+  /** 다른 유저 포트폴리오일 때만 전달 */
   targetUserId?: string;
 }
 
@@ -27,54 +20,13 @@ const ArtistPortfolioHeader = ({
   const { user, isLoggedIn } = useAuth();
   const myUserId = user?.socialId?.trim() ?? "";
 
-  const [following, setFollowing] = useState(false);
-  const [followLoading, setFollowLoading] = useState(false);
   const [blockLoading, setBlockLoading] = useState(false);
 
-  const showSocial =
+  const showMenu =
     !!targetUserId &&
     isLoggedIn &&
     !!myUserId &&
     targetUserId !== myUserId;
-
-  const onPressFollow = async () => {
-    if (!targetUserId || followLoading) return;
-    setFollowLoading(true);
-    const res = await followUser(targetUserId);
-    setFollowLoading(false);
-    if (res.ok) {
-      setFollowing(true);
-      return;
-    }
-    Alert.alert(
-      "팔로우",
-      res.message ?? `요청에 실패했습니다. (${res.status})`,
-    );
-  };
-
-  const onPressUnfollow = () => {
-    if (!targetUserId || followLoading) return;
-    Alert.alert("언팔로우", "이 사용자를 언팔로우할까요?", [
-      { text: "취소", style: "cancel" },
-      {
-        text: "언팔로우",
-        style: "destructive",
-        onPress: async () => {
-          setFollowLoading(true);
-          const res = await unfollowUser(targetUserId);
-          setFollowLoading(false);
-          if (res.ok) {
-            setFollowing(false);
-            return;
-          }
-          Alert.alert(
-            "언팔로우",
-            res.message ?? `요청에 실패했습니다. (${res.status})`,
-          );
-        },
-      },
-    ]);
-  };
 
   const onPressBlock = () => {
     if (!targetUserId || blockLoading) return;
@@ -106,6 +58,29 @@ const ArtistPortfolioHeader = ({
     );
   };
 
+  const onPressReport = () => {
+    Alert.alert(
+      "신고",
+      "신고 접수 기능은 준비 중입니다. 고객센터로 문의해 주세요.",
+    );
+  };
+
+  const openOverflowMenu = () => {
+    if (blockLoading) return;
+    Alert.alert("더보기", undefined, [
+      {
+        text: "차단",
+        style: "destructive",
+        onPress: onPressBlock,
+      },
+      {
+        text: "신고",
+        onPress: onPressReport,
+      },
+      { text: "취소", style: "cancel" },
+    ]);
+  };
+
   return (
     <View style={styles.headerContainer}>
       <View style={styles.topRow}>
@@ -125,44 +100,28 @@ const ArtistPortfolioHeader = ({
             @{activityName}
           </Text>
         </View>
-      </View>
 
-      {showSocial ? (
-        <View style={styles.actionRow}>
-          {followLoading ? (
-            <View style={styles.actionBtn}>
+        {showMenu ? (
+          <Pressable
+            onPress={openOverflowMenu}
+            hitSlop={12}
+            style={styles.menuButton}
+            disabled={blockLoading}
+          >
+            {blockLoading ? (
               <ActivityIndicator size="small" color="#1F2A44" />
-            </View>
-          ) : following ? (
-            <Pressable
-              style={[styles.actionBtn, styles.actionBtnFollowing]}
-              onPress={onPressUnfollow}
-            >
-              <Text style={styles.actionBtnTextFollowing}>팔로잉</Text>
-            </Pressable>
-          ) : (
-            <Pressable
-              style={[styles.actionBtn, styles.actionBtnFollow]}
-              onPress={onPressFollow}
-            >
-              <Text style={styles.actionBtnTextFollow}>팔로우</Text>
-            </Pressable>
-          )}
-
-          {blockLoading ? (
-            <View style={styles.actionBtn}>
-              <ActivityIndicator size="small" color="#991B1B" />
-            </View>
-          ) : (
-            <Pressable
-              style={[styles.actionBtn, styles.actionBtnBlock]}
-              onPress={onPressBlock}
-            >
-              <Text style={styles.actionBtnTextBlock}>차단</Text>
-            </Pressable>
-          )}
-        </View>
-      ) : null}
+            ) : (
+              <MaterialCommunityIcons
+                name="dots-vertical"
+                size={26}
+                color="#000"
+              />
+            )}
+          </Pressable>
+        ) : (
+          <View style={styles.menuPlaceholder} />
+        )}
+      </View>
     </View>
   );
 };

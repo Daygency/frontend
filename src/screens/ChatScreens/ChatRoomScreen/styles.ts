@@ -35,6 +35,12 @@ const styles = StyleSheet.create({
     backgroundColor: GRAY.MEDIUM,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   avatarText: {
     fontSize: 18,
@@ -146,6 +152,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 8,
+    overflow: "hidden",
+  },
+  otherAvatarImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   otherAvatarText: {
     fontSize: 14,

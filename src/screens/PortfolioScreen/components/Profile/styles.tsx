@@ -64,6 +64,66 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 10,
   },
+  profileFollowerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    flexWrap: "wrap",
+  },
+  followStatHit: {
+    paddingVertical: 2,
+    paddingRight: 4,
+  },
+  followStatText: {
+    fontSize: 14,
+    color: BLACK,
+  },
+  /** 타인 프로필: 팔로우 수 아래 팔로우·채팅 */
+  otherProfileActionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 12,
+    flexWrap: "wrap",
+  },
+  otherFollowBtn: {
+    minWidth: 100,
+    height: 38,
+    paddingHorizontal: 16,
+    borderRadius: 100,
+    backgroundColor: MAIN.DEFAULT,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  otherFollowBtnOutline: {
+    backgroundColor: WHITE,
+    borderWidth: 1,
+    borderColor: MAIN.DEFAULT,
+  },
+  otherFollowBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: WHITE,
+  },
+  otherFollowBtnTextOutline: {
+    color: MAIN.DEFAULT,
+  },
+  otherChatBtn: {
+    minWidth: 100,
+    height: 38,
+    paddingHorizontal: 16,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: GRAY.DARK_2,
+    backgroundColor: WHITE,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  otherChatBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: BLACK,
+  },
   profileFollowingContainer: {
     flexDirection: "row",
     alignItems: "center",
