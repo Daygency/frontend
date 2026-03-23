@@ -15,8 +15,6 @@ import Animated, {
 } from "react-native-reanimated";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import ArtistIcon from "../../../components/ArtistIcon/ArtistIcon";
-import AgencyIcon from "../../../components/AgencyIcon/AgencyIcon";
 import SignupFlowProgress from "../../../components/SignupFlowProgress/SignupFlowProgress";
 import { useAuth } from "../../../contexts/AuthContext";
 import { MAIN, GRAY, WHITE } from "../../../color";
@@ -222,14 +220,6 @@ const SignupFlowScreen = () => {
                   ]}
                   onPress={() => goToStep2("artist")}
                 >
-                  <View
-                    style={[
-                      roleSelectionStyles.iconWrap,
-                      roleSelectionStyles.artistIconWrap,
-                    ]}
-                  >
-                    <ArtistIcon width={56} height={56} />
-                  </View>
                   <View style={roleSelectionStyles.textWrap}>
                     <Text style={roleSelectionStyles.roleTitle}>
                       아티스트로 시작하기
@@ -248,14 +238,6 @@ const SignupFlowScreen = () => {
                   ]}
                   onPress={() => goToStep2("planner")}
                 >
-                  <View
-                    style={[
-                      roleSelectionStyles.iconWrap,
-                      roleSelectionStyles.plannerIconWrap,
-                    ]}
-                  >
-                    <AgencyIcon width={56} height={56} />
-                  </View>
                   <View style={roleSelectionStyles.textWrap}>
                     <Text style={roleSelectionStyles.roleTitle}>
                       기획자로 시작하기
@@ -283,8 +265,13 @@ const SignupFlowScreen = () => {
           >
             <ScrollView
               style={styles.formScroll}
-              contentContainerStyle={styles.formContent}
+              contentContainerStyle={[
+                styles.formContent,
+                { paddingBottom: bottom + 24 },
+              ]}
               showsVerticalScrollIndicator={false}
+              bounces={false}
+              alwaysBounceVertical={false}
               keyboardShouldPersistTaps="handled"
             >
               <Text style={styles.heading1}>회원가입하고</Text>
@@ -393,11 +380,16 @@ const SignupFlowScreen = () => {
 
               <View style={styles.agreementSection}>
                 <Pressable style={styles.agreementRow} onPress={handleAgreeAll}>
-                  <MaterialCommunityIcons
-                    name={agreeAll ? "radiobox-marked" : "radiobox-blank"}
-                    size={22}
-                    color={agreeAll ? MAIN.DEFAULT : GRAY.DARK_2}
-                  />
+                  <View
+                    style={[
+                      styles.agreementRadioBox,
+                      agreeAll && styles.agreementRadioBoxChecked,
+                    ]}
+                  >
+                    {agreeAll ? (
+                      <View style={styles.agreementCheckmark} />
+                    ) : null}
+                  </View>
                   <Text
                     style={[
                       styles.agreementTitle,
@@ -416,11 +408,16 @@ const SignupFlowScreen = () => {
                   style={styles.agreementRow}
                   onPress={() => setAgeChecked(!ageChecked)}
                 >
-                  <MaterialCommunityIcons
-                    name={ageChecked ? "radiobox-marked" : "radiobox-blank"}
-                    size={22}
-                    color={ageChecked ? MAIN.DEFAULT : GRAY.DARK_2}
-                  />
+                  <View
+                    style={[
+                      styles.agreementRadioBox,
+                      ageChecked && styles.agreementRadioBoxChecked,
+                    ]}
+                  >
+                    {ageChecked ? (
+                      <View style={styles.agreementCheckmark} />
+                    ) : null}
+                  </View>
                   <Text
                     style={[
                       styles.agreementItem,
@@ -434,11 +431,16 @@ const SignupFlowScreen = () => {
                   style={styles.agreementRow}
                   onPress={() => setTermsChecked(!termsChecked)}
                 >
-                  <MaterialCommunityIcons
-                    name={termsChecked ? "radiobox-marked" : "radiobox-blank"}
-                    size={22}
-                    color={termsChecked ? MAIN.DEFAULT : GRAY.DARK_2}
-                  />
+                  <View
+                    style={[
+                      styles.agreementRadioBox,
+                      termsChecked && styles.agreementRadioBoxChecked,
+                    ]}
+                  >
+                    {termsChecked ? (
+                      <View style={styles.agreementCheckmark} />
+                    ) : null}
+                  </View>
                   <Text
                     style={[
                       styles.agreementItem,
@@ -452,11 +454,16 @@ const SignupFlowScreen = () => {
                   style={styles.agreementRow}
                   onPress={() => setPrivacyChecked(!privacyChecked)}
                 >
-                  <MaterialCommunityIcons
-                    name={privacyChecked ? "radiobox-marked" : "radiobox-blank"}
-                    size={22}
-                    color={privacyChecked ? MAIN.DEFAULT : GRAY.DARK_2}
-                  />
+                  <View
+                    style={[
+                      styles.agreementRadioBox,
+                      privacyChecked && styles.agreementRadioBoxChecked,
+                    ]}
+                  >
+                    {privacyChecked ? (
+                      <View style={styles.agreementCheckmark} />
+                    ) : null}
+                  </View>
                   <Text
                     style={[
                       styles.agreementItem,
@@ -470,13 +477,16 @@ const SignupFlowScreen = () => {
                   style={styles.agreementRow}
                   onPress={() => setMarketingChecked(!marketingChecked)}
                 >
-                  <MaterialCommunityIcons
-                    name={
-                      marketingChecked ? "radiobox-marked" : "radiobox-blank"
-                    }
-                    size={22}
-                    color={marketingChecked ? MAIN.DEFAULT : GRAY.DARK_2}
-                  />
+                  <View
+                    style={[
+                      styles.agreementRadioBox,
+                      marketingChecked && styles.agreementRadioBoxChecked,
+                    ]}
+                  >
+                    {marketingChecked ? (
+                      <View style={styles.agreementCheckmark} />
+                    ) : null}
+                  </View>
                   <Text
                     style={[
                       styles.agreementItem,
@@ -491,7 +501,7 @@ const SignupFlowScreen = () => {
             </ScrollView>
 
             <View
-              style={[styles.buttonContainer, { paddingBottom: bottom + 24 }]}
+              style={[styles.buttonContainer, { paddingBottom: 0 }]}
             >
               <Pressable
                 style={[
