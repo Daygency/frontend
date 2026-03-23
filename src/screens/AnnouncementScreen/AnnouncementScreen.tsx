@@ -248,7 +248,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       />
       <View style={styles.scrollContentWrapper}>
         {loading && items.length === 0 ? (
-          <View style={styles.scrollContent}>
+          <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#666" />
           </View>
         ) : items.length === 0 ? (

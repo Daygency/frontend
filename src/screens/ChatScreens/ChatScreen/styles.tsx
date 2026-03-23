@@ -40,9 +40,9 @@ const styles = StyleSheet.create({
   },
   topTab: {
     backgroundColor: WHITE,
-    borderRadius: 16,
+    borderRadius: 100,
     borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
+    borderColor: MAIN.DEFAULT,
     paddingHorizontal: 16,
     height: 36,
     alignItems: "center",
@@ -51,13 +51,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   topTabSelected: {
-    backgroundColor: "#1F2A44",
-    borderColor: "#1F2A44",
+    backgroundColor: MAIN.DEFAULT,
+    borderColor: MAIN.DEFAULT,
   },
   topTabText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#111827",
+    color: MAIN.DEFAULT,
   },
   topTabTextSelected: {
     color: WHITE,

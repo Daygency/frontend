@@ -1,4 +1,5 @@
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { WHITE } from "../../color";
 
 const NEWS_CARD_WIDTH = 138;
 const NEWS_CARD_IMAGE_HEIGHT = 193;
@@ -82,6 +83,22 @@ const AllContentScene = () => {
   >([]);
   const [communityLoading, setCommunityLoading] = useState(true);
 
+  // 초기 로딩(3개 데이터 모두 로딩 중)일 때는 화면 중앙에 로딩 표시
+  if (announcementsLoading && newsLoading && communityLoading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: WHITE,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="small" color="#666" />
+      </View>
+    );
+  }
+
   useEffect(() => {
     getAnnouncementList({ limit: HOME_ANNOUNCEMENT_PREVIEW_LIMIT }).then((res) => {
       setAnnouncementsLoading(false);
@@ -157,7 +174,13 @@ const AllContentScene = () => {
       <ImageCarousel width={339} height={183} gap={5} />
       <Section title="모집공고" onPressMore={handleAnnouncementMore}>
         {announcementsLoading ? (
-          <View style={{ paddingVertical: 24, alignItems: "center" }}>
+          <View
+            style={{
+              minHeight: 160,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <ActivityIndicator size="small" color="#666" />
           </View>
         ) : announcements.length === 0 ? (
@@ -185,7 +208,13 @@ const AllContentScene = () => {
       </Section>
       <Section title="공연소식" onPressMore={handleNewsMore} styles={{ content: { paddingHorizontal: 0 } }}>
         {newsLoading ? (
-          <View style={{ paddingVertical: 24, alignItems: "center" }}>
+          <View
+            style={{
+              minHeight: 160,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <ActivityIndicator size="small" color="#666" />
           </View>
         ) : newsItems.length === 0 ? (
@@ -228,7 +257,13 @@ const AllContentScene = () => {
         }}
       >
         {communityLoading ? (
-          <View style={{ paddingVertical: 24, alignItems: "center" }}>
+          <View
+            style={{
+              minHeight: 160,
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             <ActivityIndicator size="small" color="#666" />
           </View>
         ) : (

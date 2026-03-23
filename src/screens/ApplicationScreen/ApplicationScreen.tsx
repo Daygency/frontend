@@ -368,7 +368,14 @@ const ApplicationScreen = () => {
 
   if (loading || !config) {
     return (
-      <View style={{ flex: 1, backgroundColor: WHITE, justifyContent: "center" }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: WHITE,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
         <ActivityIndicator size="large" color={MAIN.DEFAULT} />
       </View>
     );

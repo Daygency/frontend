@@ -43,6 +43,13 @@ const styles = StyleSheet.create({
   scrollContentWrapper: {
     flex: 1,
   },
+  loadingContainer: {
+    flex: 1,
+    marginTop: 4,
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   scrollContent: {
     marginTop: 4,
     paddingHorizontal: 12,
