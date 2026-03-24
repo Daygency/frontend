@@ -6,7 +6,7 @@ import type {
   CareerEntry,
   AwardEntry,
   CertificateEntry,
-} from "../../../lib/apis/portfolio/profileApi";
+} from "../../../lib/apis/portfolio/types";
 import SectionHeader from "./SectionHeader";
 import EducationItem from "./EducationItem";
 import CareerItem from "./CareerItem";
@@ -27,7 +27,7 @@ type Props = {
   setAwardList: (v: AwardEntry[]) => void;
   certificateList: CertificateEntry[];
   setCertificateList: (v: CertificateEntry[]) => void;
-  onEditingFocusChange?: (focused: boolean) => void;
+  onEditingFocusChange?: (focused: boolean, inputNode?: number | null) => void;
 };
 
 const ProfileTab = ({

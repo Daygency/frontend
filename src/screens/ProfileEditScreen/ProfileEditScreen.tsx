@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -49,6 +49,7 @@ const toDisplayImageUri = (uri: string | undefined): string | null => {
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
   const { user } = useAuth();
+  const scrollRef = useRef<KeyboardAwareScrollView | null>(null);
 
   const [tabIndex, setTabIndex] = useState(0);
   const [routes] = useState([
@@ -77,6 +78,17 @@ const ProfileEditScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [isProfileEntryEditingFocused, setIsProfileEntryEditingFocused] =
     useState(false);
+
+  const handleProfileEntryFocusChange = (
+    focused: boolean,
+    inputNode?: number | null,
+  ) => {
+    setIsProfileEntryEditingFocused(focused);
+    if (!focused || !inputNode) return;
+    setTimeout(() => {
+      scrollRef.current?.scrollToFocusedInput(inputNode);
+    }, 60);
+  };
 
   useEffect(() => {
     let cancelled = false;
@@ -256,7 +268,7 @@ const ProfileEditScreen = () => {
           setAwardList={setAwardList}
           certificateList={certificateList}
           setCertificateList={setCertificateList}
-          onEditingFocusChange={setIsProfileEntryEditingFocused}
+          onEditingFocusChange={handleProfileEntryFocusChange}
         />
       );
     }
@@ -514,6 +526,7 @@ const ProfileEditScreen = () => {
   return (
     <View style={styles.container}>
       <KeyboardAwareScrollView
+        ref={scrollRef}
         style={styles.tabView}
         contentContainerStyle={styles.scrollContentContainer}
         keyboardShouldPersistTaps="handled"
@@ -522,8 +535,8 @@ const ProfileEditScreen = () => {
         extraHeight={
           tabIndex === 1 && isProfileEntryEditingFocused
             ? Platform.OS === "ios"
-              ? 150
-              : 180
+              ? 220
+              : 250
             : Platform.OS === "ios"
               ? 36
               : 56
@@ -531,8 +544,8 @@ const ProfileEditScreen = () => {
         extraScrollHeight={
           tabIndex === 1 && isProfileEntryEditingFocused
             ? Platform.OS === "ios"
-              ? 110
-              : 130
+              ? 180
+              : 200
             : Platform.OS === "ios"
               ? 24
               : 36

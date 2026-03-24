@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, Pressable, findNodeHandle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
-import type { AwardEntry } from "../../../lib/apis/portfolio/profileApi";
+import type { AwardEntry } from "../../../lib/apis/portfolio/types";
 import DatePickerField from "./DatePickerField";
 import styles from "../styles";
 
@@ -10,7 +10,7 @@ type Props = {
   entry: AwardEntry;
   onChange: (updates: Partial<AwardEntry>) => void;
   onDelete: () => void;
-  onEditingFocusChange?: (focused: boolean) => void;
+  onEditingFocusChange?: (focused: boolean, inputNode?: number | null) => void;
 };
 
 const AwardItem = ({
@@ -21,11 +21,25 @@ const AwardItem = ({
 }: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
   const date =
     entry.year && entry.month
       ? `${entry.year}.${entry.month.padStart(2, "0")}`
       : entry.year || "";
+  const isDraftEntry =
+    !entry.awardId &&
+    !entry.description.trim() &&
+    !entry.year &&
+    !entry.month;
+
+  const handleCancel = () => {
+    if (isDraftEntry) {
+      onDelete();
+      return;
+    }
+    setIsEditing(false);
+  };
 
   if (!isEditing) {
     return (
@@ -79,14 +93,16 @@ const AwardItem = ({
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
+        autoFocus={isEditing && !entry.description.trim()}
         onFocus={() => {
           setIsFocused(true);
-          onEditingFocusChange?.(true);
+          onEditingFocusChange?.(true, findNodeHandle(inputRef.current));
         }}
         onBlur={() => {
           setIsFocused(false);
           onEditingFocusChange?.(false);
         }}
+        ref={inputRef}
       />
       <DatePickerField
         label="수상시점"
@@ -98,7 +114,7 @@ const AwardItem = ({
       <View style={styles.entryButtonRow}>
         <Pressable
           style={styles.entryCancelButton}
-          onPress={() => setIsEditing(false)}
+          onPress={handleCancel}
         >
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>

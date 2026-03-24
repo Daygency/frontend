@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, Pressable, findNodeHandle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
 import type { EducationEntry } from "../../../lib/apis/portfolio/types";
@@ -10,7 +10,7 @@ type Props = {
   entry: EducationEntry;
   onChange: (updates: Partial<EducationEntry>) => void;
   onDelete: () => void;
-  onEditingFocusChange?: (focused: boolean) => void;
+  onEditingFocusChange?: (focused: boolean, inputNode?: number | null) => void;
 };
 
 const formatPeriod = (
@@ -37,6 +37,7 @@ const EducationItem = ({
   // 내용이 없으면 바로 편집 모드로 열림
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
   const period = formatPeriod(
     entry.startYear,
@@ -44,6 +45,21 @@ const EducationItem = ({
     entry.endYear,
     entry.endMonth,
   );
+  const isDraftEntry =
+    !entry.educationId &&
+    !entry.description.trim() &&
+    !entry.startYear &&
+    !entry.startMonth &&
+    !entry.endYear &&
+    !entry.endMonth;
+
+  const handleCancel = () => {
+    if (isDraftEntry) {
+      onDelete();
+      return;
+    }
+    setIsEditing(false);
+  };
 
   if (!isEditing) {
     return (
@@ -99,14 +115,16 @@ const EducationItem = ({
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
+        autoFocus={isEditing && !entry.description.trim()}
         onFocus={() => {
           setIsFocused(true);
-          onEditingFocusChange?.(true);
+          onEditingFocusChange?.(true, findNodeHandle(inputRef.current));
         }}
         onBlur={() => {
           setIsFocused(false);
           onEditingFocusChange?.(false);
         }}
+        ref={inputRef}
       />
       <DatePickerField
         label="시작"
@@ -125,7 +143,7 @@ const EducationItem = ({
       <View style={styles.entryButtonRow}>
         <Pressable
           style={styles.entryCancelButton}
-          onPress={() => setIsEditing(false)}
+          onPress={handleCancel}
         >
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, Pressable, Alert, findNodeHandle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import { GRAY, MAIN } from "../../../color";
@@ -11,7 +11,7 @@ type Props = {
   entry: CertificateEntry;
   onChange: (updates: Partial<CertificateEntry>) => void;
   onDelete: () => void;
-  onEditingFocusChange?: (focused: boolean) => void;
+  onEditingFocusChange?: (focused: boolean, inputNode?: number | null) => void;
 };
 
 const CertificateItem = ({
@@ -22,6 +22,7 @@ const CertificateItem = ({
 }: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
   const date =
     entry.year && entry.month
@@ -29,6 +30,20 @@ const CertificateItem = ({
       : entry.year
         ? `취득 ${entry.year}`
         : "";
+  const isDraftEntry =
+    !entry.description.trim() &&
+    !entry.year &&
+    !entry.month &&
+    !entry.fileName &&
+    !entry.fileUri;
+
+  const handleCancel = () => {
+    if (isDraftEntry) {
+      onDelete();
+      return;
+    }
+    setIsEditing(false);
+  };
 
   const handlePickFile = async () => {
     try {
@@ -105,14 +120,16 @@ const CertificateItem = ({
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
+        autoFocus={isEditing && !entry.description.trim()}
         onFocus={() => {
           setIsFocused(true);
-          onEditingFocusChange?.(true);
+          onEditingFocusChange?.(true, findNodeHandle(inputRef.current));
         }}
         onBlur={() => {
           setIsFocused(false);
           onEditingFocusChange?.(false);
         }}
+        ref={inputRef}
       />
       <DatePickerField
         label="취득시점"
@@ -134,7 +151,7 @@ const CertificateItem = ({
       <View style={styles.entryButtonRow}>
         <Pressable
           style={styles.entryCancelButton}
-          onPress={() => setIsEditing(false)}
+          onPress={handleCancel}
         >
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>

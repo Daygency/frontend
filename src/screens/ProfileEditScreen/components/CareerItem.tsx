@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, Pressable, findNodeHandle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
 import type { CareerEntry } from "../../../lib/apis/portfolio/types";
@@ -10,7 +10,7 @@ type Props = {
   entry: CareerEntry;
   onChange: (updates: Partial<CareerEntry>) => void;
   onDelete: () => void;
-  onEditingFocusChange?: (focused: boolean) => void;
+  onEditingFocusChange?: (focused: boolean, inputNode?: number | null) => void;
 };
 
 const formatPeriod = (
@@ -36,6 +36,7 @@ const CareerItem = ({
 }: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
 
   const period = formatPeriod(
     entry.startYear,
@@ -43,6 +44,21 @@ const CareerItem = ({
     entry.endYear,
     entry.endMonth,
   );
+  const isDraftEntry =
+    !entry.careerId &&
+    !entry.description.trim() &&
+    !entry.startYear &&
+    !entry.startMonth &&
+    !entry.endYear &&
+    !entry.endMonth;
+
+  const handleCancel = () => {
+    if (isDraftEntry) {
+      onDelete();
+      return;
+    }
+    setIsEditing(false);
+  };
 
   if (!isEditing) {
     return (
@@ -98,14 +114,16 @@ const CareerItem = ({
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
+        autoFocus={isEditing && !entry.description.trim()}
         onFocus={() => {
           setIsFocused(true);
-          onEditingFocusChange?.(true);
+          onEditingFocusChange?.(true, findNodeHandle(inputRef.current));
         }}
         onBlur={() => {
           setIsFocused(false);
           onEditingFocusChange?.(false);
         }}
+        ref={inputRef}
       />
       <DatePickerField
         label="시작"
@@ -124,7 +142,7 @@ const CareerItem = ({
       <View style={styles.entryButtonRow}>
         <Pressable
           style={styles.entryCancelButton}
-          onPress={() => setIsEditing(false)}
+          onPress={handleCancel}
         >
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>
