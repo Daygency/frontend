@@ -80,6 +80,7 @@ const ProfileEditScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [isProfileEntryEditingFocused, setIsProfileEntryEditingFocused] =
     useState(false);
+  const [isTopCustomMajorFocused, setIsTopCustomMajorFocused] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const handleProfileEntryFocusChange = (
@@ -99,12 +100,25 @@ const ProfileEditScreen = () => {
     }, 60);
   };
 
+  const handleTopCustomMajorFocusChange = (
+    focused: boolean,
+    inputNode?: number | null,
+  ) => {
+    setIsTopCustomMajorFocused(focused);
+    if (!focused || !inputNode) return;
+    setTimeout(() => {
+      scrollRef.current?.scrollToFocusedInput(inputNode);
+    }, 60);
+  };
+
   useEffect(() => {
     const onShow = (e: KeyboardEvent) =>
       setKeyboardHeight(e.endCoordinates?.height ?? 0);
     const onHide = () => setKeyboardHeight(0);
-    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
-    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
     const showSub = Keyboard.addListener(showEvent, onShow);
     const hideSub = Keyboard.addListener(hideEvent, onHide);
     return () => {
@@ -275,6 +289,7 @@ const ProfileEditScreen = () => {
           setMajor={setMajor}
           majorDetail={majorDetail}
           setMajorDetail={setMajorDetail}
+          onCustomMajorFocusChange={handleTopCustomMajorFocusChange}
         />
       );
     }
@@ -558,16 +573,20 @@ const ProfileEditScreen = () => {
         extraHeight={
           tabIndex === 1 && isProfileEntryEditingFocused
             ? Math.max(110, Math.floor(keyboardHeight * 0.34))
-            : Platform.OS === "ios"
-              ? 36
-              : 56
+            : tabIndex === 0 && isTopCustomMajorFocused
+              ? Math.max(90, Math.floor(keyboardHeight * 0.24))
+              : Platform.OS === "ios"
+                ? 36
+                : 56
         }
         extraScrollHeight={
           tabIndex === 1 && isProfileEntryEditingFocused
             ? Math.max(100, Math.floor(keyboardHeight * 0.28))
-            : Platform.OS === "ios"
-              ? 24
-              : 36
+            : tabIndex === 0 && isTopCustomMajorFocused
+              ? Math.max(80, Math.floor(keyboardHeight * 0.2))
+              : Platform.OS === "ios"
+                ? 24
+                : 36
         }
         keyboardOpeningTime={250}
         enableResetScrollToCoords

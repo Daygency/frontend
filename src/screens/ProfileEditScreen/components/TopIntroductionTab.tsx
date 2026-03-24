@@ -1,5 +1,5 @@
 import React from "react";
-import { Keyboard, View, Text, TextInput, Pressable } from "react-native";
+import { Keyboard, View, Text, TextInput, Pressable, findNodeHandle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
@@ -22,6 +22,10 @@ type Props = {
   setMajor: (v: string) => void;
   majorDetail: string;
   setMajorDetail: (v: string) => void;
+  onCustomMajorFocusChange?: (
+    focused: boolean,
+    inputNode?: number | null,
+  ) => void;
 };
 
 const TopIntroductionTab = ({
@@ -38,6 +42,7 @@ const TopIntroductionTab = ({
   setMajor,
   majorDetail,
   setMajorDetail,
+  onCustomMajorFocusChange,
 }: Props) => {
   const customMajorInputRef = React.useRef<TextInput>(null);
   const [isNameFocused, setIsNameFocused] = React.useState(false);
@@ -283,8 +288,17 @@ const TopIntroductionTab = ({
             returnKeyType="done"
             blurOnSubmit
             onSubmitEditing={() => Keyboard.dismiss()}
-            onFocus={() => setIsCustomMajorFocused(true)}
-            onBlur={() => setIsCustomMajorFocused(false)}
+            onFocus={() => {
+              setIsCustomMajorFocused(true);
+              onCustomMajorFocusChange?.(
+                true,
+                findNodeHandle(customMajorInputRef.current),
+              );
+            }}
+            onBlur={() => {
+              setIsCustomMajorFocused(false);
+              onCustomMajorFocusChange?.(false);
+            }}
             ref={customMajorInputRef}
           />
         )}
