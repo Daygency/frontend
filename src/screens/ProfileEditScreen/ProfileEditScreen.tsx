@@ -321,7 +321,6 @@ const ProfileEditScreen = () => {
       activityName,
       aboutMe,
       selfIntroduction,
-      majorId,
       major,
       majorDetail,
       educationEntries: educationList,
