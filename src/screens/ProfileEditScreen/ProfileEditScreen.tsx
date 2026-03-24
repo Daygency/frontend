@@ -4,6 +4,8 @@ import {
   Text,
   Pressable,
   Image,
+  Keyboard,
+  KeyboardEvent,
   Platform,
   ActivityIndicator,
   Alert,
@@ -78,17 +80,38 @@ const ProfileEditScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [isProfileEntryEditingFocused, setIsProfileEntryEditingFocused] =
     useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   const handleProfileEntryFocusChange = (
     focused: boolean,
     inputNode?: number | null,
+    actionRowNode?: number | null,
   ) => {
     setIsProfileEntryEditingFocused(focused);
     if (!focused || !inputNode) return;
     setTimeout(() => {
       scrollRef.current?.scrollToFocusedInput(inputNode);
+      if (actionRowNode) {
+        setTimeout(() => {
+          scrollRef.current?.scrollToFocusedInput(actionRowNode);
+        }, 90);
+      }
     }, 60);
   };
+
+  useEffect(() => {
+    const onShow = (e: KeyboardEvent) =>
+      setKeyboardHeight(e.endCoordinates?.height ?? 0);
+    const onHide = () => setKeyboardHeight(0);
+    const showEvent = Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent = Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const showSub = Keyboard.addListener(showEvent, onShow);
+    const hideSub = Keyboard.addListener(hideEvent, onHide);
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -534,18 +557,14 @@ const ProfileEditScreen = () => {
         enableAutomaticScroll
         extraHeight={
           tabIndex === 1 && isProfileEntryEditingFocused
-            ? Platform.OS === "ios"
-              ? 220
-              : 250
+            ? Math.max(110, Math.floor(keyboardHeight * 0.34))
             : Platform.OS === "ios"
               ? 36
               : 56
         }
         extraScrollHeight={
           tabIndex === 1 && isProfileEntryEditingFocused
-            ? Platform.OS === "ios"
-              ? 180
-              : 200
+            ? Math.max(100, Math.floor(keyboardHeight * 0.28))
             : Platform.OS === "ios"
               ? 24
               : 36

@@ -27,7 +27,11 @@ type Props = {
   setAwardList: (v: AwardEntry[]) => void;
   certificateList: CertificateEntry[];
   setCertificateList: (v: CertificateEntry[]) => void;
-  onEditingFocusChange?: (focused: boolean, inputNode?: number | null) => void;
+  onEditingFocusChange?: (
+    focused: boolean,
+    inputNode?: number | null,
+    actionRowNode?: number | null,
+  ) => void;
 };
 
 const ProfileTab = ({

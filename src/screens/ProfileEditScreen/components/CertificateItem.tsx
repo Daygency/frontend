@@ -11,7 +11,11 @@ type Props = {
   entry: CertificateEntry;
   onChange: (updates: Partial<CertificateEntry>) => void;
   onDelete: () => void;
-  onEditingFocusChange?: (focused: boolean, inputNode?: number | null) => void;
+  onEditingFocusChange?: (
+    focused: boolean,
+    inputNode?: number | null,
+    actionRowNode?: number | null,
+  ) => void;
 };
 
 const CertificateItem = ({
@@ -23,6 +27,7 @@ const CertificateItem = ({
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  const actionRowRef = useRef<View>(null);
 
   const date =
     entry.year && entry.month
@@ -123,7 +128,11 @@ const CertificateItem = ({
         autoFocus={isEditing && !entry.description.trim()}
         onFocus={() => {
           setIsFocused(true);
-          onEditingFocusChange?.(true, findNodeHandle(inputRef.current));
+          onEditingFocusChange?.(
+            true,
+            findNodeHandle(inputRef.current),
+            findNodeHandle(actionRowRef.current),
+          );
         }}
         onBlur={() => {
           setIsFocused(false);
@@ -148,7 +157,7 @@ const CertificateItem = ({
           {entry.fileName ? entry.fileName : "증명서 파일 첨부"}
         </Text>
       </Pressable>
-      <View style={styles.entryButtonRow}>
+      <View style={styles.entryButtonRow} ref={actionRowRef}>
         <Pressable
           style={styles.entryCancelButton}
           onPress={handleCancel}

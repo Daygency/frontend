@@ -1,11 +1,12 @@
 import React from "react";
-import { Keyboard, View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { Keyboard, View, Text, TextInput, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
 import styles from "../styles";
 import { MAJOR_OPTIONS } from "../../../constants/majors";
 import OneLineTextInput from "../../../components/OneLineTextInput/OneLineTextInput";
+import MajorTagSelectModal from "../../../components/MajorTagSelectModal/MajorTagSelectModal";
 
 type Props = {
   nickname: string;
@@ -38,6 +39,7 @@ const TopIntroductionTab = ({
   majorDetail,
   setMajorDetail,
 }: Props) => {
+  const customMajorInputRef = React.useRef<TextInput>(null);
   const [isNameFocused, setIsNameFocused] = React.useState(false);
   const [isActivityNameFocused, setIsActivityNameFocused] =
     React.useState(false);
@@ -51,10 +53,13 @@ const TopIntroductionTab = ({
   const [activityNameMessage, setActivityNameMessage] =
     React.useState<string>("");
 
-  const [isMajorListOpen, setIsMajorListOpen] = React.useState(false);
+  const [isMajorModalVisible, setIsMajorModalVisible] = React.useState(false);
   const [selectedMajorId, setSelectedMajorId] = React.useState<number | null>(
     majorId ?? null,
   );
+  const [tempSelectedMajorId, setTempSelectedMajorId] = React.useState<
+    number | null
+  >(majorId ?? null);
   const [customMajor, setCustomMajor] = React.useState<string>(
     major &&
       !MAJOR_OPTIONS.some((option) => option.label === major)
@@ -64,6 +69,8 @@ const TopIntroductionTab = ({
 
   const [isCustomMajorFocused, setIsCustomMajorFocused] = React.useState(false);
   const [isDetailMajorFocused, setIsDetailMajorFocused] = React.useState(false);
+  const [focusCustomMajorAfterSelect, setFocusCustomMajorAfterSelect] =
+    React.useState(false);
 
   const handleCheckActivityId = async () => {
     const value = activityName.trim();
@@ -103,17 +110,34 @@ const TopIntroductionTab = ({
       ? undefined
       : MAJOR_OPTIONS.find((option) => option.id === selectedMajorId);
 
-  const handleSelectMajor = (
-    option: (typeof MAJOR_OPTIONS)[number],
-  ) => {
-    setSelectedMajorId(option.id);
-    setMajorId(option.id);
-    setMajor(option.label === "기타" ? "" : option.label);
-    if (option.label !== "기타") {
-      setCustomMajor("");
-    }
-    setIsMajorListOpen(false);
+  const handleToggleMajorInModal = (value: string) => {
+    const option = MAJOR_OPTIONS.find((v) => v.label === value);
+    if (!option) return;
+    setTempSelectedMajorId(option.id);
   };
+
+  const handleCompleteMajorSelection = () => {
+    const option = MAJOR_OPTIONS.find((v) => v.id === tempSelectedMajorId);
+    if (option) {
+      setSelectedMajorId(option.id);
+      setMajorId(option.id);
+      setMajor(option.label === "기타" ? "" : option.label);
+      if (option.label !== "기타") setCustomMajor("");
+      setFocusCustomMajorAfterSelect(option.label === "기타");
+    }
+    setIsMajorModalVisible(false);
+  };
+
+  const focusCustomMajorInput = React.useCallback(() => {
+    if (!focusCustomMajorAfterSelect) return;
+    if (selectedMajorOption?.label !== "기타") return;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        customMajorInputRef.current?.focus();
+      });
+    });
+    setFocusCustomMajorAfterSelect(false);
+  }, [focusCustomMajorAfterSelect, selectedMajorOption?.label]);
 
   return (
     <View style={[styles.tabContent, styles.tabContentContainer]}>
@@ -208,7 +232,10 @@ const TopIntroductionTab = ({
         <Text style={styles.label}>전공/세부전공</Text>
         <Pressable
           style={[styles.input, styles.selectInput]}
-          onPress={() => setIsMajorListOpen((prev) => !prev)}
+          onPress={() => {
+            setTempSelectedMajorId(selectedMajorId);
+            setIsMajorModalVisible(true);
+          }}
         >
           <Text style={styles.placeholder}>
             {selectedMajorOption && selectedMajorOption.label !== "기타"
@@ -223,60 +250,21 @@ const TopIntroductionTab = ({
             color={GRAY.DARK_2}
           />
         </Pressable>
-        {isMajorListOpen && (
-          <View
-            style={{
-              marginTop: 6,
-              borderRadius: 10,
-              borderWidth: 1,
-              borderColor: GRAY.DEFAULT_1,
-              backgroundColor: "white",
-              maxHeight: 3 * 44, // 3개만 보이도록
-              overflow: "hidden",
-            }}
-          >
-            <ScrollView
-              nestedScrollEnabled
-              showsVerticalScrollIndicator
-            >
-              {MAJOR_OPTIONS.map((option, index) => (
-                <Pressable
-                  key={option.id}
-                  onPress={() => handleSelectMajor(option)}
-                  style={{
-                    paddingHorizontal: 12,
-                    paddingVertical: 10,
-                    flexDirection: "row",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    borderBottomWidth:
-                      index === MAJOR_OPTIONS.length - 1 ? 0 : 1,
-                    borderBottomColor: GRAY.DEFAULT_1,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 14,
-                      color:
-                        selectedMajorId === option.id
-                          ? GRAY.DARK_100
-                          : GRAY.DARK_2,
-                    }}
-                  >
-                    {option.label}
-                  </Text>
-                  {selectedMajorId === option.id && (
-                    <MaterialCommunityIcons
-                      name="check"
-                      size={18}
-                      color={GRAY.DARK_100}
-                    />
-                  )}
-                </Pressable>
-              ))}
-            </ScrollView>
-          </View>
-        )}
+        <MajorTagSelectModal
+          visible={isMajorModalVisible}
+          options={MAJOR_OPTIONS.map((option) => option.label)}
+          selectedValues={
+            tempSelectedMajorId == null
+              ? []
+              : [
+                  MAJOR_OPTIONS.find((option) => option.id === tempSelectedMajorId)
+                    ?.label ?? "",
+                ].filter(Boolean)
+          }
+          onToggle={handleToggleMajorInModal}
+          onComplete={handleCompleteMajorSelection}
+          onDismiss={focusCustomMajorInput}
+        />
         {selectedMajorOption?.label === "기타" && (
           <TextInput
             style={[
@@ -297,6 +285,7 @@ const TopIntroductionTab = ({
             onSubmitEditing={() => Keyboard.dismiss()}
             onFocus={() => setIsCustomMajorFocused(true)}
             onBlur={() => setIsCustomMajorFocused(false)}
+            ref={customMajorInputRef}
           />
         )}
         <TextInput

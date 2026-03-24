@@ -10,7 +10,11 @@ type Props = {
   entry: EducationEntry;
   onChange: (updates: Partial<EducationEntry>) => void;
   onDelete: () => void;
-  onEditingFocusChange?: (focused: boolean, inputNode?: number | null) => void;
+  onEditingFocusChange?: (
+    focused: boolean,
+    inputNode?: number | null,
+    actionRowNode?: number | null,
+  ) => void;
 };
 
 const formatPeriod = (
@@ -38,6 +42,7 @@ const EducationItem = ({
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
+  const actionRowRef = useRef<View>(null);
 
   const period = formatPeriod(
     entry.startYear,
@@ -118,7 +123,11 @@ const EducationItem = ({
         autoFocus={isEditing && !entry.description.trim()}
         onFocus={() => {
           setIsFocused(true);
-          onEditingFocusChange?.(true, findNodeHandle(inputRef.current));
+          onEditingFocusChange?.(
+            true,
+            findNodeHandle(inputRef.current),
+            findNodeHandle(actionRowRef.current),
+          );
         }}
         onBlur={() => {
           setIsFocused(false);
@@ -140,7 +149,7 @@ const EducationItem = ({
         pickerTitle="종료 년월"
         onConfirm={(y, m) => onChange({ endYear: y, endMonth: m })}
       />
-      <View style={styles.entryButtonRow}>
+      <View style={styles.entryButtonRow} ref={actionRowRef}>
         <Pressable
           style={styles.entryCancelButton}
           onPress={handleCancel}

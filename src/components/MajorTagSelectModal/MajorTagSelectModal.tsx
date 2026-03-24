@@ -15,6 +15,7 @@ interface MajorTagSelectModalProps {
   selectedValues: string[];
   onToggle: (value: string) => void;
   onComplete: () => void;
+  onDismiss?: () => void;
 }
 
 const MajorTagSelectModal = ({
@@ -23,6 +24,7 @@ const MajorTagSelectModal = ({
   selectedValues,
   onToggle,
   onComplete,
+  onDismiss,
 }: MajorTagSelectModalProps) => {
   const { bottom } = useSafeAreaInsets();
 
@@ -32,6 +34,7 @@ const MajorTagSelectModal = ({
       animationType="slide"
       presentationStyle="pageSheet"
       onRequestClose={onComplete}
+      onDismiss={onDismiss}
     >
       <View style={styles.container}>
         <View style={styles.header}>
