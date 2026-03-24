@@ -46,10 +46,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   tabBarContainer: {
-    flexDirection: "row",
+    width: "100%",
     paddingHorizontal: 20,
+    paddingTop: 4,
     paddingBottom: 16,
-    gap: 12,
+    backgroundColor: WHITE,
+  },
+  tabBarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
   },
   tabButton: {
     flex: 1,
@@ -57,6 +63,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
+  },
+  tabButtonLeft: {
+    marginRight: 6,
+  },
+  tabButtonRight: {
+    marginLeft: 6,
   },
   tabButtonActive: {
     backgroundColor: MAIN.DEFAULT,
@@ -77,12 +89,15 @@ const styles = StyleSheet.create({
   tabView: {
     flex: 1,
   },
+  scrollContentContainer: {
+    paddingBottom: 140,
+  },
   tabContent: {
     flex: 1,
   },
   tabContentContainer: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingBottom: 120,
   },
   field: {
     marginBottom: 20,

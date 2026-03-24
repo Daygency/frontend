@@ -4,15 +4,13 @@ import {
   Text,
   Pressable,
   Image,
-  KeyboardAvoidingView,
   Platform,
-  useWindowDimensions,
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { TabView } from "react-native-tab-view";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { GRAY, MAIN, WHITE } from "../../color";
 import {
   getMyProfile,
@@ -50,7 +48,6 @@ const toDisplayImageUri = (uri: string | undefined): string | null => {
 
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
-  const layout = useWindowDimensions();
   const { user } = useAuth();
 
   const [tabIndex, setTabIndex] = useState(0);
@@ -78,6 +75,8 @@ const ProfileEditScreen = () => {
     [],
   );
   const [submitting, setSubmitting] = useState(false);
+  const [isProfileEntryEditingFocused, setIsProfileEntryEditingFocused] =
+    useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -142,7 +141,9 @@ const ProfileEditScreen = () => {
         const start = parseApiDateToYearMonth(e.startedAt);
         const end = parseApiDateToYearMonth(e.endedAt);
         return {
-          id: e.educationId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          id:
+            e.educationId ??
+            `${Date.now()}-${Math.random().toString(36).slice(2)}`,
           educationId: e.educationId,
           description: e.description ?? "",
           startYear: start.year,
@@ -158,7 +159,9 @@ const ProfileEditScreen = () => {
         const start = parseApiDateToYearMonth(c.startedAt);
         const end = parseApiDateToYearMonth(c.endedAt);
         return {
-          id: c.careerId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          id:
+            c.careerId ??
+            `${Date.now()}-${Math.random().toString(36).slice(2)}`,
           careerId: c.careerId,
           description: c.description ?? "",
           startYear: start.year,
@@ -191,27 +194,32 @@ const ProfileEditScreen = () => {
 
   const renderTabBar = () => (
     <View style={styles.tabBarContainer}>
-      {routes.map((route, i) => (
-        <Pressable
-          key={route.key}
-          style={[
-            styles.tabButton,
-            i === tabIndex ? styles.tabButtonActive : styles.tabButtonInactive,
-          ]}
-          onPress={() => setTabIndex(i)}
-        >
-          <Text
+      <View style={styles.tabBarRow}>
+        {routes.map((route, i) => (
+          <Pressable
+            key={route.key}
             style={[
-              styles.tabButtonText,
+              styles.tabButton,
+              i === 0 ? styles.tabButtonLeft : styles.tabButtonRight,
               i === tabIndex
-                ? styles.tabButtonTextActive
-                : styles.tabButtonTextInactive,
+                ? styles.tabButtonActive
+                : styles.tabButtonInactive,
             ]}
+            onPress={() => setTabIndex(i)}
           >
-            {route.title}
-          </Text>
-        </Pressable>
-      ))}
+            <Text
+              style={[
+                styles.tabButtonText,
+                i === tabIndex
+                  ? styles.tabButtonTextActive
+                  : styles.tabButtonTextInactive,
+              ]}
+            >
+              {route.title}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
     </View>
   );
 
@@ -248,6 +256,7 @@ const ProfileEditScreen = () => {
           setAwardList={setAwardList}
           certificateList={certificateList}
           setCertificateList={setCertificateList}
+          onEditingFocusChange={setIsProfileEntryEditingFocused}
         />
       );
     }
@@ -293,7 +302,8 @@ const ProfileEditScreen = () => {
     };
   };
 
-  const newTempId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const newTempId = () =>
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
   const buildUpdatePayload = (): ProfileUpdateRequestDto | null => {
     if (!profile) return null;
@@ -502,49 +512,68 @@ const ProfileEditScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={0}
-    >
-      {/* 프로필 이미지 */}
-      <View style={styles.profileImageSection}>
-        <View style={styles.profileImageWrapper}>
-          {displayProfileImgUrl ? (
-            <Image
-              source={{ uri: displayProfileImgUrl }}
-              style={styles.profileImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={styles.profileImagePlaceholder}>
-              <MaterialCommunityIcons
-                name="account"
-                size={48}
-                color={GRAY.DARK_2}
-              />
-            </View>
-          )}
-          <Pressable style={styles.profileImageEditButton}>
-            <MaterialCommunityIcons
-              name="dots-horizontal"
-              size={20}
-              color={WHITE}
-            />
-          </Pressable>
-        </View>
-      </View>
-
-      {/* 탭 */}
-      <TabView
-        navigationState={{ index: tabIndex, routes }}
-        renderScene={renderScene}
-        onIndexChange={setTabIndex}
-        renderTabBar={renderTabBar}
-        initialLayout={{ width: layout.width }}
+    <View style={styles.container}>
+      <KeyboardAwareScrollView
         style={styles.tabView}
-        swipeEnabled={false}
-      />
+        contentContainerStyle={styles.scrollContentContainer}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        enableAutomaticScroll
+        extraHeight={
+          tabIndex === 1 && isProfileEntryEditingFocused
+            ? Platform.OS === "ios"
+              ? 150
+              : 180
+            : Platform.OS === "ios"
+              ? 36
+              : 56
+        }
+        extraScrollHeight={
+          tabIndex === 1 && isProfileEntryEditingFocused
+            ? Platform.OS === "ios"
+              ? 110
+              : 130
+            : Platform.OS === "ios"
+              ? 24
+              : 36
+        }
+        keyboardOpeningTime={250}
+        enableResetScrollToCoords
+        stickyHeaderIndices={[1]}
+      >
+        {/* 프로필 이미지 */}
+        <View style={styles.profileImageSection}>
+          <View style={styles.profileImageWrapper}>
+            {displayProfileImgUrl ? (
+              <Image
+                source={{ uri: displayProfileImgUrl }}
+                style={styles.profileImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.profileImagePlaceholder}>
+                <MaterialCommunityIcons
+                  name="account"
+                  size={48}
+                  color={GRAY.DARK_2}
+                />
+              </View>
+            )}
+            <Pressable style={styles.profileImageEditButton}>
+              <MaterialCommunityIcons
+                name="dots-horizontal"
+                size={20}
+                color={WHITE}
+              />
+            </Pressable>
+          </View>
+        </View>
+
+        {/* 탭 */}
+        {renderTabBar()}
+
+        {renderScene({ route: routes[tabIndex] })}
+      </KeyboardAwareScrollView>
 
       {/* 수정 완료 버튼 */}
       <View style={styles.buttonContainer}>
@@ -563,7 +592,7 @@ const ProfileEditScreen = () => {
           </Pressable>
         </View>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

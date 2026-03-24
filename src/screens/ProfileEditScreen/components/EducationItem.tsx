@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TextInput, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
-import type { EducationEntry } from "../../../lib/apis/portfolio/profileApi";
+import type { EducationEntry } from "../../../lib/apis/portfolio/types";
 import DatePickerField from "./DatePickerField";
 import styles from "../styles";
 
@@ -10,6 +10,7 @@ type Props = {
   entry: EducationEntry;
   onChange: (updates: Partial<EducationEntry>) => void;
   onDelete: () => void;
+  onEditingFocusChange?: (focused: boolean) => void;
 };
 
 const formatPeriod = (
@@ -27,7 +28,12 @@ const formatPeriod = (
   return `${start} ~ ${end}`;
 };
 
-const EducationItem = ({ entry, onChange, onDelete }: Props) => {
+const EducationItem = ({
+  entry,
+  onChange,
+  onDelete,
+  onEditingFocusChange,
+}: Props) => {
   // 내용이 없으면 바로 편집 모드로 열림
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
@@ -93,8 +99,14 @@ const EducationItem = ({ entry, onChange, onDelete }: Props) => {
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onFocus={() => {
+          setIsFocused(true);
+          onEditingFocusChange?.(true);
+        }}
+        onBlur={() => {
+          setIsFocused(false);
+          onEditingFocusChange?.(false);
+        }}
       />
       <DatePickerField
         label="시작"

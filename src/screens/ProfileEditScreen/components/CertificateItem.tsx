@@ -3,7 +3,7 @@ import { View, Text, TextInput, Pressable, Alert } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import { GRAY, MAIN } from "../../../color";
-import type { CertificateEntry } from "../../../lib/apis/portfolio/profileApi";
+import type { CertificateEntry } from "../../../lib/apis/portfolio/types";
 import DatePickerField from "./DatePickerField";
 import styles from "../styles";
 
@@ -11,9 +11,15 @@ type Props = {
   entry: CertificateEntry;
   onChange: (updates: Partial<CertificateEntry>) => void;
   onDelete: () => void;
+  onEditingFocusChange?: (focused: boolean) => void;
 };
 
-const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
+const CertificateItem = ({
+  entry,
+  onChange,
+  onDelete,
+  onEditingFocusChange,
+}: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -99,8 +105,14 @@ const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onFocus={() => {
+          setIsFocused(true);
+          onEditingFocusChange?.(true);
+        }}
+        onBlur={() => {
+          setIsFocused(false);
+          onEditingFocusChange?.(false);
+        }}
       />
       <DatePickerField
         label="취득시점"

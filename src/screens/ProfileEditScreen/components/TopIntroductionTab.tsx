@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { Keyboard, View, Text, TextInput, Pressable, ScrollView } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
@@ -116,11 +116,7 @@ const TopIntroductionTab = ({
   };
 
   return (
-    <ScrollView
-      style={styles.tabContent}
-      contentContainerStyle={styles.tabContentContainer}
-      keyboardShouldPersistTaps="handled"
-    >
+    <View style={[styles.tabContent, styles.tabContentContainer]}>
       <View style={styles.field}>
         <Text style={[styles.label, isNameFocused && styles.labelFocused]}>
           닉네임 *
@@ -296,6 +292,9 @@ const TopIntroductionTab = ({
             }}
             placeholder="전공을 직접 입력하세요"
             placeholderTextColor={GRAY.DARK_2}
+            returnKeyType="done"
+            blurOnSubmit
+            onSubmitEditing={() => Keyboard.dismiss()}
             onFocus={() => setIsCustomMajorFocused(true)}
             onBlur={() => setIsCustomMajorFocused(false)}
           />
@@ -311,6 +310,9 @@ const TopIntroductionTab = ({
           onChangeText={setMajorDetail}
           placeholder="세부 전공을 입력하세요"
           placeholderTextColor={GRAY.DARK_2}
+          returnKeyType="done"
+          blurOnSubmit
+          onSubmitEditing={() => Keyboard.dismiss()}
           onFocus={() => setIsDetailMajorFocused(true)}
           onBlur={() => setIsDetailMajorFocused(false)}
         />
@@ -335,7 +337,7 @@ const TopIntroductionTab = ({
           onBlur={() => setIsIntroFocused(false)}
         />
       </View>
-    </ScrollView>
+    </View>
   );
 };
 

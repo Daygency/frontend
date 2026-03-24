@@ -10,9 +10,15 @@ type Props = {
   entry: AwardEntry;
   onChange: (updates: Partial<AwardEntry>) => void;
   onDelete: () => void;
+  onEditingFocusChange?: (focused: boolean) => void;
 };
 
-const AwardItem = ({ entry, onChange, onDelete }: Props) => {
+const AwardItem = ({
+  entry,
+  onChange,
+  onDelete,
+  onEditingFocusChange,
+}: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -73,8 +79,14 @@ const AwardItem = ({ entry, onChange, onDelete }: Props) => {
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onFocus={() => {
+          setIsFocused(true);
+          onEditingFocusChange?.(true);
+        }}
+        onBlur={() => {
+          setIsFocused(false);
+          onEditingFocusChange?.(false);
+        }}
       />
       <DatePickerField
         label="수상시점"

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TextInput, ScrollView } from "react-native";
+import { View, Text, TextInput } from "react-native";
 import { GRAY } from "../../../color";
 import type {
   EducationEntry,
@@ -27,6 +27,7 @@ type Props = {
   setAwardList: (v: AwardEntry[]) => void;
   certificateList: CertificateEntry[];
   setCertificateList: (v: CertificateEntry[]) => void;
+  onEditingFocusChange?: (focused: boolean) => void;
 };
 
 const ProfileTab = ({
@@ -40,6 +41,7 @@ const ProfileTab = ({
   setAwardList,
   certificateList,
   setCertificateList,
+  onEditingFocusChange,
 }: Props) => {
   const [isAboutFocused, setIsAboutFocused] = React.useState(false);
   // ── 학력 ──
@@ -129,11 +131,7 @@ const ProfileTab = ({
   };
 
   return (
-    <ScrollView
-      style={styles.tabContent}
-      contentContainerStyle={styles.tabContentContainer}
-      keyboardShouldPersistTaps="handled"
-    >
+    <View style={[styles.tabContent, styles.tabContentContainer]}>
       <View style={styles.field}>
         <Text style={[styles.label, isAboutFocused && styles.labelFocused]}>
           소개
@@ -169,6 +167,7 @@ const ProfileTab = ({
               entry={entry}
               onChange={(u) => updateEducation(entry.id, u)}
               onDelete={() => deleteEducation(entry.id)}
+              onEditingFocusChange={onEditingFocusChange}
             />
           ))}
         </View>
@@ -188,6 +187,7 @@ const ProfileTab = ({
               entry={entry}
               onChange={(u) => updateCareer(entry.id, u)}
               onDelete={() => deleteCareer(entry.id)}
+              onEditingFocusChange={onEditingFocusChange}
             />
           ))}
         </View>
@@ -207,6 +207,7 @@ const ProfileTab = ({
               entry={entry}
               onChange={(u) => updateAward(entry.id, u)}
               onDelete={() => deleteAward(entry.id)}
+              onEditingFocusChange={onEditingFocusChange}
             />
           ))}
         </View>
@@ -226,11 +227,12 @@ const ProfileTab = ({
               entry={entry}
               onChange={(u) => updateCertificate(entry.id, u)}
               onDelete={() => deleteCertificate(entry.id)}
+              onEditingFocusChange={onEditingFocusChange}
             />
           ))}
         </View>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
