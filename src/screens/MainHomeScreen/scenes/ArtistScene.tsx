@@ -15,6 +15,7 @@ import { RootRoutes } from "../../../navigations/routes";
 import { getMajors, type Major } from "../../../lib/apis/announcement/majorApi";
 import { getUsers } from "../../../lib/apis/users/usersApi";
 import type { UserListItem } from "../../../lib/apis/users/types";
+import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
 
 const MAJOR_OPTIONS = [
   "건반악기",
@@ -176,6 +177,7 @@ const ArtistScene = () => {
               <ArtistCard
                 name={item.nickname || "이름 없음"}
                 category={item.major?.name ?? "전공 미설정"}
+                avatarUrl={resolveProfileImageUrlForDisplay(item.profileImgUrl)}
                 activityName={item.activityName}
                 musicNoteCount={0}
                 onPress={() =>

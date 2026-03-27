@@ -1,4 +1,4 @@
-import { Text, View } from "react-native";
+import { Image, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
 import { WHITE } from "../../color";
@@ -7,6 +7,7 @@ import MusicNoteIcon from "../../../assets/music_note.svg";
 interface ArtistCardProps {
   name: string;
   category: string;
+  avatarUrl?: string;
   activityName?: string;
   musicNoteCount?: number;
   onPress?: () => void;
@@ -15,6 +16,7 @@ interface ArtistCardProps {
 const ArtistCard = ({
   name,
   category,
+  avatarUrl,
   activityName,
   musicNoteCount = 0,
   onPress,
@@ -33,11 +35,19 @@ const ArtistCard = ({
       <View style={styles.container}>
         {/* Avatar */}
         <View style={styles.avatarContainer}>
-          <MaterialCommunityIcons
-            name="account-outline"
-            size={24}
-            color={WHITE}
-          />
+          {avatarUrl?.trim() ? (
+            <Image
+              source={{ uri: avatarUrl }}
+              style={styles.avatarImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <MaterialCommunityIcons
+              name="account-outline"
+              size={24}
+              color={WHITE}
+            />
+          )}
         </View>
 
         {/* Name and Category */}
