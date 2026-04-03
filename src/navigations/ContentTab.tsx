@@ -5,6 +5,7 @@ import AnnouncementScreen from "../screens/AnnouncementScreen/AnnouncementScreen
 import ChatScreen from "../screens/ChatScreens/ChatScreen/ChatScreen";
 import LoungeScreen from "../screens/LoungeScreen/LoungeScreen";
 import PortfolioScreen from "../screens/PortfolioScreen/PortfolioScreen";
+import { getFcmToken } from "../lib/pushNotifications";
 import {
   AntDesign,
   Entypo,
@@ -86,6 +87,14 @@ const ContentTab = () => {
       <Tab.Screen
         name={ContentRoutes.LOUNGE}
         component={PortfolioScreen}
+        listeners={{
+          tabPress: () => {
+            void (async () => {
+              const token = await getFcmToken();
+              console.log("[FCM] device token:", token ?? "(null — 권한 없음 또는 네이티브 미지원)");
+            })();
+          },
+        }}
         options={{
           tabBarIcon: ({ focused }) => (
             <MaterialIcons name="account-circle" size={24} color={focused ? "black" : "gray"} />

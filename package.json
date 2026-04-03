@@ -6,7 +6,9 @@
     "start": "expo start",
     "android": "expo run:android",
     "ios": "expo run:ios",
-    "web": "expo start --web"
+    "web": "expo start --web",
+    "ios-device": "expo run:ios --device",
+    "ios-build": "expo export:embed --platform ios --dev false --entry-file index.ts --bundle-output ./ios/main.jsbundle --assets-dest ./ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -28,7 +30,6 @@
     "expo-document-picker": "~14.0.8",
     "expo-file-system": "~19.0.21",
     "expo-image-picker": "~17.0.10",
-    "expo-notifications": "~0.32.16",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "react": "19.1.0",

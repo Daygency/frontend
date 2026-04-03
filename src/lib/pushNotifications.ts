@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Platform } from "react-native";
+import messaging from "@react-native-firebase/messaging";
+import { Platform, PermissionsAndroid } from "react-native";
 
 const STORAGE = {
   pushReceive: "@daygency/notif_push_receive",
@@ -8,38 +9,41 @@ const STORAGE = {
 
 export type PermissionStatus = "granted" | "denied" | "undetermined";
 
-type NotificationsModule = typeof import("expo-notifications");
-
-let notificationsLoadAttempted = false;
-let notificationsModule: NotificationsModule | null = null;
-
-/**
- * expo-notifications는 네이티브 모듈(ExpoPushTokenManager 등)이 포함된 빌드에서만 동작합니다.
- * Expo Go / 구버전 클라이언트에서는 로드가 실패할 수 있음 → null 반환.
- */
-export async function loadExpoNotifications(): Promise<NotificationsModule | null> {
-  if (notificationsLoadAttempted) return notificationsModule;
-  notificationsLoadAttempted = true;
-  if (Platform.OS !== "ios" && Platform.OS !== "android") {
-    notificationsModule = null;
-    return null;
+function mapAuthStatus(status: number): PermissionStatus {
+  const A = messaging.AuthorizationStatus;
+  if (
+    status === A.AUTHORIZED ||
+    status === A.PROVISIONAL ||
+    status === A.EPHEMERAL
+  ) {
+    return "granted";
   }
+  if (status === A.DENIED) return "denied";
+  return "undetermined";
+}
+
+async function ensureIosRemoteRegistration(): Promise<void> {
+  if (Platform.OS !== "ios") return;
+  if (!messaging().isDeviceRegisteredForRemoteMessages) {
+    await messaging().registerDeviceForRemoteMessages();
+  }
+}
+
+let fcmProbeDone = false;
+let fcmNativeOk: boolean | null = null;
+
+/** FCM 네이티브 모듈 사용 가능 여부 (Expo Go 등에서는 false). */
+export async function isFcmMessagingAvailable(): Promise<boolean> {
+  if (!isPushSupportedNative()) return false;
+  if (fcmProbeDone) return fcmNativeOk === true;
+  fcmProbeDone = true;
   try {
-    const Notifications = await import("expo-notifications");
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowBanner: true,
-        shouldShowList: true,
-        shouldPlaySound: false,
-        shouldSetBadge: true,
-      }),
-    });
-    notificationsModule = Notifications;
-    return Notifications;
+    await messaging().hasPermission();
+    fcmNativeOk = true;
   } catch {
-    notificationsModule = null;
-    return null;
+    fcmNativeOk = false;
   }
+  return fcmNativeOk === true;
 }
 
 export function isPushSupportedNative(): boolean {
@@ -47,12 +51,15 @@ export function isPushSupportedNative(): boolean {
 }
 
 export async function getOsPushPermission(): Promise<PermissionStatus> {
-  const Notifications = await loadExpoNotifications();
-  if (!Notifications) return "denied";
-  const { status } = await Notifications.getPermissionsAsync();
-  if (status === "granted") return "granted";
-  if (status === "denied") return "denied";
-  return "undetermined";
+  if (!(await isFcmMessagingAvailable())) return "denied";
+  if (Platform.OS === "android" && Platform.Version >= 33) {
+    const ok = await PermissionsAndroid.check(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+    );
+    return ok ? "granted" : "undetermined";
+  }
+  const status = await messaging().hasPermission();
+  return mapAuthStatus(status);
 }
 
 /** 사용자가 앱에서 푸시를 받겠다고 한 설정 */
@@ -67,19 +74,36 @@ export async function setPushReceivePreference(enabled: boolean): Promise<void> 
 }
 
 export async function requestOsPushPermission(): Promise<PermissionStatus> {
-  const Notifications = await loadExpoNotifications();
-  if (!Notifications) return "denied";
-  const { status } = await Notifications.requestPermissionsAsync();
-  if (status === "granted") return "granted";
-  if (status === "denied") return "denied";
-  return "undetermined";
+  if (!(await isFcmMessagingAvailable())) return "denied";
+  await ensureIosRemoteRegistration();
+  if (Platform.OS === "android" && Platform.Version >= 33) {
+    const result = await PermissionsAndroid.request(
+      PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
+    );
+    if (result === PermissionsAndroid.RESULTS.GRANTED) return "granted";
+    return "denied";
+  }
+  const status = await messaging().requestPermission();
+  return mapAuthStatus(status);
 }
 
-/** 앱 최초 실행 시 1회만 시스템 알림 권한 다이얼로그 시도 (네이티브 모듈 있을 때만) */
+/** 권한이 있을 때 FCM 등록 토큰 (백엔드 전달용). */
+export async function getFcmToken(): Promise<string | null> {
+  if (!(await isFcmMessagingAvailable())) return null;
+  const perm = await getOsPushPermission();
+  if (perm !== "granted") return null;
+  try {
+    await ensureIosRemoteRegistration();
+    return await messaging().getToken();
+  } catch {
+    return null;
+  }
+}
+
+/** 앱 최초 실행 시 1회만 시스템 알림 권한 다이얼로그 시도 */
 export async function promptPushPermissionOnFirstAppOpen(): Promise<void> {
   if (!isPushSupportedNative()) return;
-  const Notifications = await loadExpoNotifications();
-  if (!Notifications) return;
+  if (!(await isFcmMessagingAvailable())) return;
   const done = await AsyncStorage.getItem(STORAGE.firstLaunchPrompted);
   if (done === "1") return;
   await AsyncStorage.setItem(STORAGE.firstLaunchPrompted, "1");
@@ -88,7 +112,7 @@ export async function promptPushPermissionOnFirstAppOpen(): Promise<void> {
   await requestOsPushPermission();
 }
 
-/** 푸시 네이티브 모듈 사용 가능 여부 (UI 안내용) */
+/** @deprecated 이름 호환 — FCM 사용 */
 export async function isExpoPushAvailable(): Promise<boolean> {
-  return (await loadExpoNotifications()) != null;
+  return isFcmMessagingAvailable();
 }

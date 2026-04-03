@@ -12,13 +12,6 @@ module.exports = {
     version: "1.0.0",
     plugins: [
       [
-        "expo-notifications",
-        {
-          color: "#1F2A44",
-          defaultChannel: "default",
-        },
-      ],
-      [
         "expo-build-properties",
         {
           android: {
@@ -53,10 +46,15 @@ module.exports = {
       backgroundColor: "#ffffff",
     },
     ios: {
+      entitlements: {
+        "aps-environment": "development",
+      },
       supportsTablet: true,
       buildNumber: "4",
       bundleIdentifier: "com.rbdus.mfrontend",
+      googleServicesFile: "./GoogleService-Info.plist",
       infoPlist: {
+        UIBackgroundModes: ["remote-notification"],
         ITSAppUsesNonExemptEncryption: false,
       },
     },
@@ -68,6 +66,7 @@ module.exports = {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: "com.rbdus.mfrontend",
+      googleServicesFile: "./google-services.json",
     },
     web: {
       favicon: "./assets/favicon.png",

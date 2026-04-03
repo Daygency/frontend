@@ -12,8 +12,8 @@ import {
 import {
   getOsPushPermission,
   getPushReceivePreference,
+  isFcmMessagingAvailable,
   isPushSupportedNative,
-  loadExpoNotifications,
   requestOsPushPermission,
   setPushReceivePreference,
 } from "../../../lib/pushNotifications";
@@ -23,7 +23,7 @@ const NotificationSettingsScreen = () => {
   const [pushOn, setPushOn] = useState(false);
   const [smsOptOut, setSmsOptOutState] = useState(false);
   const [emailOptOut, setEmailOptOutState] = useState(false);
-  /** null: 확인 전, false: ExpoPushTokenManager 등 네이티브 없음 */
+  /** null: 확인 전, false: FCM 네이티브 없음(Expo Go 등) */
   const [pushModuleOk, setPushModuleOk] = useState<boolean | null>(null);
 
   const refreshPushState = useCallback(async () => {
@@ -32,9 +32,9 @@ const NotificationSettingsScreen = () => {
       setPushOn(false);
       return;
     }
-    const mod = await loadExpoNotifications();
-    setPushModuleOk(mod != null);
-    if (!mod) {
+    const ok = await isFcmMessagingAvailable();
+    setPushModuleOk(ok);
+    if (!ok) {
       setPushOn(false);
       return;
     }
@@ -56,7 +56,7 @@ const NotificationSettingsScreen = () => {
 
   const onPushChange = async (value: boolean) => {
     if (!isPushSupportedNative()) return;
-    if (!(await loadExpoNotifications())) return;
+    if (!(await isFcmMessagingAvailable())) return;
     if (value) {
       await setPushReceivePreference(true);
       const perm = await requestOsPushPermission();
