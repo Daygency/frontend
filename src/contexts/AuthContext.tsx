@@ -7,11 +7,7 @@ import {
 } from "react";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import {
-  API_BASE,
-  AUTH_TOKEN_KEY,
-  REFRESH_TOKEN_KEY,
-} from "../lib/apis/api";
+import { API_BASE, AUTH_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../lib/apis/api";
 import { clearProfileCache } from "../lib/profileCache";
 import { onAuthExpired } from "../lib/authEvents";
 import { completeKakaoSignup } from "../lib/apis/auth/completeKakaoSignup";

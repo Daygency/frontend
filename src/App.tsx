@@ -9,7 +9,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import Navigation from "./navigations/Navigation";
 import SplashScreenView from "./screens/OnboardingScreens/SplashScreen/SplashScreen";
 
-// 앱이 background/quit(종료) 상태인 경우 메시지를 받기 위함.
+// 앱이 background/quit(종료) 상태인 경우 메시지를 받기
 messaging().setBackgroundMessageHandler(async (remoteMessage) => {
   console.log("[Background Message] ", remoteMessage);
 });
