@@ -25,7 +25,7 @@ export default ({ config }) => ({
       bundleIdentifier: "com.rbdus.mfrontend",
       googleServicesFile: hasPlist ? "./GoogleService-Info.plist" : undefined,
       buildNumber: "4",
-      entitlements: { "aps-environment": "development" },
+      entitlements: { "aps-environment": "production" },
       infoPlist: {
         UIBackgroundModes: ["remote-notification"],
         ITSAppUsesNonExemptEncryption: false,
@@ -45,20 +45,14 @@ export default ({ config }) => ({
         {
           ios: {
             useFrameworks: "static",
+            forceStaticLinking: ["RNFBApp", "RNFBMessaging"],
           },
           android: {
             extraMavenRepos: ["https://kakao.com"],
           },
         },
       ],
-      [
-        "@react-native-firebase/app",
-        {
-          ios: {
-            useFrameworks: "static",
-          },
-        },
-      ],
+      "@react-native-firebase/app",
       "@react-native-firebase/messaging",
       [
         "@react-native-kakao/core",
