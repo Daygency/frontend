@@ -1,5 +1,8 @@
+import messaging from "@react-native-firebase/messaging";
 import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView } from "react-native";
+import { unregisterPushDevice } from "../../../lib/apis/notifications/notificationsApi";
+import { syncFcmTokenToServer } from "../../../lib/fcmServerSync";
 import ShadowCardList, {
   ShadowCardListToggleItem,
 } from "../../../components/ShadowCardList/ShadowCardList";
@@ -66,7 +69,16 @@ const NotificationSettingsScreen = () => {
         return;
       }
       setPushOn(true);
+      void syncFcmTokenToServer();
       return;
+    }
+    try {
+      if (await isFcmMessagingAvailable()) {
+        const t = await messaging().getToken();
+        if (t) void unregisterPushDevice({ fcmToken: t });
+      }
+    } catch {
+      /* ignore */
     }
     await setPushReceivePreference(false);
     setPushOn(false);

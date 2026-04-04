@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Alert, Platform, Share } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { initializeKakaoSDK } from "@react-native-kakao/core";
+import { FcmTokenSyncBridge } from "./components/FcmTokenSyncBridge";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navigation from "./navigations/Navigation";
 import SplashScreenView from "./screens/OnboardingScreens/SplashScreen/SplashScreen";
@@ -86,6 +87,7 @@ const App = () => {
   return (
     <SafeAreaProvider>
       <AuthProvider>
+        <FcmTokenSyncBridge />
         <StatusBar style="dark" />
         <Navigation />
       </AuthProvider>

@@ -11,6 +11,7 @@ import { API_BASE, AUTH_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../lib/apis/api";
 import { clearProfileCache } from "../lib/profileCache";
 import { onAuthExpired } from "../lib/authEvents";
 import { completeKakaoSignup } from "../lib/apis/auth/completeKakaoSignup";
+import { syncFcmTokenToServer } from "../lib/fcmServerSync";
 const USER_INFO_KEY = "@daygency_user_info";
 const PENDING_SIGNUP_KEY = "@daygency_pending_signup";
 
@@ -146,6 +147,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
       await AsyncStorage.removeItem(PENDING_SIGNUP_KEY);
       setNeedsRoleSelection(false);
+      void syncFcmTokenToServer();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       Alert.alert("가입 실패", message);
