@@ -1,7 +1,7 @@
 /**
- * README § 모집 지원서 API — Body·응답 필드는 Swagger `applications` 태그와 동일.
- * 공고 상세 `GET /announcement/:id` 의 `applicationConfig` 와 동일한 include* 키를 보냅니다.
- * `POST /applications` 성공 시 서버가 공고 전용 채팅방·첫 메시지를 처리하므로, 프론트는 채팅 목록 새로고침을 맞추면 됩니다.
+ * README 부록 B — `POST/PATCH /applications` 본문은 `CreateApplicationDto` / `UpdateApplicationDto` 필드명
+ * (`name`, `birth`, `major` …). 공고 `applicationConfig`의 `include*`는 **어떤 항목을 켤지**만 정하고,
+ * 요청 JSON에는 README 표의 필드명으로 값을 보냅니다.
  */
 
 import type {
@@ -25,21 +25,18 @@ export type ApplicationReviewStatus =
 
 export type CreateApplicationDto = {
   postId: string;
-  includeName?: string;
+  name?: string;
   /** README: datetime 저장, 요청은 ISO 8601 문자열 */
-  includeBirth?: string;
-  includeGender?: ApplicationGender;
-  includeMajor?: string;
-  includeMajorDetail?: string;
-  includeEducation?: string;
-  includeCategory?: string;
-  includeMusic?: string;
-  includeAddress?: string;
-  includeFile?: boolean;
-  includeLink?: string;
-  includeDepartment?: string;
-  includeCareer?: boolean;
-  includeIntroduce?: string;
+  birth?: string;
+  gender?: ApplicationGender;
+  major?: string;
+  majorDetail?: string;
+  category?: string;
+  music?: string;
+  address?: string;
+  link?: string;
+  department?: string;
+  introduce?: string;
   /** README 스냅샷 — 프로필 id 없이 항목만 */
   file?: ApplicationSnapshotFile[];
   education?: ApplicationSnapshotEducation[];
@@ -56,10 +53,13 @@ export type UpdateApplicationStatusDto = {
   status: ApplicationReviewStatus;
 };
 
-/** GET 응답 등 — postId 는 응답에 없을 수 있음 */
+/** GET 응답 등 — README 부록 B 엔티티 표 (`name`~`introduce`, 스냅샷 배열, `status`, 타임스탬프) */
 export type ApplicationEntity = Partial<Omit<CreateApplicationDto, "postId">> & {
   id: string;
   postId?: string;
   userId?: string;
   status?: ApplicationReviewStatus;
+  createdAt?: string;
+  canceledAt?: string | null;
+  deletedAt?: string | null;
 };

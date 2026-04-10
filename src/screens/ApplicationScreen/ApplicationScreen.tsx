@@ -81,6 +81,19 @@ function formatEducation(school: string, grade: string): string {
   return `${s} / ${g}`;
 }
 
+/** README: `birth` 요청은 ISO 8601 — 입력은 연도(YYYY) 위주 */
+function birthYearToIso8601(year: string): string {
+  const digits = year.trim().replace(/\D/g, "").slice(0, 4);
+  if (digits.length === 4) return `${digits}-01-01T00:00:00.000Z`;
+  const t = year.trim();
+  return t ? `${t}-01-01T00:00:00.000Z` : "2000-01-01T00:00:00.000Z";
+}
+
+function birthApiToYearDisplay(birth: string): string {
+  const m = /^(\d{4})/.exec(birth.trim());
+  return m ? m[1] : birth.trim().slice(0, 4);
+}
+
 /**
  * README: `POST /applications` 성공 시 서버가 공고 전용 채팅방을 만들고 첫 메시지를 보냄.
  * `GET /chat/rooms/by-post/:postId` 로 방이 잡힐 때까지 짧게 재시도.
@@ -185,24 +198,24 @@ const ApplicationScreen = () => {
     let cancelled = false;
 
     function hydrateFromEntity(e: ApplicationEntity) {
-      if (e.includeName) setName(e.includeName);
-      if (e.includeBirth) setBirthYear(e.includeBirth);
-      if (e.includeGender) setGender(e.includeGender);
-      if (e.includeMajor) setSelectedMajor(e.includeMajor);
-      if (e.includeMajorDetail) setDetailMajor(e.includeMajorDetail);
-      if (e.includeEducation) {
-        const { school, grade } = parseEducationToSchoolGrade(e.includeEducation);
+      if (e.name) setName(e.name);
+      if (e.birth) setBirthYear(birthApiToYearDisplay(e.birth));
+      if (e.gender) setGender(e.gender);
+      if (e.major) setSelectedMajor(e.major);
+      if (e.majorDetail) setDetailMajor(e.majorDetail);
+      if (e.education?.length) {
+        const { school, grade } = parseEducationToSchoolGrade(e.education[0].description);
         setSchoolName(school);
         setSelectedGrade(grade);
       }
-      if (e.includeCategory) setParticipationSection(e.includeCategory);
-      if (e.includeMusic) setParticipatingSong(e.includeMusic);
-      if (e.includeAddress) setDeliveryAddress(e.includeAddress);
-      if (e.includeLink) setLink(e.includeLink);
-      if (e.includeDepartment) setAffiliatedDepartment(e.includeDepartment);
-      if (e.includeIntroduce) setSelfIntroduction(e.includeIntroduce);
-      if (typeof e.includeFile === "boolean") setIncludeFile(e.includeFile);
-      if (typeof e.includeCareer === "boolean") setIncludeCareer(e.includeCareer);
+      if (e.category) setParticipationSection(e.category);
+      if (e.music) setParticipatingSong(e.music);
+      if (e.address) setDeliveryAddress(e.address);
+      if (e.link) setLink(e.link);
+      if (e.department) setAffiliatedDepartment(e.department);
+      if (e.introduce) setSelfIntroduction(e.introduce);
+      if (Array.isArray(e.file)) setIncludeFile(e.file.length > 0);
+      if (Array.isArray(e.career)) setIncludeCareer(e.career.length > 0);
     }
 
     (async () => {
@@ -313,22 +326,30 @@ const ApplicationScreen = () => {
 
   const buildDtoBody = () => {
     if (!config || !postId) return null;
-    const education = formatEducation(schoolName, selectedGrade);
+    const educationLine = formatEducation(schoolName, selectedGrade);
     const base: Omit<Parameters<typeof createApplication>[0], "postId"> = {};
-    if (config.includeName) base.includeName = name.trim();
-    if (config.includeBirth) base.includeBirth = birthYear.trim();
-    if (config.includeGender) base.includeGender = gender as ApplicationGender;
-    if (config.includeMajor) base.includeMajor = selectedMajor.trim();
-    if (config.includeMajorDetail) base.includeMajorDetail = detailMajor.trim();
-    if (config.includeEducation) base.includeEducation = education;
-    if (config.includeCategory) base.includeCategory = participationSection.trim();
-    if (config.includeMusic) base.includeMusic = participatingSong.trim();
-    if (config.includeAddress) base.includeAddress = deliveryAddress.trim();
-    if (config.includeFile) base.includeFile = includeFile;
-    if (config.includeLink) base.includeLink = link.trim();
-    if (config.includeDepartment) base.includeDepartment = affiliatedDepartment.trim();
-    if (config.includeCareer) base.includeCareer = includeCareer;
-    if (config.includeIntroduce) base.includeIntroduce = selfIntroduction.trim();
+    if (config.includeName) base.name = name.trim();
+    if (config.includeBirth) base.birth = birthYearToIso8601(birthYear);
+    if (config.includeGender) base.gender = gender as ApplicationGender;
+    if (config.includeMajor) base.major = selectedMajor.trim();
+    if (config.includeMajorDetail) base.majorDetail = detailMajor.trim();
+    if (config.includeEducation && educationLine.trim()) {
+      const startedAt =
+        config.includeBirth && birthYear.trim()
+          ? birthYearToIso8601(birthYear)
+          : "2000-01-01T00:00:00.000Z";
+      base.education = [
+        { description: educationLine.trim(), startedAt, endedAt: null },
+      ];
+    }
+    if (config.includeCategory) base.category = participationSection.trim();
+    if (config.includeMusic) base.music = participatingSong.trim();
+    if (config.includeAddress) base.address = deliveryAddress.trim();
+    if (config.includeFile && includeFile) base.file = [];
+    if (config.includeLink) base.link = link.trim();
+    if (config.includeDepartment) base.department = affiliatedDepartment.trim();
+    if (config.includeCareer && includeCareer) base.career = [];
+    if (config.includeIntroduce) base.introduce = selfIntroduction.trim();
     return base;
   };
 

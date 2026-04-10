@@ -16,6 +16,22 @@ import type {
   ApplicationSnapshotFile,
 } from "./snapshot.types";
 
+/** Nest 400 응답 본문이 JSON 문자열일 때 message 만 뽑아 알림에 쓰기 */
+function formatApplicationApiError(raw: string): string {
+  const t = raw?.trim() ?? "";
+  if (!t) return "요청에 실패했습니다.";
+  try {
+    const o = JSON.parse(t) as { message?: unknown };
+    if (typeof o.message === "string" && o.message) return o.message;
+    if (Array.isArray(o.message) && o.message.length) {
+      return o.message.map(String).join("\n");
+    }
+  } catch {
+    /* plain text */
+  }
+  return t.length > 500 ? `${t.slice(0, 500)}…` : t;
+}
+
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
   if (!token) throw new Error("인증이 필요합니다.");
@@ -136,6 +152,31 @@ function parseSnapshotCertificates(
   return out.length ? out : undefined;
 }
 
+function pickScalarString(
+  raw: Record<string, unknown>,
+  primary: [string, string],
+  legacy?: [string, string],
+): string | undefined {
+  const [c, s] = primary;
+  const a = raw[c];
+  if (typeof a === "string") return a;
+  const b = raw[s];
+  if (typeof b === "string") return b;
+  if (legacy) {
+    const [lc, ls] = legacy;
+    const x = raw[lc];
+    if (typeof x === "string") return x;
+    const y = raw[ls];
+    if (typeof y === "string") return y;
+  }
+  return undefined;
+}
+
+function parseGenderField(raw: unknown): ApplicationEntity["gender"] {
+  if (raw === "FEMALE" || raw === "MALE" || raw === "NONE") return raw;
+  return undefined;
+}
+
 function parseApplicationEntity(raw: Record<string, unknown>): ApplicationEntity {
   const get = (camel: string, snake: string) =>
     (raw[camel] ?? raw[snake]) as unknown;
@@ -143,44 +184,65 @@ function parseApplicationEntity(raw: Record<string, unknown>): ApplicationEntity
   const id = String(get("id", "id") ?? "");
   const postId = (get("postId", "post_id") as string | undefined) ?? undefined;
 
-  const toBool = (v: unknown): boolean | undefined => {
-    if (typeof v === "boolean") return v;
-    if (v === 1 || v === "1" || v === "true") return true;
-    if (v === 0 || v === "0" || v === "false") return false;
-    return undefined;
-  };
+  const name = pickScalarString(raw, ["name", "name"], ["includeName", "include_name"]);
+  const birth = pickScalarString(raw, ["birth", "birth"], ["includeBirth", "include_birth"]);
+  const gender =
+    parseGenderField(get("gender", "gender")) ??
+    parseGenderField(get("includeGender", "include_gender"));
+  const major = pickScalarString(raw, ["major", "major"], ["includeMajor", "include_major"]);
+  const majorDetail = pickScalarString(raw, ["majorDetail", "major_detail"], ["includeMajorDetail", "include_major_detail"]);
+  const category = pickScalarString(raw, ["category", "category"], ["includeCategory", "include_category"]);
+  const music = pickScalarString(raw, ["music", "music"], ["includeMusic", "include_music"]);
+  const address = pickScalarString(raw, ["address", "address"], ["includeAddress", "include_address"]);
+  const link = pickScalarString(raw, ["link", "link"], ["includeLink", "include_link"]);
+  const department = pickScalarString(raw, ["department", "department"], ["includeDepartment", "include_department"]);
+  const introduce = pickScalarString(raw, ["introduce", "introduce"], ["includeIntroduce", "include_introduce"]);
 
   const file = parseSnapshotFiles(get("file", "file"));
-  const education = parseSnapshotEducations(get("education", "education"));
+  let education = parseSnapshotEducations(get("education", "education"));
+  if (!education?.length) {
+    const legacyEd = pickScalarString(raw, ["includeEducation", "include_education"]);
+    if (legacyEd?.trim()) {
+      education = [
+        {
+          description: legacyEd.trim(),
+          startedAt: "1970-01-01T00:00:00.000Z",
+          endedAt: null,
+        },
+      ];
+    }
+  }
   const career = parseSnapshotCareers(get("career", "career"));
   const award = parseSnapshotAwards(get("award", "award"));
   const certificate = parseSnapshotCertificates(get("certificate", "certificate"));
+
+  const createdAtRaw = get("createdAt", "created_at");
+  const canceledAtRaw = get("canceledAt", "canceled_at");
+  const deletedAtRaw = get("deletedAt", "deleted_at");
 
   return {
     id,
     postId,
     userId: (get("userId", "user_id") as string | undefined) ?? undefined,
     status: parseReviewStatus(get("status", "status")),
-    includeName: (get("includeName", "include_name") as string | undefined) ?? undefined,
-    includeBirth: (get("includeBirth", "include_birth") as string | undefined) ?? undefined,
-    includeGender: (get("includeGender", "include_gender") as ApplicationEntity["includeGender"]) ?? undefined,
-    includeMajor: (get("includeMajor", "include_major") as string | undefined) ?? undefined,
-    includeMajorDetail:
-      (get("includeMajorDetail", "include_major_detail") as string | undefined) ?? undefined,
-    includeEducation:
-      (get("includeEducation", "include_education") as string | undefined) ?? undefined,
-    includeCategory:
-      (get("includeCategory", "include_category") as string | undefined) ?? undefined,
-    includeMusic: (get("includeMusic", "include_music") as string | undefined) ?? undefined,
-    includeAddress:
-      (get("includeAddress", "include_address") as string | undefined) ?? undefined,
-    includeFile: toBool(get("includeFile", "include_file")),
-    includeLink: (get("includeLink", "include_link") as string | undefined) ?? undefined,
-    includeDepartment:
-      (get("includeDepartment", "include_department") as string | undefined) ?? undefined,
-    includeCareer: toBool(get("includeCareer", "include_career")),
-    includeIntroduce:
-      (get("includeIntroduce", "include_introduce") as string | undefined) ?? undefined,
+    ...(name !== undefined ? { name } : {}),
+    ...(birth !== undefined ? { birth } : {}),
+    ...(gender !== undefined ? { gender } : {}),
+    ...(major !== undefined ? { major } : {}),
+    ...(majorDetail !== undefined ? { majorDetail } : {}),
+    ...(category !== undefined ? { category } : {}),
+    ...(music !== undefined ? { music } : {}),
+    ...(address !== undefined ? { address } : {}),
+    ...(link !== undefined ? { link } : {}),
+    ...(department !== undefined ? { department } : {}),
+    ...(introduce !== undefined ? { introduce } : {}),
+    ...(typeof createdAtRaw === "string" ? { createdAt: createdAtRaw } : {}),
+    ...(canceledAtRaw === null || typeof canceledAtRaw === "string"
+      ? { canceledAt: canceledAtRaw as string | null }
+      : {}),
+    ...(deletedAtRaw === null || typeof deletedAtRaw === "string"
+      ? { deletedAt: deletedAtRaw as string | null }
+      : {}),
     ...(file ? { file } : {}),
     ...(education ? { education } : {}),
     ...(career ? { career } : {}),
@@ -202,7 +264,11 @@ export async function createApplication(
     });
     const text = await res.text().catch(() => "");
     if (!res.ok) {
-      return { ok: false, status: res.status, message: text || res.statusText };
+      return {
+        ok: false,
+        status: res.status,
+        message: formatApplicationApiError(text || res.statusText),
+      };
     }
     const data = text ? (JSON.parse(text) as Record<string, unknown>) : {};
     return { ok: true, data: parseApplicationEntity(data) };
@@ -252,7 +318,11 @@ export async function updateApplication(
     });
     const text = await res.text().catch(() => "");
     if (!res.ok) {
-      return { ok: false, status: res.status, message: text || res.statusText };
+      return {
+        ok: false,
+        status: res.status,
+        message: formatApplicationApiError(text || res.statusText),
+      };
     }
     const data = text ? (JSON.parse(text) as Record<string, unknown>) : {};
     return { ok: true, data: parseApplicationEntity(data) };
