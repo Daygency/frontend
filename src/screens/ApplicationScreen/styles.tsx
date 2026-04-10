@@ -40,6 +40,41 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: WHITE,
   },
+  btnApplyDisabled: {
+    opacity: 0.45,
+  },
+  closedHint: {
+    marginBottom: 10,
+    fontSize: 13,
+    lineHeight: 19,
+    color: "#717182",
+    textAlign: "center",
+  },
+  chatInquiryButton: {
+    marginBottom: 12,
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: MAIN.DEFAULT,
+  },
+  chatInquiryText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
+  },
+  btnCancel: {
+    marginTop: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  btnCancelText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#EC1313",
+  },
 });
 
 export default styles;

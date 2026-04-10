@@ -26,6 +26,7 @@ import { getMyProfile } from "../../lib/apis/portfolio/profileApi";
 import { getAnnouncementDetail } from "../../lib/apis/announcement/announcementApi";
 import {
   createApplication,
+  deleteApplication,
   getMyApplicationForPost,
   updateApplication,
 } from "../../lib/apis/application/applicationApi";
@@ -120,6 +121,29 @@ function httpErrorMessage(status: number): string {
   return "요청에 실패했습니다.";
 }
 
+/** 공고 상세 기준 모집 진행 여부 — 마감 후에는 지원 취소·수정 불가 */
+function deriveRecruitmentOpen(
+  d: Record<string, unknown>,
+  listStatusFallback: string | undefined,
+): boolean {
+  const isRecruiting = d.isRecruiting ?? d.is_recruiting;
+  if (isRecruiting === false) return false;
+
+  const deadlineRaw = d.deadlineAt ?? d.deadline_at;
+  if (typeof deadlineRaw === "string" && deadlineRaw.trim()) {
+    const t = Date.parse(deadlineRaw);
+    if (!Number.isNaN(t) && Date.now() > t) return false;
+  }
+
+  const statusStr = String(d.status ?? d.postStatus ?? "").toUpperCase();
+  if (statusStr === "CLOSED") return false;
+
+  if (isRecruiting === true) return true;
+
+  if (listStatusFallback === "모집마감") return false;
+  return true;
+}
+
 const ApplicationScreen = () => {
   const route = useRoute<ApplicationRouteProp>();
   const navigation = useNavigation();
@@ -130,6 +154,7 @@ const ApplicationScreen = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(null);
+  const [recruitmentOpen, setRecruitmentOpen] = useState(true);
 
   const [name, setName] = useState("");
   const [birthYear, setBirthYear] = useState("");
@@ -193,6 +218,7 @@ const ApplicationScreen = () => {
           return;
         }
         const d = detail as Record<string, unknown>;
+        setRecruitmentOpen(deriveRecruitmentOpen(d, status));
         if (detailHasExplicitNullApplicationConfig(d)) {
           Alert.alert(
             "알림",
@@ -239,7 +265,7 @@ const ApplicationScreen = () => {
     return () => {
       cancelled = true;
     };
-  }, [postId, navigation]);
+  }, [postId, navigation, status]);
 
   const majorOptions = [
     { label: "건반악기", value: "건반악기" },
@@ -306,8 +332,65 @@ const ApplicationScreen = () => {
     return base;
   };
 
+  const onOpenChatInquiry = async () => {
+    if (!postId) return;
+    setSubmitting(true);
+    try {
+      const room = await fetchAnnouncementRoomAfterApply(postId);
+      if (room?.id) {
+        const chatParams = chatRoomItemToParams(room);
+        navigation.dispatch(StackActions.replace(RootRoutes.CHAT_ROOM, chatParams));
+      } else {
+        Alert.alert(
+          "채팅",
+          "채팅 탭의 지원 공고에서 해당 공고를 연 뒤 채팅으로 문의해 주세요.",
+        );
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const onCancelApplication = () => {
+    if (!applicationId) return;
+    Alert.alert(
+      "지원 취소",
+      "이 공고에 대한 지원을 취소할까요? 취소 후에는 같은 공고에 다시 지원할 수 있습니다.",
+      [
+        { text: "닫기", style: "cancel" },
+        {
+          text: "지원 취소",
+          style: "destructive",
+          onPress: async () => {
+            setSubmitting(true);
+            try {
+              const res = await deleteApplication(applicationId);
+              if (res.ok) {
+                emitChatAppliedRoomsRefresh();
+                Alert.alert("완료", "지원이 취소되었습니다.", [
+                  { text: "확인", onPress: () => navigation.goBack() },
+                ]);
+              } else {
+                Alert.alert(
+                  "오류",
+                  res.message?.slice(0, 200) || httpErrorMessage(res.status),
+                );
+              }
+            } finally {
+              setSubmitting(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const onSubmit = async () => {
     if (!postId || !config) return;
+    if (!recruitmentOpen) {
+      Alert.alert("알림", "모집이 마감되어 지원서를 제출하거나 수정할 수 없습니다.");
+      return;
+    }
     const err = validate();
     if (err) {
       Alert.alert("알림", err);
@@ -383,7 +466,7 @@ const ApplicationScreen = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: WHITE }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 80 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: applicationId ? 160 : 100 }}>
         <AnnouncementBox
           title={title}
           type={type}
@@ -582,15 +665,45 @@ const ApplicationScreen = () => {
         </View>
       </ScrollView>
       <View style={styles.applyContainer}>
+        {!recruitmentOpen && applicationId ? (
+          <>
+            <Text style={styles.closedHint}>
+              모집이 마감되어 지원을 취소할 수 없습니다. 문의는 공고 채팅을 이용해 주세요.
+            </Text>
+            <Pressable
+              style={[styles.chatInquiryButton, submitting && { opacity: 0.6 }]}
+              disabled={submitting}
+              onPress={onOpenChatInquiry}
+            >
+              <Text style={styles.chatInquiryText}>채팅으로 문의</Text>
+            </Pressable>
+          </>
+        ) : null}
         <Pressable
-          style={[styles.btnApply, submitting && { opacity: 0.6 }]}
-          disabled={submitting}
+          style={[
+            styles.btnApply,
+            (submitting || !recruitmentOpen) && styles.btnApplyDisabled,
+          ]}
+          disabled={submitting || !recruitmentOpen}
           onPress={onSubmit}
         >
           <Text style={styles.btnApplyText}>
-            {applicationId ? "수정하기" : "제출하기"}
+            {!recruitmentOpen
+              ? "모집 마감"
+              : applicationId
+                ? "수정하기"
+                : "제출하기"}
           </Text>
         </Pressable>
+        {recruitmentOpen && applicationId ? (
+          <Pressable
+            style={[styles.btnCancel, submitting && { opacity: 0.6 }]}
+            disabled={submitting}
+            onPress={onCancelApplication}
+          >
+            <Text style={styles.btnCancelText}>지원 취소</Text>
+          </Pressable>
+        ) : null}
       </View>
     </View>
   );
