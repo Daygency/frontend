@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import { Alert, Platform, Share } from "react-native";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { initializeKakaoSDK } from "@react-native-kakao/core";
+import NaverLogin from "@react-native-seoul/naver-login";
+import { NAVER_APP_NAME, NAVER_URL_SCHEME } from "./lib/naver/naverConfig";
 import { FcmTokenSyncBridge } from "./components/FcmTokenSyncBridge";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navigation from "./navigations/Navigation";
@@ -17,10 +19,27 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
 
 SplashScreen.preventAutoHideAsync();
 
-const kakaoNativeAppKey =
-  process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? "";
+const kakaoNativeAppKey = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? "";
 if (kakaoNativeAppKey) {
   initializeKakaoSDK(kakaoNativeAppKey);
+}
+
+const naverClientId = process.env.EXPO_PUBLIC_NAVER_CLIENT_ID?.trim() ?? "";
+const naverClientSecret =
+  process.env.EXPO_PUBLIC_NAVER_CLIENT_SECRET?.trim() ?? "";
+if (
+  naverClientId &&
+  naverClientSecret &&
+  NaverLogin != null &&
+  typeof NaverLogin.initialize === "function"
+) {
+  NaverLogin.initialize({
+    appName: NAVER_APP_NAME,
+    consumerKey: naverClientId,
+    consumerSecret: naverClientSecret,
+    serviceUrlSchemeIOS: NAVER_URL_SCHEME,
+    disableNaverAppAuthIOS: true,
+  });
 }
 
 const SPLASH_DURATION_MS = 1000;

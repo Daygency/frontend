@@ -64,6 +64,13 @@ export default ({ config }) => ({
           ios: { handleKakaoOpenUrl: true },
         },
       ],
+      [
+        "@react-native-seoul/naver-login",
+        {
+          urlScheme:
+            process.env.EXPO_PUBLIC_NAVER_URL_SCHEME || "comrbdusmfrontend",
+        },
+      ],
     ],
     extra: {
       eas: { projectId: "773ddc8a-786b-4fa9-8638-2ad456ef803a" },

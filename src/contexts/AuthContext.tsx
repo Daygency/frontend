@@ -11,9 +11,13 @@ import { API_BASE, AUTH_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../lib/apis/api";
 import { clearProfileCache } from "../lib/profileCache";
 import { onAuthExpired } from "../lib/authEvents";
 import { completeKakaoSignup } from "../lib/apis/auth/completeKakaoSignup";
+import { completeNaverSignup } from "../lib/apis/auth/completeNaverSignup";
 import { syncFcmTokenToServer } from "../lib/fcmServerSync";
 const USER_INFO_KEY = "@daygency_user_info";
 const PENDING_SIGNUP_KEY = "@daygency_pending_signup";
+const PENDING_SIGNUP_PROVIDER_KEY = "@daygency_pending_signup_provider";
+
+export type SignupProvider = "kakao" | "naver";
 
 export type SocialUser = {
   socialId: string;
@@ -39,7 +43,11 @@ type AuthContextType = {
   login: (
     accessToken: string,
     user: SocialUser,
-    options?: { isNewUser?: boolean; refreshToken?: string },
+    options?: {
+      isNewUser?: boolean;
+      refreshToken?: string;
+      signupProvider?: SignupProvider;
+    },
   ) => Promise<void>;
   completeSignup: (params: SignupParams) => Promise<void>;
   logout: () => Promise<void>;
@@ -90,7 +98,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (
     accessToken: string,
     userInfo: SocialUser,
-    options?: { isNewUser?: boolean; refreshToken?: string },
+    options?: {
+      isNewUser?: boolean;
+      refreshToken?: string;
+      signupProvider?: SignupProvider;
+    },
   ) => {
     const toStore: Promise<void>[] = [
       AsyncStorage.setItem(AUTH_TOKEN_KEY, accessToken),
@@ -107,6 +119,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     if (options?.isNewUser) {
       await AsyncStorage.setItem(PENDING_SIGNUP_KEY, "true");
+      await AsyncStorage.setItem(
+        PENDING_SIGNUP_PROVIDER_KEY,
+        options.signupProvider ?? "kakao",
+      );
       setNeedsRoleSelection(true);
     }
   };
@@ -119,12 +135,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         throw new Error("로그인 정보가 없습니다. 다시 로그인해 주세요.");
       }
 
-      const data = await completeKakaoSignup({
-        accessToken,
-        role,
-        ...(nickname?.trim() ? { nickname: nickname.trim() } : {}),
-        ...(activityName?.trim() ? { activityName: activityName.trim() } : {}),
-      });
+      const signupProvider =
+        (await AsyncStorage.getItem(PENDING_SIGNUP_PROVIDER_KEY)) ?? "kakao";
+
+      const data =
+        signupProvider === "naver"
+          ? await completeNaverSignup({
+              accessToken,
+              activityName: (activityName ?? "").trim(),
+              ...(nickname?.trim() ? { nickname: nickname.trim() } : {}),
+              role: role === "planner" ? "admin" : "user",
+            })
+          : await completeKakaoSignup({
+              accessToken,
+              role,
+              ...(nickname?.trim() ? { nickname: nickname.trim() } : {}),
+              ...(activityName?.trim() ? { activityName: activityName.trim() } : {}),
+            });
 
       // 토큰 발급 시 새 토큰으로 갱신 (auth-api.md: accessToken + refreshToken)
       if (data?.accessToken) {
@@ -146,6 +173,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
 
       await AsyncStorage.removeItem(PENDING_SIGNUP_KEY);
+      await AsyncStorage.removeItem(PENDING_SIGNUP_PROVIDER_KEY);
       setNeedsRoleSelection(false);
       void syncFcmTokenToServer();
     } catch (error) {
@@ -161,6 +189,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       AsyncStorage.removeItem(REFRESH_TOKEN_KEY),
       AsyncStorage.removeItem(USER_INFO_KEY),
       AsyncStorage.removeItem(PENDING_SIGNUP_KEY),
+      AsyncStorage.removeItem(PENDING_SIGNUP_PROVIDER_KEY),
       clearProfileCache(),
     ]);
     setUser(null);

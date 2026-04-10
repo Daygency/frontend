@@ -27,17 +27,24 @@ export const useKakaoLogin = () => {
       );
 
       const accessTokenFromKakao =
-        token?.accessToken ?? (token as { access_token?: string })?.access_token;
+        token?.accessToken ??
+        (token as { access_token?: string })?.access_token;
       if (!accessTokenFromKakao || typeof accessTokenFromKakao !== "string") {
         console.error("[Kakao] token 구조:", JSON.stringify(token, null, 2));
         throw new Error(
           "카카오 로그인 응답에 accessToken이 없습니다. (SDK 초기화 및 네이티브 앱 키 확인)",
         );
       }
-      console.log("[Kakao 3/6] accessToken 추출 완료, 길이:", accessTokenFromKakao?.length);
+      console.log(
+        "[Kakao 3/6] accessToken 추출 완료, 길이:",
+        accessTokenFromKakao?.length,
+      );
       console.log("[Kakao 3/6] accessToken (카카오):", accessTokenFromKakao);
 
-      console.log("[Kakao 4/6] fetch 전송 (끊기면=네트워크/백엔드 미도달):", url);
+      console.log(
+        "[Kakao 4/6] fetch 전송 (끊기면=네트워크/백엔드 미도달):",
+        url,
+      );
       const res = await fetch(url, {
         method: "POST",
         headers: {
@@ -87,7 +94,7 @@ export const useKakaoLogin = () => {
             email: String(profile.email ?? ""),
             profileImgUrl: String(profile.profileImgUrl ?? ""),
           },
-          { isNewUser: true },
+          { isNewUser: true, signupProvider: "kakao" },
         );
         return;
       }
