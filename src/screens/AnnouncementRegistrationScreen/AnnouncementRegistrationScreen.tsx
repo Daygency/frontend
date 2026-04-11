@@ -31,6 +31,7 @@ import {
   getAnnouncementDetail,
   updateAnnouncement,
 } from "../../lib/apis/announcement/announcementApi";
+import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
 import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
 import type { ApplicationConfig } from "../../lib/apis/announcement/types";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
@@ -307,9 +308,24 @@ const AnnouncementRegistrationScreen = () => {
   useEffect(() => {
     if (!postId) return;
     setLoadingEdit(true);
-    getAnnouncementDetail(postId)
-      .then((res) => {
-        if (!res || typeof res !== "object") return;
+    let cancelled = false;
+    (async () => {
+      const appsRes = await getApplicationsForPost(postId);
+      if (cancelled) return;
+      if (appsRes?.ok && appsRes.data.length > 0) {
+        setLoadingEdit(false);
+        Alert.alert("알림", "지원자가 있는 공고는 수정할 수 없습니다.", [
+          { text: "확인", onPress: () => navigation.goBack() },
+        ]);
+        return;
+      }
+      const res = await getAnnouncementDetail(postId);
+      if (cancelled) return;
+      try {
+        if (!res || typeof res !== "object") {
+          setLoadingEdit(false);
+          return;
+        }
         const d = res as Record<string, unknown>;
         const get = (k: string, alt?: string) =>
           (d[k] ?? d[k.replace(/([A-Z])/g, "_$1").toLowerCase() ?? ""] ?? alt) as
@@ -367,13 +383,17 @@ const AnnouncementRegistrationScreen = () => {
             return next;
           });
         }
-      })
-      .catch((e) => {
+      } catch (e) {
         console.warn("[loadEditData]", e);
         Alert.alert("알림", "공고 정보를 불러오지 못했습니다.");
-      })
-      .finally(() => setLoadingEdit(false));
-  }, [postId]);
+      } finally {
+        setLoadingEdit(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [postId, navigation]);
 
   useEffect(() => {
     navigation.setOptions({
@@ -557,13 +577,14 @@ const AnnouncementRegistrationScreen = () => {
       if (isEditMode && postId) {
         const res = await updateAnnouncement(postId, dto);
         setIsSubmitting(false);
-        if (res) {
+        if (res.ok) {
           navigation.goBack();
         } else {
-          Alert.alert(
-            "수정 실패",
-            "모집공고 수정에 실패했습니다. 다시 시도해주세요.",
-          );
+          const fallback =
+            res.status === 403
+              ? "지원자가 있는 공고는 수정할 수 없습니다."
+              : "모집공고 수정에 실패했습니다. 다시 시도해주세요.";
+          Alert.alert("수정 실패", res.message?.trim() || fallback);
         }
       } else {
         const res =

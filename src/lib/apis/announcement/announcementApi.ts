@@ -163,27 +163,50 @@ export async function getAnnouncementDetail(
   return res.json() as Promise<Record<string, unknown>>;
 }
 
-/** 공고 수정 */
+function parseAnnouncementPatchErrorMessage(raw: string): string {
+  const t = raw?.trim() ?? "";
+  if (!t) return "";
+  try {
+    const o = JSON.parse(t) as { message?: unknown };
+    if (typeof o.message === "string") return o.message;
+  } catch {
+    /* plain text */
+  }
+  return t.length > 500 ? `${t.slice(0, 500)}…` : t;
+}
+
+/** 공고 수정 — 403 시 본문에 거절 사유(문자열 등) */
 export async function updateAnnouncement(
   id: string,
-  dto: UpdateAnnouncementDto
-): Promise<Record<string, unknown> | null> {
-  const headers = await getAuthHeadersRequired();
-  const res = await fetch(`${API_BASE}/announcement/${id}`, {
-    method: "PATCH",
-    headers,
-    body: JSON.stringify(dto),
-  });
-
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    console.warn("[updateAnnouncement] 실패:", res.status, errText);
-    return null;
+  dto: UpdateAnnouncementDto,
+): Promise<
+  | { ok: true; data: Record<string, unknown> }
+  | { ok: false; status: number; message: string }
+> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/announcement/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(dto),
+    });
+    const text = await res.text().catch(() => "");
+    if (!res.ok) {
+      const message =
+        parseAnnouncementPatchErrorMessage(text) || "요청에 실패했습니다.";
+      console.warn("[updateAnnouncement] 실패:", res.status, text);
+      return { ok: false, status: res.status, message };
+    }
+    if (!text.trim()) return { ok: true, data: {} };
+    try {
+      return { ok: true, data: JSON.parse(text) as Record<string, unknown> };
+    } catch {
+      return { ok: true, data: {} };
+    }
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, status: 0, message: msg };
   }
-
-  const text = await res.text();
-  if (!text) return {};
-  return JSON.parse(text) as Record<string, unknown>;
 }
 
 /** 공고 삭제 (api-readme: DELETE /announcement/:id) */

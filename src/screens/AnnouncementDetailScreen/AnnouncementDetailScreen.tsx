@@ -23,6 +23,7 @@ import RoundButton from "../../components/RoundButton/RoundButton";
 import { RootRoutes } from "../../navigations/routes";
 import { getAnnouncementDetail } from "../../lib/apis/announcement/announcementApi";
 import { deleteAnnouncement } from "../../lib/apis/announcement/announcementApi";
+import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
 import type { ApplicationConfig } from "../../lib/apis/announcement/types";
 import {
   extractApplicationConfigRaw,
@@ -62,6 +63,7 @@ const AnnouncementDetailScreen = () => {
   const params = route.params ?? {};
   const { width: screenWidth } = useWindowDimensions();
   const [isMine, setIsMine] = useState(false);
+  const [hasApplicants, setHasApplicants] = useState(false);
   const [imageHeights, setImageHeights] = useState<{ [key: number]: number }>(
     {},
   );
@@ -134,6 +136,25 @@ const AnnouncementDetailScreen = () => {
     }, [params.postId, fetchDetail]),
   );
 
+  useEffect(() => {
+    if (!params.postId || !isMine) {
+      setHasApplicants(false);
+      return;
+    }
+    let cancelled = false;
+    void getApplicationsForPost(params.postId).then((res) => {
+      if (cancelled) return;
+      if (res?.ok) {
+        setHasApplicants(res.data.length > 0);
+      } else {
+        setHasApplicants(false);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [params.postId, isMine]);
+
   const displayTitle = detailData?.title ?? params.title ?? "";
   const displayType = detailData?.type ?? params.type ?? "";
   const displayStatus = detailData?.status ?? params.status ?? "모집중";
@@ -146,6 +167,13 @@ const AnnouncementDetailScreen = () => {
           isMine={isMine}
           postId={params.postId}
           onEdit={() => {
+            if (hasApplicants) {
+              Alert.alert(
+                "알림",
+                "지원자가 있는 공고는 수정할 수 없습니다.",
+              );
+              return;
+            }
             if (params.postId) {
               navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION, {
                 postId: params.postId,
@@ -190,7 +218,7 @@ const AnnouncementDetailScreen = () => {
         />
       ),
     });
-  }, [navigation, isMine, params.postId]);
+  }, [navigation, isMine, params.postId, hasApplicants]);
 
   const imageList = [
     "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
