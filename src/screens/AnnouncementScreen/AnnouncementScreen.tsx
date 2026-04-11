@@ -17,8 +17,12 @@ import { RootRoutes } from "../../navigations/routes";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import styles from "./styles";
 import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
-import { getAnnouncementList } from "../../lib/apis/announcement/announcementApi";
+import {
+  getAnnouncementList,
+  getMyAnnouncementList,
+} from "../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
+import { useAuth } from "../../contexts/AuthContext";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
 
@@ -37,11 +41,14 @@ interface AnnouncementScreenProps {
 const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => {
   const navigation = useNavigation<NavigationProp>();
   const { top } = useSafeAreaInsets();
+  const { isLoggedIn } = useAuth();
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
   const [isTagModalVisible, setIsTagModalVisible] = useState(false);
-  const [sortBy, setSortBy] = useState<string>("최신순");
+  const [activeTab, setActiveTab] = useState<
+    "최신순" | "스크랩수순" | "내 공고"
+  >("최신순");
 
   const recruitmentStatusOptions = ["모집중", "모집마감"];
   const announcementTypeOptions = [
@@ -69,7 +76,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     "뮤지컬·크로스오버",
     "기타",
   ];
-  const sortOptions = ["최신순", "스크랩수순"];
+  const listTabs = ["최신순", "스크랩수순", "내 공고"] as const;
 
   const [items, setItems] = useState<AnnouncementListItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -104,16 +111,27 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
 
   const loadData = useCallback(
     async (cursor?: string) => {
+      if (activeTab === "내 공고" && !isLoggedIn) {
+        setItems([]);
+        setNextCursor(null);
+        setHasMore(false);
+        setLoading(false);
+        return;
+      }
       setLoading(true);
       try {
         const { status, categoryId, majorIds } = buildListParams();
-        const res = await getAnnouncementList({
+        const params = {
           cursor,
           limit: 20,
           status,
           categoryId,
           majorIds: majorIds || undefined,
-        });
+        };
+        const res =
+          activeTab === "내 공고"
+            ? await getMyAnnouncementList(params)
+            : await getAnnouncementList(params);
         if (!res) {
           setItems([]);
           setNextCursor(null);
@@ -131,7 +149,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         setLoading(false);
       }
     },
-    [buildListParams],
+    [buildListParams, activeTab, isLoggedIn],
   );
 
   useEffect(() => {
@@ -177,6 +195,13 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     return m ? Number(m[1]) : 0;
   };
 
+  const emptyMessage =
+    activeTab === "내 공고" && !isLoggedIn
+      ? "로그인이 필요합니다"
+      : activeTab === "내 공고"
+        ? "작성한 공고가 없습니다"
+        : "모집공고가 없습니다";
+
   return (
     <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
       {!hideTopBar && <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />}
@@ -191,16 +216,16 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             ]}
             onPress={() => setIsTagModalVisible(true)}
           />
-          {sortOptions.map((option) => (
+          {listTabs.map((option) => (
             <Pressable
               key={option}
-              style={[styles.sortTab, sortBy === option && styles.sortTabActive]}
-              onPress={() => setSortBy(option)}
+              style={[styles.sortTab, activeTab === option && styles.sortTabActive]}
+              onPress={() => setActiveTab(option)}
             >
               <Text
                 style={[
                   styles.sortTabText,
-                  sortBy === option && styles.sortTabTextActive,
+                  activeTab === option && styles.sortTabTextActive,
                 ]}
               >
                 {option}
@@ -253,7 +278,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           </View>
         ) : items.length === 0 ? (
           <View style={[styles.scrollContent, styles.emptyState]}>
-            <Text style={styles.emptyStateText}>모집공고가 없습니다</Text>
+            <Text style={styles.emptyStateText}>{emptyMessage}</Text>
           </View>
         ) : (
           <ScrollView
