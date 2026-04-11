@@ -29,6 +29,8 @@ import type { ChatRoomListItem } from "../../lib/apis/chat/types";
 import { formatChatListTime } from "../../lib/chat/formatChatTime";
 import { chatRoomItemToParamsWithApplicantFallback } from "../../lib/chat/chatRoomNavigation";
 import { resolveProfileImageUrlForDisplay } from "../../lib/chat/resolveProfileImageUrl";
+import { applicationStatusLabel } from "../../lib/application/applicationStatusLabels";
+import type { ApplicationReviewStatus } from "../../lib/apis/application/types";
 import styles from "./styles";
 
 type Params = {
@@ -134,6 +136,32 @@ export default function AnnouncementApplicantsScreen() {
     const t =
       row.room?.lastMessage?.createdAt ?? row.application.createdAt ?? "";
     return t ? formatChatListTime(t) : "";
+  };
+
+  const statusTagStyles = (status: ApplicationReviewStatus | undefined) => {
+    switch (status) {
+      case "ACCEPTED":
+        return [styles.statusTag, styles.statusTagAccepted];
+      case "REJECTED":
+        return [styles.statusTag, styles.statusTagRejected];
+      case "DOCUMENT_REVIEW":
+        return [styles.statusTag, styles.statusTagReview];
+      default:
+        return [styles.statusTag, styles.statusTagSubmitted];
+    }
+  };
+
+  const statusTagTextStyles = (status: ApplicationReviewStatus | undefined) => {
+    switch (status) {
+      case "ACCEPTED":
+        return [styles.statusTagText, styles.statusTagTextAccepted];
+      case "REJECTED":
+        return [styles.statusTagText, styles.statusTagTextRejected];
+      case "DOCUMENT_REVIEW":
+        return [styles.statusTagText, styles.statusTagTextReview];
+      default:
+        return [styles.statusTagText, styles.statusTagTextSubmitted];
+    }
   };
 
   const openApplicationDetail = (applicationId: string) => {
@@ -266,24 +294,32 @@ export default function AnnouncementApplicantsScreen() {
             peer?.profileImageUrl,
           );
           const busy = openingChatId === row.application.id;
+          const st = row.application.status;
           return (
             <View style={styles.applicantCard}>
-              <View style={styles.cardHeader}>
-                {avatarUri ? (
-                  <Image
-                    source={{ uri: avatarUri }}
-                    style={styles.avatar}
-                  />
-                ) : (
-                  <View style={styles.avatar} />
-                )}
-                <View style={styles.cardHeaderText}>
-                  <Text style={styles.applicantName} numberOfLines={1}>
-                    {displayName(row)}
+              <View style={styles.cardTopRow}>
+                <View style={styles.cardHeader}>
+                  {avatarUri ? (
+                    <Image
+                      source={{ uri: avatarUri }}
+                      style={styles.avatar}
+                    />
+                  ) : (
+                    <View style={styles.avatar} />
+                  )}
+                  <View style={styles.cardHeaderText}>
+                    <Text style={styles.applicantName} numberOfLines={1}>
+                      {displayName(row)}
+                    </Text>
+                    {timeLabel(row) ? (
+                      <Text style={styles.timeText}>{timeLabel(row)}</Text>
+                    ) : null}
+                  </View>
+                </View>
+                <View style={statusTagStyles(st)}>
+                  <Text style={statusTagTextStyles(st)} numberOfLines={1}>
+                    {applicationStatusLabel(st)}
                   </Text>
-                  {timeLabel(row) ? (
-                    <Text style={styles.timeText}>{timeLabel(row)}</Text>
-                  ) : null}
                 </View>
               </View>
               <Text style={styles.previewText} numberOfLines={2}>

@@ -95,10 +95,55 @@ export default StyleSheet.create({
     padding: 14,
     gap: 12,
   },
+  cardTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 10,
+  },
   cardHeader: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 12,
+    flex: 1,
+    minWidth: 0,
+  },
+  statusTag: {
+    paddingHorizontal: 8,
+    height: 24,
+    borderRadius: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+    maxWidth: "42%",
+  },
+  statusTagText: {
+    fontSize: 12,
+    fontWeight: "600",
+  },
+  statusTagSubmitted: {
+    backgroundColor: "#F3F4F6",
+  },
+  statusTagTextSubmitted: {
+    color: "#4B5563",
+  },
+  statusTagAccepted: {
+    backgroundColor: "#DCFCE7",
+  },
+  statusTagTextAccepted: {
+    color: "#15803D",
+  },
+  statusTagRejected: {
+    backgroundColor: "#FEE2E2",
+  },
+  statusTagTextRejected: {
+    color: "#B91C1C",
+  },
+  statusTagReview: {
+    backgroundColor: "#FFEDD5",
+  },
+  statusTagTextReview: {
+    color: ORANGE,
   },
   avatar: {
     width: 44,

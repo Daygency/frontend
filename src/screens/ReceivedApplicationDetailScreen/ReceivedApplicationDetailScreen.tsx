@@ -1,8 +1,19 @@
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import { useEffect, useState } from "react";
-import { getApplicationById } from "../../lib/apis/application/applicationApi";
+import { useCallback, useEffect, useState } from "react";
+import {
+  getApplicationById,
+  updateApplicationStatus,
+} from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
+import { applicationStatusLabel } from "../../lib/application/applicationStatusLabels";
 import styles from "./styles";
 
 type Params = {
@@ -20,18 +31,6 @@ function formatGender(g: ApplicationEntity["gender"]): string {
   if (g === "MALE") return "남성";
   if (g === "NONE") return "선택없음";
   return "";
-}
-
-function formatReviewStatus(
-  s: NonNullable<ApplicationEntity["status"]>,
-): string {
-  const map: Record<string, string> = {
-    SUBMITTED: "제출됨",
-    DOCUMENT_REVIEW: "서류 검토 중",
-    ACCEPTED: "합격",
-    REJECTED: "불합격",
-  };
-  return map[s] ?? s;
 }
 
 function birthDisplay(birth: string | undefined): string {
@@ -57,12 +56,31 @@ function Field({
   );
 }
 
+function formatStatusErrorMessage(raw: string): string {
+  const t = raw?.trim() ?? "";
+  if (!t) return "요청에 실패했습니다.";
+  try {
+    const o = JSON.parse(t) as { message?: unknown };
+    if (typeof o.message === "string" && o.message) return o.message;
+    if (Array.isArray(o.message) && o.message.length) {
+      return o.message.map(String).join("\n");
+    }
+  } catch {
+    /* plain text */
+  }
+  return t.length > 400 ? `${t.slice(0, 400)}…` : t;
+}
+
 export default function ReceivedApplicationDetailScreen() {
   const route = useRoute<RouteParams>();
   const { applicationId } = route.params;
   const [data, setData] = useState<ApplicationEntity | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  /** 어떤 심사 버튼이 요청 중인지 (로딩 표시용) */
+  const [pendingKind, setPendingKind] = useState<"ACCEPT" | "REJECT" | null>(
+    null,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -89,6 +107,40 @@ export default function ReceivedApplicationDetailScreen() {
       cancelled = true;
     };
   }, [applicationId]);
+
+  const onSetStatus = useCallback(
+    (next: "ACCEPTED" | "REJECTED") => {
+      if (pendingKind) return;
+      const verb = next === "ACCEPTED" ? "합격" : "탈락";
+      Alert.alert("확인", `이 지원자를 ${verb} 처리할까요?`, [
+        { text: "취소", style: "cancel" },
+        {
+          text: verb,
+          style: next === "REJECTED" ? "destructive" : "default",
+          onPress: async () => {
+            setPendingKind(next === "ACCEPTED" ? "ACCEPT" : "REJECT");
+            try {
+              const res = await updateApplicationStatus(applicationId, {
+                status: next,
+              });
+              if (res.ok) {
+                setData(res.data);
+                Alert.alert(
+                  "완료",
+                  `심사 상태가 ${applicationStatusLabel(next)}(으)로 변경되었습니다.`,
+                );
+              } else {
+                Alert.alert("알림", formatStatusErrorMessage(res.message));
+              }
+            } finally {
+              setPendingKind(null);
+            }
+          },
+        },
+      ]);
+    },
+    [applicationId, pendingKind],
+  );
 
   if (loading) {
     return (
@@ -128,8 +180,17 @@ export default function ReceivedApplicationDetailScreen() {
     ? data.certificate.map((c) => c.description).join("\n")
     : "";
 
+  const status = data.status;
+  const acceptLocked = status === "ACCEPTED";
+  const rejectLocked = status === "REJECTED";
+  const busy = pendingKind !== null;
+
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.scrollContent}>
+    <View style={styles.root}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+      >
       <Text style={styles.sectionTitle}>기본 정보</Text>
       <Field label="이름" value={data.name} />
       <Field label="출생연도" value={birthDisplay(data.birth)} />
@@ -177,12 +238,41 @@ export default function ReceivedApplicationDetailScreen() {
         </>
       ) : null}
 
-      {data.status ? (
-        <View style={styles.row}>
-          <Text style={styles.label}>심사 상태</Text>
-          <Text style={styles.value}>{formatReviewStatus(data.status)}</Text>
-        </View>
-      ) : null}
-    </ScrollView>
+      <View style={styles.row}>
+        <Text style={styles.label}>심사 상태</Text>
+        <Text style={styles.value}>{applicationStatusLabel(data.status)}</Text>
+      </View>
+      </ScrollView>
+      <View style={styles.actionBar}>
+        <Pressable
+          style={[
+            styles.rejectBtn,
+            (busy || rejectLocked) && styles.actionBtnDisabled,
+          ]}
+          disabled={busy || rejectLocked}
+          onPress={() => onSetStatus("REJECTED")}
+        >
+          {pendingKind === "REJECT" ? (
+            <ActivityIndicator color="#DC2626" size="small" />
+          ) : (
+            <Text style={styles.rejectBtnText}>탈락</Text>
+          )}
+        </Pressable>
+        <Pressable
+          style={[
+            styles.acceptBtn,
+            (busy || acceptLocked) && styles.actionBtnDisabled,
+          ]}
+          disabled={busy || acceptLocked}
+          onPress={() => onSetStatus("ACCEPTED")}
+        >
+          {pendingKind === "ACCEPT" ? (
+            <ActivityIndicator color="#FFFFFF" size="small" />
+          ) : (
+            <Text style={styles.acceptBtnText}>합격</Text>
+          )}
+        </Pressable>
+      </View>
+    </View>
   );
 }
