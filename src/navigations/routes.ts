@@ -38,6 +38,8 @@ export const RootRoutes = {
   CHAT_ROOM: "ChatRoom",
   CHAT_ROOM_OPTIONS: "ChatRoomOptions",
   MY_POSTED_CHAT_ROOMS: "MyPostedChatRooms",
+  ANNOUNCEMENT_APPLICANTS: "AnnouncementApplicants",
+  RECEIVED_APPLICATION_DETAIL: "ReceivedApplicationDetail",
   PROFILE_EDIT: "ProfileEdit",
   ARTIST_PORTFOLIO: "ArtistPortfolio",
   SEARCH: "Search",

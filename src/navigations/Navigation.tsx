@@ -29,6 +29,8 @@ import WithdrawConfirmScreen from "../screens/WithdrawConfirmScreen/WithdrawConf
 import ChatRoomScreen from "../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
 import ChatRoomOptionsScreen from "../screens/ChatScreens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
 import MyPostedChatRoomsScreen from "../screens/ChatScreens/MyPostedChatRoomsScreen/MyPostedChatRoomsScreen";
+import AnnouncementApplicantsScreen from "../screens/AnnouncementApplicantsScreen/AnnouncementApplicantsScreen";
+import ReceivedApplicationDetailScreen from "../screens/ReceivedApplicationDetailScreen/ReceivedApplicationDetailScreen";
 import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
 import ArtistPortfolioScreen from "../screens/ArtistPortfolioScreen/ArtistPortfolioScreen";
 import SearchScreen from "../screens/SearchScreen/SearchScreen";
@@ -207,10 +209,7 @@ const Navigation = () => {
           name={RootRoutes.ARTIST_PORTFOLIO}
           component={ArtistPortfolioScreen}
         />
-        <Stack.Screen
-          name={RootRoutes.SEARCH}
-          component={SearchScreen}
-        />
+        <Stack.Screen name={RootRoutes.SEARCH} component={SearchScreen} />
         <Stack.Screen
           name={RootRoutes.ANNOUNCEMENT_REGISTRATION}
           component={AnnouncementRegistrationScreen}
@@ -867,6 +866,64 @@ const Navigation = () => {
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>내가 올린 공고</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) navigation.goBack();
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.ANNOUNCEMENT_APPLICANTS}
+          component={AnnouncementApplicantsScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>지원 현황</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) navigation.goBack();
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.RECEIVED_APPLICATION_DETAIL}
+          component={ReceivedApplicationDetailScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>지원서 확인</Text>
               </View>
             ),
             headerShadowVisible: false,

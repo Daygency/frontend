@@ -53,7 +53,9 @@ function parseReviewStatus(raw: unknown): ApplicationReviewStatus | undefined {
   return undefined;
 }
 
-function parseSnapshotFiles(arr: unknown): ApplicationSnapshotFile[] | undefined {
+function parseSnapshotFiles(
+  arr: unknown,
+): ApplicationSnapshotFile[] | undefined {
   if (!Array.isArray(arr)) return undefined;
   const out: ApplicationSnapshotFile[] = [];
   for (const item of arr) {
@@ -92,7 +94,9 @@ function parseSnapshotEducations(
   return out.length ? out : undefined;
 }
 
-function parseSnapshotCareers(arr: unknown): ApplicationSnapshotCareer[] | undefined {
+function parseSnapshotCareers(
+  arr: unknown,
+): ApplicationSnapshotCareer[] | undefined {
   if (!Array.isArray(arr)) return undefined;
   const out: ApplicationSnapshotCareer[] = [];
   for (const item of arr) {
@@ -110,7 +114,9 @@ function parseSnapshotCareers(arr: unknown): ApplicationSnapshotCareer[] | undef
   return out.length ? out : undefined;
 }
 
-function parseSnapshotAwards(arr: unknown): ApplicationSnapshotAward[] | undefined {
+function parseSnapshotAwards(
+  arr: unknown,
+): ApplicationSnapshotAward[] | undefined {
   if (!Array.isArray(arr)) return undefined;
   const out: ApplicationSnapshotAward[] = [];
   for (const item of arr) {
@@ -119,7 +125,9 @@ function parseSnapshotAwards(arr: unknown): ApplicationSnapshotAward[] | undefin
     if (typeof r.description !== "string") continue;
     const awardedRaw = r.awardedAt ?? r.awarded_at;
     const awardedAt =
-      awardedRaw === null || awardedRaw === undefined ? null : String(awardedRaw);
+      awardedRaw === null || awardedRaw === undefined
+        ? null
+        : String(awardedRaw);
     out.push({
       description: r.description,
       awardedAt,
@@ -141,7 +149,9 @@ function parseSnapshotCertificates(
     if (typeof r.description !== "string") continue;
     const obtainedRaw = r.obtainedAt ?? r.obtained_at;
     const obtainedAt =
-      obtainedRaw === null || obtainedRaw === undefined ? null : String(obtainedRaw);
+      obtainedRaw === null || obtainedRaw === undefined
+        ? null
+        : String(obtainedRaw);
     out.push({
       description: r.description,
       obtainedAt,
@@ -177,31 +187,76 @@ function parseGenderField(raw: unknown): ApplicationEntity["gender"] {
   return undefined;
 }
 
-function parseApplicationEntity(raw: Record<string, unknown>): ApplicationEntity {
+function parseApplicationEntity(
+  raw: Record<string, unknown>,
+): ApplicationEntity {
   const get = (camel: string, snake: string) =>
     (raw[camel] ?? raw[snake]) as unknown;
 
   const id = String(get("id", "id") ?? "");
   const postId = (get("postId", "post_id") as string | undefined) ?? undefined;
 
-  const name = pickScalarString(raw, ["name", "name"], ["includeName", "include_name"]);
-  const birth = pickScalarString(raw, ["birth", "birth"], ["includeBirth", "include_birth"]);
+  const name = pickScalarString(
+    raw,
+    ["name", "name"],
+    ["includeName", "include_name"],
+  );
+  const birth = pickScalarString(
+    raw,
+    ["birth", "birth"],
+    ["includeBirth", "include_birth"],
+  );
   const gender =
     parseGenderField(get("gender", "gender")) ??
     parseGenderField(get("includeGender", "include_gender"));
-  const major = pickScalarString(raw, ["major", "major"], ["includeMajor", "include_major"]);
-  const majorDetail = pickScalarString(raw, ["majorDetail", "major_detail"], ["includeMajorDetail", "include_major_detail"]);
-  const category = pickScalarString(raw, ["category", "category"], ["includeCategory", "include_category"]);
-  const music = pickScalarString(raw, ["music", "music"], ["includeMusic", "include_music"]);
-  const address = pickScalarString(raw, ["address", "address"], ["includeAddress", "include_address"]);
-  const link = pickScalarString(raw, ["link", "link"], ["includeLink", "include_link"]);
-  const department = pickScalarString(raw, ["department", "department"], ["includeDepartment", "include_department"]);
-  const introduce = pickScalarString(raw, ["introduce", "introduce"], ["includeIntroduce", "include_introduce"]);
+  const major = pickScalarString(
+    raw,
+    ["major", "major"],
+    ["includeMajor", "include_major"],
+  );
+  const majorDetail = pickScalarString(
+    raw,
+    ["majorDetail", "major_detail"],
+    ["includeMajorDetail", "include_major_detail"],
+  );
+  const category = pickScalarString(
+    raw,
+    ["category", "category"],
+    ["includeCategory", "include_category"],
+  );
+  const music = pickScalarString(
+    raw,
+    ["music", "music"],
+    ["includeMusic", "include_music"],
+  );
+  const address = pickScalarString(
+    raw,
+    ["address", "address"],
+    ["includeAddress", "include_address"],
+  );
+  const link = pickScalarString(
+    raw,
+    ["link", "link"],
+    ["includeLink", "include_link"],
+  );
+  const department = pickScalarString(
+    raw,
+    ["department", "department"],
+    ["includeDepartment", "include_department"],
+  );
+  const introduce = pickScalarString(
+    raw,
+    ["introduce", "introduce"],
+    ["includeIntroduce", "include_introduce"],
+  );
 
   const file = parseSnapshotFiles(get("file", "file"));
   let education = parseSnapshotEducations(get("education", "education"));
   if (!education?.length) {
-    const legacyEd = pickScalarString(raw, ["includeEducation", "include_education"]);
+    const legacyEd = pickScalarString(raw, [
+      "includeEducation",
+      "include_education",
+    ]);
     if (legacyEd?.trim()) {
       education = [
         {
@@ -214,16 +269,22 @@ function parseApplicationEntity(raw: Record<string, unknown>): ApplicationEntity
   }
   const career = parseSnapshotCareers(get("career", "career"));
   const award = parseSnapshotAwards(get("award", "award"));
-  const certificate = parseSnapshotCertificates(get("certificate", "certificate"));
+  const certificate = parseSnapshotCertificates(
+    get("certificate", "certificate"),
+  );
 
   const createdAtRaw = get("createdAt", "created_at");
   const canceledAtRaw = get("canceledAt", "canceled_at");
   const deletedAtRaw = get("deletedAt", "deleted_at");
 
+  const userIdRaw =
+    (get("userId", "user_id") as string | undefined) ??
+    (get("applicantUserId", "applicant_user_id") as string | undefined);
+
   return {
     id,
     postId,
-    userId: (get("userId", "user_id") as string | undefined) ?? undefined,
+    userId: userIdRaw ?? undefined,
     status: parseReviewStatus(get("status", "status")),
     ...(name !== undefined ? { name } : {}),
     ...(birth !== undefined ? { birth } : {}),
@@ -254,7 +315,10 @@ function parseApplicationEntity(raw: Record<string, unknown>): ApplicationEntity
 /** POST /applications */
 export async function createApplication(
   dto: CreateApplicationDto,
-): Promise<{ ok: true; data: ApplicationEntity } | { ok: false; status: number; message: string }> {
+): Promise<
+  | { ok: true; data: ApplicationEntity }
+  | { ok: false; status: number; message: string }
+> {
   try {
     const headers = await getAuthHeadersRequired();
     const res = await fetchWithAuth(`${API_BASE}/applications`, {
@@ -308,14 +372,20 @@ export async function getMyApplicationForPost(
 export async function updateApplication(
   id: string,
   dto: UpdateApplicationDto,
-): Promise<{ ok: true; data: ApplicationEntity } | { ok: false; status: number; message: string }> {
+): Promise<
+  | { ok: true; data: ApplicationEntity }
+  | { ok: false; status: number; message: string }
+> {
   try {
     const headers = await getAuthHeadersRequired();
-    const res = await fetchWithAuth(`${API_BASE}/applications/${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      headers,
-      body: JSON.stringify(dto),
-    });
+    const res = await fetchWithAuth(
+      `${API_BASE}/applications/${encodeURIComponent(id)}`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(dto),
+      },
+    );
     const text = await res.text().catch(() => "");
     if (!res.ok) {
       return {
@@ -353,7 +423,9 @@ export async function getApplicationsForPost(
     const arr = Array.isArray(data) ? data : [];
     return {
       ok: true,
-      data: arr.map((row) => parseApplicationEntity(row as Record<string, unknown>)),
+      data: arr.map((row) =>
+        parseApplicationEntity(row as Record<string, unknown>),
+      ),
     };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
@@ -370,10 +442,13 @@ export async function getApplicationById(
 > {
   try {
     const headers = await getAuthHeadersRequired();
-    const res = await fetchWithAuth(`${API_BASE}/applications/${encodeURIComponent(id)}`, {
-      method: "GET",
-      headers,
-    });
+    const res = await fetchWithAuth(
+      `${API_BASE}/applications/${encodeURIComponent(id)}`,
+      {
+        method: "GET",
+        headers,
+      },
+    );
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       return { ok: false, status: res.status, message: text };
@@ -390,7 +465,10 @@ export async function getApplicationById(
 export async function updateApplicationStatus(
   id: string,
   dto: UpdateApplicationStatusDto,
-): Promise<{ ok: true; data: ApplicationEntity } | { ok: false; status: number; message: string }> {
+): Promise<
+  | { ok: true; data: ApplicationEntity }
+  | { ok: false; status: number; message: string }
+> {
   try {
     const headers = await getAuthHeadersRequired();
     const res = await fetchWithAuth(
@@ -407,7 +485,9 @@ export async function updateApplicationStatus(
     }
     let data: Record<string, unknown>;
     try {
-      data = text.trim() ? (JSON.parse(text) as Record<string, unknown>) : { id };
+      data = text.trim()
+        ? (JSON.parse(text) as Record<string, unknown>)
+        : { id };
     } catch {
       data = { id };
     }
@@ -425,10 +505,13 @@ export async function deleteApplication(
 ): Promise<{ ok: true } | { ok: false; status: number; message?: string }> {
   try {
     const headers = await getAuthHeadersRequired();
-    const res = await fetchWithAuth(`${API_BASE}/applications/${encodeURIComponent(id)}`, {
-      method: "DELETE",
-      headers,
-    });
+    const res = await fetchWithAuth(
+      `${API_BASE}/applications/${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+        headers,
+      },
+    );
     if (res.status === 204) {
       return { ok: true };
     }

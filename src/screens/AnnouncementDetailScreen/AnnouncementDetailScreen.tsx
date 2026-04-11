@@ -63,7 +63,7 @@ const AnnouncementDetailScreen = () => {
   const { width: screenWidth } = useWindowDimensions();
   const [isMine, setIsMine] = useState(false);
   const [imageHeights, setImageHeights] = useState<{ [key: number]: number }>(
-    {}
+    {},
   );
   const [detailData, setDetailData] = useState<{
     title: string;
@@ -81,7 +81,10 @@ const AnnouncementDetailScreen = () => {
       nickname: user?.nickname ?? "(없음)",
     });
     getAnnouncementDetail(params.postId).then((res) => {
-      console.log("[AnnouncementDetail] API 응답:", JSON.stringify(res, null, 2));
+      console.log(
+        "[AnnouncementDetail] API 응답:",
+        JSON.stringify(res, null, 2),
+      );
       if (!res || typeof res !== "object") return;
       const d = res as Record<string, unknown>;
       const get = (k: string, alt?: string) =>
@@ -99,10 +102,13 @@ const AnnouncementDetailScreen = () => {
           ? isRecruiting
             ? "모집중"
             : "모집마감"
-          : params.status ?? "모집중";
+          : (params.status ?? "모집중");
       const dDay = get("dDay") ?? get("d_day") ?? `D-${params.daysLeft ?? 0}`;
-      const daysLeft = parseInt(dDay.replace(/\D/g, ""), 10) || params.daysLeft || 0;
-      const applicationConfig = parseApplicationConfig(extractApplicationConfigRaw(d));
+      const daysLeft =
+        parseInt(dDay.replace(/\D/g, ""), 10) || params.daysLeft || 0;
+      const applicationConfig = parseApplicationConfig(
+        extractApplicationConfigRaw(d),
+      );
       setDetailData({
         title: String(title),
         type: String(type),
@@ -125,7 +131,7 @@ const AnnouncementDetailScreen = () => {
     useCallback(() => {
       if (params.postId) fetchDetail();
       return () => {};
-    }, [params.postId, fetchDetail])
+    }, [params.postId, fetchDetail]),
   );
 
   const displayTitle = detailData?.title ?? params.title ?? "";
@@ -148,37 +154,35 @@ const AnnouncementDetailScreen = () => {
           }}
           onDelete={() => {
             if (!params.postId) return;
-            Alert.alert(
-              "삭제 확인",
-              "정말 삭제하시겠습니까?",
-              [
-                { text: "취소", style: "cancel" },
-                {
-                  text: "삭제",
-                  style: "destructive",
-                  onPress: async () => {
-                    try {
-                      const { ok, status } = await deleteAnnouncement(params.postId!);
-                      if (ok) {
-                        navigation.goBack();
-                      } else {
-                        const msg =
-                          status === 401
-                            ? "인증이 필요합니다. 다시 로그인해주세요."
-                            : status === 403
-                              ? "삭제 권한이 없습니다."
-                              : status === 404
-                                ? "공고를 찾을 수 없습니다."
-                                : "삭제에 실패했습니다.";
-                        Alert.alert("알림", msg);
-                      }
-                    } catch (e) {
-                      Alert.alert("알림", "삭제에 실패했습니다.");
+            Alert.alert("삭제 확인", "정말 삭제하시겠습니까?", [
+              { text: "취소", style: "cancel" },
+              {
+                text: "삭제",
+                style: "destructive",
+                onPress: async () => {
+                  try {
+                    const { ok, status } = await deleteAnnouncement(
+                      params.postId!,
+                    );
+                    if (ok) {
+                      navigation.goBack();
+                    } else {
+                      const msg =
+                        status === 401
+                          ? "인증이 필요합니다. 다시 로그인해주세요."
+                          : status === 403
+                            ? "삭제 권한이 없습니다."
+                            : status === 404
+                              ? "공고를 찾을 수 없습니다."
+                              : "삭제에 실패했습니다.";
+                      Alert.alert("알림", msg);
                     }
-                  },
+                  } catch (e) {
+                    Alert.alert("알림", "삭제에 실패했습니다.");
+                  }
                 },
-              ]
-            );
+              },
+            ]);
           }}
           onReport={() => {
             Alert.alert("알림", "신고 기능은 준비 중입니다.");
@@ -313,7 +317,28 @@ const AnnouncementDetailScreen = () => {
           ))}
         </View>
       </ScrollView>
-      {!isMine && (
+      {isMine ? (
+        <View style={styles.applyContainer}>
+          <Pressable
+            style={styles.btnApply}
+            onPress={() => {
+              if (!params.postId) {
+                Alert.alert("알림", "공고 정보가 없습니다.");
+                return;
+              }
+              navigation.navigate(RootRoutes.ANNOUNCEMENT_APPLICANTS, {
+                postId: params.postId,
+                title: displayTitle,
+                typeTag: displayType,
+                statusTag: displayStatus,
+                dDay: `D-${displayDaysLeft}`,
+              });
+            }}
+          >
+            <Text style={styles.btnApplyText}>지원 현황 보기</Text>
+          </Pressable>
+        </View>
+      ) : (
         <View style={styles.applyContainer}>
           <Pressable
             style={styles.btnApply}
@@ -333,7 +358,9 @@ const AnnouncementDetailScreen = () => {
                 daysLeft: displayDaysLeft,
                 postId: params.postId,
                 applicationConfig:
-                  detailData?.applicationConfig ?? params.applicationConfig ?? null,
+                  detailData?.applicationConfig ??
+                  params.applicationConfig ??
+                  null,
               });
             }}
           >
