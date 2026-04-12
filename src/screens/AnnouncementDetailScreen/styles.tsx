@@ -1,4 +1,4 @@
-import { StyleSheet, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
@@ -113,26 +113,14 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
     fontWeight: "400",
   },
-  applyContainer: {
+  /** 하단 플로팅 버튼만 — 배경·그림자 없음 */
+  floatingBottomBar: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: WHITE,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 20,
-      },
-      android: {
-        elevation: 2,
-        backgroundColor: "#fff",
-      },
-    }),
+    paddingTop: 4,
   },
   btnApply: {
     backgroundColor: MAIN.DEFAULT,
@@ -148,15 +136,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     fontWeight: "600",
     color: WHITE,
-  },
-  /** 하단 고정 박스(그림자·흰 배경) 없이 버튼만 둘 때 */
-  earlyCloseBar: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingTop: 4,
   },
 });
 

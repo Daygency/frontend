@@ -112,6 +112,8 @@ const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
   const navigation = useNavigation<any>();
   const insets = useSafeAreaInsets();
+  /** 홈 인디케이터 등 안전 영역 + 아주 소량만 (박스 없이 버튼만 붙일 때) */
+  const floatingBottomPad = insets.bottom + 4;
   const { isLoggedIn, user } = useAuth();
   const params = route.params ?? {};
   const { width: screenWidth } = useWindowDimensions();
@@ -293,7 +295,7 @@ const AnnouncementDetailScreen = () => {
           onPress: async () => {
             setClosingEarly(true);
             try {
-              const res = await updateAnnouncement(params.postId, {
+              const res = await updateAnnouncement(params.postId!, {
                 status: "CLOSED",
               });
               if (res.ok) {
@@ -564,9 +566,14 @@ const AnnouncementDetailScreen = () => {
         ) : null}
       </ScrollView>
       {!isMine ? (
-        <View style={styles.applyContainer}>
+        <View
+          style={[
+            styles.floatingBottomBar,
+            { paddingBottom: floatingBottomPad },
+          ]}
+        >
           <Pressable
-            style={styles.btnApply}
+            style={[styles.btnApply, { bottom: 0 }]}
             onPress={() => {
               if (!isLoggedIn) {
                 Alert.alert("알림", "로그인 후 지원서를 작성할 수 있습니다.");
@@ -595,8 +602,8 @@ const AnnouncementDetailScreen = () => {
       ) : canEarlyClose ? (
         <View
           style={[
-            styles.earlyCloseBar,
-            { paddingBottom: Math.max(8, insets.bottom + 6) },
+            styles.floatingBottomBar,
+            { paddingBottom: floatingBottomPad },
           ]}
         >
           <Pressable

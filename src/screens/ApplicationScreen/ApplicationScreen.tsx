@@ -14,6 +14,7 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import { RootRoutes } from "../../navigations/routes";
@@ -160,6 +161,8 @@ function deriveRecruitmentOpen(
 const ApplicationScreen = () => {
   const route = useRoute<ApplicationRouteProp>();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
+  const floatingBottomPad = insets.bottom + 4;
   const { title, type, status, daysLeft } = route.params;
   const postId = route.params.postId;
 
@@ -487,7 +490,11 @@ const ApplicationScreen = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: WHITE }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: applicationId ? 160 : 100 }}>
+      <ScrollView
+        contentContainerStyle={{
+          paddingBottom: applicationId ? 150 : 90,
+        }}
+      >
         <AnnouncementBox
           title={title}
           type={type}
@@ -685,7 +692,12 @@ const ApplicationScreen = () => {
           )}
         </View>
       </ScrollView>
-      <View style={styles.applyContainer}>
+      <View
+        style={[
+          styles.floatingBottomBar,
+          { paddingBottom: floatingBottomPad },
+        ]}
+      >
         {!recruitmentOpen && applicationId ? (
           <>
             <Text style={styles.closedHint}>
@@ -703,6 +715,7 @@ const ApplicationScreen = () => {
         <Pressable
           style={[
             styles.btnApply,
+            { bottom: 0 },
             (submitting || !recruitmentOpen) && styles.btnApplyDisabled,
           ]}
           disabled={submitting || !recruitmentOpen}
