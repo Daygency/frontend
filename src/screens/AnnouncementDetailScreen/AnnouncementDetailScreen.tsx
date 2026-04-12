@@ -1,4 +1,5 @@
 import {
+  ActivityIndicator,
   Alert,
   Image,
   Pressable,
@@ -28,8 +29,11 @@ import { extractAnnouncementAuthorFromDetail } from "../../lib/announcement/extr
 import type { AnnouncementAuthor } from "../../lib/announcement/extractAnnouncementAuthor";
 import { useAnnouncementAuthorLabel } from "../../lib/announcement/useAnnouncementAuthorLabel";
 import { RootRoutes } from "../../navigations/routes";
-import { getAnnouncementDetail } from "../../lib/apis/announcement/announcementApi";
-import { deleteAnnouncement } from "../../lib/apis/announcement/announcementApi";
+import {
+  deleteAnnouncement,
+  getAnnouncementDetail,
+  updateAnnouncement,
+} from "../../lib/apis/announcement/announcementApi";
 import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
 import type { ApplicationConfig } from "../../lib/apis/announcement/types";
 import {
@@ -128,6 +132,7 @@ const AnnouncementDetailScreen = () => {
     attachments?: { name: string; size: string }[];
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
+  const [closingEarly, setClosingEarly] = useState(false);
   const authorDisplayLabel = useAnnouncementAuthorLabel(author);
 
   const fetchDetail = useCallback(() => {
@@ -268,6 +273,47 @@ const AnnouncementDetailScreen = () => {
   const displayStatus = detailData?.status ?? params.status ?? "모집중";
   const displayDaysLeft = detailData?.daysLeft ?? params.daysLeft ?? 0;
 
+  const canEarlyClose =
+    isMine &&
+    Boolean(params.postId) &&
+    displayStatus === "모집중";
+
+  const onEarlyClose = useCallback(() => {
+    if (!params.postId) return;
+    Alert.alert(
+      "조기 마감",
+      "지금 모집을 마감하면 더 이상 새 지원을 받을 수 없습니다. 진행할까요?",
+      [
+        { text: "취소", style: "cancel" },
+        {
+          text: "마감하기",
+          style: "destructive",
+          onPress: async () => {
+            setClosingEarly(true);
+            try {
+              const res = await updateAnnouncement(params.postId, {
+                status: "CLOSED",
+              });
+              if (res.ok) {
+                fetchDetail();
+                Alert.alert("알림", "모집이 마감되었습니다.");
+              } else {
+                Alert.alert(
+                  "알림",
+                  res.message?.trim() || "조기 마감에 실패했습니다.",
+                );
+              }
+            } catch {
+              Alert.alert("알림", "조기 마감에 실패했습니다.");
+            } finally {
+              setClosingEarly(false);
+            }
+          },
+        },
+      ],
+    );
+  }, [params.postId, fetchDetail]);
+
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
@@ -348,7 +394,9 @@ const AnnouncementDetailScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView
-        contentContainerStyle={{ paddingBottom: isMine ? 32 : 100 }}
+        contentContainerStyle={{
+          paddingBottom: canEarlyClose || !isMine ? 100 : 32,
+        }}
       >
         <View style={styles.dividerThick} />
         <AnnouncementBox
@@ -540,6 +588,20 @@ const AnnouncementDetailScreen = () => {
             }}
           >
             <Text style={styles.btnApplyText}>지원서 작성하기</Text>
+          </Pressable>
+        </View>
+      ) : canEarlyClose ? (
+        <View style={styles.earlyCloseBar}>
+          <Pressable
+            style={[styles.btnApply, closingEarly && { opacity: 0.65 }]}
+            disabled={closingEarly}
+            onPress={onEarlyClose}
+          >
+            {closingEarly ? (
+              <ActivityIndicator color={WHITE} />
+            ) : (
+              <Text style={styles.btnApplyText}>조기 마감</Text>
+            )}
           </Pressable>
         </View>
       ) : null}

@@ -149,6 +149,16 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: WHITE,
   },
+  /** 하단 고정 박스(그림자·흰 배경) 없이 버튼만 둘 때 */
+  earlyCloseBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 16,
+    paddingBottom: 12,
+    paddingTop: 4,
+  },
 });
 
 export default styles;
