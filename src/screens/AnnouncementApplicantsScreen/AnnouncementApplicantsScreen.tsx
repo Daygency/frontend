@@ -3,7 +3,6 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
-  Image,
   Pressable,
   RefreshControl,
   Text,
@@ -27,8 +26,8 @@ import {
 } from "../../lib/apis/chat/chatApi";
 import type { ChatRoomListItem } from "../../lib/apis/chat/types";
 import { formatChatListTime } from "../../lib/chat/formatChatTime";
+import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
 import { chatRoomItemToParamsWithApplicantFallback } from "../../lib/chat/chatRoomNavigation";
-import { resolveProfileImageUrlForDisplay } from "../../lib/chat/resolveProfileImageUrl";
 import { applicationStatusLabel } from "../../lib/application/applicationStatusLabels";
 import type { ApplicationReviewStatus } from "../../lib/apis/application/types";
 import styles from "./styles";
@@ -290,23 +289,17 @@ export default function AnnouncementApplicantsScreen() {
         }
         renderItem={({ item: row }) => {
           const peer = row.room?.peer;
-          const avatarUri = resolveProfileImageUrlForDisplay(
-            peer?.profileImageUrl,
-          );
           const busy = openingChatId === row.application.id;
           const st = row.application.status;
           return (
             <View style={styles.applicantCard}>
               <View style={styles.cardTopRow}>
                 <View style={styles.cardHeader}>
-                  {avatarUri ? (
-                    <Image
-                      source={{ uri: avatarUri }}
-                      style={styles.avatar}
-                    />
-                  ) : (
-                    <View style={styles.avatar} />
-                  )}
+                  <ApplicantAvatar
+                    peerUserId={row.application.userId ?? peer?.userId}
+                    peer={peer ?? null}
+                    size={44}
+                  />
                   <View style={styles.cardHeaderText}>
                     <Text style={styles.applicantName} numberOfLines={1}>
                       {displayName(row)}

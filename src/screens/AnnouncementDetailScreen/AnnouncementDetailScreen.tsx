@@ -13,13 +13,20 @@ import {
   useNavigation,
   useFocusEffect,
 } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useCallback, useEffect, useState } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
-import RoundButton from "../../components/RoundButton/RoundButton";
+import AcceptedPerformersSection from "./AcceptedPerformersSection";
+import { GRAY, MAIN, WHITE } from "../../color";
+import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
+import {
+  mapAttachmentsToImageUrls,
+  pickUrlFromFileLike,
+} from "../../lib/media/attachmentImageUrl";
+import { extractAnnouncementAuthorFromDetail } from "../../lib/announcement/extractAnnouncementAuthor";
+import type { AnnouncementAuthor } from "../../lib/announcement/extractAnnouncementAuthor";
+import { useAnnouncementAuthorLabel } from "../../lib/announcement/useAnnouncementAuthorLabel";
 import { RootRoutes } from "../../navigations/routes";
 import { getAnnouncementDetail } from "../../lib/apis/announcement/announcementApi";
 import { deleteAnnouncement } from "../../lib/apis/announcement/announcementApi";
@@ -55,10 +62,50 @@ type AnnouncementDetailRouteProp = RouteProp<
   typeof RootRoutes.ANNOUNCEMENT_DETAIL
 >;
 
+function formatDateKorean(iso?: string): string {
+  if (!iso?.trim()) return "";
+  const dt = new Date(iso);
+  if (isNaN(dt.getTime())) return "";
+  return `${dt.getFullYear()}.${String(dt.getMonth() + 1).padStart(2, "0")}.${String(dt.getDate()).padStart(2, "0")}`;
+}
+
+function formatTimeHHMM(iso?: string): string {
+  if (!iso?.trim()) return "";
+  const dt = new Date(iso);
+  if (isNaN(dt.getTime())) return "";
+  return `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
+}
+
+function parseAnnouncementAttachments(
+  raw: unknown,
+): { name: string; size: string }[] {
+  if (!Array.isArray(raw)) return [];
+  const out: { name: string; size: string }[] = [];
+  for (const item of raw) {
+    if (!item || typeof item !== "object") continue;
+    const r = item as Record<string, unknown>;
+    const name = String(
+      r.originalName ?? r.original_name ?? r.name ?? r.fileName ?? "",
+    ).trim();
+    if (!name) continue;
+    const sz = r.size ?? r.file_size;
+    let sizeStr = "";
+    if (typeof sz === "number" && Number.isFinite(sz)) {
+      sizeStr =
+        sz >= 1024 * 1024
+          ? `${(sz / 1024 / 1024).toFixed(1)} MB`
+          : sz >= 1024
+            ? `${(sz / 1024).toFixed(1)} KB`
+            : `${sz} B`;
+    }
+    out.push({ name, size: sizeStr });
+  }
+  return out;
+}
+
 const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
-  const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation = useNavigation<any>();
   const { isLoggedIn, user } = useAuth();
   const params = route.params ?? {};
   const { width: screenWidth } = useWindowDimensions();
@@ -73,7 +120,15 @@ const AnnouncementDetailScreen = () => {
     status: string;
     daysLeft: number;
     applicationConfig: ApplicationConfig | null;
+    content?: string;
+    address?: string;
+    deadlineAt?: string;
+    scheduledAt?: string;
+    imageUrls?: string[];
+    attachments?: { name: string; size: string }[];
   } | null>(null);
+  const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
+  const authorDisplayLabel = useAnnouncementAuthorLabel(author);
 
   const fetchDetail = useCallback(() => {
     if (!params.postId) return;
@@ -96,6 +151,23 @@ const AnnouncementDetailScreen = () => {
       const mine =
         (d.isMine as boolean | undefined) ?? (d.is_mine as boolean | undefined);
       if (typeof mine === "boolean") setIsMine(mine);
+
+      const extractedAuthor = extractAnnouncementAuthorFromDetail(d);
+      if (extractedAuthor) {
+        setAuthor(extractedAuthor);
+      } else if (
+        mine &&
+        user?.socialId?.trim()
+      ) {
+        setAuthor({
+          userId: user.socialId.trim(),
+          nickname: user.nickname?.trim() || undefined,
+          profileImgUrl: user.profileImgUrl?.trim() || undefined,
+        });
+      } else {
+        setAuthor(null);
+      }
+
       const title = get("title") ?? params.title ?? "";
       const type = get("type") ?? params.type ?? "";
       const isRecruiting = d.isRecruiting ?? d.is_recruiting;
@@ -111,12 +183,48 @@ const AnnouncementDetailScreen = () => {
       const applicationConfig = parseApplicationConfig(
         extractApplicationConfigRaw(d),
       );
+
+      const rawContent = get("content");
+      const rawAddress = get("address");
+      const deadlineAt =
+        get("deadlineAt") ?? get("deadline_at") ?? undefined;
+      const scheduledAt =
+        get("scheduledAt") ?? get("scheduled_at") ?? undefined;
+
+      const fileObj = d.file;
+      const fileLike =
+        fileObj && typeof fileObj === "object"
+          ? (fileObj as Record<string, unknown>)
+          : null;
+      const fromAttachments = mapAttachmentsToImageUrls(
+        d.files ?? d.attachments ?? [],
+      );
+      const fromSingleFile = pickUrlFromFileLike(fileLike);
+      const imageUrls: string[] =
+        fromAttachments.length > 0
+          ? fromAttachments
+          : fromSingleFile
+            ? [fromSingleFile]
+            : [];
+
+      const attachmentRows = parseAnnouncementAttachments(d.attachments ?? []);
+
       setDetailData({
         title: String(title),
         type: String(type),
         status,
         daysLeft,
         applicationConfig,
+        ...(typeof rawContent === "string" && rawContent.trim()
+          ? { content: rawContent }
+          : {}),
+        ...(typeof rawAddress === "string" && rawAddress.trim()
+          ? { address: rawAddress }
+          : {}),
+        ...(deadlineAt ? { deadlineAt } : {}),
+        ...(scheduledAt ? { scheduledAt } : {}),
+        ...(imageUrls.length > 0 ? { imageUrls } : {}),
+        ...(attachmentRows.length > 0 ? { attachments: attachmentRows } : {}),
       });
     });
   }, [
@@ -220,15 +328,14 @@ const AnnouncementDetailScreen = () => {
     });
   }, [navigation, isMine, params.postId, hasApplicants]);
 
-  const imageList = [
-    "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
-    "https://m.img24.com/web/product/big/202204/d9756600f4d10e085e427bfc3760492d.jpg",
-  ];
+  const imageList = detailData?.imageUrls ?? [];
+  const attachmentList = detailData?.attachments ?? [];
 
-  const attachmentList = [
-    { name: "모집공고_상세안내.pdf", size: "2.4 MB" },
-    { name: "오디션_곡목.pdf", size: "1.1 MB" },
-  ];
+  const deadlineLabel = formatDateKorean(detailData?.deadlineAt);
+  const scheduledLabel = formatDateKorean(detailData?.scheduledAt);
+  const scheduledTimeLabel = formatTimeHHMM(detailData?.scheduledAt);
+  const addressLabel = detailData?.address?.trim() || "";
+  const descriptionText = detailData?.content?.trim() ?? "";
 
   const handleImageLoad = (index: number, event: any) => {
     const { width, height } = event.nativeEvent.source;
@@ -240,7 +347,9 @@ const AnnouncementDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: isMine ? 32 : 100 }}
+      >
         <View style={styles.dividerThick} />
         <AnnouncementBox
           title={displayTitle}
@@ -248,12 +357,53 @@ const AnnouncementDetailScreen = () => {
           status={displayStatus}
           daysLeft={displayDaysLeft}
         />
+        {isMine && params.postId ? (
+          <>
+            <View style={styles.dividerThick} />
+            <AcceptedPerformersSection
+              postId={params.postId}
+              announcementTitle={displayTitle}
+              typeTag={displayType}
+              statusTag={displayStatus}
+              dDay={`D-${displayDaysLeft}`}
+            />
+          </>
+        ) : null}
         <View style={styles.dividerThick} />
         <View style={styles.section}>
-          <View style={styles.producerInfo}>
-            <RoundButton size={36} />
-            <Text style={styles.producerName}>@kimproducer</Text>
-          </View>
+          {author ? (
+            <Pressable
+              style={({ pressed }) => [
+                styles.producerInfo,
+                pressed && { opacity: 0.85 },
+              ]}
+              onPress={() =>
+                navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+                  userId: author.userId,
+                  activityName: author.activityName?.trim() ?? "",
+                })
+              }
+            >
+              <ApplicantAvatar
+                peerUserId={author.userId}
+                peer={{
+                  userId: author.userId,
+                  nickname: author.nickname,
+                  activityName: author.activityName,
+                  profileImageUrl: author.profileImgUrl,
+                }}
+                size={36}
+              />
+              <Text style={styles.producerName} numberOfLines={1}>
+                {authorDisplayLabel}
+              </Text>
+            </Pressable>
+          ) : (
+            <View style={styles.producerInfo}>
+              <ApplicantAvatar peerUserId={undefined} peer={null} size={36} />
+              <Text style={styles.producerName}>작성자</Text>
+            </View>
+          )}
           <View style={styles.divider} />
           <View style={styles.infoContainer}>
             <View style={styles.infoRow}>
@@ -263,7 +413,9 @@ const AnnouncementDetailScreen = () => {
                 color={MAIN.DEFAULT}
               />
               <Text style={styles.infoLabel}>마감일 : </Text>
-              <Text style={styles.infoValue}>2025.09.06</Text>
+              <Text style={styles.infoValue}>
+                {deadlineLabel || "-"}
+              </Text>
             </View>
             <View style={styles.infoRow}>
               <MaterialCommunityIcons
@@ -272,7 +424,9 @@ const AnnouncementDetailScreen = () => {
                 color={MAIN.DEFAULT}
               />
               <Text style={styles.infoLabel}>예정일 : </Text>
-              <Text style={styles.infoValue}>2025.10.08</Text>
+              <Text style={styles.infoValue}>
+                {scheduledLabel || "-"}
+              </Text>
             </View>
             <View style={styles.infoRow}>
               <MaterialCommunityIcons
@@ -281,7 +435,9 @@ const AnnouncementDetailScreen = () => {
                 color={MAIN.DEFAULT}
               />
               <Text style={styles.infoLabel}>예정 시간 : </Text>
-              <Text style={styles.infoValue}>14:30</Text>
+              <Text style={styles.infoValue}>
+                {scheduledTimeLabel || "-"}
+              </Text>
             </View>
             <View style={styles.infoRow}>
               <MaterialCommunityIcons
@@ -290,24 +446,30 @@ const AnnouncementDetailScreen = () => {
                 color={MAIN.DEFAULT}
               />
               <Text style={styles.infoLabel}>장소 : </Text>
-              <Text style={styles.infoValue}>세종문화회관 대극장</Text>
+              <Text style={styles.infoValue}>
+                {addressLabel || "-"}
+              </Text>
             </View>
             <View style={styles.infoRow}>
               <View style={styles.statusBadge}>
                 <MaterialCommunityIcons name="check" size={10} color={WHITE} />
               </View>
-              <Text style={styles.statusText}>모집 중</Text>
+              <Text style={styles.statusText}>{displayStatus}</Text>
             </View>
           </View>
         </View>
         <View style={styles.dividerThick} />
         <View style={styles.section}>
-          <Text style={styles.descriptionText}>
-            {"뮤지컬 <오페라의 유령> 공연을 위한 오케스트라 단원을 모집합니다."}
-          </Text>
+          {descriptionText ? (
+            <Text style={styles.descriptionText}>{descriptionText}</Text>
+          ) : (
+            <Text style={[styles.descriptionText, { color: GRAY.DARK_100 }]}>
+              등록된 본문이 없습니다.
+            </Text>
+          )}
           {imageList.map((uri, index) => (
             <Image
-              key={index}
+              key={`${uri}-${index}`}
               source={{ uri }}
               resizeMode="cover"
               style={[
@@ -318,55 +480,40 @@ const AnnouncementDetailScreen = () => {
             />
           ))}
         </View>
-        <View style={styles.dividerThick} />
-        <View style={styles.section}>
-          <Text style={styles.attachmentTitle}>첨부파일</Text>
-          {attachmentList.map((file, index) => (
-            <Pressable
-              key={index}
-              style={styles.attachmentCard}
-              onPress={() => {}}
-            >
-              <MaterialCommunityIcons
-                name="paperclip"
-                size={20}
-                color={MAIN.DEFAULT}
-              />
-              <View style={styles.attachmentInfo}>
-                <Text style={styles.attachmentFileName}>{file.name}</Text>
-                <Text style={styles.attachmentFileSize}>{file.size}</Text>
-              </View>
-              <MaterialCommunityIcons
-                name="download"
-                size={22}
-                color={MAIN.DEFAULT}
-              />
-            </Pressable>
-          ))}
-        </View>
+        {attachmentList.length > 0 ? (
+          <>
+            <View style={styles.dividerThick} />
+            <View style={styles.section}>
+              <Text style={styles.attachmentTitle}>첨부파일</Text>
+              {attachmentList.map((file, index) => (
+                <Pressable
+                  key={`${file.name}-${index}`}
+                  style={styles.attachmentCard}
+                  onPress={() => {}}
+                >
+                  <MaterialCommunityIcons
+                    name="paperclip"
+                    size={20}
+                    color={MAIN.DEFAULT}
+                  />
+                  <View style={styles.attachmentInfo}>
+                    <Text style={styles.attachmentFileName}>{file.name}</Text>
+                    {file.size ? (
+                      <Text style={styles.attachmentFileSize}>{file.size}</Text>
+                    ) : null}
+                  </View>
+                  <MaterialCommunityIcons
+                    name="download"
+                    size={22}
+                    color={MAIN.DEFAULT}
+                  />
+                </Pressable>
+              ))}
+            </View>
+          </>
+        ) : null}
       </ScrollView>
-      {isMine ? (
-        <View style={styles.applyContainer}>
-          <Pressable
-            style={styles.btnApply}
-            onPress={() => {
-              if (!params.postId) {
-                Alert.alert("알림", "공고 정보가 없습니다.");
-                return;
-              }
-              navigation.navigate(RootRoutes.ANNOUNCEMENT_APPLICANTS, {
-                postId: params.postId,
-                title: displayTitle,
-                typeTag: displayType,
-                statusTag: displayStatus,
-                dDay: `D-${displayDaysLeft}`,
-              });
-            }}
-          >
-            <Text style={styles.btnApplyText}>지원 현황 보기</Text>
-          </Pressable>
-        </View>
-      ) : (
+      {!isMine ? (
         <View style={styles.applyContainer}>
           <Pressable
             style={styles.btnApply}
@@ -395,7 +542,7 @@ const AnnouncementDetailScreen = () => {
             <Text style={styles.btnApplyText}>지원서 작성하기</Text>
           </Pressable>
         </View>
-      )}
+      ) : null}
     </View>
   );
 };
