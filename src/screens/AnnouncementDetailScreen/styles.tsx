@@ -156,7 +156,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     paddingHorizontal: 16,
-    paddingBottom: 12,
     paddingTop: 4,
   },
 });

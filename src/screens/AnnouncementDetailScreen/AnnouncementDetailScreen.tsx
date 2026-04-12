@@ -15,6 +15,7 @@ import {
   useFocusEffect,
 } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
@@ -110,6 +111,7 @@ function parseAnnouncementAttachments(
 const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
   const { isLoggedIn, user } = useAuth();
   const params = route.params ?? {};
   const { width: screenWidth } = useWindowDimensions();
@@ -395,7 +397,7 @@ const AnnouncementDetailScreen = () => {
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={{
-          paddingBottom: canEarlyClose || !isMine ? 100 : 32,
+          paddingBottom: canEarlyClose ? 88 : !isMine ? 100 : 32,
         }}
       >
         <View style={styles.dividerThick} />
@@ -591,7 +593,12 @@ const AnnouncementDetailScreen = () => {
           </Pressable>
         </View>
       ) : canEarlyClose ? (
-        <View style={styles.earlyCloseBar}>
+        <View
+          style={[
+            styles.earlyCloseBar,
+            { paddingBottom: Math.max(8, insets.bottom + 6) },
+          ]}
+        >
           <Pressable
             style={[
               styles.btnApply,
