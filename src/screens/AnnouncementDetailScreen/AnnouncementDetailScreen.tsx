@@ -593,7 +593,11 @@ const AnnouncementDetailScreen = () => {
       ) : canEarlyClose ? (
         <View style={styles.earlyCloseBar}>
           <Pressable
-            style={[styles.btnApply, closingEarly && { opacity: 0.65 }]}
+            style={[
+              styles.btnApply,
+              { bottom: 0 },
+              closingEarly && { opacity: 0.65 },
+            ]}
             disabled={closingEarly}
             onPress={onEarlyClose}
           >
