@@ -25,6 +25,10 @@ import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
 import { useAuth } from "../../contexts/AuthContext";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
+import {
+  ANNOUNCEMENT_PRICE_FILTER_LABELS,
+  selectedPriceLabelsToApiParam,
+} from "../../lib/announcement/announcementPrice";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -45,6 +49,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
+  const [selectedPriceTypes, setSelectedPriceTypes] = useState<string[]>([]);
   const [isTagModalVisible, setIsTagModalVisible] = useState(false);
   const [activeTab, setActiveTab] = useState<
     "최신순" | "스크랩수순" | "내 공고"
@@ -106,8 +111,16 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             .filter(Boolean)
             .join(",")
         : undefined;
-    return { status, categoryId, majorIds };
-  }, [selectedStatus, selectedTypes, selectedMajors, categories, majors]);
+    const priceTypes = selectedPriceLabelsToApiParam(selectedPriceTypes);
+    return { status, categoryId, majorIds, priceTypes };
+  }, [
+    selectedStatus,
+    selectedTypes,
+    selectedMajors,
+    selectedPriceTypes,
+    categories,
+    majors,
+  ]);
 
   const loadData = useCallback(
     async (cursor?: string) => {
@@ -120,13 +133,14 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       }
       setLoading(true);
       try {
-        const { status, categoryId, majorIds } = buildListParams();
+        const { status, categoryId, majorIds, priceTypes } = buildListParams();
         const params = {
           cursor,
           limit: 20,
           status,
           categoryId,
           majorIds: majorIds || undefined,
+          priceTypes,
         };
         const res =
           activeTab === "내 공고"
@@ -213,6 +227,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
               ...selectedStatus,
               ...selectedTypes,
               ...selectedMajors,
+              ...selectedPriceTypes,
             ]}
             onPress={() => setIsTagModalVisible(true)}
           />
@@ -262,6 +277,15 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             selectedValues: selectedMajors,
             onToggle: (value) =>
               setSelectedMajors((prev) =>
+                prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+              ),
+          },
+          {
+            title: "금액 유형",
+            options: [...ANNOUNCEMENT_PRICE_FILTER_LABELS],
+            selectedValues: selectedPriceTypes,
+            onToggle: (value) =>
+              setSelectedPriceTypes((prev) =>
                 prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
               ),
           },

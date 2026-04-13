@@ -51,6 +51,17 @@ export function formatAnnouncementPriceLine(
   return `${label} · ${n.toLocaleString("ko-KR")}원`;
 }
 
+/** 목록 조회(카드 등) — PENDING은 띄어쓰기 없이 `협의가능` */
+export function formatAnnouncementPriceLineList(
+  priceType: AnnouncementPriceType,
+  price: number,
+): string {
+  if (priceType === "PENDING") {
+    return "협의가능";
+  }
+  return formatAnnouncementPriceLine(priceType, price);
+}
+
 export const PRICE_TYPE_OPTIONS: { label: string; value: AnnouncementPriceType }[] =
   [
     { label: "무료", value: "FREE" },
@@ -64,3 +75,20 @@ export const PRICE_TYPE_DROPDOWN_ITEMS = PRICE_TYPE_OPTIONS.map((o) => ({
   label: o.label,
   value: o.value,
 }));
+
+/** 모집공고 태그 필터 모달 — 표시 라벨 목록 */
+export const ANNOUNCEMENT_PRICE_FILTER_LABELS = PRICE_TYPE_OPTIONS.map(
+  (o) => o.label,
+);
+
+/** 선택한 라벨들을 목록 API `priceTypes` 쿼리(콤마 구분 enum)로 변환 */
+export function selectedPriceLabelsToApiParam(
+  selectedLabels: string[],
+): string | undefined {
+  if (selectedLabels.length === 0) return undefined;
+  const enums = selectedLabels
+    .map((l) => PRICE_TYPE_OPTIONS.find((o) => o.label === l)?.value)
+    .filter((v): v is AnnouncementPriceType => v !== undefined);
+  if (enums.length === 0) return undefined;
+  return [...new Set(enums)].join(",");
+}

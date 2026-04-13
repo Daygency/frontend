@@ -1,4 +1,4 @@
-import { Platform, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
@@ -149,6 +149,13 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GRAY.DARK_2,
   },
+  /** 본문 입력란 외(파일·첨부 안내 등) — absolute 금지, 겹침 방지 */
+  fileHelperNote: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: GRAY.DARK_2,
+    marginTop: 8,
+  },
   fileOptions: {
     gap: 8,
   },
@@ -272,19 +279,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
-    paddingTop: 16,
-    backgroundColor: WHITE,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
+    paddingTop: 8,
+    backgroundColor: "transparent",
   },
   registerButton: {
     flex: 1,

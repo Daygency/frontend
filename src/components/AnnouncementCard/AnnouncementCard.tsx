@@ -2,7 +2,7 @@ import { Text, View } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
 import Tag from "../Tag/Tag";
 import type { AnnouncementPriceType } from "../../lib/apis/announcement/types";
-import { formatAnnouncementPriceLine } from "../../lib/announcement/announcementPrice";
+import { formatAnnouncementPriceLineList } from "../../lib/announcement/announcementPrice";
 import styles from "./styles";
 
 interface AnnouncementCardProps {
@@ -53,7 +53,7 @@ const AnnouncementCard = ({
         </View>
         {showPrice ? (
           <Text style={styles.priceLine} numberOfLines={2}>
-            {formatAnnouncementPriceLine(
+            {formatAnnouncementPriceLineList(
               priceType ?? "FREE",
               typeof price === "number" ? price : 0,
             )}

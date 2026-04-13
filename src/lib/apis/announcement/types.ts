@@ -64,6 +64,8 @@ export type AnnouncementListParams = {
   status?: AnnouncementStatus;
   categoryId?: string;
   majorIds?: string; // 콤마 구분: uuid1,uuid2
+  /** 콤마 구분: FREE,EXPENSE,INCOME,PENDING */
+  priceTypes?: string;
 };
 
 export type CreateAnnouncementResponse = {

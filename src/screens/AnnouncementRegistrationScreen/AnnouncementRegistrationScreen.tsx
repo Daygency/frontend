@@ -1027,14 +1027,14 @@ const AnnouncementRegistrationScreen = () => {
                     </View>
                     {isEditMode ? (
                       fileName ? (
-                        <Text style={styles.contentNote}>
+                        <Text style={styles.fileHelperNote}>
                           선택됨: {fileName}
                         </Text>
                       ) : null
                     ) : (
                       <>
                         {fileName ? (
-                          <Text style={styles.contentNote}>{fileName}</Text>
+                          <Text style={styles.fileHelperNote}>{fileName}</Text>
                         ) : null}
                         {createPostImages.length > 0 ? (
                           <ScrollView
@@ -1091,7 +1091,7 @@ const AnnouncementRegistrationScreen = () => {
                             ))}
                           </ScrollView>
                         ) : null}
-                        <Text style={[styles.contentNote, { marginTop: 6 }]}>
+                        <Text style={styles.fileHelperNote}>
                           등록 시 게시글이 저장된 뒤 이미지가 순서대로 업로드됩니다. (최대{" "}
                           {MAX_POST_FILES}장)
                         </Text>
