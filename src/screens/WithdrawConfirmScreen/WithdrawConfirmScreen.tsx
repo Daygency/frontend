@@ -49,10 +49,7 @@ const WithdrawConfirmScreen = () => {
         return;
       }
       try {
-        if (
-          isPushSupportedNative() &&
-          (await isFcmMessagingAvailable())
-        ) {
+        if (isPushSupportedNative() && (await isFcmMessagingAvailable())) {
           const t = await messaging().getToken();
           if (t) await unregisterPushDevice({ fcmToken: t });
         }
@@ -80,7 +77,7 @@ const WithdrawConfirmScreen = () => {
         <View style={styles.bulletList}>
           {WITHDRAW_PRECAUTIONS.map((text, index) => (
             <Text key={index} style={styles.bulletItem}>
-              - {text}
+              {text}
             </Text>
           ))}
         </View>

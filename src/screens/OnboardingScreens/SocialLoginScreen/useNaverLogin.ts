@@ -6,8 +6,14 @@
 import { useRef, useState } from "react";
 import { Alert } from "react-native";
 import NaverLogin from "@react-native-seoul/naver-login";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuth } from "../../../contexts/AuthContext";
-import { API_BASE } from "../../../lib/apis/api";
+import {
+  pickNicknameFromSocialAuthData,
+  postSocialAuthExchange,
+} from "../../../lib/apis/auth/socialAuthExchange";
+import { RootRoutes } from "../../../navigations/routes";
 import { NAVER_URL_SCHEME } from "../../../lib/naver/naverConfig";
 
 const NAVER_LOGIN_TIMEOUT_MS = 120_000;
@@ -45,6 +51,7 @@ function parseAuthErrorBody(text: string, status: number): string {
 
 export const useNaverLogin = () => {
   const { login: authLogin } = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const [isLoading, setIsLoading] = useState(false);
   const busyRef = useRef(false);
 
@@ -52,7 +59,6 @@ export const useNaverLogin = () => {
     if (busyRef.current) return;
     busyRef.current = true;
     setIsLoading(true);
-    const url = `${API_BASE}/auth/naver`;
     try {
       if (
         NaverLogin == null ||
@@ -86,30 +92,15 @@ export const useNaverLogin = () => {
 
       const tokenFromSdk = naverResult.successResponse.accessToken;
 
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${tokenFromSdk}`,
-        },
-        body: JSON.stringify({
-          accessToken: tokenFromSdk,
-          access_token: tokenFromSdk,
-        }),
-      });
+      const { ok, status, data, rawText } = await postSocialAuthExchange(
+        "naver",
+        tokenFromSdk,
+      );
 
-      const responseText = await res.text().catch(() => "");
-      let data: Record<string, unknown> = {};
-      try {
-        data = responseText ? (JSON.parse(responseText) as Record<string, unknown>) : {};
-      } catch {
-        data = {};
-      }
-
-      if (!res.ok) {
-        const detail = parseAuthErrorBody(responseText, res.status);
+      if (!ok) {
+        const detail = parseAuthErrorBody(rawText, status);
         if (__DEV__) {
-          console.warn("[Naver] POST /auth/naver", res.status, responseText?.slice(0, 600));
+          console.warn("[Naver] POST /auth/naver", status, rawText?.slice(0, 600));
         }
         throw new Error(detail);
       }
@@ -136,6 +127,21 @@ export const useNaverLogin = () => {
 
       const pendingOauthToken =
         naverTokenFromServer ?? oauthAccessToken ?? tokenFromSdk;
+
+      if (data.needsReactivation) {
+        navigation.navigate(RootRoutes.ACCOUNT_REACTIVATION, {
+          provider: "naver",
+          oauthAccessToken: pendingOauthToken,
+          deletedAt:
+            typeof data.deletedAt === "string" ? data.deletedAt : undefined,
+          reactivationDeadline:
+            typeof data.reactivationDeadline === "string"
+              ? data.reactivationDeadline
+              : undefined,
+          nickname: pickNicknameFromSocialAuthData(data),
+        });
+        return;
+      }
 
       if (needsSignup) {
         const p = profile ?? {};

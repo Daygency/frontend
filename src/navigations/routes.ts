@@ -12,6 +12,8 @@ export const ContentRoutes = {
 
 export const RootRoutes = {
   LOGIN: "Login",
+  /** 탈퇴 유예 기간 내 재로그인 — 복구 동의 화면 */
+  ACCOUNT_REACTIVATION: "AccountReactivation",
   ROLE_SELECTION: "RoleSelection",
   SIGNUP: "Signup",
   CONTENT_TAB: "ContentTab",

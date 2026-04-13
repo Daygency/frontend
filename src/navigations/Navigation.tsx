@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 import ContentTab from "./ContentTab";
 import SocialLoginScreen from "../screens/OnboardingScreens/SocialLoginScreen/SocialLoginScreen";
+import AccountReactivationScreen from "../screens/AccountReactivationScreen/AccountReactivationScreen";
 import SignupFlowScreen from "../screens/OnboardingScreens/SignupFlowScreen/SignupFlowScreen";
 import SplashScreenView from "../screens/OnboardingScreens/SplashScreen/SplashScreen";
 import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
@@ -69,6 +70,37 @@ const Navigation = () => {
           }}
         >
           <Stack.Screen name={RootRoutes.LOGIN} component={SocialLoginScreen} />
+          <Stack.Screen
+            name={RootRoutes.ACCOUNT_REACTIVATION}
+            component={AccountReactivationScreen}
+            options={({ navigation }) => ({
+              headerTitle: () => (
+                <View style={styles.titleWrap}>
+                  <Text style={styles.title}>계정 복구</Text>
+                </View>
+              ),
+              headerShadowVisible: false,
+              headerShown: true,
+              headerTitleAlign: "left",
+              headerLeft: () => (
+                <Pressable
+                  onPress={() => {
+                    if (navigation.canGoBack()) {
+                      navigation.goBack();
+                    }
+                  }}
+                  hitSlop={10}
+                  style={styles.leftIcon}
+                >
+                  <MaterialCommunityIcons
+                    name="chevron-left"
+                    size={30}
+                    color="#000"
+                  />
+                </Pressable>
+              ),
+            })}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     );

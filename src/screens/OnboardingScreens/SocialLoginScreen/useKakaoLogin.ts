@@ -1,19 +1,25 @@
 import { useState } from "react";
 import { Alert } from "react-native";
 import { login } from "@react-native-kakao/user";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuth } from "../../../contexts/AuthContext";
-import { API_BASE } from "../../../lib/apis/api";
+import {
+  pickNicknameFromSocialAuthData,
+  postSocialAuthExchange,
+} from "../../../lib/apis/auth/socialAuthExchange";
+import { RootRoutes } from "../../../navigations/routes";
 
 export const useKakaoLogin = () => {
   const { login: authLogin } = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleKakaoLogin = async () => {
     if (isLoading) return;
     setIsLoading(true);
-    const url = `${API_BASE}/auth/kakao`;
     try {
-      console.log("[Kakao 1/6] 시작 | API_BASE:", API_BASE, "| URL:", url);
+      console.log("[Kakao 1/6] 시작");
 
       console.log("[Kakao 2/6] login() 호출 직전 (KakaoTalk 앱 로그인)...");
       const token = await login({
@@ -41,51 +47,60 @@ export const useKakaoLogin = () => {
       );
       console.log("[Kakao 3/6] accessToken (카카오):", accessTokenFromKakao);
 
-      console.log(
-        "[Kakao 4/6] fetch 전송 (끊기면=네트워크/백엔드 미도달):",
-        url,
+      console.log("[Kakao 4/6] POST /auth/kakao");
+      const { ok, status, data, rawText } = await postSocialAuthExchange(
+        "kakao",
+        accessTokenFromKakao,
       );
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessTokenFromKakao}`,
-        },
-        body: JSON.stringify({
-          accessToken: accessTokenFromKakao,
-          access_token: accessTokenFromKakao,
-        }),
-      });
 
-      const data = await res.json().catch((e) => {
-        console.error("[Kakao] res.json() 실패:", e);
-        return {};
-      });
+      const { accessToken, refreshToken, user, needsSignup, isNew } = data as {
+        accessToken?: string;
+        refreshToken?: string;
+        user?: Record<string, unknown>;
+        needsSignup?: boolean;
+        isNew?: boolean;
+        needsReactivation?: boolean;
+      };
 
-      const { accessToken, refreshToken, user, needsSignup, isNew } = data;
       console.log(
         "[Kakao 5/6] fetch 응답 | status:",
-        res.status,
+        status,
         "| ok:",
-        res.ok,
+        ok,
         "| data keys:",
         typeof data === "object" ? Object.keys(data) : "not object",
         "| accessToken:",
         accessToken,
       );
 
-      if (!res.ok) {
+      if (!ok) {
         const backendMsg =
-          data?.message ??
-          data?.error ??
-          (typeof data === "string" ? data : "");
-        console.error("[Kakao] 서버 에러:", res.status, data);
-        throw new Error(backendMsg || `서버 인증 실패 (${res.status})`);
+          (typeof data.message === "string" && data.message) ||
+          (typeof data.error === "string" && data.error) ||
+          rawText.slice(0, 500) ||
+          "";
+        console.error("[Kakao] 서버 에러:", status, data);
+        throw new Error(backendMsg || `서버 인증 실패 (${status})`);
+      }
+
+      if (data.needsReactivation) {
+        navigation.navigate(RootRoutes.ACCOUNT_REACTIVATION, {
+          provider: "kakao",
+          oauthAccessToken: accessTokenFromKakao,
+          deletedAt:
+            typeof data.deletedAt === "string" ? data.deletedAt : undefined,
+          reactivationDeadline:
+            typeof data.reactivationDeadline === "string"
+              ? data.reactivationDeadline
+              : undefined,
+          nickname: pickNicknameFromSocialAuthData(data),
+        });
+        return;
       }
 
       if (needsSignup) {
         console.log("[Kakao 6/6] needsSignup=true, authLogin(신규) 호출");
-        const profile = data.profile ?? {};
+        const profile = (data.profile ?? {}) as Record<string, unknown>;
         await authLogin(
           accessTokenFromKakao,
           {
@@ -104,7 +119,7 @@ export const useKakaoLogin = () => {
       }
 
       console.log("[Kakao 6/6] 기존 유저 로그인 완료");
-      const u = user;
+      const u = user as Record<string, unknown>;
       await authLogin(
         accessToken,
         {
