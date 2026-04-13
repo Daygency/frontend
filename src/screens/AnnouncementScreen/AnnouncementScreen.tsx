@@ -299,6 +299,8 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                   type={item.type}
                   status={item.isRecruiting ? "모집중" : "모집마감"}
                   daysLeft={parseDaysLeft(item.dDay)}
+                  priceType={item.priceType}
+                  price={item.price}
                   onPress={() => {
                     navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                       title: item.title,

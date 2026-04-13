@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
@@ -268,27 +268,38 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 16,
     backgroundColor: WHITE,
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
   },
   registerButton: {
-    alignSelf: "center",
-    minWidth: 200,
+    flex: 1,
     backgroundColor: "#0057D9",
-    borderRadius: 12,
-    paddingVertical: 14,
+    borderRadius: 16,
+    paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 52,
   },
   registerButtonDisabled: {
     backgroundColor: GRAY.DARK_1,
   },
   registerButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
     color: WHITE,
   },

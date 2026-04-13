@@ -36,7 +36,15 @@ import {
   updateAnnouncement,
 } from "../../lib/apis/announcement/announcementApi";
 import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
-import type { ApplicationConfig } from "../../lib/apis/announcement/types";
+import type {
+  AnnouncementPriceType,
+  ApplicationConfig,
+} from "../../lib/apis/announcement/types";
+import {
+  formatAnnouncementPriceLine,
+  normalizeAnnouncementPriceType,
+  parseAnnouncementPrice,
+} from "../../lib/announcement/announcementPrice";
 import {
   extractApplicationConfigRaw,
   parseApplicationConfig,
@@ -134,6 +142,8 @@ const AnnouncementDetailScreen = () => {
     scheduledAt?: string;
     imageUrls?: string[];
     attachments?: { name: string; size: string }[];
+    priceType?: AnnouncementPriceType;
+    price?: number;
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [closingEarly, setClosingEarly] = useState(false);
@@ -218,12 +228,19 @@ const AnnouncementDetailScreen = () => {
 
       const attachmentRows = parseAnnouncementAttachments(d.attachments ?? []);
 
+      const priceType = normalizeAnnouncementPriceType(
+        get("priceType") ?? get("price_type"),
+      );
+      const price = parseAnnouncementPrice(d.price);
+
       setDetailData({
         title: String(title),
         type: String(type),
         status,
         daysLeft,
         applicationConfig,
+        priceType,
+        price,
         ...(typeof rawContent === "string" && rawContent.trim()
           ? { content: rawContent }
           : {}),
@@ -412,6 +429,8 @@ const AnnouncementDetailScreen = () => {
             type={displayType}
             status={displayStatus}
             daysLeft={displayDaysLeft}
+            priceType={detailData?.priceType}
+            price={detailData?.price}
           />
         </View>
         {isMine && params.postId ? (
@@ -506,6 +525,22 @@ const AnnouncementDetailScreen = () => {
                 {addressLabel || "-"}
               </Text>
             </View>
+            {detailData != null ? (
+              <View style={styles.infoRow}>
+                <MaterialCommunityIcons
+                  name="cash-multiple"
+                  size={16}
+                  color={MAIN.DEFAULT}
+                />
+                <Text style={styles.infoLabel}>금액 : </Text>
+                <Text style={styles.infoValue}>
+                  {formatAnnouncementPriceLine(
+                    detailData.priceType ?? "FREE",
+                    detailData.price ?? 0,
+                  )}
+                </Text>
+              </View>
+            ) : null}
             <View style={styles.infoRow}>
               <View style={styles.statusBadge}>
                 <MaterialCommunityIcons name="check" size={10} color={WHITE} />

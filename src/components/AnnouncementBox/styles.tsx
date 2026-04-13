@@ -15,6 +15,13 @@ const styles = StyleSheet.create({
     color: BLACK,
     fontWeight: "700",
   },
+  priceLine: {
+    marginTop: 8,
+    fontSize: 14,
+    lineHeight: 20,
+    color: GRAY.DARK_2,
+    fontWeight: "500",
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",

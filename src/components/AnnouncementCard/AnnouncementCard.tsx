@@ -1,6 +1,8 @@
 import { Text, View } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
 import Tag from "../Tag/Tag";
+import type { AnnouncementPriceType } from "../../lib/apis/announcement/types";
+import { formatAnnouncementPriceLine } from "../../lib/announcement/announcementPrice";
 import styles from "./styles";
 
 interface AnnouncementCardProps {
@@ -8,6 +10,9 @@ interface AnnouncementCardProps {
   type?: string;
   status?: string;
   daysLeft?: number;
+  /** API가 내려줄 때만 표시 */
+  priceType?: AnnouncementPriceType;
+  price?: number;
   onPress?: () => void;
 }
 
@@ -16,8 +21,14 @@ const AnnouncementCard = ({
   type = "콩쿨(경연)",
   status = "모집중",
   daysLeft = 20,
+  priceType,
+  price,
   onPress,
 }: AnnouncementCardProps) => {
+  const showPrice =
+    priceType !== undefined ||
+    (typeof price === "number" && Number.isFinite(price));
+
   return (
     <ShadowCardButton onPress={onPress}>
       <View style={styles.container}>
@@ -40,6 +51,14 @@ const AnnouncementCard = ({
             <Text style={styles.statusTagText}>{status}</Text>
           </View>
         </View>
+        {showPrice ? (
+          <Text style={styles.priceLine} numberOfLines={2}>
+            {formatAnnouncementPriceLine(
+              priceType ?? "FREE",
+              typeof price === "number" ? price : 0,
+            )}
+          </Text>
+        ) : null}
       </View>
     </ShadowCardButton>
   );

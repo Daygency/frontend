@@ -63,6 +63,13 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: BLACK,
   },
+  priceLine: {
+    marginTop: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    color: GRAY.DARK_2,
+    fontWeight: "500",
+  },
 });
 
 export default styles;

@@ -33,7 +33,15 @@ import {
 } from "../../lib/apis/announcement/announcementApi";
 import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
 import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
-import type { ApplicationConfig } from "../../lib/apis/announcement/types";
+import type {
+  AnnouncementPriceType,
+  ApplicationConfig,
+} from "../../lib/apis/announcement/types";
+import {
+  PRICE_TYPE_DROPDOWN_ITEMS,
+  normalizeAnnouncementPriceType,
+  parseAnnouncementPrice,
+} from "../../lib/announcement/announcementPrice";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
 import { getFileId, uploadFile, type LocalImageAsset } from "../../lib/apis/fileApi";
@@ -242,6 +250,8 @@ const AnnouncementRegistrationScreen = () => {
   );
   const [recruitmentMajors, setRecruitmentMajors] = useState<string[]>([]);
   const [content, setContent] = useState("");
+  const [priceType, setPriceType] = useState<AnnouncementPriceType>("FREE");
+  const [priceInput, setPriceInput] = useState("");
 
   // 지원서 양식 구성
   const [formFields, setFormFields] = useState<
@@ -360,6 +370,17 @@ const AnnouncementRegistrationScreen = () => {
           const dt = new Date(dl);
           if (!isNaN(dt.getTime())) setDeadline(dt);
         }
+        const pt = get("priceType") ?? get("price_type");
+        if (pt != null && String(pt).trim()) {
+          setPriceType(normalizeAnnouncementPriceType(pt));
+        }
+        const pr = d.price;
+        if (typeof pr === "number" && Number.isFinite(pr)) {
+          setPriceInput(pr > 0 ? String(pr) : "");
+        } else if (pr != null && String(pr).trim() !== "") {
+          const n = parseAnnouncementPrice(pr);
+          setPriceInput(n > 0 ? String(n) : "");
+        }
         const fid = get("fileId");
         if (fid) {
           setFileId(fid);
@@ -394,12 +415,6 @@ const AnnouncementRegistrationScreen = () => {
       cancelled = true;
     };
   }, [postId, navigation]);
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerTitle: isEditMode ? "모집 공고 수정" : "모집 공고 등록",
-    });
-  }, [navigation, isEditMode]);
 
   const pickFileFromDocument = async () => {
     try {
@@ -546,6 +561,22 @@ const AnnouncementRegistrationScreen = () => {
       );
       return;
     }
+
+    let resolvedPrice = 0;
+    if (priceType === "EXPENSE" || priceType === "INCOME") {
+      const trimmed = priceInput.trim().replace(/,/g, "");
+      if (!trimmed) {
+        Alert.alert("입력 확인", "참가비·수입 유형일 때는 금액(원)을 입력해주세요.");
+        return;
+      }
+      const n = parseInt(trimmed, 10);
+      if (!Number.isFinite(n) || n < 0) {
+        Alert.alert("입력 확인", "금액을 0 이상의 숫자로 입력해주세요.");
+        return;
+      }
+      resolvedPrice = n;
+    }
+
     if (isSubmitting) return;
     setIsSubmitting(true);
 
@@ -558,6 +589,8 @@ const AnnouncementRegistrationScreen = () => {
       categoryId: announcementType,
       status: "OPEN" as const,
       applicationConfig: buildApplicationConfig(),
+      priceType,
+      price: resolvedPrice,
       ...(fileId ? { fileId } : {}),
       ...(recruitmentMajors.length > 0
         ? {
@@ -667,42 +700,8 @@ const AnnouncementRegistrationScreen = () => {
     );
   }
 
-  if (loadingEdit) {
-    return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#666" />
-      </View>
-    );
-  }
-
-  if (loadingEdit) {
-    return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color={MAIN.DEFAULT} />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      {loadingEdit && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(255,255,255,0.8)",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 10,
-          }}
-        >
-          <ActivityIndicator size="large" color={MAIN.DEFAULT} />
-        </View>
-      )}
-      {/* 탭 스위처 */}
       <View style={styles.tabContainer}>
         <Pressable
           style={[styles.tab, activeTab === "announcement" && styles.tabActive]}
@@ -947,6 +946,29 @@ const AnnouncementRegistrationScreen = () => {
                 </View>
 
                 <View style={styles.formField}>
+                  <Form title="금액 유형 · 금액" isRequired={false}>
+                    <FormDropdownInput
+                      placeholder="금액 유형을 선택하세요"
+                      data={PRICE_TYPE_DROPDOWN_ITEMS}
+                      value={priceType}
+                      onChange={(item) =>
+                        setPriceType(item.value as AnnouncementPriceType)
+                      }
+                    />
+                    {(priceType === "EXPENSE" || priceType === "INCOME") ? (
+                      <View style={{ marginTop: 12 }}>
+                        <FormTextInput
+                          placeholder="금액(원)을 입력하세요"
+                          value={priceInput}
+                          onChangeText={setPriceInput}
+                          keyboardType="number-pad"
+                        />
+                      </View>
+                    ) : null}
+                  </Form>
+                </View>
+
+                <View style={styles.formField}>
                   <Form title="내용" isRequired hasError={err.content}>
                     <View style={[styles.contentInputWrapper, err.content && styles.inputErrorBorder]}>
                       <TextInput
@@ -1151,25 +1173,7 @@ const AnnouncementRegistrationScreen = () => {
         </Animated.View>
       </ScrollView>
 
-      <View
-        style={[
-          styles.footer,
-          {
-            paddingBottom: (bottom || 0) + 16,
-            ...Platform.select({
-              ios: {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: 0.12,
-                shadowRadius: 16,
-              },
-              android: {
-                elevation: 8,
-              },
-            }),
-          },
-        ]}
-      >
+      <View style={[styles.footer, { paddingBottom: (bottom || 0) + 16 }]}>
         <Pressable
           style={[
             styles.registerButton,

@@ -1,9 +1,13 @@
+import type { AnnouncementPriceType } from "../announcement/types";
+
 export type HomeAnnouncementItem = {
   postId: string;
   title: string;
   type: string;
   isRecruiting: boolean;
   dDay: string;
+  priceType?: AnnouncementPriceType;
+  price?: number;
 };
 
 export type HomeNewsItem = {
