@@ -498,7 +498,11 @@ const Profile = () => {
               onError={() => setImageError(true)}
             />
           ) : (
-            <Text>사진</Text>
+            <Image
+              source={require("../../../../../assets/logo.png")}
+              style={styles.profileImage}
+              resizeMode="contain"
+            />
           )}
         </View>
         <View style={styles.profileInfoContainer}>

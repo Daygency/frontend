@@ -1,4 +1,4 @@
-import { Platform, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
 import { RED, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
@@ -33,22 +33,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  buttonContainer: {
+  /** 공고 상세 `floatingBottomBar`와 동일 — 배경·그림자 없이 버튼만 */
+  floatingBottomBar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    paddingBottom: Platform.OS === "ios" ? 34 : 16,
-    backgroundColor: WHITE,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 20,
-      },
-      android: {
-        elevation: 2,
-      },
-    }),
+    paddingTop: 4,
+    backgroundColor: "transparent",
   },
   checkboxLabel: {
     fontSize: 14,
@@ -57,17 +50,18 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: RED.DEFAULT,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
-    width: "100%",
   },
   deleteButtonDisabled: {
     backgroundColor: "#EDEBEB",
   },
   deleteButtonText: {
     fontSize: 16,
+    lineHeight: 24,
+    letterSpacing: 0.3,
     fontWeight: "600",
     color: WHITE,
   },
