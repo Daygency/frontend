@@ -30,6 +30,7 @@ import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
 import { chatRoomItemToParamsWithApplicantFallback } from "../../lib/chat/chatRoomNavigation";
 import { applicationStatusLabel } from "../../lib/application/applicationStatusLabels";
 import type { ApplicationReviewStatus } from "../../lib/apis/application/types";
+import { useAuth } from "../../contexts/AuthContext";
 import styles from "./styles";
 
 type Params = {
@@ -54,6 +55,8 @@ export default function AnnouncementApplicantsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteParams>();
   const { postId, title, typeTag, statusTag, dDay } = route.params;
+  const { user } = useAuth();
+  const myUserId = user?.socialId?.trim() ?? "";
 
   const [rows, setRows] = useState<RowModel[]>([]);
   const [loading, setLoading] = useState(true);
@@ -204,10 +207,13 @@ export default function AnnouncementApplicantsScreen() {
 
     setOpeningChatId(app.id);
     try {
-      const created = await createAnnouncementRoom({
-        postId,
-        applicantUserId: uid,
-      });
+      const created = await createAnnouncementRoom(
+        {
+          postId,
+          applicantUserId: uid,
+        },
+        myUserId ? { myUserId } : undefined,
+      );
       if (created) {
         const params = chatRoomItemToParamsWithApplicantFallback(
           created,

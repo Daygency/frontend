@@ -8,7 +8,7 @@ import type {
   CreateAnnouncementRoomBody,
   CreateCoffeeRoomBody,
 } from "./types";
-import { mergePeerFromRoomRow } from "../../chat/peerImageFields";
+import { mergePeerFromRoomRow, peerFromMembers } from "../../chat/peerImageFields";
 
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
@@ -46,7 +46,10 @@ function normalizeLastMessage(raw: unknown): ChatRoomListItem["lastMessage"] {
   return { content, createdAt };
 }
 
-function normalizeRoomItem(raw: unknown): ChatRoomListItem | null {
+function normalizeRoomItem(
+  raw: unknown,
+  opts?: { myUserId?: string },
+): ChatRoomListItem | null {
   const r = asRecord(raw);
   const id = String(r.id ?? "");
   if (!id) return null;
@@ -56,11 +59,16 @@ function normalizeRoomItem(raw: unknown): ChatRoomListItem | null {
       ? "ANNOUNCEMENT"
       : "COFFEE") as ChatRoomListItem["kind"];
 
+  let peer = mergePeerFromRoomRow(r);
+  if (!peer?.userId?.trim() && opts?.myUserId?.trim()) {
+    peer = peerFromMembers(r.members, opts.myUserId) ?? peer;
+  }
+
   return {
     id,
     kind,
     post: normalizePost(r.post),
-    peer: mergePeerFromRoomRow(r),
+    peer,
     lastMessage: normalizeLastMessage(r.lastMessage ?? r.last_message),
     createdAt:
       typeof r.createdAt === "string"
@@ -75,7 +83,7 @@ function parseRoomsPage(data: unknown): ChatRoomsPage {
   const d = asRecord(data);
   const rawItems = Array.isArray(d.items) ? d.items : [];
   const items = rawItems
-    .map(normalizeRoomItem)
+    .map((row) => normalizeRoomItem(row))
     .filter(Boolean) as ChatRoomListItem[];
   return {
     items,
@@ -211,6 +219,7 @@ export async function getChatMessages(
 
 export async function createCoffeeRoom(
   body: CreateCoffeeRoomBody,
+  opts?: { myUserId?: string },
 ): Promise<ChatRoomListItem | null> {
   try {
     const headers = await getAuthHeadersRequired();
@@ -224,7 +233,7 @@ export async function createCoffeeRoom(
       return null;
     }
     const data = await res.json();
-    return normalizeRoomItem(data);
+    return normalizeRoomItem(data, opts);
   } catch (e) {
     console.warn("[createCoffeeRoom]", e);
     return null;
@@ -233,6 +242,7 @@ export async function createCoffeeRoom(
 
 export async function createAnnouncementRoom(
   body: CreateAnnouncementRoomBody,
+  opts?: { myUserId?: string },
 ): Promise<ChatRoomListItem | null> {
   try {
     const headers = await getAuthHeadersRequired();
@@ -250,7 +260,7 @@ export async function createAnnouncementRoom(
       return null;
     }
     const data = await res.json();
-    return normalizeRoomItem(data);
+    return normalizeRoomItem(data, opts);
   } catch (e) {
     console.warn("[createAnnouncementRoom]", e);
     return null;

@@ -15,7 +15,9 @@ export function chatRoomItemToParams(room: ChatRoomListItem): ChatRoomParams {
     peer?.activityName ??
     peer?.nickname ??
     (peerUserId ? peerUserId.slice(0, 8) : "user");
-  const peerAvatarUrl = resolveProfileImageUrlForDisplay(peer?.profileImageUrl);
+  const peerAvatarUrl = resolveProfileImageUrlForDisplay(
+    peer?.profileImageUrl ?? peer?.profileImgUrl,
+  );
   return {
     chatRoomId: room.id,
     peerUserId,

@@ -115,3 +115,48 @@ export function mergePeerFromRoomRow(r: Record<string, unknown>): ChatPeerSummar
     profileImageUrl,
   };
 }
+
+/**
+ * README `POST /chat/rooms/*` — `ChatRoom` 본문에 `peer` 대신 `members[]`만 올 때,
+ * 본인 ID를 제외한 상대 멤버를 peer로 쓴다.
+ */
+export function peerFromMembers(
+  members: unknown,
+  myUserId: string,
+): ChatPeerSummary | null {
+  const me = myUserId.trim();
+  if (!me || !Array.isArray(members)) return null;
+
+  for (const m of members) {
+    const p = asRecord(m);
+    const u = p.user ?? p;
+    if (!u || typeof u !== "object") continue;
+    const rec = asRecord(u);
+    const uid = String(rec.userId ?? rec.user_id ?? "").trim();
+    if (!uid || uid === me) continue;
+
+    const nickname =
+      typeof rec.nickname === "string" && rec.nickname.trim()
+        ? rec.nickname.trim()
+        : undefined;
+    let activityName: string | undefined;
+    const an =
+      typeof rec.activityName === "string"
+        ? rec.activityName
+        : typeof rec.activity_name === "string"
+          ? rec.activity_name
+          : undefined;
+    if (an?.trim()) activityName = an.trim();
+
+    const profileImageUrl = pickProfileImageUrlDeep(u) ?? pickProfileImageUrlDeep(p);
+
+    return {
+      userId: uid,
+      nickname,
+      activityName,
+      profileImageUrl,
+    };
+  }
+
+  return null;
+}

@@ -245,7 +245,10 @@ const Profile = () => {
     if (chatLoading) return;
     setChatLoading(true);
     try {
-      const room = await createCoffeeRoom({ peerUserId: viewingUserId });
+      const room = await createCoffeeRoom(
+        { peerUserId: viewingUserId },
+        { myUserId },
+      );
       setChatLoading(false);
       if (!room?.id) {
         Alert.alert(

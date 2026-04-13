@@ -122,7 +122,10 @@ const ChatRoomScreen = () => {
       const createdAt = payload.createdAt;
       if (!id || !createdAt) return;
       const text = payload.content ?? "";
-      const isFromMe = uid !== String(peerUserId);
+      /** README `MessagePayload.userId` — 본인 여부는 발신 userId로 판별 */
+      const isFromMe = myUserId
+        ? uid === myUserId
+        : uid !== String(peerUserId);
       const timestamp = formatTime(new Date(createdAt));
       setMessages((prev) => {
         if (prev.some((m) => m.id === id)) return prev;
@@ -132,7 +135,7 @@ const ChatRoomScreen = () => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 50);
     },
-    [peerUserId],
+    [peerUserId, myUserId],
   );
 
   useEffect(() => {
@@ -152,7 +155,9 @@ const ChatRoomScreen = () => {
         chronological.map((m) => ({
           id: m.id,
           text: m.content ?? "",
-          isFromMe: String(m.userId) !== String(peerUserId),
+          isFromMe: myUserId
+            ? String(m.userId) === myUserId
+            : String(m.userId) !== String(peerUserId),
           timestamp: formatTime(new Date(m.createdAt)),
         })),
       );
@@ -165,7 +170,7 @@ const ChatRoomScreen = () => {
     return () => {
       cancelled = true;
     };
-  }, [chatRoomId, peerUserId]);
+  }, [chatRoomId, peerUserId, myUserId]);
 
   useEffect(() => {
     if (!chatRoomId || !peerUserId) return;
@@ -229,7 +234,19 @@ const ChatRoomScreen = () => {
       Alert.alert("연결 대기", "채팅 서버에 연결된 뒤 다시 시도해 주세요.");
       return;
     }
-    socket.emit("sendMessage", { chatRoomId, content: trimmed });
+    /** README `sendMessage` — ack `{ ok, messageId }` */
+    socket.emit(
+      "sendMessage",
+      { chatRoomId, content: trimmed },
+      (ack: { ok?: boolean } | undefined) => {
+        if (ack && ack.ok === false) {
+          Alert.alert(
+            "전송 실패",
+            "메시지를 보내지 못했습니다. 다시 시도해 주세요.",
+          );
+        }
+      },
+    );
     setMessage("");
     setTimeout(() => {
       scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -462,7 +479,7 @@ const ChatRoomScreen = () => {
           placeholder={sendReady ? "메시지를 입력하세요" : "연결 중…"}
           placeholderTextColor={GRAY.DARK_2}
           multiline
-          maxLength={500}
+          maxLength={255}
           scrollEnabled={isKeyboardVisible}
           blurOnSubmit={false}
           returnKeyType="send"
