@@ -1,5 +1,9 @@
-import { RouteProp, useRoute } from "@react-navigation/native";
-import { useEffect, useMemo, useState } from "react";
+import {
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
   ScrollView,
   Text,
@@ -8,9 +12,12 @@ import {
   Alert,
   Pressable,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import navigationHeaderStyles from "../../navigations/styles";
 import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
 import styles from "./styles";
 import { getCommunityDetail } from "../../lib/apis/community/communityApi";
@@ -32,6 +39,13 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
+import ReportCategoryModal from "../../components/ReportCategoryModal/ReportCategoryModal";
+import ReportDotsDropdownMenu from "../../components/ReportDotsDropdownMenu/ReportDotsDropdownMenu";
+import { createReport } from "../../lib/apis/report/reportApi";
+import type { ReportCategory, ReportTargetType } from "../../lib/apis/report/types";
+import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";
+import { confirmReportSubmission } from "../../lib/report/confirmReportSubmission";
+import { pickReportedUserIdFromUnknown } from "../../lib/report/pickReportedUserId";
 import {
   mapAttachmentsToImageUrls,
   pickUrlFromFileLike,
@@ -55,6 +69,7 @@ type CommentItem = {
   replyCount: number;
   isLiked?: boolean;
   isMine?: boolean;
+  authorUserId?: string;
   replies?: Array<{
     id: string;
     author: string;
@@ -62,6 +77,8 @@ type CommentItem = {
     content: string;
     likeCount?: number;
     isLiked?: boolean;
+    isMine?: boolean;
+    authorUserId?: string;
   }>;
 };
 
@@ -80,6 +97,7 @@ function formatTimeAgo(value?: string): string {
 }
 
 function mapCommentToUi(comment: ApiCommentItem): CommentItem {
+  const uid = String(comment.user?.userId ?? "").trim();
   return {
     id: String(comment.id),
     author: String(comment.user?.nickname ?? "익명"),
@@ -89,6 +107,7 @@ function mapCommentToUi(comment: ApiCommentItem): CommentItem {
     replyCount: 0,
     isLiked: Boolean((comment as any)?.isLiked),
     isMine: Boolean((comment as any)?.isMine),
+    ...(uid ? { authorUserId: uid } : {}),
     replies: [],
   };
 }
@@ -148,9 +167,10 @@ function updateCommentLikeState(
 }
 
 const CommunityDetailScreen = () => {
+  const navigation = useNavigation();
   const route = useRoute<CommunityDetailRouteProp>();
   const { communityId } = route.params;
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const { bottom } = useSafeAreaInsets();
   const [data, setData] = useState<CommunityDetailResponse | null>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
@@ -160,6 +180,13 @@ const CommunityDetailScreen = () => {
   const [scraped, setScraped] = useState(false);
   const [scrapCount, setScrapCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportPending, setReportPending] = useState<{
+    reportedUserId: string;
+    targetType: ReportTargetType;
+    targetId: string;
+  } | null>(null);
   const imageUrls = useMemo(() => {
     if (!data) return [];
     const urls = mapAttachmentsToImageUrls(data.attachments);
@@ -223,6 +250,115 @@ const CommunityDetailScreen = () => {
       );
     })();
   }, [communityId, user?.socialId]);
+
+  const openReportPost = useCallback(() => {
+    if (!isLoggedIn) {
+      Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
+      return;
+    }
+    if (data?.isMine) {
+      Alert.alert("알림", "본인이 작성한 글은 신고할 수 없습니다.");
+      return;
+    }
+    const reportedUserId = pickReportedUserIdFromUnknown(data?.user);
+    if (!reportedUserId) {
+      Alert.alert("알림", "작성자 정보를 불러오지 못했습니다.");
+      return;
+    }
+    if (reportedUserId === user?.socialId?.trim()) {
+      Alert.alert("알림", "본인을 신고할 수 없습니다.");
+      return;
+    }
+    setReportPending({
+      reportedUserId,
+      targetType: "COMMUNITY",
+      targetId: communityId,
+    });
+    setReportModalVisible(true);
+  }, [isLoggedIn, data?.isMine, data?.user, user?.socialId, communityId]);
+
+  const openReportComment = useCallback(
+    (targetId: string, reportedUserId: string | undefined) => {
+      if (!isLoggedIn) {
+        Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
+        return;
+      }
+      if (!reportedUserId) {
+        Alert.alert("알림", "신고할 수 없습니다.");
+        return;
+      }
+      if (reportedUserId === user?.socialId?.trim()) {
+        Alert.alert("알림", "본인을 신고할 수 없습니다.");
+        return;
+      }
+      setReportPending({
+        reportedUserId,
+        targetType: "COMMENT",
+        targetId,
+      });
+      setReportModalVisible(true);
+    },
+    [isLoggedIn, user?.socialId],
+  );
+
+  /** 타인 글이면 ⋮ 메뉴 표시 — 작성자 id는 API 정규화·openReportPost에서 처리 */
+  const canOpenPostReportMenu =
+    !loading && Boolean(data) && !data?.isMine;
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={navigationHeaderStyles.rightItemsWrap}>
+          <Pressable hitSlop={10}>
+            <MaterialCommunityIcons
+              name="heart-outline"
+              size={21}
+              color="#000"
+            />
+          </Pressable>
+          <Pressable hitSlop={10}>
+            <MaterialCommunityIcons
+              name="share-variant"
+              size={21}
+              color="#000"
+            />
+          </Pressable>
+          <ReportDotsDropdownMenu
+            enabled={canOpenPostReportMenu}
+            loading={loading}
+            onReport={openReportPost}
+            variant="header"
+          />
+        </View>
+      ),
+    });
+  }, [navigation, loading, canOpenPostReportMenu, openReportPost]);
+
+  const handlePickReportCategory = useCallback(
+    (category: ReportCategory) => {
+      if (!reportPending) return;
+      const payload = reportPending;
+      confirmReportSubmission(async () => {
+        setReportSubmitting(true);
+        try {
+          const res = await createReport({ ...payload, category });
+          if (res.ok) {
+            setReportModalVisible(false);
+            setReportPending(null);
+            Alert.alert("접수 완료", "신고가 접수되었습니다.");
+          } else {
+            Alert.alert(
+              "알림",
+              messageForReportHttpStatus(res.status, res.message),
+            );
+          }
+        } finally {
+          setReportSubmitting(false);
+        }
+      });
+    },
+    [reportPending],
+  );
 
   const handleToggleLike = async () => {
     if (liked) {
@@ -341,12 +477,19 @@ const CommunityDetailScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        bounces={false}
-        showsVerticalScrollIndicator={false}
-      >
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={0}
+    >
+      <View style={styles.detailInner}>
+        <ScrollView
+          style={styles.detailScroll}
+          contentContainerStyle={styles.scrollContent}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
         <View style={styles.header}>
           <View style={styles.tagBadge}>
             <Text style={styles.tagText}>{data.category?.name}</Text>
@@ -427,7 +570,18 @@ const CommunityDetailScreen = () => {
                       <Text style={styles.commentContent}>{comment.content}</Text>
                     </View>
                   </View>
-                  <Ionicons name="ellipsis-vertical" size={18} color={MAIN.DEFAULT} />
+                  {!comment.isMine && comment.authorUserId ? (
+                    <ReportDotsDropdownMenu
+                      enabled
+                      onReport={() =>
+                        openReportComment(comment.id, comment.authorUserId)
+                      }
+                      variant="comment"
+                      disabledMessage="신고할 수 없습니다."
+                    />
+                  ) : (
+                    <View style={{ width: 18 }} />
+                  )}
                 </View>
 
                 <View style={styles.commentStats}>
@@ -470,11 +624,40 @@ const CommunityDetailScreen = () => {
                           <Ionicons name="person-outline" size={14} color={GRAY.MEDIUM} />
                         </View>
                         <View style={styles.replyBody}>
-                          <View style={styles.replyMetaRow}>
-                            <Text style={styles.replyAuthor}>{reply.author}</Text>
-                            {!!reply.createdAt && (
-                              <Text style={styles.replyDate}>{formatTimeAgo(reply.createdAt)}</Text>
-                            )}
+                          <View
+                            style={[
+                              styles.replyMetaRow,
+                              { justifyContent: "space-between", flexWrap: "nowrap" },
+                            ]}
+                          >
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 8,
+                                flex: 1,
+                              }}
+                            >
+                              <Text style={styles.replyAuthor}>{reply.author}</Text>
+                              {!!reply.createdAt && (
+                                <Text style={styles.replyDate}>
+                                  {formatTimeAgo(reply.createdAt)}
+                                </Text>
+                              )}
+                            </View>
+                            {!reply.isMine && reply.authorUserId ? (
+                              <ReportDotsDropdownMenu
+                                enabled
+                                onReport={() =>
+                                  openReportComment(
+                                    reply.id,
+                                    reply.authorUserId,
+                                  )
+                                }
+                                variant="reply"
+                                disabledMessage="신고할 수 없습니다."
+                              />
+                            ) : null}
                           </View>
                           <Text style={styles.replyContent}>{reply.content}</Text>
                           <View style={styles.replyStats}>
@@ -503,34 +686,41 @@ const CommunityDetailScreen = () => {
               </View>
           ))}
         </View>
-      </ScrollView>
+        </ScrollView>
 
-      <View
-        style={[
-          styles.commentInputContainer,
-          { paddingBottom: bottom || 16 },
-        ]}
-      >
-        {!!replyTarget && (
-          <View style={styles.replyComposerInfo}>
-            <Text style={styles.replyComposerText}>
-              {replyTarget.author}님에게 답글 작성 중
-            </Text>
-            <Pressable hitSlop={8} onPress={() => setReplyTarget(null)}>
-              <Text style={styles.replyComposerCancel}>취소</Text>
-            </Pressable>
-          </View>
-        )}
-        <CommentInputBar
-          placeholder={
-            replyTarget
-              ? `${replyTarget.author}님에게 답글을 입력해주세요`
-              : "댓글을 입력해주세요"
-          }
-          onSubmit={handleCreateComment}
-        />
+        <View
+          style={[
+            styles.commentInputContainer,
+            { paddingBottom: bottom || 16 },
+          ]}
+        >
+          {!!replyTarget && (
+            <View style={styles.replyComposerInfo}>
+              <Text style={styles.replyComposerText}>
+                {replyTarget.author}님에게 답글 작성 중
+              </Text>
+              <Pressable hitSlop={8} onPress={() => setReplyTarget(null)}>
+                <Text style={styles.replyComposerCancel}>취소</Text>
+              </Pressable>
+            </View>
+          )}
+          <CommentInputBar
+            placeholder={
+              replyTarget
+                ? `${replyTarget.author}님에게 답글을 입력해주세요`
+                : "댓글을 입력해주세요"
+            }
+            onSubmit={handleCreateComment}
+          />
+        </View>
       </View>
-    </View>
+      <ReportCategoryModal
+        visible={reportModalVisible}
+        onClose={() => !reportSubmitting && setReportModalVisible(false)}
+        onSelect={handlePickReportCategory}
+        submitting={reportSubmitting}
+      />
+    </KeyboardAvoidingView>
   );
 };
 

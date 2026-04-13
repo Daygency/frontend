@@ -1,76 +1,157 @@
-# 모집공고 (Announcement)
+# 신고 (Report)
 
-Base path: `/announcement` (인증·쿼리는 각 엔드포인트 참고). Swagger: `/api` → **announcements** 태그.
+## API 명세
 
----
+### `GET /reports/categories`
 
-## 금액: `priceType` + `price`
+**설명:** 신고 시 `category`에 넣을 enum 값과 한글 표시 라벨 목록을 반환한다.
 
-DB에는 **`price_type`(enum)** 과 **`price`(정수, 원)** 두 컬럼이 있다. 프론트·API 응답 필드명은 **`priceType`**, **`price`** 이다.
+**인증:** 없음
 
-### `AnnouncementPriceType` (문자열 enum)
-
-| 값 | 의미 |
-|----|------|
-| `EXPENSE` | 참가비 |
-| `INCOME` | 수입 |
-| `FREE` | 무료 |
-| `PENDING` | 협의 가능 |
-
-### `price`
-
-- **0 이상** 정수(원). DTO에서 `@Min(0)` 로 검증한다.
-- 의미는 **`priceType`과 조합**해서 해석한다.
-  - **`FREE`**, **`PENDING`** 일 때는 보통 **`0`** 을 쓰면 된다.
-  - **`EXPENSE`**, **`INCOME`** 일 때는 실제 금액 등으로 **`price`** 에 숫자를 넣는 식으로 쓰면 된다(도메인 규칙은 제품에 맞게).
-
-### TypeScript 타입 (참고)
+**Response 200 OK**
 
 ```typescript
-import type { AnnouncementPriceType } from 'src/apis/announcement/entities/announcement.entity';
-// 또는 문자열 리터럴 유니온: 'EXPENSE' | 'INCOME' | 'FREE' | 'PENDING'
-
-/** 작성·수정 요청 (CreateAnnouncementDto / UpdateAnnouncementDto) */
-interface AnnouncementPriceFields {
-  /** 생략 시 서버에서 FREE */
-  priceType?: AnnouncementPriceType;
-  /** 생략 시 0 */
-  price?: number;
-}
-
-/** 목록·일부 요약 응답에 포함 */
-interface AnnouncementListPriceFields {
-  priceType: AnnouncementPriceType;
-  price: number;
+interface ReportCategoriesResponse {
+  categories: Array<{
+    value: ReportCategory;
+    labelKo: string;
+  }>;
 }
 ```
 
----
-
-## 작성·수정 (`CreateAnnouncementDto` / `UpdateAnnouncementDto`)
-
-- **`priceType`**: 선택. 생략 시 **`FREE`** 로 저장된다.
-- **`price`**: 선택. 생략 시 **`0`** 이다.
-- 수정(`PATCH`) 시에는 보낸 필드만 갱신한다(`UpdateAnnouncementDto`는 `PartialType`).
+`value`는 `POST /reports`의 `category`와 동일하며, `labelKo`는 UI 표기용이다. 순서는 아래 **ReportCategory** 표와 같다.
 
 ---
 
-## 응답에 `priceType` / `price` 가 실리는 곳
+### `POST /reports`
 
-| 구분 | 설명 |
+**설명:** 로그인한 사용자가 다른 사용자를 신고한다. (커뮤니티 글 / 공연 소식 / 댓글 / 모집 공고 중 하나를 근거로 제출)
+
+**인증:** 필수 — `Authorization: Bearer <access_token>`
+
+**Request headers**
+
+| 이름 | 값 |
+|------|-----|
+| `Content-Type` | `application/json` |
+
+**Request body (JSON)**
+
+| 필드 | 타입 | 필수 | 설명 |
+|------|------|------|------|
+| `reportedUserId` | `string` (UUID) | O | 신고 대상 **사용자** ID |
+| `category` | `string` (enum) | O | 아래 **ReportCategory** |
+| `targetType` | `string` (enum) | O | 아래 **ReportTargetType** |
+| `targetId` | `string` (UUID) | O | 대상 콘텐츠 ID (`targetType`에 따라 다름) |
+
+**ReportTargetType**
+
+| 값 | `targetId` 의미 |
+|----|------------------|
+| `COMMUNITY` | 커뮤니티 글 ID (`community_id`) |
+| `NEWS` | 공연 소식 글 ID (`news_id`) |
+| `COMMENT` | 댓글 ID (`comment.id`) |
+| `ANNOUNCEMENT` | 모집 공고 ID (`post_id`) |
+
+**ReportCategory** (API 값 — 한글은 UI 표기용)
+
+| API 값 | 한글(표시용) |
+|--------|----------------|
+| `HATE_OR_SLUR` | 혐오/욕설 표현 |
+| `SPAM` | 스팸/도배 |
+| `HARMFUL_TO_YOUTH` | 청소년 유해 |
+| `ILLEGAL` | 불법정보 포함 |
+| `OBSCENE` | 음란물 |
+| `OFFENSIVE` | 불쾌한 표현 |
+
+**Request body 예시**
+
+```json
+{
+  "reportedUserId": "550e8400-e29b-41d4-a716-446655440000",
+  "category": "SPAM",
+  "targetType": "COMMUNITY",
+  "targetId": "550e8400-e29b-41d4-a716-446655440001"
+}
+```
+
+**Response 201 Created**
+
+```typescript
+interface CreateReportResponse {
+  ok: true;
+  reportedUserId: string;
+  /** 피신고자에 대한 누적 신고 건수(이번 접수 포함) */
+  totalReportsAgainstUser: number;
+}
+```
+
+**에러 HTTP 상태**
+
+| 상태 | 조건 |
 |------|------|
-| 공고 목록·내 공고 목록 | `AnnouncementService` 목록 아이템에 둘 다 포함 |
-| 공고 상세 | `findOne` — 엔티티 스프레드 + `isMine` 등 |
-| 홈 | `latestAnnouncements` 항목 |
-| 사용자 마이페이지 | 작성 글·내 공고·스크랩 공고·포스트 하이라이트 등 공고가 붙는 응답 |
+| **400** | 본인을 신고함 / 대상 글·댓글의 작성자가 `reportedUserId`와 불일치 |
+| **401** | 미인증, 또는 계정 `activity === BAN`(이용 제한 — 액세스·리프레시 토큰 모두) |
+| **403** | 신고자↔피신고자 **차단 관계**가 있음 (한쪽이 다른 쪽을 차단한 경우) |
+| **404** | 피신고 사용자 없음 / 대상 콘텐츠 없음 |
+| **409** | 동일 신고자가 **이미 해당 사용자**를 신고함 (`reporter`–`reported_user` 유니크) |
 
 ---
 
-## 관련 코드
+## 서버 규칙 요약
 
-| 내용 | 위치 |
+1. **자기 자신 신고 불가** (`reporterId === reportedUserId`).
+2. **피신고 사용자 존재** 여부 확인 (`user` 행).
+3. **차단 관계**면 신고 불가 (`block`: `blocker_id`/`blocked_id` 양방향 중 하나라도 일치).
+4. **동일 (신고자, 피신고자)** 조합은 DB 유니크로 **1회만** 신고 가능.
+5. 대상 콘텐츠가 존재하고, **작성자 `user_id`가 `reportedUserId`와 일치**해야 함.
+6. 피신고자에 대한 **누적 신고 건수**가 `REPORT_LIMIT`을 **초과**하면 (`totalReportsAgainstUser > REPORT_LIMIT`), 해당 사용자 `User.activity`가 `NORMAL`일 때 **`FLAGGED`** 로 변경.  
+   - 기본 한도: **5** (`REPORT_LIMIT` 환경변수로 변경 가능). 즉 **6번째** 신고 접수 시 조건 충족 시 `FLAGGED`.
+
+---
+
+## `User.activity` (계정 조치 상태)
+
+| 값 | 의미 |
+|----|------|
+| `NORMAL` | 일반 |
+| `FLAGGED` | 신고 누적으로 조치 필요(표시) |
+| `BAN` | 이용 제한 — **액세스 JWT 검증 시 401** (로그인·API 사용 불가) |
+
+`BAN` 은 관리자·배치 등 **별도**에서 올리는 것을 가정 (신고 API만으로 자동 `BAN` 하지는 않음).
+
+---
+
+## 엔티티 · 코드 위치
+
+| 내용 | 경로 |
 |------|------|
-| enum·컬럼 정의 | `entities/announcement.entity.ts` |
-| 작성 DTO | `dto/create-announcement.dto.ts` |
-| 수정 DTO | `dto/update-announcement.dto.ts` |
-| 생성·수정·목록 매핑 | `announcement.service.ts` |
+| `report` 테이블 | `entities/report.entity.ts` |
+| 한도 상수 | `constants/report.constants.ts` (`REPORT_LIMIT`, `process.env.REPORT_LIMIT`) |
+| 서비스 | `report.service.ts` |
+| 컨트롤러 | `report.controller.ts` |
+| 카테고리 라벨·순서 | `constants/report-categories.ts` |
+| 사용자 `activity` | `../user/entities/user.entity.ts` — `UserActivity` |
+| 액세스 토큰 `BAN` 거부 | `../auth/strategies/jwt-access.strategy.ts` |
+| 탈퇴 시 `report` 행 삭제 | `../user/utils/user-hard-delete-cascade.ts` |
+
+---
+
+## TypeScript (요청/응답 참고)
+
+```typescript
+import type { ReportCategory, ReportTargetType } from 'src/apis/report/entities/report.entity';
+
+type CreateReportRequestBody = {
+  reportedUserId: string;
+  category: ReportCategory;
+  targetType: ReportTargetType;
+  targetId: string;
+};
+
+type CreateReportResponseBody = {
+  ok: true;
+  reportedUserId: string;
+  totalReportsAgainstUser: number;
+};
+```

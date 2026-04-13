@@ -50,6 +50,12 @@ import {
   parseApplicationConfig,
 } from "../../lib/application/parseApplicationConfig";
 import { useAuth } from "../../contexts/AuthContext";
+import ReportCategoryModal from "../../components/ReportCategoryModal/ReportCategoryModal";
+import { createReport } from "../../lib/apis/report/reportApi";
+import type { ReportCategory } from "../../lib/apis/report/types";
+import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";
+import { confirmReportSubmission } from "../../lib/report/confirmReportSubmission";
+import { pickReportedUserIdFromUnknown } from "../../lib/report/pickReportedUserId";
 import styles from "./styles";
 
 export type AnnouncementDetailParams = {
@@ -147,7 +153,66 @@ const AnnouncementDetailScreen = () => {
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [closingEarly, setClosingEarly] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportSubmitting, setReportSubmitting] = useState(false);
   const authorDisplayLabel = useAnnouncementAuthorLabel(author);
+
+  const handleOpenReport = useCallback(() => {
+    if (!isLoggedIn) {
+      Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
+      return;
+    }
+    if (isMine) {
+      Alert.alert("알림", "본인이 작성한 글은 신고할 수 없습니다.");
+      return;
+    }
+    const reportedUserId =
+      pickReportedUserIdFromUnknown(author) ?? author?.userId?.trim();
+    if (!reportedUserId || !params.postId) {
+      Alert.alert(
+        "알림",
+        "신고할 수 없습니다. 작성자 정보를 불러오지 못했습니다.",
+      );
+      return;
+    }
+    if (reportedUserId === user?.socialId?.trim()) {
+      Alert.alert("알림", "본인을 신고할 수 없습니다.");
+      return;
+    }
+    setReportModalVisible(true);
+  }, [isLoggedIn, isMine, author, params.postId, user?.socialId]);
+
+  const handlePickReportCategory = useCallback(
+    (category: ReportCategory) => {
+      const reportedUserId =
+        pickReportedUserIdFromUnknown(author) ?? author?.userId?.trim();
+      const targetId = params.postId;
+      if (!reportedUserId || !targetId) return;
+      confirmReportSubmission(async () => {
+        setReportSubmitting(true);
+        try {
+          const res = await createReport({
+            reportedUserId,
+            category,
+            targetType: "ANNOUNCEMENT",
+            targetId,
+          });
+          if (res.ok) {
+            setReportModalVisible(false);
+            Alert.alert("접수 완료", "신고가 접수되었습니다.");
+          } else {
+            Alert.alert(
+              "알림",
+              messageForReportHttpStatus(res.status, res.message),
+            );
+          }
+        } finally {
+          setReportSubmitting(false);
+        }
+      });
+    },
+    [author, params.postId],
+  );
 
   const fetchDetail = useCallback(() => {
     if (!params.postId) return;
@@ -387,13 +452,11 @@ const AnnouncementDetailScreen = () => {
               },
             ]);
           }}
-          onReport={() => {
-            Alert.alert("알림", "신고 기능은 준비 중입니다.");
-          }}
+          onReport={handleOpenReport}
         />
       ),
     });
-  }, [navigation, isMine, params.postId, hasApplicants]);
+  }, [navigation, isMine, params.postId, hasApplicants, handleOpenReport]);
 
   const imageList = detailData?.imageUrls ?? [];
   const attachmentList = detailData?.attachments ?? [];
@@ -658,6 +721,12 @@ const AnnouncementDetailScreen = () => {
           </Pressable>
         </View>
       ) : null}
+      <ReportCategoryModal
+        visible={reportModalVisible}
+        onClose={() => !reportSubmitting && setReportModalVisible(false)}
+        onSelect={handlePickReportCategory}
+        submitting={reportSubmitting}
+      />
     </View>
   );
 };

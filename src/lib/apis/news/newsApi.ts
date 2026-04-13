@@ -3,6 +3,7 @@ import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
 import type { LocalImageAsset } from "../fileApi";
 import { postBoardMultipart } from "../multipartPost";
+import { pickReportedUserIdFromUnknown } from "../../report/pickReportedUserId";
 import type {
   CreateNewsDto,
   CreateNewsResponse,
@@ -57,6 +58,37 @@ function normalizeNewsListItem(raw: unknown): NewsListItem {
   };
 }
 
+function pickFirstNonEmptyString(...vals: unknown[]): string | undefined {
+  for (const v of vals) {
+    if (v == null || v === "") continue;
+    const s = String(v).trim();
+    if (s) return s;
+  }
+  return undefined;
+}
+
+/** `user` / `author` / `writer` 또는 글 최상위 작성자 id 필드 병합 */
+function coalesceNewsDetailUser(r: Record<string, unknown>): NewsUserInfo | undefined {
+  for (const key of ["user", "author", "writer"] as const) {
+    const v = r[key];
+    if (!v || typeof v !== "object") continue;
+    const id = pickReportedUserIdFromUnknown(v);
+    if (id) {
+      return { ...(v as object), userId: id } as NewsUserInfo;
+    }
+  }
+  const topId = pickFirstNonEmptyString(
+    r.userId,
+    r.user_id,
+    r.authorId,
+    r.author_id,
+    r.authorUserId,
+    r.author_user_id,
+  );
+  if (topId) return { userId: topId };
+  return undefined;
+}
+
 /** GET /news/:id — snake_case·attachments 병합 */
 function normalizeNewsDetail(raw: unknown): NewsDetailResponse {
   const r = raw as Record<string, unknown>;
@@ -107,10 +139,7 @@ function normalizeNewsDetail(raw: unknown): NewsDetailResponse {
         : null,
     contact: String(r.contact ?? ""),
     createdAt: String(r.createdAt ?? r.created_at ?? ""),
-    user:
-      r.user && typeof r.user === "object"
-        ? (r.user as NewsUserInfo)
-        : undefined,
+    user: coalesceNewsDetailUser(r),
     file: file === undefined ? undefined : file,
     attachments,
     isMine: Boolean(r.isMine ?? r.is_mine),

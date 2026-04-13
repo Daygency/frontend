@@ -1,4 +1,5 @@
 import { pickProfileImageUrlDeep } from "../chat/peerImageFields";
+import { pickReportedUserIdFromUnknown } from "../report/pickReportedUserId";
 
 export type AnnouncementAuthor = {
   userId: string;
@@ -54,7 +55,7 @@ export function extractAnnouncementAuthorFromDetail(
   for (const c of candidates) {
     const p = asRecord(c);
     if (!Object.keys(p).length) continue;
-    const uid = String(p.userId ?? p.user_id ?? "").trim();
+    const uid = pickReportedUserIdFromUnknown(c)?.trim();
     if (!uid) continue;
     const activityName =
       typeof p.activityName === "string"
@@ -81,15 +82,17 @@ export function extractAnnouncementAuthorFromDetail(
     };
   }
 
-  const rootUid = String(
-    d.userId ??
-      d.user_id ??
-      d.publisherUserId ??
-      d.publisher_user_id ??
-      d.authorUserId ??
-      d.author_user_id ??
-      "",
-  ).trim();
+  const rootUid =
+    pickReportedUserIdFromUnknown(d)?.trim() ||
+    String(
+      d.userId ??
+        d.user_id ??
+        d.publisherUserId ??
+        d.publisher_user_id ??
+        d.authorUserId ??
+        d.author_user_id ??
+        "",
+    ).trim();
   if (rootUid) {
     const img = pickProfileImageUrlDeep(d);
     return {
