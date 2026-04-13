@@ -398,20 +398,24 @@ const AnnouncementDetailScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView
-        contentContainerStyle={{
-          paddingBottom: canEarlyClose ? 88 : !isMine ? 100 : 32,
-        }}
+        style={styles.scroll}
+        contentContainerStyle={[
+          styles.scrollContent,
+          {
+            paddingBottom: canEarlyClose ? 88 : !isMine ? 100 : 32,
+          },
+        ]}
       >
-        <View style={styles.dividerThick} />
-        <AnnouncementBox
-          title={displayTitle}
-          type={displayType}
-          status={displayStatus}
-          daysLeft={displayDaysLeft}
-        />
+        <View style={styles.contentSheetFlush}>
+          <AnnouncementBox
+            title={displayTitle}
+            type={displayType}
+            status={displayStatus}
+            daysLeft={displayDaysLeft}
+          />
+        </View>
         {isMine && params.postId ? (
-          <>
-            <View style={styles.dividerThick} />
+          <View style={[styles.contentSheet, { paddingVertical: 16 }]}>
             <AcceptedPerformersSection
               postId={params.postId}
               announcementTitle={displayTitle}
@@ -419,10 +423,9 @@ const AnnouncementDetailScreen = () => {
               statusTag={displayStatus}
               dDay={`D-${displayDaysLeft}`}
             />
-          </>
+          </View>
         ) : null}
-        <View style={styles.dividerThick} />
-        <View style={styles.section}>
+        <View style={styles.contentSheet}>
           {author ? (
             <Pressable
               style={({ pressed }) => [
@@ -456,7 +459,8 @@ const AnnouncementDetailScreen = () => {
               <Text style={styles.producerName}>작성자</Text>
             </View>
           )}
-          <View style={styles.divider} />
+        </View>
+        <View style={styles.contentSheet}>
           <View style={styles.infoContainer}>
             <View style={styles.infoRow}>
               <MaterialCommunityIcons
@@ -510,8 +514,7 @@ const AnnouncementDetailScreen = () => {
             </View>
           </View>
         </View>
-        <View style={styles.dividerThick} />
-        <View style={styles.section}>
+        <View style={styles.contentSheet}>
           {descriptionText ? (
             <Text style={styles.descriptionText}>{descriptionText}</Text>
           ) : (
@@ -533,36 +536,33 @@ const AnnouncementDetailScreen = () => {
           ))}
         </View>
         {attachmentList.length > 0 ? (
-          <>
-            <View style={styles.dividerThick} />
-            <View style={styles.section}>
-              <Text style={styles.attachmentTitle}>첨부파일</Text>
-              {attachmentList.map((file, index) => (
-                <Pressable
-                  key={`${file.name}-${index}`}
-                  style={styles.attachmentCard}
-                  onPress={() => {}}
-                >
-                  <MaterialCommunityIcons
-                    name="paperclip"
-                    size={20}
-                    color={MAIN.DEFAULT}
-                  />
-                  <View style={styles.attachmentInfo}>
-                    <Text style={styles.attachmentFileName}>{file.name}</Text>
-                    {file.size ? (
-                      <Text style={styles.attachmentFileSize}>{file.size}</Text>
-                    ) : null}
-                  </View>
-                  <MaterialCommunityIcons
-                    name="download"
-                    size={22}
-                    color={MAIN.DEFAULT}
-                  />
-                </Pressable>
-              ))}
-            </View>
-          </>
+          <View style={styles.contentSheet}>
+            <Text style={styles.attachmentTitle}>첨부파일</Text>
+            {attachmentList.map((file, index) => (
+              <Pressable
+                key={`${file.name}-${index}`}
+                style={styles.attachmentCard}
+                onPress={() => {}}
+              >
+                <MaterialCommunityIcons
+                  name="paperclip"
+                  size={20}
+                  color={MAIN.DEFAULT}
+                />
+                <View style={styles.attachmentInfo}>
+                  <Text style={styles.attachmentFileName}>{file.name}</Text>
+                  {file.size ? (
+                    <Text style={styles.attachmentFileSize}>{file.size}</Text>
+                  ) : null}
+                </View>
+                <MaterialCommunityIcons
+                  name="download"
+                  size={22}
+                  color={MAIN.DEFAULT}
+                />
+              </Pressable>
+            ))}
+          </View>
         ) : null}
       </ScrollView>
       {!isMine ? (

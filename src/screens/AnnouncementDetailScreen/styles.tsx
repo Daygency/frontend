@@ -1,22 +1,36 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
+/** 본문 스크롤 영역 배경 — 흰색 시트 사이 마진으로 이 색이 “띠”로 보임 */
+export const ANNOUNCEMENT_BODY_BG = "#F2F2F2";
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: WHITE,
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#F2F2F2",
+  /** 스크롤 뷰 자체 배경 = 본문 회색 (끝까지 스크롤해도 이어짐) */
+  scroll: {
+    flex: 1,
+    backgroundColor: ANNOUNCEMENT_BODY_BG,
   },
-  dividerThick: {
-    height: 8,
-    backgroundColor: "#F2F2F2",
+  scrollContent: {
+    flexGrow: 1,
+    backgroundColor: ANNOUNCEMENT_BODY_BG,
+    paddingTop: 8,
   },
-  section: {
+  /**
+   * 흰색 콘텐츠 시트. 아래 margin으로 회색 배경이 드러남 (디바이더 대신).
+   */
+  contentSheet: {
+    backgroundColor: WHITE,
     paddingHorizontal: 20,
     paddingVertical: 20,
+    marginBottom: 8,
+  },
+  /** AnnouncementBox가 자체 패딩·흰 배경을 가질 때 — 바깥은 마진만 */
+  contentSheetFlush: {
+    marginBottom: 8,
   },
   producerInfo: {
     flexDirection: "row",
@@ -32,7 +46,6 @@ const styles = StyleSheet.create({
     color: BLACK,
   },
   infoContainer: {
-    marginTop: 10,
     gap: 10,
   },
   infoRow: {

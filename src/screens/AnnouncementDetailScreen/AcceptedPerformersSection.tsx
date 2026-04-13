@@ -173,9 +173,9 @@ export default function AcceptedPerformersSection({
 const AVATAR = 56;
 
 const styles = StyleSheet.create({
+  /** 상세 화면 스크롤 시트가 패딩을 담당 */
   wrap: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
+    width: "100%",
   },
   headerRow: {
     flexDirection: "row",
