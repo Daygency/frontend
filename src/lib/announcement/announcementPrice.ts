@@ -7,13 +7,14 @@ const VALID_TYPES: AnnouncementPriceType[] = [
   "PENDING",
 ];
 
+/** README: priceType 생략 시 서버 기본은 PENDING(협의) */
 export function normalizeAnnouncementPriceType(
   raw: unknown,
 ): AnnouncementPriceType {
   if (typeof raw === "string" && VALID_TYPES.includes(raw as AnnouncementPriceType)) {
     return raw as AnnouncementPriceType;
   }
-  return "FREE";
+  return "PENDING";
 }
 
 export function parseAnnouncementPrice(raw: unknown): number {

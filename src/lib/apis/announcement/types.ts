@@ -1,4 +1,4 @@
-/** api-readme.md 모집공고 API 스펙 기준 */
+/** README.md 모집공고 API 스펙 기준 */
 
 export type AnnouncementPriceType = "EXPENSE" | "INCOME" | "FREE" | "PENDING";
 
@@ -32,7 +32,7 @@ export type CreateAnnouncementDto = {
   majorIds?: string[];
   status?: AnnouncementStatus;
   applicationConfig: ApplicationConfig;
-  /** 생략 시 서버에서 FREE */
+  /** 생략 시 서버에서 PENDING(협의) */
   priceType?: AnnouncementPriceType;
   /** 생략 시 0 */
   price?: number;
@@ -50,6 +50,10 @@ export type AnnouncementListItem = {
   thumbnailUrl?: string | null;
   priceType?: AnnouncementPriceType;
   price?: number;
+  /** 모집 전공 UUID 목록 */
+  majorIds?: string[];
+  /** 목록 API가 전공 객체까지 줄 때 */
+  majors?: { majorId: string; name: string }[];
 };
 
 export type AnnouncementListResponse = {
@@ -68,10 +72,20 @@ export type AnnouncementListParams = {
   priceTypes?: string;
 };
 
+/** README: 작성·수정 성공 응답 — majors·priceType·price 포함 */
 export type CreateAnnouncementResponse = {
   postId: string;
   title: string;
   type: string;
   isRecruiting: boolean;
   dDay: string;
+  priceType?: AnnouncementPriceType;
+  price?: number;
+  majors?: { majorId: string; name: string }[];
+  /** multipart 작성 시 업로드 파일 메타 */
+  attachments?: {
+    fileId: string;
+    imgUrl: string;
+    sortOrder: number;
+  }[];
 };

@@ -31,10 +31,12 @@ const styles = StyleSheet.create({
   },
   countdownTag: {
     backgroundColor: MAIN.DEFAULT,
+    paddingHorizontal: 9,
+    paddingVertical: 4,
   },
   countdownTagText: {
-    fontSize: 12,
-    lineHeight: 21,
+    fontSize: 13,
+    lineHeight: 18,
     letterSpacing: 0.24,
     color: WHITE,
     fontWeight: "500",

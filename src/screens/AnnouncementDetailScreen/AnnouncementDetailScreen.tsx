@@ -45,6 +45,7 @@ import {
   normalizeAnnouncementPriceType,
   parseAnnouncementPrice,
 } from "../../lib/announcement/announcementPrice";
+import { pickMajorsFromAnnouncementRaw } from "../../lib/announcement/recruitmentMajors";
 import {
   extractApplicationConfigRaw,
   parseApplicationConfig,
@@ -150,6 +151,7 @@ const AnnouncementDetailScreen = () => {
     attachments?: { name: string; size: string }[];
     priceType?: AnnouncementPriceType;
     price?: number;
+    majors?: { majorId: string; name: string }[];
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [closingEarly, setClosingEarly] = useState(false);
@@ -297,6 +299,10 @@ const AnnouncementDetailScreen = () => {
         get("priceType") ?? get("price_type"),
       );
       const price = parseAnnouncementPrice(d.price);
+      const majorsPick = pickMajorsFromAnnouncementRaw(d);
+      const majorsList = majorsPick.majors?.length
+        ? majorsPick.majors
+        : [];
 
       setDetailData({
         title: String(title),
@@ -316,6 +322,7 @@ const AnnouncementDetailScreen = () => {
         ...(scheduledAt ? { scheduledAt } : {}),
         ...(imageUrls.length > 0 ? { imageUrls } : {}),
         ...(attachmentRows.length > 0 ? { attachments: attachmentRows } : {}),
+        ...(majorsList.length > 0 ? { majors: majorsList } : {}),
       });
     });
   }, [
@@ -547,7 +554,7 @@ const AnnouncementDetailScreen = () => {
             <View style={styles.infoRow}>
               <MaterialCommunityIcons
                 name="calendar-outline"
-                size={16}
+                size={17}
                 color={MAIN.DEFAULT}
               />
               <Text style={styles.infoLabel}>마감일 : </Text>
@@ -558,7 +565,7 @@ const AnnouncementDetailScreen = () => {
             <View style={styles.infoRow}>
               <MaterialCommunityIcons
                 name="calendar-outline"
-                size={16}
+                size={17}
                 color={MAIN.DEFAULT}
               />
               <Text style={styles.infoLabel}>예정일 : </Text>
@@ -569,7 +576,7 @@ const AnnouncementDetailScreen = () => {
             <View style={styles.infoRow}>
               <MaterialCommunityIcons
                 name="clock-outline"
-                size={16}
+                size={17}
                 color={MAIN.DEFAULT}
               />
               <Text style={styles.infoLabel}>예정 시간 : </Text>
@@ -580,7 +587,7 @@ const AnnouncementDetailScreen = () => {
             <View style={styles.infoRow}>
               <MaterialCommunityIcons
                 name="map-marker-outline"
-                size={16}
+                size={17}
                 color={MAIN.DEFAULT}
               />
               <Text style={styles.infoLabel}>장소 : </Text>
@@ -592,16 +599,31 @@ const AnnouncementDetailScreen = () => {
               <View style={styles.infoRow}>
                 <MaterialCommunityIcons
                   name="cash-multiple"
-                  size={16}
+                  size={17}
                   color={MAIN.DEFAULT}
                 />
                 <Text style={styles.infoLabel}>금액 : </Text>
                 <Text style={styles.infoValue}>
                   {formatAnnouncementPriceLine(
-                    detailData.priceType ?? "FREE",
+                    detailData.priceType ?? "PENDING",
                     detailData.price ?? 0,
                   )}
                 </Text>
+              </View>
+            ) : null}
+            {detailData?.majors && detailData.majors.length > 0 ? (
+              <View style={styles.majorsBlock}>
+                <Text style={styles.majorsLabel}>모집전공</Text>
+                <View style={styles.majorsChips}>
+                  {detailData.majors.map((m, i) => (
+                    <View
+                      key={`${m.majorId}-${i}`}
+                      style={styles.majorChip}
+                    >
+                      <Text style={styles.majorChipText}>{m.name}</Text>
+                    </View>
+                  ))}
+                </View>
               </View>
             ) : null}
             <View style={styles.infoRow}>

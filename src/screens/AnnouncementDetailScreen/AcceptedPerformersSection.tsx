@@ -184,8 +184,8 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: 16,
+    lineHeight: 24,
     fontWeight: "600",
     color: BLACK,
   },
@@ -201,8 +201,8 @@ const styles = StyleSheet.create({
     opacity: 0.88,
   },
   applicantsBtnText: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 14,
+    lineHeight: 20,
     fontWeight: "600",
     color: WHITE,
     letterSpacing: 0.2,
@@ -213,8 +213,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   emptyText: {
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 21,
     color: GRAY.DARK_100,
   },
   carouselContent: {
@@ -229,8 +229,8 @@ const styles = StyleSheet.create({
   },
   name: {
     marginTop: 8,
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 13,
+    lineHeight: 18,
     fontWeight: "500",
     color: BLACK,
     textAlign: "center",

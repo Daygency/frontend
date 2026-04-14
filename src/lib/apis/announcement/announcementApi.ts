@@ -9,7 +9,9 @@ import type {
   UpdateAnnouncementDto,
   AnnouncementListParams,
   AnnouncementListResponse,
+  AnnouncementListItem,
 } from "./types";
+import { pickMajorsFromAnnouncementRaw } from "../../announcement/recruitmentMajors";
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
@@ -101,7 +103,10 @@ export async function getMyAnnouncementList(
     const data = (await res.json()) as AnnouncementListResponse;
     const items = Array.isArray(data?.items) ? data.items : [];
     return {
-      items,
+      items: items.map((item) => ({
+        ...(item as AnnouncementListItem),
+        ...pickMajorsFromAnnouncementRaw(item),
+      })),
       nextCursor: data?.nextCursor ?? null,
       hasMore: Boolean(data?.hasMore),
     };
@@ -139,7 +144,10 @@ export async function getAnnouncementList(
     const itemCount = items.length;
     console.log("[getAnnouncementList] 성공:", url, "items:", itemCount);
     return {
-      items,
+      items: items.map((item) => ({
+        ...(item as AnnouncementListItem),
+        ...pickMajorsFromAnnouncementRaw(item),
+      })),
       nextCursor: data?.nextCursor ?? null,
       hasMore: Boolean(data?.hasMore),
     };

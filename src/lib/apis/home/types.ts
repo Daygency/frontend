@@ -8,6 +8,8 @@ export type HomeAnnouncementItem = {
   dDay: string;
   priceType?: AnnouncementPriceType;
   price?: number;
+  majorIds?: string[];
+  majors?: { majorId: string; name: string }[];
 };
 
 export type HomeNewsItem = {

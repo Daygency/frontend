@@ -36,6 +36,8 @@ export type MyScrappedAnnouncementItem = {
   type: string;
   isRecruiting: boolean;
   dDay: string;
+  majorIds?: string[];
+  majors?: { majorId: string; name: string }[];
 };
 
 export type MyScrappedAnnouncementsResponse = {

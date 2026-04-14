@@ -70,6 +70,35 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
     fontWeight: "500",
   },
+  recruitmentMajorsSection: {
+    marginTop: 10,
+  },
+  recruitmentMajorsLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    color: GRAY.DARK_2,
+    fontWeight: "500",
+    marginBottom: 6,
+  },
+  recruitmentMajorsChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  recruitmentMajorChip: {
+    backgroundColor: GRAY.DEFAULT,
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+  },
+  recruitmentMajorChipText: {
+    fontSize: 11,
+    lineHeight: 14,
+    color: BLACK,
+    fontWeight: "400",
+  },
 });
 
 export default styles;

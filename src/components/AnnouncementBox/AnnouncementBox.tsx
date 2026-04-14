@@ -28,7 +28,7 @@ const AnnouncementBox = ({
       {showPrice ? (
         <Text style={styles.priceLine}>
           {formatAnnouncementPriceLine(
-            priceType ?? "FREE",
+            priceType ?? "PENDING",
             typeof price === "number" ? price : 0,
           )}
         </Text>

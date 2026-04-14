@@ -1,11 +1,15 @@
 import { API_BASE } from "../api";
 import type { HomeResponse } from "./types";
+import { pickMajorsFromAnnouncementRaw } from "../../announcement/recruitmentMajors";
 
 function normalizeHomeResponse(raw: unknown): HomeResponse {
   const data = (raw ?? {}) as Record<string, unknown>;
   return {
     latestAnnouncements: Array.isArray(data.latestAnnouncements)
-      ? (data.latestAnnouncements as HomeResponse["latestAnnouncements"])
+      ? data.latestAnnouncements.map((item) => ({
+          ...(item as HomeResponse["latestAnnouncements"][number]),
+          ...pickMajorsFromAnnouncementRaw(item),
+        }))
       : [],
     recentNews: Array.isArray(data.recentNews)
       ? (data.recentNews as HomeResponse["recentNews"])

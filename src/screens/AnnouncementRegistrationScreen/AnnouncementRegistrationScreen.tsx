@@ -44,6 +44,8 @@ import {
 } from "../../lib/announcement/announcementPrice";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
+import { buildMajorIdsForSubmit } from "../../lib/announcement/recruitmentMajors";
+import { API_BASE } from "../../lib/apis/api";
 import { getFileId, uploadFile, type LocalImageAsset } from "../../lib/apis/fileApi";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
 
@@ -250,7 +252,7 @@ const AnnouncementRegistrationScreen = () => {
   );
   const [recruitmentMajors, setRecruitmentMajors] = useState<string[]>([]);
   const [content, setContent] = useState("");
-  const [priceType, setPriceType] = useState<AnnouncementPriceType>("FREE");
+  const [priceType, setPriceType] = useState<AnnouncementPriceType>("PENDING");
   const [priceInput, setPriceInput] = useState("");
 
   // 지원서 양식 구성
@@ -353,9 +355,28 @@ const AnnouncementRegistrationScreen = () => {
         if (get("content")) setContent(String(get("content") ?? ""));
         if (get("address")) setLocation(String(get("address") ?? ""));
         if (get("categoryId")) setAnnouncementType(String(get("categoryId") ?? ""));
-        const majors = getArr("majorIds");
-        if (majors.length > 0) {
-          setRecruitmentMajors(majors.map((id) => String(id)));
+        const majorIdsRaw = getArr("majorIds");
+        if (majorIdsRaw.length > 0) {
+          setRecruitmentMajors(majorIdsRaw.map((id) => String(id)));
+        } else {
+          const majorsNested = getArr("majors");
+          if (majorsNested.length > 0) {
+            const ids = majorsNested
+              .map((m) => {
+                if (typeof m === "string" || typeof m === "number") {
+                  return String(m);
+                }
+                if (m && typeof m === "object") {
+                  const o = m as Record<string, unknown>;
+                  return String(
+                    o.majorId ?? o.major_id ?? o.id ?? "",
+                  ).trim();
+                }
+                return "";
+              })
+              .filter(Boolean);
+            if (ids.length > 0) setRecruitmentMajors(ids);
+          }
         }
         const sched = get("scheduledAt");
         if (sched) {
@@ -578,6 +599,23 @@ const AnnouncementRegistrationScreen = () => {
     }
 
     if (isSubmitting) return;
+
+    const majorIdsPayload = buildMajorIdsForSubmit(
+      recruitmentMajors,
+      majorOptions,
+    );
+    if (recruitmentMajors.length > 0 && majorIdsPayload.length === 0) {
+      console.warn(
+        "[모집 전공] 서버에서 전공 ID 목록을 받지 못했습니다. EXPO_PUBLIC_API_BASE(백엔드가 /api 쓰면 …/api까지), EXPO_PUBLIC_MAJOR_PATH, 현재 API_BASE:",
+        API_BASE,
+      );
+      Alert.alert(
+        "모집 전공",
+        "전공 정보를 불러오지 못해 저장할 수 없습니다. 네트워크와 서버 설정을 확인한 뒤 다시 시도해 주세요.",
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     const dto = {
@@ -592,18 +630,7 @@ const AnnouncementRegistrationScreen = () => {
       priceType,
       price: resolvedPrice,
       ...(fileId ? { fileId } : {}),
-      ...(recruitmentMajors.length > 0
-        ? {
-            majorIds: recruitmentMajors
-              .map((r) => {
-                const o = majorOptions.find(
-                  (m) => (m.value || m.label) === r,
-                );
-                return o?.value;
-              })
-              .filter((v): v is string => !!v),
-          }
-        : {}),
+      ...(majorIdsPayload.length > 0 ? { majorIds: majorIdsPayload } : {}),
     };
 
     try {

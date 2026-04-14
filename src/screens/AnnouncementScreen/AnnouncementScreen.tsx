@@ -29,6 +29,7 @@ import {
   ANNOUNCEMENT_PRICE_FILTER_LABELS,
   selectedPriceLabelsToApiParam,
 } from "../../lib/announcement/announcementPrice";
+import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -325,6 +326,10 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                   daysLeft={parseDaysLeft(item.dDay)}
                   priceType={item.priceType}
                   price={item.price}
+                  recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
+                    item,
+                    majors,
+                  )}
                   onPress={() => {
                     navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                       title: item.title,

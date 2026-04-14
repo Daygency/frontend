@@ -13,6 +13,8 @@ interface AnnouncementCardProps {
   /** API가 내려줄 때만 표시 */
   priceType?: AnnouncementPriceType;
   price?: number;
+  /** 모집 전공 이름 (표시할 항목이 있을 때만 하단 영역 렌더) */
+  recruitmentMajorNames?: string[];
   onPress?: () => void;
 }
 
@@ -23,11 +25,13 @@ const AnnouncementCard = ({
   daysLeft = 20,
   priceType,
   price,
+  recruitmentMajorNames = [],
   onPress,
 }: AnnouncementCardProps) => {
   const showPrice =
     priceType !== undefined ||
     (typeof price === "number" && Number.isFinite(price));
+  const showMajors = recruitmentMajorNames.length > 0;
 
   return (
     <ShadowCardButton onPress={onPress}>
@@ -54,10 +58,25 @@ const AnnouncementCard = ({
         {showPrice ? (
           <Text style={styles.priceLine} numberOfLines={2}>
             {formatAnnouncementPriceLineList(
-              priceType ?? "FREE",
+              priceType ?? "PENDING",
               typeof price === "number" ? price : 0,
             )}
           </Text>
+        ) : null}
+        {showMajors ? (
+          <View style={styles.recruitmentMajorsSection}>
+            <Text style={styles.recruitmentMajorsLabel}>모집전공</Text>
+            <View style={styles.recruitmentMajorsChips}>
+              {recruitmentMajorNames.map((name, i) => (
+                <View
+                  key={`${name}-${i}`}
+                  style={styles.recruitmentMajorChip}
+                >
+                  <Text style={styles.recruitmentMajorChipText}>{name}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
         ) : null}
       </View>
     </ShadowCardButton>

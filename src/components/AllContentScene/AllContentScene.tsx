@@ -17,6 +17,8 @@ import { RootRoutes } from "../../navigations/routes";
 import { getHome } from "../../lib/apis/home/homeApi";
 import type { HomeAnnouncementItem, HomeNewsItem } from "../../lib/apis/home/types";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
+import { getMajors } from "../../lib/apis/announcement/majorApi";
+import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
 
 type ContentTabParamList = {
   [ContentRoutes.HOME]: undefined;
@@ -58,6 +60,23 @@ const AllContentScene = () => {
     { boardName: string; latestPost: string; hasNew?: boolean }[]
   >([]);
   const [loading, setLoading] = useState(true);
+  const [majorsCatalog, setMajorsCatalog] = useState<
+    { name: string; majorId: string }[]
+  >([]);
+
+  useEffect(() => {
+    getMajors().then((list) => {
+      setMajorsCatalog(
+        list.map((m) => ({
+          name: m.name,
+          majorId:
+            (m as { majorId?: string }).majorId ??
+            (m as { id?: string }).id ??
+            "",
+        })),
+      );
+    });
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -124,6 +143,10 @@ const AllContentScene = () => {
               daysLeft={parseDaysLeft(item.dDay)}
               priceType={item.priceType}
               price={item.price}
+              recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
+                item,
+                majorsCatalog,
+              )}
               onPress={() => {
                 (navigation as { navigate: (a: string, b?: object) => void }).navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                   title: item.title,
