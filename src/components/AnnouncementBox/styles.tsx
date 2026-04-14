@@ -9,8 +9,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#ffffff",
   },
   title: {
-    fontSize: 18,
-    lineHeight: 26,
+    fontSize: 20,
+    lineHeight: 29,
     letterSpacing: 0.3,
     color: BLACK,
     fontWeight: "700",

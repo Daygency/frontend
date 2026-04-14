@@ -74,10 +74,10 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   title: {
-    fontSize: 14,
-    lineHeight: 24,
+    fontSize: 16,
+    lineHeight: 26,
     letterSpacing: 0.3,
-    fontWeight: "600",
+    fontWeight: "700",
     color: BLACK,
   },
   priceLine: {
