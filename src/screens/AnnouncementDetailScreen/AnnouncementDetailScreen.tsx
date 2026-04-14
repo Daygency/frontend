@@ -517,6 +517,7 @@ const AnnouncementDetailScreen = () => {
               viewCount={displayViewCount}
               priceType={detailData?.priceType}
               price={detailData?.price}
+              address={addressLabel}
             />
           </View>
         </View>
@@ -599,17 +600,6 @@ const AnnouncementDetailScreen = () => {
               <Text style={styles.infoLabel}>예정 시간 : </Text>
               <Text style={styles.infoValue}>
                 {scheduledTimeLabel || "-"}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <MaterialCommunityIcons
-                name="map-marker-outline"
-                size={17}
-                color={MAIN.DEFAULT}
-              />
-              <Text style={styles.infoLabel}>장소 : </Text>
-              <Text style={styles.infoValue}>
-                {addressLabel || "-"}
               </Text>
             </View>
             {detailData != null ? (

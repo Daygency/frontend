@@ -7,7 +7,7 @@ export const sharedAnnouncementStyles = StyleSheet.create({
     lineHeight: 26,
     letterSpacing: 0.3,
     color: BLACK,
-    fontWeight: "700",
+    fontWeight: "600",
   },
   priceAndViewRow: {
     flexDirection: "row",
@@ -19,7 +19,7 @@ export const sharedAnnouncementStyles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: MAIN.DEFAULT,
-    fontWeight: "700",
+    fontWeight: "400",
   },
   priceLineFlex: {
     flex: 1,
