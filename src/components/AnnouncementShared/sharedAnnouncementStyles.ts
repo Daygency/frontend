@@ -40,7 +40,12 @@ export const sharedAnnouncementStyles = StyleSheet.create({
     letterSpacing: 0.24,
   },
   dDayTextRed: {
-    color: RED.DEFAULT,
+    backgroundColor: RED.DEFAULT,
+    color: WHITE,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    overflow: "hidden",
   },
   tagsContainer: {
     flexDirection: "row",

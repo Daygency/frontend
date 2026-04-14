@@ -47,7 +47,7 @@ const AnnouncementCard = ({
             (daysLeft === 0 || daysLeft === 7) && styles.dDayTextRed,
           ]}
         >
-          {daysLeft === 0 ? "오늘 마감" : `D-${daysLeft}`}
+          {daysLeft === 0 ? "오늘마감" : `D-${daysLeft}`}
         </Text>
       </View>
       <View style={styles.tagsContainer}>

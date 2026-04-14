@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { MAIN, WHITE } from "../../color";
+import { GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -17,11 +17,12 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: "center",
   },
+  /** 비선택 탭 — 연한 회색 배경 */
   sortTab: {
-    backgroundColor: WHITE,
+    backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: MAIN.DEFAULT,
+    borderColor: GRAY.MEDIUM_2,
     paddingHorizontal: 12,
     height: 36,
     justifyContent: "center",
