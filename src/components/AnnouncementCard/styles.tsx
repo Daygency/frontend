@@ -1,7 +1,9 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, RED, WHITE } from "../../color";
+import { BLACK, GRAY } from "../../color";
+import { sharedAnnouncementStyles } from "../AnnouncementShared/sharedAnnouncementStyles";
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
+  ...sharedAnnouncementStyles,
   container: {
     width: "100%",
   },
@@ -10,79 +12,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "flex-start",
     marginBottom: 3,
-  },
-  tagsContainer: {
-    flexDirection: "row",
-    gap: 6,
-    flex: 1,
-  },
-  typeTag: {
-    backgroundColor: GRAY.DARK_1,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  typeTagText: {
-    fontSize: 12,
-    lineHeight: 13,
-    letterSpacing: 0.24,
-    color: BLACK,
-    fontWeight: "400",
-  },
-  statusTag: {
-    backgroundColor: WHITE,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  statusTagText: {
-    fontSize: 12,
-    lineHeight: 13,
-    letterSpacing: 0.24,
-    color: BLACK,
-    fontWeight: "400",
-  },
-  priceAndViewRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 8,
-    gap: 8,
-  },
-  priceLineBesideView: {
-    flex: 1,
-    minWidth: 0,
-  },
-  viewCountText: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: GRAY.MEDIUM_100,
-    fontWeight: "400",
-    flexShrink: 0,
-  },
-  dDayText: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: BLACK,
-    fontWeight: "800",
-    letterSpacing: 0.24,
-  },
-  dDayTextRed: {
-    color: RED.DEFAULT,
-  },
-  title: {
-    fontSize: 16,
-    lineHeight: 26,
-    letterSpacing: 0.3,
-    fontWeight: "700",
-    color: BLACK,
-  },
-  priceLine: {
-    fontSize: 13,
-    lineHeight: 18,
-    color: GRAY.DARK_2,
-    fontWeight: "500",
   },
   recruitmentMajorsSection: {
     marginTop: 10,
@@ -114,5 +43,3 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
 });
-
-export default styles;

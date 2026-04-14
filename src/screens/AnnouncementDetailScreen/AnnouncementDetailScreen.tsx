@@ -17,7 +17,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
+import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
 import AcceptedPerformersSection from "./AcceptedPerformersSection";
 import { GRAY, MAIN, WHITE } from "../../color";
@@ -379,6 +379,8 @@ const AnnouncementDetailScreen = () => {
   const displayDaysLeft = detailData?.daysLeft ?? params.daysLeft ?? 0;
   const displayViewCount =
     detailData?.viewCount ?? params.viewCount;
+  const recruitmentMajorNames =
+    detailData?.majors?.map((m) => m.name).filter(Boolean) ?? [];
 
   const canEarlyClose =
     isMine &&
@@ -508,15 +510,18 @@ const AnnouncementDetailScreen = () => {
         ]}
       >
         <View style={styles.contentSheetFlush}>
-          <AnnouncementBox
-            title={displayTitle}
-            type={displayType}
-            status={displayStatus}
-            daysLeft={displayDaysLeft}
-            viewCount={displayViewCount}
-            priceType={detailData?.priceType}
-            price={detailData?.price}
-          />
+          <View style={{ paddingHorizontal: 12 }}>
+            <AnnouncementCard
+              title={displayTitle}
+              type={displayType}
+              status={displayStatus}
+              daysLeft={displayDaysLeft}
+              viewCount={displayViewCount}
+              priceType={detailData?.priceType}
+              price={detailData?.price}
+              recruitmentMajorNames={recruitmentMajorNames}
+            />
+          </View>
         </View>
         {isMine && params.postId ? (
           <View style={[styles.contentSheet, { paddingVertical: 16 }]}>

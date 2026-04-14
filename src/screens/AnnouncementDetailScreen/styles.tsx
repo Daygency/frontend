@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     marginBottom: 8,
   },
-  /** AnnouncementBox가 자체 패딩·흰 배경을 가질 때 — 바깥은 마진만 */
+  /** 상단 공고 카드(AnnouncementCard)와 본문 사이 회색 띠 */
   contentSheetFlush: {
     marginBottom: 8,
   },

@@ -1,16 +1,10 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, RED, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
 
-const styles = StyleSheet.create({
-  container: {
-    width: "100%",
-    paddingVertical: 20,
-    paddingHorizontal: 20,
-    backgroundColor: "#ffffff",
-  },
+export const sharedAnnouncementStyles = StyleSheet.create({
   title: {
-    fontSize: 20,
-    lineHeight: 29,
+    fontSize: 16,
+    lineHeight: 26,
     letterSpacing: 0.3,
     color: BLACK,
     fontWeight: "700",
@@ -22,46 +16,37 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   priceLine: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: GRAY.DARK_2,
-    fontWeight: "500",
+    fontSize: 14,
+    lineHeight: 20,
+    color: MAIN.DEFAULT,
+    fontWeight: "700",
   },
-  priceLineInRow: {
+  priceLineFlex: {
     flex: 1,
     minWidth: 0,
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginTop: 10,
-  },
-  headerRight: {
-    alignItems: "flex-end",
-  },
   viewCountText: {
-    fontSize: 13,
-    lineHeight: 22,
+    fontSize: 12,
+    lineHeight: 18,
     color: GRAY.MEDIUM_100,
     fontWeight: "400",
     flexShrink: 0,
+  },
+  dDayText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: BLACK,
+    fontWeight: "800",
+    letterSpacing: 0.24,
+  },
+  dDayTextRed: {
+    color: RED.DEFAULT,
   },
   tagsContainer: {
     flexDirection: "row",
     gap: 8,
     flex: 1,
     alignItems: "center",
-  },
-  dDayText: {
-    fontSize: 13,
-    lineHeight: 16,
-    color: BLACK,
-    fontWeight: "700",
-    letterSpacing: 0.24,
-  },
-  dDayTextRed: {
-    color: RED.DEFAULT,
   },
   typeTag: {
     backgroundColor: GRAY.DARK_1,
@@ -91,11 +76,4 @@ const styles = StyleSheet.create({
     color: BLACK,
     fontWeight: "400",
   },
-  dateText: {
-    fontSize: 14,
-    color: GRAY.DARK_2,
-    fontWeight: "400",
-  },
 });
-
-export default styles;

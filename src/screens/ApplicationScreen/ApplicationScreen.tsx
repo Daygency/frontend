@@ -15,7 +15,7 @@ import {
 } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AnnouncementBox from "../../components/AnnouncementBox/AnnouncementBox";
+import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import { RootRoutes } from "../../navigations/routes";
 import Form from "../../components/Form/Form";
@@ -45,6 +45,12 @@ import {
   hasAnyApplicationField,
   parseApplicationConfig,
 } from "../../lib/application/parseApplicationConfig";
+import {
+  normalizeAnnouncementPriceType,
+  parseAnnouncementPrice,
+} from "../../lib/announcement/announcementPrice";
+import { pickMajorsFromAnnouncementRaw } from "../../lib/announcement/recruitmentMajors";
+import type { AnnouncementPriceType } from "../../lib/apis/announcement/types";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -171,6 +177,13 @@ const ApplicationScreen = () => {
   const [viewCount, setViewCount] = useState<number | undefined>(
     viewCountParam,
   );
+  const [postPriceType, setPostPriceType] = useState<
+    AnnouncementPriceType | undefined
+  >();
+  const [postPrice, setPostPrice] = useState<number | undefined>();
+  const [recruitmentMajorNames, setRecruitmentMajorNames] = useState<string[]>(
+    [],
+  );
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(null);
@@ -246,6 +259,14 @@ const ApplicationScreen = () => {
         ) {
           setViewCount(Math.floor(vcRaw));
         }
+        setPostPriceType(
+          normalizeAnnouncementPriceType(d.priceType ?? d.price_type),
+        );
+        setPostPrice(parseAnnouncementPrice(d.price));
+        const majorsPick = pickMajorsFromAnnouncementRaw(d);
+        setRecruitmentMajorNames(
+          majorsPick.majors?.map((m) => m.name).filter(Boolean) ?? [],
+        );
         setRecruitmentOpen(deriveRecruitmentOpen(d, status));
         if (detailHasExplicitNullApplicationConfig(d)) {
           Alert.alert(
@@ -507,13 +528,18 @@ const ApplicationScreen = () => {
           paddingBottom: applicationId ? 150 : 90,
         }}
       >
-        <AnnouncementBox
-          title={title}
-          type={type}
-          status={status}
-          daysLeft={daysLeft}
-          viewCount={viewCount}
-        />
+        <View style={{ paddingHorizontal: 12 }}>
+          <AnnouncementCard
+            title={title}
+            type={type}
+            status={status}
+            daysLeft={daysLeft}
+            viewCount={viewCount}
+            priceType={postPriceType}
+            price={postPrice}
+            recruitmentMajorNames={recruitmentMajorNames}
+          />
+        </View>
         <View style={{ paddingHorizontal: 12, paddingVertical: 15 }}>
           {config.includeName && (
             <View>
