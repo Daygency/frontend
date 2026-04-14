@@ -33,7 +33,7 @@ export function priceTypeLabel(t: AnnouncementPriceType): string {
     case "FREE":
       return "무료";
     case "PENDING":
-      return "협의 가능";
+      return "비용협의";
     default:
       return "";
   }
@@ -52,13 +52,13 @@ export function formatAnnouncementPriceLine(
   return `${label} · ${n.toLocaleString("ko-KR")}원`;
 }
 
-/** 목록 조회(카드 등) — PENDING은 띄어쓰기 없이 `협의가능` */
+/** 목록 조회(카드 등) — PENDING은 `비용협의` */
 export function formatAnnouncementPriceLineList(
   priceType: AnnouncementPriceType,
   price: number,
 ): string {
   if (priceType === "PENDING") {
-    return "협의가능";
+    return "비용협의";
   }
   return formatAnnouncementPriceLine(priceType, price);
 }
@@ -68,7 +68,7 @@ export const PRICE_TYPE_OPTIONS: { label: string; value: AnnouncementPriceType }
     { label: "무료", value: "FREE" },
     { label: "참가비", value: "EXPENSE" },
     { label: "수입", value: "INCOME" },
-    { label: "협의 가능", value: "PENDING" },
+    { label: "비용협의", value: "PENDING" },
   ];
 
 /** FormDropdownInput 등에 전달 */
@@ -86,7 +86,9 @@ function labelToPriceEnum(label: string): AnnouncementPriceType | undefined {
   const t = label.trim();
   const byLabel = PRICE_TYPE_OPTIONS.find((o) => o.label === t)?.value;
   if (byLabel) return byLabel;
-  if (t === "협의가능") return "PENDING";
+  if (t === "비용협의" || t === "협의가능" || t === "협의 가능") {
+    return "PENDING";
+  }
   const byValue = PRICE_TYPE_OPTIONS.find((o) => o.value === t)?.value;
   return byValue;
 }
