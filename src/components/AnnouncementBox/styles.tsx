@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, RED, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -51,6 +51,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: 8,
     flex: 1,
+    alignItems: "center",
+  },
+  dDayText: {
+    fontSize: 13,
+    lineHeight: 16,
+    color: BLACK,
+    fontWeight: "700",
+    letterSpacing: 0.24,
+  },
+  dDayTextRed: {
+    color: RED.DEFAULT,
   },
   typeTag: {
     backgroundColor: GRAY.DARK_1,

@@ -1,6 +1,5 @@
 import { Text, View } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
-import Tag from "../Tag/Tag";
 import type { AnnouncementPriceType } from "../../lib/apis/announcement/types";
 import { formatAnnouncementPriceLineList } from "../../lib/announcement/announcementPrice";
 import styles from "./styles";
@@ -41,14 +40,15 @@ const AnnouncementCard = ({
       <View style={styles.container}>
         <View style={styles.header}>
           <Text style={styles.title}>{title}</Text>
-          {/* <View style={styles.countdownBadge}>
-            <Text style={styles.countdownText}>D-{daysLeft}</Text>
-          </View> */}
-          <View style={styles.tagsContainer}>
-            {/* <Tag text={type} variant="type" /> */}
-            {/* <Tag text={status} variant="status" /> */}
-          </View>
-          <Tag text={`D-${daysLeft}`} variant="countdown" daysLeft={daysLeft} />
+          <View style={styles.tagsContainer} />
+          <Text
+            style={[
+              styles.dDayText,
+              (daysLeft === 0 || daysLeft === 7) && styles.dDayTextRed,
+            ]}
+          >
+            {daysLeft === 0 ? "오늘마감" : `D-${daysLeft}`}
+          </Text>
         </View>
         <View style={styles.tagsContainer}>
           <View style={styles.typeTag}>
@@ -83,10 +83,7 @@ const AnnouncementCard = ({
             <Text style={styles.recruitmentMajorsLabel}>모집전공</Text>
             <View style={styles.recruitmentMajorsChips}>
               {recruitmentMajorNames.map((name, i) => (
-                <View
-                  key={`${name}-${i}`}
-                  style={styles.recruitmentMajorChip}
-                >
+                <View key={`${name}-${i}`} style={styles.recruitmentMajorChip}>
                   <Text style={styles.recruitmentMajorChipText}>{name}</Text>
                 </View>
               ))}

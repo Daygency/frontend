@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY, RED, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -61,17 +61,15 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     flexShrink: 0,
   },
-  countdownBadge: {
-    backgroundColor: MAIN.DEFAULT,
-    borderRadius: 6,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
+  dDayText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: BLACK,
+    fontWeight: "800",
+    letterSpacing: 0.24,
   },
-  countdownText: {
-    fontSize: 12,
-    lineHeight: 13,
-    color: WHITE,
-    fontWeight: "500",
+  dDayTextRed: {
+    color: RED.DEFAULT,
   },
   title: {
     fontSize: 16,

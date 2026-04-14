@@ -1,5 +1,4 @@
 import { Text, View } from "react-native";
-import Tag from "../Tag/Tag";
 import type { AnnouncementPriceType } from "../../lib/apis/announcement/types";
 import { formatAnnouncementPriceLine } from "../../lib/announcement/announcementPrice";
 import styles from "./styles";
@@ -51,12 +50,14 @@ const AnnouncementBox = ({
           <View style={styles.statusTag}>
             <Text style={styles.statusTagText}>{status}</Text>
           </View>
-          <Tag
-            text={`D-${daysLeft}`}
-            variant="countdown"
-            borderRadius={6}
-            daysLeft={daysLeft}
-          />
+          <Text
+            style={[
+              styles.dDayText,
+              (daysLeft === 0 || daysLeft === 7) && styles.dDayTextRed,
+            ]}
+          >
+            {daysLeft === 0 ? "오늘마감" : `D-${daysLeft}`}
+          </Text>
         </View>
         <View style={styles.headerRight}>
           <Text style={styles.dateText}>2026.01.31</Text>
