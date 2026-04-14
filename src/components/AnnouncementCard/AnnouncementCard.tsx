@@ -15,6 +15,8 @@ interface AnnouncementCardProps {
   price?: number;
   /** 모집 전공 이름 (표시할 항목이 있을 때만 하단 영역 렌더) */
   recruitmentMajorNames?: string[];
+  /** 목록·홈 등에서 내려온 누적 조회수 */
+  viewCount?: number;
   onPress?: () => void;
 }
 
@@ -26,6 +28,7 @@ const AnnouncementCard = ({
   priceType,
   price,
   recruitmentMajorNames = [],
+  viewCount,
   onPress,
 }: AnnouncementCardProps) => {
   const showPrice =
@@ -55,13 +58,25 @@ const AnnouncementCard = ({
             <Text style={styles.statusTagText}>{status}</Text>
           </View>
         </View>
-        {showPrice ? (
-          <Text style={styles.priceLine} numberOfLines={2}>
-            {formatAnnouncementPriceLineList(
-              priceType ?? "PENDING",
-              typeof price === "number" ? price : 0,
+        {showPrice || typeof viewCount === "number" ? (
+          <View style={styles.priceAndViewRow}>
+            {showPrice ? (
+              <Text
+                style={[styles.priceLine, styles.priceLineBesideView]}
+                numberOfLines={2}
+              >
+                {formatAnnouncementPriceLineList(
+                  priceType ?? "PENDING",
+                  typeof price === "number" ? price : 0,
+                )}
+              </Text>
+            ) : (
+              <View style={styles.priceLineBesideView} />
             )}
-          </Text>
+            {typeof viewCount === "number" ? (
+              <Text style={styles.viewCountText}>조회 {viewCount}</Text>
+            ) : null}
+          </View>
         ) : null}
         {showMajors ? (
           <View style={styles.recruitmentMajorsSection}>

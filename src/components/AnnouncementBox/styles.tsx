@@ -15,18 +15,37 @@ const styles = StyleSheet.create({
     color: BLACK,
     fontWeight: "700",
   },
-  priceLine: {
+  priceAndViewRow: {
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 8,
+    gap: 8,
+  },
+  priceLine: {
     fontSize: 15,
     lineHeight: 22,
     color: GRAY.DARK_2,
     fontWeight: "500",
   },
+  priceLineInRow: {
+    flex: 1,
+    minWidth: 0,
+  },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    alignItems: "flex-start",
     marginTop: 10,
+  },
+  headerRight: {
+    alignItems: "flex-end",
+  },
+  viewCountText: {
+    fontSize: 13,
+    lineHeight: 22,
+    color: GRAY.MEDIUM_100,
+    fontWeight: "400",
+    flexShrink: 0,
   },
   tagsContainer: {
     flexDirection: "row",

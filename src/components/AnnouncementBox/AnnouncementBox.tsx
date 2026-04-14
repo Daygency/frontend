@@ -15,6 +15,7 @@ const AnnouncementBox = ({
   type,
   status,
   daysLeft,
+  viewCount,
   priceType,
   price,
 }: AnnouncementBoxProps) => {
@@ -25,13 +26,22 @@ const AnnouncementBox = ({
   return (
     <View style={styles.container}>
       <Text style={styles.title}>{title}</Text>
-      {showPrice ? (
-        <Text style={styles.priceLine}>
-          {formatAnnouncementPriceLine(
-            priceType ?? "PENDING",
-            typeof price === "number" ? price : 0,
+      {showPrice || typeof viewCount === "number" ? (
+        <View style={styles.priceAndViewRow}>
+          {showPrice ? (
+            <Text style={[styles.priceLine, styles.priceLineInRow]}>
+              {formatAnnouncementPriceLine(
+                priceType ?? "PENDING",
+                typeof price === "number" ? price : 0,
+              )}
+            </Text>
+          ) : (
+            <View style={styles.priceLineInRow} />
           )}
-        </Text>
+          {typeof viewCount === "number" ? (
+            <Text style={styles.viewCountText}>조회 {viewCount}</Text>
+          ) : null}
+        </View>
       ) : null}
       <View style={styles.header}>
         <View style={styles.tagsContainer}>
@@ -48,7 +58,9 @@ const AnnouncementBox = ({
             daysLeft={daysLeft}
           />
         </View>
-        <Text style={styles.dateText}>2026.01.31</Text>
+        <View style={styles.headerRight}>
+          <Text style={styles.dateText}>2026.01.31</Text>
+        </View>
       </View>
     </View>
   );

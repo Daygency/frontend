@@ -328,6 +328,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                   type={item.type}
                   status={item.isRecruiting ? "모집중" : "모집마감"}
                   daysLeft={parseDaysLeft(item.dDay)}
+                  viewCount={item.viewCount}
                   priceType={item.priceType}
                   price={item.price}
                   recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
@@ -341,6 +342,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                       status: item.isRecruiting ? "모집중" : "모집마감",
                       daysLeft: parseDaysLeft(item.dDay),
                       postId: item.postId,
+                      viewCount: item.viewCount,
                     });
                   }}
                 />

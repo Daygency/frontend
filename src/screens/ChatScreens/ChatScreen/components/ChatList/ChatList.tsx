@@ -22,6 +22,7 @@ import type { AnnouncementListItem } from "../../../../../lib/apis/announcement/
 import { formatChatListTime } from "../../../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../../../lib/chat/chatRoomNavigation";
 import { CHAT_APPLIED_ROOMS_REFRESH } from "../../../../../lib/chat/chatRoomsEvents";
+import { GRAY } from "../../../../../color";
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
 
@@ -408,51 +409,73 @@ function MyAnnouncementsList() {
               <View
                 style={{
                   flexDirection: "row",
+                  alignItems: "flex-end",
+                  justifyContent: "space-between",
                   gap: 8,
                   marginTop: 8,
-                  flexWrap: "wrap",
                 }}
               >
                 <View
                   style={{
-                    backgroundColor: "#FFFFFF",
-                    borderRadius: 12,
-                    height: 24,
-                    paddingHorizontal: 8,
-                    justifyContent: "center",
-                    borderWidth: 1,
-                    borderColor: "#D1D5DB",
+                    flexDirection: "row",
+                    gap: 8,
+                    flexWrap: "wrap",
+                    flex: 1,
+                    minWidth: 0,
                   }}
                 >
-                  <Text
+                  <View
                     style={{
-                      color: "#111827",
-                      fontSize: 12,
-                      fontWeight: "600",
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: 12,
+                      height: 24,
+                      paddingHorizontal: 8,
+                      justifyContent: "center",
+                      borderWidth: 1,
+                      borderColor: "#D1D5DB",
                     }}
                   >
-                    {item.isRecruiting ? "모집중" : "마감"}
-                  </Text>
-                </View>
-                <View
-                  style={{
-                    backgroundColor: "#1F2A44",
-                    borderRadius: 12,
-                    height: 24,
-                    paddingHorizontal: 8,
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text
+                    <Text
+                      style={{
+                        color: "#111827",
+                        fontSize: 12,
+                        fontWeight: "600",
+                      }}
+                    >
+                      {item.isRecruiting ? "모집중" : "마감"}
+                    </Text>
+                  </View>
+                  <View
                     style={{
-                      color: "#FFFFFF",
-                      fontSize: 12,
-                      fontWeight: "700",
+                      backgroundColor: "#1F2A44",
+                      borderRadius: 12,
+                      height: 24,
+                      paddingHorizontal: 8,
+                      justifyContent: "center",
                     }}
                   >
-                    {item.dDay}
-                  </Text>
+                    <Text
+                      style={{
+                        color: "#FFFFFF",
+                        fontSize: 12,
+                        fontWeight: "700",
+                      }}
+                    >
+                      {item.dDay}
+                    </Text>
+                  </View>
                 </View>
+                {typeof item.viewCount === "number" ? (
+                  <Text
+                    style={{
+                      fontSize: 12,
+                      color: GRAY.MEDIUM_100,
+                      flexShrink: 0,
+                    }}
+                  >
+                    조회 {item.viewCount}
+                  </Text>
+                ) : null}
               </View>
             </View>
           </View>

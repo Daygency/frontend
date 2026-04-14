@@ -163,10 +163,14 @@ const ApplicationScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const floatingBottomPad = insets.bottom + 4;
-  const { title, type, status, daysLeft } = route.params;
+  const { title, type, status, daysLeft, viewCount: viewCountParam } =
+    route.params;
   const postId = route.params.postId;
 
   const [config, setConfig] = useState<ApplicationConfig | null>(null);
+  const [viewCount, setViewCount] = useState<number | undefined>(
+    viewCountParam,
+  );
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(null);
@@ -234,6 +238,14 @@ const ApplicationScreen = () => {
           return;
         }
         const d = detail as Record<string, unknown>;
+        const vcRaw = d.viewCount ?? d.view_count;
+        if (
+          typeof vcRaw === "number" &&
+          Number.isFinite(vcRaw) &&
+          vcRaw >= 0
+        ) {
+          setViewCount(Math.floor(vcRaw));
+        }
         setRecruitmentOpen(deriveRecruitmentOpen(d, status));
         if (detailHasExplicitNullApplicationConfig(d)) {
           Alert.alert(
@@ -500,6 +512,7 @@ const ApplicationScreen = () => {
           type={type}
           status={status}
           daysLeft={daysLeft}
+          viewCount={viewCount}
         />
         <View style={{ paddingHorizontal: 12, paddingVertical: 15 }}>
           {config.includeName && (

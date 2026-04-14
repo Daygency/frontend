@@ -54,6 +54,8 @@ export type AnnouncementListItem = {
   majorIds?: string[];
   /** 목록 API가 전공 객체까지 줄 때 */
   majors?: { majorId: string; name: string }[];
+  /** 누적 조회수(목록·내 공고 목록 등 DB 저장값) */
+  viewCount?: number;
 };
 
 export type AnnouncementListResponse = {

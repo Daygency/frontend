@@ -41,6 +41,7 @@ type RootStackParamList = {
     type: string;
     status: string;
     daysLeft: number;
+    viewCount?: number;
   };
 };
 
@@ -232,6 +233,7 @@ const ScrapScene = () => {
               type={item.type}
               status={item.isRecruiting ? "모집중" : "모집마감"}
               daysLeft={parseDDay(item.dDay)}
+              viewCount={item.viewCount}
               recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
                 item,
                 majorsCatalog,
@@ -243,6 +245,7 @@ const ScrapScene = () => {
                   type: item.type,
                   status: item.isRecruiting ? "모집중" : "모집마감",
                   daysLeft: parseDDay(item.dDay),
+                  viewCount: item.viewCount,
                 });
               }}
             />

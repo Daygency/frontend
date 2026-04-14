@@ -10,6 +10,8 @@ export type HomeAnnouncementItem = {
   price?: number;
   majorIds?: string[];
   majors?: { majorId: string; name: string }[];
+  /** 홈 최신 공고 — DB 저장 누적 조회수 */
+  viewCount?: number;
 };
 
 export type HomeNewsItem = {

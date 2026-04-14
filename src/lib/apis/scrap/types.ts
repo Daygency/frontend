@@ -38,6 +38,7 @@ export type MyScrappedAnnouncementItem = {
   dDay: string;
   majorIds?: string[];
   majors?: { majorId: string; name: string }[];
+  viewCount?: number;
 };
 
 export type MyScrappedAnnouncementsResponse = {

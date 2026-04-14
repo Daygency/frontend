@@ -44,6 +44,23 @@ const styles = StyleSheet.create({
     color: BLACK,
     fontWeight: "400",
   },
+  priceAndViewRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 8,
+    gap: 8,
+  },
+  priceLineBesideView: {
+    flex: 1,
+    minWidth: 0,
+  },
+  viewCountText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: GRAY.MEDIUM_100,
+    fontWeight: "400",
+    flexShrink: 0,
+  },
   countdownBadge: {
     backgroundColor: MAIN.DEFAULT,
     borderRadius: 6,
@@ -64,7 +81,6 @@ const styles = StyleSheet.create({
     color: BLACK,
   },
   priceLine: {
-    marginTop: 8,
     fontSize: 13,
     lineHeight: 18,
     color: GRAY.DARK_2,

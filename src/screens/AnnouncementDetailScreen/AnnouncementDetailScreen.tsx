@@ -66,6 +66,8 @@ export type AnnouncementDetailParams = {
   daysLeft: number;
   postId?: string;
   postedDate?: string;
+  /** 목록 등에서 넘긴 조회수(상세 진입 후 API 값으로 덮어씀) */
+  viewCount?: number;
   /** 공고 상세에서 받은 지원 양식 설정 (지원서 화면으로 전달) */
   applicationConfig?: ApplicationConfig | null;
 };
@@ -152,6 +154,7 @@ const AnnouncementDetailScreen = () => {
     priceType?: AnnouncementPriceType;
     price?: number;
     majors?: { majorId: string; name: string }[];
+    viewCount?: number;
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [closingEarly, setClosingEarly] = useState(false);
@@ -304,6 +307,14 @@ const AnnouncementDetailScreen = () => {
         ? majorsPick.majors
         : [];
 
+      const viewCountRaw = d.viewCount ?? d.view_count;
+      const parsedViewCount =
+        typeof viewCountRaw === "number" &&
+        Number.isFinite(viewCountRaw) &&
+        viewCountRaw >= 0
+          ? Math.floor(viewCountRaw)
+          : undefined;
+
       setDetailData({
         title: String(title),
         type: String(type),
@@ -312,6 +323,7 @@ const AnnouncementDetailScreen = () => {
         applicationConfig,
         priceType,
         price,
+        ...(parsedViewCount !== undefined ? { viewCount: parsedViewCount } : {}),
         ...(typeof rawContent === "string" && rawContent.trim()
           ? { content: rawContent }
           : {}),
@@ -365,6 +377,8 @@ const AnnouncementDetailScreen = () => {
   const displayType = detailData?.type ?? params.type ?? "";
   const displayStatus = detailData?.status ?? params.status ?? "모집중";
   const displayDaysLeft = detailData?.daysLeft ?? params.daysLeft ?? 0;
+  const displayViewCount =
+    detailData?.viewCount ?? params.viewCount;
 
   const canEarlyClose =
     isMine &&
@@ -499,6 +513,7 @@ const AnnouncementDetailScreen = () => {
             type={displayType}
             status={displayStatus}
             daysLeft={displayDaysLeft}
+            viewCount={displayViewCount}
             priceType={detailData?.priceType}
             price={detailData?.price}
           />
@@ -709,6 +724,7 @@ const AnnouncementDetailScreen = () => {
                 status: displayStatus,
                 daysLeft: displayDaysLeft,
                 postId: params.postId,
+                viewCount: displayViewCount,
                 applicationConfig:
                   detailData?.applicationConfig ??
                   params.applicationConfig ??

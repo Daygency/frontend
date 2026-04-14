@@ -44,6 +44,7 @@ type RootStackParamList = {
     type: string;
     status: string;
     daysLeft: number;
+    viewCount?: number;
   };
 };
 
@@ -218,6 +219,7 @@ const PostsCommentsScene = () => {
             type={item.category ?? "기타"}
             status={normalizeStatus(item.status, item.deadlineAt)}
             daysLeft={getDaysLeft(item.deadlineAt)}
+            viewCount={item.viewCount}
             onPress={() =>
               navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                 postId: item.postId,
@@ -225,6 +227,7 @@ const PostsCommentsScene = () => {
                 type: item.category ?? "기타",
                 status: normalizeStatus(item.status, item.deadlineAt),
                 daysLeft: getDaysLeft(item.deadlineAt),
+                viewCount: item.viewCount,
               })
             }
           />
