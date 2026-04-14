@@ -5,8 +5,8 @@ import {
   Text,
   View,
 } from "react-native";
-import { useCallback, useEffect, useState } from "react";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
@@ -90,6 +90,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState<{ name: string; categoryId: string }[]>([]);
   const [majors, setMajors] = useState<{ name: string; majorId: string }[]>([]);
+  const loadListSeqRef = useRef(0);
 
   const buildListParams = useCallback(() => {
     const status =
@@ -112,8 +113,8 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             .filter(Boolean)
             .join(",")
         : undefined;
-    const priceTypes = selectedPriceLabelsToApiParam(selectedPriceTypes);
-    return { status, categoryId, majorIds, priceTypes };
+    const priceType = selectedPriceLabelsToApiParam(selectedPriceTypes);
+    return { status, categoryId, majorIds, priceType };
   }, [
     selectedStatus,
     selectedTypes,
@@ -132,21 +133,23 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         setLoading(false);
         return;
       }
+      const seq = ++loadListSeqRef.current;
       setLoading(true);
       try {
-        const { status, categoryId, majorIds, priceTypes } = buildListParams();
+        const { status, categoryId, majorIds, priceType } = buildListParams();
         const params = {
           cursor,
           limit: 20,
           status,
           categoryId,
           majorIds: majorIds || undefined,
-          priceTypes,
+          priceType,
         };
         const res =
           activeTab === "내 공고"
             ? await getMyAnnouncementList(params)
             : await getAnnouncementList(params);
+        if (seq !== loadListSeqRef.current) return;
         if (!res) {
           setItems([]);
           setNextCursor(null);
@@ -161,11 +164,16 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         setNextCursor(res.nextCursor);
         setHasMore(res.hasMore ?? false);
       } finally {
-        setLoading(false);
+        if (seq === loadListSeqRef.current) {
+          setLoading(false);
+        }
       }
     },
     [buildListParams, activeTab, isLoggedIn],
   );
+
+  const loadDataRef = useRef(loadData);
+  loadDataRef.current = loadData;
 
   useEffect(() => {
     getAnnouncementCategories().then((list) => {
@@ -186,15 +194,11 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     });
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // 삭제/수정 후 돌아왔을 때 목록 최신화
+  /** 탭·로그인 변경 + 화면 포커스 시에만 자동 조회. 태그 필터는 모달「선택 완료」에서만 loadData 호출 */
   useFocusEffect(
     useCallback(() => {
-      loadData();
-    }, [loadData])
+      loadDataRef.current();
+    }, [activeTab, isLoggedIn]),
   );
 
   const loadMore = () => {
@@ -293,7 +297,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         ]}
         onComplete={() => {
           setIsTagModalVisible(false);
-          loadData();
+          loadDataRef.current();
         }}
       />
       <View style={styles.scrollContentWrapper}>

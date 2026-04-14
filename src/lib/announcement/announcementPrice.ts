@@ -82,14 +82,26 @@ export const ANNOUNCEMENT_PRICE_FILTER_LABELS = PRICE_TYPE_OPTIONS.map(
   (o) => o.label,
 );
 
-/** 선택한 라벨들을 목록 API `priceTypes` 쿼리(콤마 구분 enum)로 변환 */
+function labelToPriceEnum(label: string): AnnouncementPriceType | undefined {
+  const t = label.trim();
+  const byLabel = PRICE_TYPE_OPTIONS.find((o) => o.label === t)?.value;
+  if (byLabel) return byLabel;
+  if (t === "협의가능") return "PENDING";
+  const byValue = PRICE_TYPE_OPTIONS.find((o) => o.value === t)?.value;
+  return byValue;
+}
+
+/**
+ * 목록 API `priceType` 단일 쿼리 (ListAnnouncementQueryDto).
+ * 여러 금액 유형을 선택한 경우 **첫 번째로 매칭되는 값**만 사용한다.
+ */
 export function selectedPriceLabelsToApiParam(
   selectedLabels: string[],
-): string | undefined {
+): AnnouncementPriceType | undefined {
   if (selectedLabels.length === 0) return undefined;
-  const enums = selectedLabels
-    .map((l) => PRICE_TYPE_OPTIONS.find((o) => o.label === l)?.value)
-    .filter((v): v is AnnouncementPriceType => v !== undefined);
-  if (enums.length === 0) return undefined;
-  return [...new Set(enums)].join(",");
+  for (const label of selectedLabels) {
+    const e = labelToPriceEnum(label);
+    if (e) return e;
+  }
+  return undefined;
 }

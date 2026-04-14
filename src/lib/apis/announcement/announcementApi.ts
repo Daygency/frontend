@@ -88,7 +88,7 @@ export async function getMyAnnouncementList(
     if (params?.status) q.set("status", params.status);
     if (params?.categoryId) q.set("categoryId", params.categoryId);
     if (params?.majorIds) q.set("majorIds", params.majorIds);
-    if (params?.priceTypes) q.set("priceTypes", params.priceTypes);
+    if (params?.priceType) q.set("priceType", params.priceType);
 
     const query = q.toString();
     const url = `${API_BASE}/announcement/my${query ? `?${query}` : ""}`;
@@ -127,7 +127,7 @@ export async function getAnnouncementList(
     if (params?.status) q.set("status", params.status);
     if (params?.categoryId) q.set("categoryId", params.categoryId);
     if (params?.majorIds) q.set("majorIds", params.majorIds);
-    if (params?.priceTypes) q.set("priceTypes", params.priceTypes);
+    if (params?.priceType) q.set("priceType", params.priceType);
 
     const query = q.toString();
     const url = `${API_BASE}/announcement${query ? `?${query}` : ""}`;

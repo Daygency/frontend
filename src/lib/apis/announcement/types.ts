@@ -68,8 +68,8 @@ export type AnnouncementListParams = {
   status?: AnnouncementStatus;
   categoryId?: string;
   majorIds?: string; // 콤마 구분: uuid1,uuid2
-  /** 콤마 구분: FREE,EXPENSE,INCOME,PENDING */
-  priceTypes?: string;
+  /** 금액 구분 단일 값 — ListAnnouncementQueryDto */
+  priceType?: AnnouncementPriceType;
 };
 
 /** README: 작성·수정 성공 응답 — majors·priceType·price 포함 */
