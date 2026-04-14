@@ -331,6 +331,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                   viewCount={item.viewCount}
                   priceType={item.priceType}
                   price={item.price}
+                  address={item.address}
                   recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
                     item,
                     majors,

@@ -144,6 +144,7 @@ const AllContentScene = () => {
               viewCount={item.viewCount}
               priceType={item.priceType}
               price={item.price}
+              address={item.address}
               recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
                 item,
                 majorsCatalog,

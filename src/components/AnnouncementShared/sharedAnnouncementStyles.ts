@@ -40,12 +40,7 @@ export const sharedAnnouncementStyles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   dDayTextRed: {
-    backgroundColor: RED.DEFAULT,
-    color: WHITE,
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 4,
-    overflow: "hidden",
+    color: RED.DEFAULT,
   },
   tagsContainer: {
     flexDirection: "row",
@@ -54,7 +49,8 @@ export const sharedAnnouncementStyles = StyleSheet.create({
     alignItems: "center",
   },
   typeTag: {
-    backgroundColor: GRAY.DARK_1,
+    // backgroundColor: GRAY.DEFAULT,
+    backgroundColor: "#EDF2F7", // 하늘색
     borderRadius: 4,
     paddingHorizontal: 7,
     paddingVertical: 3,

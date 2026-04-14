@@ -379,8 +379,6 @@ const AnnouncementDetailScreen = () => {
   const displayDaysLeft = detailData?.daysLeft ?? params.daysLeft ?? 0;
   const displayViewCount =
     detailData?.viewCount ?? params.viewCount;
-  const recruitmentMajorNames =
-    detailData?.majors?.map((m) => m.name).filter(Boolean) ?? [];
 
   const canEarlyClose =
     isMine &&
@@ -519,7 +517,6 @@ const AnnouncementDetailScreen = () => {
               viewCount={displayViewCount}
               priceType={detailData?.priceType}
               price={detailData?.price}
-              recruitmentMajorNames={recruitmentMajorNames}
             />
           </View>
         </View>

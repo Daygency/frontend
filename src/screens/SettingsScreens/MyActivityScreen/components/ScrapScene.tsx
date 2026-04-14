@@ -234,6 +234,7 @@ const ScrapScene = () => {
               status={item.isRecruiting ? "모집중" : "모집마감"}
               daysLeft={parseDDay(item.dDay)}
               viewCount={item.viewCount}
+              address={item.address}
               recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
                 item,
                 majorsCatalog,

@@ -13,6 +13,21 @@ export default StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 3,
   },
+  tagsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    width: "100%",
+  },
+  addressInline: {
+    flex: 1,
+    minWidth: 0,
+    fontSize: 12,
+    lineHeight: 14,
+    letterSpacing: 0.2,
+    color: BLACK,
+    fontWeight: "500",
+  },
   recruitmentMajorsSection: {
     marginTop: 10,
   },

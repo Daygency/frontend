@@ -11,7 +11,10 @@ import type {
   AnnouncementListResponse,
   AnnouncementListItem,
 } from "./types";
-import { pickMajorsFromAnnouncementRaw } from "../../announcement/recruitmentMajors";
+import {
+  pickAddressFromAnnouncementRaw,
+  pickMajorsFromAnnouncementRaw,
+} from "../../announcement/recruitmentMajors";
 
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
@@ -103,10 +106,14 @@ export async function getMyAnnouncementList(
     const data = (await res.json()) as AnnouncementListResponse;
     const items = Array.isArray(data?.items) ? data.items : [];
     return {
-      items: items.map((item) => ({
-        ...(item as AnnouncementListItem),
-        ...pickMajorsFromAnnouncementRaw(item),
-      })),
+      items: items.map((item) => {
+        const address = pickAddressFromAnnouncementRaw(item);
+        return {
+          ...(item as AnnouncementListItem),
+          ...pickMajorsFromAnnouncementRaw(item),
+          ...(address ? { address } : {}),
+        };
+      }),
       nextCursor: data?.nextCursor ?? null,
       hasMore: Boolean(data?.hasMore),
     };
@@ -144,10 +151,14 @@ export async function getAnnouncementList(
     const itemCount = items.length;
     console.log("[getAnnouncementList] 성공:", url, "items:", itemCount);
     return {
-      items: items.map((item) => ({
-        ...(item as AnnouncementListItem),
-        ...pickMajorsFromAnnouncementRaw(item),
-      })),
+      items: items.map((item) => {
+        const address = pickAddressFromAnnouncementRaw(item);
+        return {
+          ...(item as AnnouncementListItem),
+          ...pickMajorsFromAnnouncementRaw(item),
+          ...(address ? { address } : {}),
+        };
+      }),
       nextCursor: data?.nextCursor ?? null,
       hasMore: Boolean(data?.hasMore),
     };

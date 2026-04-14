@@ -56,6 +56,8 @@ export type AnnouncementListItem = {
   majors?: { majorId: string; name: string }[];
   /** 누적 조회수(목록·내 공고 목록 등 DB 저장값) */
   viewCount?: number;
+  /** 공연·모집 장소 (목록 API가 내려줄 때) */
+  address?: string;
 };
 
 export type AnnouncementListResponse = {

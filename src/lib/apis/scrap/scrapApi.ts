@@ -14,7 +14,10 @@ import type {
   MyScrappedAnnouncementsResponse,
   ScrapItem,
 } from "./types";
-import { pickMajorsFromAnnouncementRaw } from "../../announcement/recruitmentMajors";
+import {
+  pickAddressFromAnnouncementRaw,
+  pickMajorsFromAnnouncementRaw,
+} from "../../announcement/recruitmentMajors";
 
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
@@ -114,10 +117,14 @@ export async function getMyScrappedAnnouncements(
     const raw = (await res.json()) as Partial<MyScrappedAnnouncementsResponse>;
     const items = Array.isArray(raw.items) ? raw.items : [];
     return {
-      items: items.map((item) => ({
-        ...item,
-        ...pickMajorsFromAnnouncementRaw(item),
-      })),
+      items: items.map((item) => {
+        const address = pickAddressFromAnnouncementRaw(item);
+        return {
+          ...item,
+          ...pickMajorsFromAnnouncementRaw(item),
+          ...(address ? { address } : {}),
+        };
+      }),
       nextCursor: raw.nextCursor ?? null,
       hasMore: Boolean(raw.hasMore),
     };

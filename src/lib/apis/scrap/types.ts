@@ -39,6 +39,8 @@ export type MyScrappedAnnouncementItem = {
   majorIds?: string[];
   majors?: { majorId: string; name: string }[];
   viewCount?: number;
+  /** 공연·모집 장소 */
+  address?: string;
 };
 
 export type MyScrappedAnnouncementsResponse = {

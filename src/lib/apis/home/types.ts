@@ -12,6 +12,8 @@ export type HomeAnnouncementItem = {
   majors?: { majorId: string; name: string }[];
   /** 홈 최신 공고 — DB 저장 누적 조회수 */
   viewCount?: number;
+  /** 공연·모집 장소 */
+  address?: string;
 };
 
 export type HomeNewsItem = {

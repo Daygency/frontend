@@ -32,6 +32,17 @@ export function pickMajorsFromAnnouncementRaw(raw: unknown): {
   return out;
 }
 
+/** 목록 등 raw에서 장소 문자열 (camelCase·대문자 변형) */
+export function pickAddressFromAnnouncementRaw(
+  raw: unknown,
+): string | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const r = raw as Record<string, unknown>;
+  const v = r.address ?? r.Address;
+  if (typeof v === "string" && v.trim()) return v.trim();
+  return undefined;
+}
+
 /**
  * 카드/리스트에 표시할 전공 이름 배열 (API가 이름을 주면 우선, 없으면 majorIds + 카탈로그로 매핑)
  */

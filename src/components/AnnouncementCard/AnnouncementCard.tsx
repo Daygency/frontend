@@ -17,6 +17,8 @@ interface AnnouncementCardProps {
   recruitmentMajorNames?: string[];
   /** 목록·홈 등에서 내려온 누적 조회수 */
   viewCount?: number;
+  /** 장소 (목록에서 태그 오른쪽에 표시) */
+  address?: string;
   onPress?: () => void;
 }
 
@@ -29,6 +31,7 @@ const AnnouncementCard = ({
   price,
   recruitmentMajorNames = [],
   viewCount,
+  address,
   onPress,
 }: AnnouncementCardProps) => {
   const showPrice =
@@ -44,19 +47,28 @@ const AnnouncementCard = ({
         <Text
           style={[
             styles.dDayText,
-            (daysLeft === 0 || daysLeft === 7) && styles.dDayTextRed,
+            daysLeft >= 0 && daysLeft <= 7 && styles.dDayTextRed,
           ]}
         >
           {daysLeft === 0 ? "오늘마감" : `D-${daysLeft}`}
         </Text>
       </View>
-      <View style={styles.tagsContainer}>
+      <View style={styles.tagsRow}>
         <View style={styles.typeTag}>
           <Text style={styles.typeTagText}>{type}</Text>
         </View>
         <View style={styles.statusTag}>
           <Text style={styles.statusTagText}>{status}</Text>
         </View>
+        {address?.trim() ? (
+          <Text
+            style={styles.addressInline}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {address.trim()}
+          </Text>
+        ) : null}
       </View>
       {showPrice || typeof viewCount === "number" ? (
         <View style={styles.priceAndViewRow}>
@@ -94,9 +106,7 @@ const AnnouncementCard = ({
   );
 
   if (onPress) {
-    return (
-      <ShadowCardButton onPress={onPress}>{inner}</ShadowCardButton>
-    );
+    return <ShadowCardButton onPress={onPress}>{inner}</ShadowCardButton>;
   }
 
   return (
