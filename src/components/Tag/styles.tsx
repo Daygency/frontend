@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     letterSpacing: 0.24,
     color: WHITE,
-    fontWeight: "500",
+    fontWeight: "700",
   },
   reactionTag: {
     backgroundColor: GRAY.MEDIUM,
