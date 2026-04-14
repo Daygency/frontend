@@ -54,7 +54,7 @@ type RowModel = {
 export default function AnnouncementApplicantsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteParams>();
-  const { postId, title, typeTag, statusTag, dDay } = route.params;
+  const { postId, title } = route.params;
   const { user } = useAuth();
   const myUserId = user?.socialId?.trim() ?? "";
 
@@ -232,37 +232,6 @@ export default function AnnouncementApplicantsScreen() {
     }
   };
 
-  const listHeader = (
-    <View>
-      <View style={styles.postCard}>
-        <View style={styles.postThumb} />
-        <View style={styles.postContent}>
-          <Text style={styles.postTitle} numberOfLines={2}>
-            {title}
-          </Text>
-          <View style={styles.postTagsRow}>
-            {typeTag ? (
-              <View style={[styles.tagChip, styles.tagChipOrange]}>
-                <Text style={[styles.tagText, styles.tagTextOrange]}>{typeTag}</Text>
-              </View>
-            ) : null}
-            {statusTag ? (
-              <View style={[styles.tagChip, styles.tagChipGray]}>
-                <Text style={[styles.tagText, styles.tagTextGray]}>{statusTag}</Text>
-              </View>
-            ) : null}
-            {dDay ? (
-              <View style={[styles.tagChip, styles.tagChipNavy]}>
-                <Text style={[styles.tagText, styles.tagTextNavy]}>{dDay}</Text>
-              </View>
-            ) : null}
-          </View>
-        </View>
-      </View>
-      <Text style={styles.sectionLabel}>지원자 {rows.length}</Text>
-    </View>
-  );
-
   if (loading && rows.length === 0) {
     return (
       <View
@@ -285,7 +254,6 @@ export default function AnnouncementApplicantsScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        ListHeaderComponent={listHeader}
         ListEmptyComponent={
           <View style={{ paddingHorizontal: 24, paddingTop: 24 }}>
             <Text style={{ color: "#888", textAlign: "center" }}>

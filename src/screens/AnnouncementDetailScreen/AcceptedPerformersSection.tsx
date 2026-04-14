@@ -14,7 +14,7 @@ import { getRoomsByPost } from "../../lib/apis/chat/chatApi";
 import type { ChatRoomListItem } from "../../lib/apis/chat/types";
 import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
 import { RootRoutes } from "../../navigations/routes";
-import { BLACK, BLUE, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 type Props = {
   postId: string;
@@ -193,7 +193,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: BLUE.DEFAULT,
+    backgroundColor: MAIN.DEFAULT,
     justifyContent: "center",
     alignItems: "center",
   },
