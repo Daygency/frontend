@@ -45,7 +45,7 @@ const AnnouncementCard = ({
             {/* <Tag text={type} variant="type" /> */}
             {/* <Tag text={status} variant="status" /> */}
           </View>
-          <Tag text={`D-${daysLeft}`} variant="countdown" />
+          <Tag text={`D-${daysLeft}`} variant="countdown" daysLeft={daysLeft} />
         </View>
         <View style={styles.tagsContainer}>
           <View style={styles.typeTag}>

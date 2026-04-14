@@ -41,7 +41,12 @@ const AnnouncementBox = ({
           <View style={styles.statusTag}>
             <Text style={styles.statusTagText}>{status}</Text>
           </View>
-          <Tag text={`D-${daysLeft}`} variant="countdown" borderRadius={6} />
+          <Tag
+            text={`D-${daysLeft}`}
+            variant="countdown"
+            borderRadius={6}
+            daysLeft={daysLeft}
+          />
         </View>
         <Text style={styles.dateText}>2026.01.31</Text>
       </View>

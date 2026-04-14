@@ -1,4 +1,5 @@
 import { Text, View, ViewStyle } from "react-native";
+import { PURPLE, RED } from "../../color";
 import styles from "./styles";
 
 type TagVariant = "type" | "status" | "countdown" | "reaction";
@@ -10,6 +11,8 @@ interface TagProps {
   backgroundColor?: string;
   textColor?: string;
   borderRadius?: number;
+  /** countdown variant: 5일 이하 빨강, 10일 이하 보라, 그 외 기본색 */
+  daysLeft?: number;
 }
 
 const Tag = ({
@@ -19,6 +22,7 @@ const Tag = ({
   backgroundColor,
   textColor,
   borderRadius,
+  daysLeft,
 }: TagProps) => {
   const getStyle = (): ViewStyle[] => {
     const baseStyle: ViewStyle[] = [styles.tag];
@@ -32,6 +36,13 @@ const Tag = ({
         break;
       case "countdown":
         baseStyle.push(styles.countdownTag as ViewStyle);
+        if (daysLeft !== undefined) {
+          if (daysLeft <= 5) {
+            baseStyle.push({ backgroundColor: RED.DEFAULT });
+          } else if (daysLeft <= 10) {
+            baseStyle.push({ backgroundColor: PURPLE.DEFAULT });
+          }
+        }
         break;
       case "reaction":
         baseStyle.push(styles.reactionTag as ViewStyle);
