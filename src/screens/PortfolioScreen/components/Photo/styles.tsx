@@ -10,6 +10,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 16,
   },
+  embeddedRoot: {
+    backgroundColor: WHITE,
+  },
   grid: {
     flexDirection: "row",
     flexWrap: "wrap",

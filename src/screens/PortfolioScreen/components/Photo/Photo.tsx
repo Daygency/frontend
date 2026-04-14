@@ -1,8 +1,12 @@
-import { View, Text, ScrollView, Image } from "react-native";
+import { View, Text, ScrollView } from "react-native";
 import styles from "./styles";
-import { GRAY, WHITE } from "../../../../color";
+import { GRAY } from "../../../../color";
 
-const Photo = () => {
+type PhotoProps = {
+  embedded?: boolean;
+};
+
+const Photo = ({ embedded = false }: PhotoProps) => {
   // 임시 이미지 데이터
   const photos = [
     { id: 1, uri: null },
@@ -13,17 +17,27 @@ const Photo = () => {
     { id: 6, uri: null },
   ];
 
+  const grid = (
+    <View style={styles.grid}>
+      {photos.map((photo) => (
+        <View key={photo.id} style={styles.photoItem}>
+          <View style={styles.photoPlaceholder}>
+            <Text style={styles.photoPlaceholderText}>사진</Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+
+  if (embedded) {
+    return (
+      <View style={[styles.embeddedRoot, styles.contentContainer]}>{grid}</View>
+    );
+  }
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <View style={styles.grid}>
-        {photos.map((photo) => (
-          <View key={photo.id} style={styles.photoItem}>
-            <View style={styles.photoPlaceholder}>
-              <Text style={styles.photoPlaceholderText}>사진</Text>
-            </View>
-          </View>
-        ))}
-      </View>
+      {grid}
     </ScrollView>
   );
 };

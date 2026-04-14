@@ -11,6 +11,9 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     gap: 10,
   },
+  embeddedRoot: {
+    backgroundColor: WHITE,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "600",

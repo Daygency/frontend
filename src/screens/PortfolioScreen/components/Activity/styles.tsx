@@ -7,6 +7,10 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
     marginTop: 12,
   },
+  embeddedContainer: {
+    backgroundColor: WHITE,
+    marginTop: 12,
+  },
   contentContainer: {
     paddingHorizontal: 12,
     paddingVertical: 16,

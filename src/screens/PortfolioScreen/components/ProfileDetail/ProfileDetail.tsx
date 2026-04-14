@@ -21,7 +21,11 @@ import { RootRoutes } from "../../../../navigations/routes";
 
 type LoadedProfile = ProfileResponseDto | PublicProfileResponseDto | null;
 
-const ProfileDetail = () => {
+type ProfileDetailProps = {
+  embedded?: boolean;
+};
+
+const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
   const { user } = useAuth();
   const route = useRoute();
   const routeParams = (route.params ?? {}) as { userId?: string };
@@ -242,11 +246,8 @@ const ProfileDetail = () => {
   const certList =
     p?.certificateEntries ?? p?.certificates ?? [];
 
-  return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={styles.contentContainer}
-    >
+  const body = (
+    <>
       <ShadowCardButton
         styles={{
           container: {
@@ -357,6 +358,21 @@ const ProfileDetail = () => {
           )}
         </ShadowCardButton>
       ) : null}
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <View style={[styles.embeddedRoot, styles.contentContainer]}>{body}</View>
+    );
+  }
+
+  return (
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.contentContainer}
+    >
+      {body}
     </ScrollView>
   );
 };
