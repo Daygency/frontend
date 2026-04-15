@@ -15,6 +15,14 @@ export function calendarDaysUntilDeadline(
   return Math.round((deadline.getTime() - today.getTime()) / 86400000);
 }
 
+/** 모집 마감일(날짜)이 오늘보다 이전이면 true. 마감일이 없으면 false. */
+export function isRecruitmentDeadlineDatePassed(
+  deadlineAt: string | undefined | null,
+): boolean {
+  const n = calendarDaysUntilDeadline(deadlineAt);
+  return n !== null && n < 0;
+}
+
 export function effectiveAnnouncementDaysLeft(
   deadlineAt: string | undefined | null,
   parsedDaysLeft: number,

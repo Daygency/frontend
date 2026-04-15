@@ -38,7 +38,10 @@ export type CreateAnnouncementDto = {
   price?: number;
 };
 
-export type UpdateAnnouncementDto = Partial<CreateAnnouncementDto>;
+export type UpdateAnnouncementDto = Partial<CreateAnnouncementDto> & {
+  /** 수동 완료 표시 — PATCH 전용 (README: completed_manually) */
+  completed?: boolean;
+};
 
 export type AnnouncementListItem = {
   postId: string;

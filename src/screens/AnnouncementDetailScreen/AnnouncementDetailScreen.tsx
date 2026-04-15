@@ -49,6 +49,7 @@ import {
 import {
   effectiveAnnouncementDaysLeft,
   formatAnnouncementDDayLabel,
+  isRecruitmentDeadlineDatePassed,
 } from "../../lib/announcement/announcementDeadline";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
 import { pickMajorsFromAnnouncementRaw } from "../../lib/announcement/recruitmentMajors";
@@ -161,9 +162,12 @@ const AnnouncementDetailScreen = () => {
     price?: number;
     majors?: { majorId: string; name: string }[];
     viewCount?: number;
+    /** 공연·일정 종료 처리 여부(API `completed`) */
+    completed?: boolean;
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [closingEarly, setClosingEarly] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -328,11 +332,16 @@ const AnnouncementDetailScreen = () => {
           ? Math.floor(viewCountRaw)
           : undefined;
 
+      const completedRaw = d.completed ?? d.completed_manually;
+      const completedFlag =
+        typeof completedRaw === "boolean" ? completedRaw : false;
+
       setDetailData({
         title: String(title),
         type: String(type),
         status,
         daysLeft,
+        completed: completedFlag,
         applicationConfig,
         priceType,
         price,
@@ -403,10 +412,17 @@ const AnnouncementDetailScreen = () => {
   const displayViewCount =
     detailData?.viewCount ?? params.viewCount;
 
-  const canEarlyClose =
-    isMine &&
-    Boolean(params.postId) &&
-    displayStatus === "모집중";
+  const deadlineAtForUi = detailData?.deadlineAt;
+  const displayCompleted = detailData?.completed ?? false;
+
+  /** 작성자·미완료일 때 하단 한 칸: 조기 마감 ↔ 공연 완료 둘 중 하나만 */
+  const showOwnerActionBar =
+    isMine && Boolean(params.postId) && !displayCompleted;
+
+  const showEarlyCloseButton =
+    showOwnerActionBar &&
+    displayStatus === "모집중" &&
+    !isRecruitmentDeadlineDatePassed(deadlineAtForUi);
 
   const onEarlyClose = useCallback(() => {
     if (!params.postId) return;
@@ -426,7 +442,9 @@ const AnnouncementDetailScreen = () => {
               });
               if (res.ok) {
                 setDetailData((prev) =>
-                  prev ? { ...prev, status: "모집마감" } : prev,
+                  prev
+                    ? { ...prev, status: "모집마감" }
+                    : prev,
                 );
                 await fetchDetail();
                 Alert.alert("알림", "모집이 마감되었습니다.");
@@ -440,6 +458,44 @@ const AnnouncementDetailScreen = () => {
               Alert.alert("알림", "조기 마감에 실패했습니다.");
             } finally {
               setClosingEarly(false);
+            }
+          },
+        },
+      ],
+    );
+  }, [params.postId, fetchDetail]);
+
+  const onMarkComplete = useCallback(() => {
+    if (!params.postId) return;
+    Alert.alert(
+      "공연 완료",
+      "공연·일정을 마친 것으로 표시합니다. 진행할까요?",
+      [
+        { text: "취소", style: "cancel" },
+        {
+          text: "완료하기",
+          onPress: async () => {
+            setCompleting(true);
+            try {
+              const res = await updateAnnouncement(params.postId!, {
+                completed: true,
+              });
+              if (res.ok) {
+                setDetailData((prev) =>
+                  prev ? { ...prev, completed: true } : prev,
+                );
+                await fetchDetail();
+                Alert.alert("알림", "완료 처리되었습니다.");
+              } else {
+                Alert.alert(
+                  "알림",
+                  res.message?.trim() || "완료 처리에 실패했습니다.",
+                );
+              }
+            } catch {
+              Alert.alert("알림", "완료 처리에 실패했습니다.");
+            } finally {
+              setCompleting(false);
             }
           },
         },
@@ -529,7 +585,7 @@ const AnnouncementDetailScreen = () => {
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingBottom: canEarlyClose ? 88 : !isMine ? 100 : 32,
+            paddingBottom: showOwnerActionBar ? 88 : !isMine ? 100 : 32,
           },
         ]}
         refreshControl={
@@ -765,29 +821,54 @@ const AnnouncementDetailScreen = () => {
             <Text style={styles.btnApplyText}>지원서 작성하기</Text>
           </Pressable>
         </View>
-      ) : canEarlyClose ? (
-        <View
-          style={[
-            styles.floatingBottomBar,
-            { paddingBottom: floatingBottomPad },
-          ]}
-        >
-          <Pressable
+      ) : showOwnerActionBar ? (
+        showEarlyCloseButton ? (
+          <View
             style={[
-              styles.btnApply,
-              { bottom: 0 },
-              closingEarly && { opacity: 0.65 },
+              styles.floatingBottomBar,
+              { paddingBottom: floatingBottomPad },
             ]}
-            disabled={closingEarly}
-            onPress={onEarlyClose}
           >
-            {closingEarly ? (
-              <ActivityIndicator color={WHITE} />
-            ) : (
-              <Text style={styles.btnApplyText}>조기 마감</Text>
-            )}
-          </Pressable>
-        </View>
+            <Pressable
+              style={[
+                styles.btnApply,
+                { bottom: 0 },
+                closingEarly && { opacity: 0.65 },
+              ]}
+              disabled={closingEarly}
+              onPress={onEarlyClose}
+            >
+              {closingEarly ? (
+                <ActivityIndicator color={WHITE} />
+              ) : (
+                <Text style={styles.btnApplyText}>조기 마감</Text>
+              )}
+            </Pressable>
+          </View>
+        ) : (
+          <View
+            style={[
+              styles.floatingBottomBar,
+              { paddingBottom: floatingBottomPad },
+            ]}
+          >
+            <Pressable
+              style={[
+                styles.btnApply,
+                { bottom: 0 },
+                completing && { opacity: 0.65 },
+              ]}
+              disabled={completing}
+              onPress={onMarkComplete}
+            >
+              {completing ? (
+                <ActivityIndicator color={WHITE} />
+              ) : (
+                <Text style={styles.btnApplyText}>공연 완료</Text>
+              )}
+            </Pressable>
+          </View>
+        )
       ) : null}
       <ReportCategoryModal
         visible={reportModalVisible}

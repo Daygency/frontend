@@ -31,6 +31,8 @@ export const RootRoutes = {
   MY_ACTIVITY_ANNOUNCEMENT_LIST: "MyActivityAnnouncementList",
   CHANGE_NAME: "ChangeName",
   NOTIFICATION_SETTINGS: "NotificationSettings",
+  /** 인박스 (GET /notifications) */
+  NOTIFICATIONS: "Notifications",
   MY_DATA_ARCHIVE: "MyDataArchive",
   CUSTOMER_SERVICE: "CustomerService",
   INQUIRY: "Inquiry",

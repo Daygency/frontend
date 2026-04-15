@@ -21,6 +21,7 @@ import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActi
 import MyActivityAnnouncementListScreen from "../screens/MyActivityAnnouncementListScreen/MyActivityAnnouncementListScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import NotificationSettingsScreen from "../screens/SettingsScreens/NotificationSettingsScreen/NotificationSettingsScreen";
+import NotificationsScreen from "../screens/NotificationsScreen/NotificationsScreen";
 import MyDataArchiveScreen from "../screens/SettingsScreens/MyDataArchiveScreen/MyDataArchiveScreen";
 import CustomerServiceScreen from "../screens/SettingsScreens/CustomerServiceScreen/CustomerServiceScreen";
 import InquiryScreen from "../screens/InquiryScreen/InquiryScreen";
@@ -485,6 +486,37 @@ const Navigation = () => {
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>알림 설정</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.NOTIFICATIONS}
+          component={NotificationsScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>알림</Text>
               </View>
             ),
             headerShadowVisible: false,
