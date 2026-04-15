@@ -13,9 +13,12 @@ import {
   RouteProp,
   useRoute,
   useNavigation,
-  useFocusEffect,
+  useFocusEffect as useNavFocusEffect,
 } from "@react-navigation/native";
 import { useCallback, useEffect, useState } from "react";
+import { getMyActivityReview } from "../../lib/apis/announcement/activityReviewApi";
+import { getMyApplicationForPost } from "../../lib/apis/application/applicationApi";
+import type { ApplicationEntity } from "../../lib/apis/application/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
@@ -171,6 +174,10 @@ const AnnouncementDetailScreen = () => {
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [myReviewExists, setMyReviewExists] = useState(false);
+  const [myApplication, setMyApplication] = useState<ApplicationEntity | null>(
+    null,
+  );
   const authorDisplayLabel = useAnnouncementAuthorLabel(author);
 
   const handleOpenReport = useCallback(() => {
@@ -379,11 +386,39 @@ const AnnouncementDetailScreen = () => {
     }
   }, [params.postId, fetchDetail]);
 
-  useFocusEffect(
+  useNavFocusEffect(
     useCallback(() => {
       if (params.postId) fetchDetail();
       return () => {};
     }, [params.postId, fetchDetail]),
+  );
+
+  useNavFocusEffect(
+    useCallback(() => {
+      const postId = params.postId;
+      if (!postId || !isLoggedIn) {
+        setMyReviewExists(false);
+        setMyApplication(null);
+        return;
+      }
+      let cancelled = false;
+      (async () => {
+        const review = await getMyActivityReview(postId);
+        if (cancelled) return;
+        setMyReviewExists(!!review);
+        if (!isMine) {
+          const res = await getMyApplicationForPost(postId);
+          if (cancelled) return;
+          if (res.ok) setMyApplication(res.data);
+          else setMyApplication(null);
+        } else {
+          setMyApplication(null);
+        }
+      })();
+      return () => {
+        cancelled = true;
+      };
+    }, [params.postId, isLoggedIn, isMine]),
   );
 
   useEffect(() => {
@@ -414,6 +449,15 @@ const AnnouncementDetailScreen = () => {
 
   const deadlineAtForUi = detailData?.deadlineAt;
   const displayCompleted = detailData?.completed ?? false;
+
+  const showApplicantReviewBar =
+    !isMine &&
+    displayCompleted &&
+    isLoggedIn &&
+    !myReviewExists &&
+    myApplication?.status === "ACCEPTED";
+  const showApplicantApplyBar = !isMine && !displayCompleted;
+  const visitorBottomBar = showApplicantApplyBar || showApplicantReviewBar;
 
   /** 작성자·미완료일 때 하단 한 칸: 조기 마감 ↔ 공연 완료 둘 중 하나만 */
   const showOwnerActionBar =
@@ -585,7 +629,7 @@ const AnnouncementDetailScreen = () => {
         contentContainerStyle={[
           styles.scrollContent,
           {
-            paddingBottom: showOwnerActionBar ? 88 : !isMine ? 100 : 32,
+            paddingBottom: showOwnerActionBar ? 88 : visitorBottomBar ? 100 : 32,
           },
         ]}
         refreshControl={
@@ -623,6 +667,17 @@ const AnnouncementDetailScreen = () => {
                 displayDaysLeft,
                 displayStatus,
               )}
+              displayCompleted={displayCompleted}
+              showReviewEntry={displayCompleted && !myReviewExists}
+              onWriteReview={(p) => {
+                navigation.navigate(RootRoutes.ACTIVITY_REVIEW, {
+                  postId: params.postId,
+                  revieweeUserId: p.userId,
+                  revieweeActivityName: p.activityName,
+                  announcementTitle: displayTitle,
+                  revieweeHandle: p.handle,
+                });
+              }}
             />
           </View>
         ) : null}
@@ -786,7 +841,41 @@ const AnnouncementDetailScreen = () => {
           </View>
         ) : null}
       </ScrollView>
-      {!isMine ? (
+      {!isMine && showApplicantReviewBar ? (
+        <View
+          style={[
+            styles.floatingBottomBar,
+            { paddingBottom: floatingBottomPad },
+          ]}
+        >
+          <Pressable
+            style={[styles.btnApply, { bottom: 0 }]}
+            onPress={() => {
+              if (!params.postId) {
+                Alert.alert("알림", "공고 정보가 없습니다.");
+                return;
+              }
+              const uid = author?.userId?.trim();
+              if (!uid) {
+                Alert.alert("알림", "작성자 정보를 불러오지 못했습니다.");
+                return;
+              }
+              navigation.navigate(RootRoutes.ACTIVITY_REVIEW, {
+                postId: params.postId,
+                revieweeUserId: uid,
+                revieweeActivityName:
+                  author?.activityName?.trim() ||
+                  author?.nickname?.trim() ||
+                  "모집자",
+                announcementTitle: displayTitle,
+                revieweeHandle: author?.nickname?.trim(),
+              });
+            }}
+          >
+            <Text style={styles.btnApplyText}>활동 후기 작성</Text>
+          </Pressable>
+        </View>
+      ) : !isMine && showApplicantApplyBar ? (
         <View
           style={[
             styles.floatingBottomBar,

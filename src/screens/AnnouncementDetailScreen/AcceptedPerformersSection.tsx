@@ -22,6 +22,15 @@ type Props = {
   typeTag: string;
   statusTag: string;
   dDay: string;
+  /** 공연 완료 후 후기 작성 가능 */
+  displayCompleted?: boolean;
+  /** 합격자 카드에 후기 작성 진입 표시 (본인이 아직 후기 없을 때) */
+  showReviewEntry?: boolean;
+  onWriteReview?: (p: {
+    userId: string;
+    activityName: string;
+    handle?: string;
+  }) => void;
 };
 
 type RowModel = {
@@ -42,6 +51,9 @@ export default function AcceptedPerformersSection({
   typeTag,
   statusTag,
   dDay,
+  displayCompleted = false,
+  showReviewEntry = false,
+  onWriteReview,
 }: Props) {
   const navigation = useNavigation<any>();
   const [rows, setRows] = useState<RowModel[]>([]);
@@ -147,21 +159,40 @@ export default function AcceptedPerformersSection({
           {rows.map((row) => {
             const peer = row.room?.peer;
             const id = row.application.id;
+            const uid = (row.application.userId ?? peer?.userId ?? "").trim();
             return (
-              <Pressable
-                key={id}
-                style={styles.card}
-                onPress={() => openApplication(id)}
-              >
-                <ApplicantAvatar
-                  peerUserId={row.application.userId ?? peer?.userId}
-                  peer={peer ?? null}
-                  size={AVATAR}
-                />
-                <Text style={styles.name} numberOfLines={2}>
-                  {displayName(row)}
-                </Text>
-              </Pressable>
+              <View key={id} style={styles.card}>
+                <Pressable
+                  style={styles.cardPress}
+                  onPress={() => openApplication(id)}
+                >
+                  <ApplicantAvatar
+                    peerUserId={row.application.userId ?? peer?.userId}
+                    peer={peer ?? null}
+                    size={AVATAR}
+                  />
+                  <Text style={styles.name} numberOfLines={2}>
+                    {displayName(row)}
+                  </Text>
+                </Pressable>
+                {displayCompleted && showReviewEntry && onWriteReview && uid ? (
+                  <Pressable
+                    style={styles.reviewLink}
+                    onPress={() =>
+                      onWriteReview({
+                        userId: uid,
+                        activityName:
+                          peer?.activityName?.trim() ||
+                          peer?.nickname?.trim() ||
+                          displayName(row),
+                        handle: peer?.nickname?.trim(),
+                      })
+                    }
+                  >
+                    <Text style={styles.reviewLinkText}>후기 작성</Text>
+                  </Pressable>
+                ) : null}
+              </View>
             );
           })}
         </ScrollView>
@@ -224,8 +255,22 @@ const styles = StyleSheet.create({
     paddingRight: 4,
   },
   card: {
-    width: 80,
+    width: 88,
     alignItems: "center",
+  },
+  cardPress: {
+    alignItems: "center",
+    width: "100%",
+  },
+  reviewLink: {
+    marginTop: 6,
+    paddingVertical: 4,
+  },
+  reviewLinkText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
+    textDecorationLine: "underline",
   },
   name: {
     marginTop: 8,

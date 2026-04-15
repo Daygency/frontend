@@ -32,6 +32,7 @@ import ChatRoomScreen from "../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen
 import ChatRoomOptionsScreen from "../screens/ChatScreens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
 import MyPostedChatRoomsScreen from "../screens/ChatScreens/MyPostedChatRoomsScreen/MyPostedChatRoomsScreen";
 import AnnouncementApplicantsScreen from "../screens/AnnouncementApplicantsScreen/AnnouncementApplicantsScreen";
+import ActivityReviewScreen from "../screens/ActivityReviewScreen/ActivityReviewScreen";
 import ReceivedApplicationDetailScreen from "../screens/ReceivedApplicationDetailScreen/ReceivedApplicationDetailScreen";
 import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
 import ArtistPortfolioScreen from "../screens/ArtistPortfolioScreen/ArtistPortfolioScreen";
@@ -921,6 +922,11 @@ const Navigation = () => {
         <Stack.Screen
           name={RootRoutes.CHAT_ROOM}
           component={ChatRoomScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name={RootRoutes.ACTIVITY_REVIEW}
+          component={ActivityReviewScreen}
           options={{ headerShown: false }}
         />
         <Stack.Screen
