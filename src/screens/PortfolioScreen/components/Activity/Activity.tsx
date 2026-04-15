@@ -1,16 +1,49 @@
-import { View, Text, ScrollView } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import styles from "./styles";
-import { GRAY, BLACK, MAIN } from "../../../../color";
-import { Ionicons } from "@expo/vector-icons";
+import { GRAY } from "../../../../color";
 import Section from "../../../../components/Section/Section";
-import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
 import ReviewCard from "../../../../components/ReviewCard/ReviewCard";
+import { getReceivedActivityReviewList } from "../../../../lib/apis/announcement/activityReviewApi";
+import type { ActivityReviewListItem } from "../../../../lib/apis/announcement/activityReviewTypes";
 
 type ActivityProps = {
   embedded?: boolean;
 };
 
 const Activity = ({ embedded = false }: ActivityProps) => {
+  const [reviews, setReviews] = useState<ActivityReviewListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadReceivedReviews = useCallback(async () => {
+    setLoading(true);
+    const res = await getReceivedActivityReviewList({ limit: 20 });
+    if (!res) {
+      setReviews([]);
+      setLoading(false);
+      return;
+    }
+    setReviews(res.items);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    void loadReceivedReviews();
+  }, [loadReceivedReviews]);
+
+  const formatDate = (iso?: string | null) => {
+    if (!iso?.trim()) return "";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  };
+
+  const reactionLabel = (rating: ActivityReviewListItem["rating"]) => {
+    if (rating === "DISAPPOINTING") return "아쉬웠어요";
+    if (rating === "GOOD") return "좋았어요";
+    return "감동했어요";
+  };
+
   const inner = (
     <View style={embedded ? styles.embeddedContainer : styles.container}>
       <View style={styles.activityContiner}>
@@ -28,29 +61,29 @@ const Activity = ({ embedded = false }: ActivityProps) => {
         onPressMore={() => {}}
         styles={{ title: { marginTop: 12 } }}
       >
-        <ReviewCard
-          title="2025년도 봄 정기 연주회"
-          content="저는 봄 정기 연주회에 참가했습니다. 좋은 경험이었습니다."
-          tags={[
-            { text: "봄 정기 연주회", variant: "type" },
-            { text: "좋은 경험", variant: "status" },
-          ]}
-        />
-        <ReviewCard
-          title="2025년도 봄 정기 연주회"
-          content="저는 봄 정기 연주회에 참가했습니다. 좋은 경험이었습니다."
-          tags={[
-            { text: "봄 정기 연주회", variant: "type" },
-            { text: "좋은 경험", variant: "status" },
-          ]}
-        />
-        <ReviewCard
-          title="2025년도 봄 정기 연주회"
-          tags={[
-            { text: "봄 정기 연주회", variant: "type" },
-            { text: "좋은 경험", variant: "status" },
-          ]}
-        />
+        {loading ? (
+          <View style={{ paddingVertical: 24, alignItems: "center" }}>
+            <ActivityIndicator size="small" color={GRAY.DARK} />
+          </View>
+        ) : reviews.length === 0 ? (
+          <View style={{ paddingVertical: 20 }}>
+            <Text style={{ fontSize: 14, color: GRAY.DARK_100 }}>
+              받은 후기가 없습니다.
+            </Text>
+          </View>
+        ) : (
+          reviews.map((item) => (
+            <ReviewCard
+              key={item.id}
+              author={
+                item.reviewer?.activityName || item.reviewer?.nickname || "작성자"
+              }
+              date={formatDate(item.createdAt)}
+              title={item.announcement?.title || item.postId}
+              reactionTag={reactionLabel(item.rating)}
+            />
+          ))
+        )}
       </Section>
     </View>
   );

@@ -490,7 +490,8 @@ const AnnouncementDetailScreen = () => {
                     ? { ...prev, status: "모집마감" }
                     : prev,
                 );
-                await fetchDetail();
+                // 조기 마감 직후에는 로컬 상태를 우선 반영해 버튼이 즉시 "공연 완료"로 전환되게 함.
+                // (일부 응답에서 isRecruiting이 지연 갱신되어 바로 재조회하면 UI가 되돌아갈 수 있음)
                 Alert.alert("알림", "모집이 마감되었습니다.");
               } else {
                 Alert.alert(

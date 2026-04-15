@@ -118,7 +118,7 @@ function parseCursorList(raw: unknown): ActivityReviewCursorListResponse | null 
 export type SubmitActivityReviewBody = {
   revieweeUserId: string;
   rating: ActivityReviewRating;
-  disappointmentReasonCodes?: string[];
+  disappointmentReasonCodes?: string[] | null;
   privateNoteToOps?: string | null;
 };
 
@@ -228,8 +228,8 @@ export async function getReceivedActivityReviewList(params?: {
 
 export type UpdateActivityReviewBody = {
   rating?: ActivityReviewRating;
-  disappointmentReasonCodes?: string[];
-  privateNoteToOps?: string;
+  disappointmentReasonCodes?: string[] | null;
+  privateNoteToOps?: string | null;
 };
 
 export async function updateMyActivityReview(

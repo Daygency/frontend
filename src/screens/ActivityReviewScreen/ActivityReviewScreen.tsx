@@ -125,9 +125,10 @@ const ActivityReviewScreen = () => {
       rating: r,
     };
     if (r === "DISAPPOINTING") {
-      body.disappointmentReasonCodes = opts?.codes ?? reasons;
+      const pickedCodes = opts?.codes ?? reasons;
+      body.disappointmentReasonCodes = pickedCodes.length > 0 ? pickedCodes : null;
       const note = (opts?.note ?? privateNote).trim();
-      if (note) body.privateNoteToOps = note.slice(0, MAX_NOTE);
+      body.privateNoteToOps = note ? note.slice(0, MAX_NOTE) : null;
     }
     const res = await submitActivityReview(params.postId, body);
     setSubmitting(false);
@@ -157,7 +158,6 @@ const ActivityReviewScreen = () => {
   };
 
   const onPressNextFromReasons = () => {
-    if (reasons.length === 0) return;
     setStep("note");
   };
 
@@ -402,13 +402,9 @@ const ActivityReviewScreen = () => {
               style={[
                 styles.nextBtn,
                 {
-                  backgroundColor:
-                    reasons.length > 0
-                      ? REVIEW_COLORS.buttonActive
-                      : REVIEW_COLORS.disabled,
+                  backgroundColor: REVIEW_COLORS.buttonActive,
                 },
               ]}
-              disabled={reasons.length === 0}
               onPress={onPressNextFromReasons}
             >
               <Text style={styles.nextBtnText}>다음</Text>
