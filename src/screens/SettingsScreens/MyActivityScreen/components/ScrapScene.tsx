@@ -21,6 +21,7 @@ import {
   getMyScrappedHighlights,
 } from "../../../../lib/apis/scrap/scrapApi";
 import { getMajors } from "../../../../lib/apis/announcement/majorApi";
+import { parseAnnouncementDaysLeft } from "../../../../lib/announcement/parseAnnouncementDaysLeft";
 import { resolveRecruitmentMajorDisplayNames } from "../../../../lib/announcement/recruitmentMajors";
 import type {
   MyScrappedAnnouncementItem,
@@ -232,7 +233,8 @@ const ScrapScene = () => {
               title={item.title}
               type={item.type}
               status={item.isRecruiting ? "모집중" : "모집마감"}
-              daysLeft={parseDDay(item.dDay)}
+              daysLeft={parseAnnouncementDaysLeft(item.dDay)}
+              deadlineAt={item.deadlineAt}
               viewCount={item.viewCount}
               address={item.address}
               recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
@@ -245,7 +247,7 @@ const ScrapScene = () => {
                   title: item.title,
                   type: item.type,
                   status: item.isRecruiting ? "모집중" : "모집마감",
-                  daysLeft: parseDDay(item.dDay),
+                  daysLeft: parseAnnouncementDaysLeft(item.dDay),
                   viewCount: item.viewCount,
                 });
               }}
@@ -360,12 +362,6 @@ const localStyles = StyleSheet.create({
     width: 138,
   },
 });
-
-function parseDDay(value?: string): number {
-  if (!value) return 0;
-  const num = parseInt(value.replace(/\D/g, ""), 10);
-  return Number.isFinite(num) ? num : 0;
-}
 
 function formatDate(value?: string): string {
   if (!value) return "";

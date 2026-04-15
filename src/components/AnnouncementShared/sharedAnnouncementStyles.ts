@@ -42,6 +42,10 @@ export const sharedAnnouncementStyles = StyleSheet.create({
   dDayTextRed: {
     color: RED.DEFAULT,
   },
+  dDayTextGray: {
+    color: GRAY.MEDIUM_100,
+    fontWeight: "400",
+  },
   tagsContainer: {
     flexDirection: "row",
     gap: 6,

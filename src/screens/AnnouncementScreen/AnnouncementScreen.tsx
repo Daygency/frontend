@@ -1,6 +1,7 @@
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   View,
@@ -29,7 +30,9 @@ import {
   ANNOUNCEMENT_PRICE_FILTER_LABELS,
   selectedPriceLabelsToApiParam,
 } from "../../lib/announcement/announcementPrice";
+import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
 import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
+import { MAIN } from "../../color";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -88,6 +91,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [categories, setCategories] = useState<{ name: string; categoryId: string }[]>([]);
   const [majors, setMajors] = useState<{ name: string; majorId: string }[]>([]);
   const loadListSeqRef = useRef(0);
@@ -202,17 +206,21 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   );
 
   const loadMore = () => {
-    if (loading || !hasMore || !nextCursor) return;
+    if (loading || refreshing || !hasMore || !nextCursor) return;
     loadData(nextCursor);
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadData(undefined);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadData]);
+
   const typeOptions = categories.length > 0 ? categories.map((c) => c.name) : announcementTypeOptions;
   const majorOptionsForModal = majors.length > 0 ? majors.map((m) => m.name) : recruitmentMajorOptions;
-
-  const parseDaysLeft = (dDay: string): number => {
-    const m = dDay.match(/D-?(\d+)/);
-    return m ? Number(m[1]) : 0;
-  };
 
   const emptyMessage =
     activeTab === "내 공고" && !isLoggedIn
@@ -301,33 +309,52 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         }}
       />
       <View style={styles.scrollContentWrapper}>
-        {loading && items.length === 0 ? (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#666" />
-          </View>
-        ) : items.length === 0 ? (
-          <View style={[styles.scrollContent, styles.emptyState]}>
-            <Text style={styles.emptyStateText}>{emptyMessage}</Text>
-          </View>
-        ) : (
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            onScroll={({ nativeEvent }) => {
-              const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-              const pad = 100;
-              if (layoutMeasurement.height + contentOffset.y >= contentSize.height - pad && hasMore && nextCursor && !loading) {
-                loadMore();
-              }
-            }}
-            scrollEventThrottle={200}
-          >
-            {items.map((item) => (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={[
+            styles.scrollContent,
+            items.length === 0 && { flexGrow: 1 },
+          ]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={MAIN.DEFAULT}
+              colors={[MAIN.DEFAULT]}
+            />
+          }
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const pad = 100;
+            if (
+              layoutMeasurement.height + contentOffset.y >= contentSize.height - pad &&
+              hasMore &&
+              nextCursor &&
+              !loading &&
+              !refreshing
+            ) {
+              loadMore();
+            }
+          }}
+          scrollEventThrottle={200}
+        >
+          {loading && items.length === 0 ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#666" />
+            </View>
+          ) : items.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>{emptyMessage}</Text>
+            </View>
+          ) : (
+            items.map((item) => (
               <View key={item.postId} style={styles.cardWrapper}>
                 <AnnouncementCard
                   title={item.title}
                   type={item.type}
                   status={item.isRecruiting ? "모집중" : "모집마감"}
-                  daysLeft={parseDaysLeft(item.dDay)}
+                  daysLeft={parseAnnouncementDaysLeft(item.dDay)}
+                  deadlineAt={item.deadlineAt}
                   viewCount={item.viewCount}
                   priceType={item.priceType}
                   price={item.price}
@@ -341,16 +368,16 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                       title: item.title,
                       type: item.type,
                       status: item.isRecruiting ? "모집중" : "모집마감",
-                      daysLeft: parseDaysLeft(item.dDay),
+                      daysLeft: parseAnnouncementDaysLeft(item.dDay),
                       postId: item.postId,
                       viewCount: item.viewCount,
                     });
                   }}
                 />
               </View>
-            ))}
-          </ScrollView>
-        )}
+            ))
+          )}
+        </ScrollView>
       </View>
       {!hideTopBar && (
         <FabButton

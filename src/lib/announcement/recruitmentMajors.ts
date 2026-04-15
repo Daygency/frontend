@@ -44,6 +44,20 @@ export function pickAddressFromAnnouncementRaw(
 }
 
 /**
+ * 목록·홈 등 raw에서 마감일 ISO 문자열.
+ * 백엔드는 `deadlineAt`을 반환한다. 구버전 호환용으로 `deadline_at`도 읽는다.
+ */
+export function pickDeadlineAtFromAnnouncementRaw(
+  raw: unknown,
+): string | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const r = raw as Record<string, unknown>;
+  const v = r.deadlineAt ?? r.deadline_at;
+  if (typeof v === "string" && v.trim()) return v.trim();
+  return undefined;
+}
+
+/**
  * 카드/리스트에 표시할 전공 이름 배열 (API가 이름을 주면 우선, 없으면 majorIds + 카탈로그로 매핑)
  */
 /**

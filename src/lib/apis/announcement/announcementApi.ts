@@ -13,6 +13,7 @@ import type {
 } from "./types";
 import {
   pickAddressFromAnnouncementRaw,
+  pickDeadlineAtFromAnnouncementRaw,
   pickMajorsFromAnnouncementRaw,
 } from "../../announcement/recruitmentMajors";
 
@@ -108,10 +109,12 @@ export async function getMyAnnouncementList(
     return {
       items: items.map((item) => {
         const address = pickAddressFromAnnouncementRaw(item);
+        const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
         return {
           ...(item as AnnouncementListItem),
           ...pickMajorsFromAnnouncementRaw(item),
           ...(address ? { address } : {}),
+          ...(deadlineAt ? { deadlineAt } : {}),
         };
       }),
       nextCursor: data?.nextCursor ?? null,
@@ -153,10 +156,12 @@ export async function getAnnouncementList(
     return {
       items: items.map((item) => {
         const address = pickAddressFromAnnouncementRaw(item);
+        const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
         return {
           ...(item as AnnouncementListItem),
           ...pickMajorsFromAnnouncementRaw(item),
           ...(address ? { address } : {}),
+          ...(deadlineAt ? { deadlineAt } : {}),
         };
       }),
       nextCursor: data?.nextCursor ?? null,

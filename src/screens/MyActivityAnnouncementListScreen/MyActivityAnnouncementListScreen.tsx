@@ -40,6 +40,7 @@ const MyActivityAnnouncementListScreen = () => {
           type: item.category ?? "기타",
           status: normalizeStatus(item.status, item.deadlineAt),
           daysLeft,
+          deadlineAt: item.deadlineAt,
           postId: item.postId,
           viewCount: item.viewCount,
         };
@@ -59,6 +60,7 @@ const MyActivityAnnouncementListScreen = () => {
               type={item.type}
               status={item.status}
               daysLeft={item.daysLeft}
+              deadlineAt={item.deadlineAt}
               viewCount={item.viewCount}
               onPress={() =>
                 navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {

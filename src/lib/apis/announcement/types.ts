@@ -58,6 +58,8 @@ export type AnnouncementListItem = {
   viewCount?: number;
   /** 공연·모집 장소 (목록 API가 내려줄 때) */
   address?: string;
+  /** 마감일 ISO 8601 — 목록 API가 `deadlineAt`으로 반환 (D-day 표시 보정·카드에 사용) */
+  deadlineAt?: string;
 };
 
 export type AnnouncementListResponse = {

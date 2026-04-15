@@ -3,6 +3,7 @@ import {
   Alert,
   Image,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   View,
@@ -45,6 +46,11 @@ import {
   normalizeAnnouncementPriceType,
   parseAnnouncementPrice,
 } from "../../lib/announcement/announcementPrice";
+import {
+  effectiveAnnouncementDaysLeft,
+  formatAnnouncementDDayLabel,
+} from "../../lib/announcement/announcementDeadline";
+import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
 import { pickMajorsFromAnnouncementRaw } from "../../lib/announcement/recruitmentMajors";
 import {
   extractApplicationConfigRaw,
@@ -160,6 +166,7 @@ const AnnouncementDetailScreen = () => {
   const [closingEarly, setClosingEarly] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const authorDisplayLabel = useAnnouncementAuthorLabel(author);
 
   const handleOpenReport = useCallback(() => {
@@ -219,14 +226,14 @@ const AnnouncementDetailScreen = () => {
     [author, params.postId],
   );
 
-  const fetchDetail = useCallback(() => {
-    if (!params.postId) return;
+  const fetchDetail = useCallback((): Promise<void> => {
+    if (!params.postId) return Promise.resolve();
     console.log("[AnnouncementDetail] 인증 상태:", {
       isLoggedIn,
       userId: user?.socialId ?? "(없음)",
       nickname: user?.nickname ?? "(없음)",
     });
-    getAnnouncementDetail(params.postId).then((res) => {
+    return getAnnouncementDetail(params.postId).then((res) => {
       console.log(
         "[AnnouncementDetail] API 응답:",
         JSON.stringify(res, null, 2),
@@ -260,23 +267,29 @@ const AnnouncementDetailScreen = () => {
       const title = get("title") ?? params.title ?? "";
       const type = get("type") ?? params.type ?? "";
       const isRecruiting = d.isRecruiting ?? d.is_recruiting;
-      const status =
+      const rawContent = get("content");
+      const rawAddress = get("address");
+      const deadlineAt =
+        get("deadlineAt") ?? get("deadline_at") ?? undefined;
+      const dDay =
+        get("dDay") ?? get("d_day") ?? `D-${params.daysLeft ?? 0}`;
+      const parsedDays = parseAnnouncementDaysLeft(String(dDay));
+      const daysLeft = effectiveAnnouncementDaysLeft(
+        typeof deadlineAt === "string" ? deadlineAt : undefined,
+        parsedDays,
+      );
+      let status =
         typeof isRecruiting === "boolean"
           ? isRecruiting
             ? "모집중"
             : "모집마감"
           : (params.status ?? "모집중");
-      const dDay = get("dDay") ?? get("d_day") ?? `D-${params.daysLeft ?? 0}`;
-      const daysLeft =
-        parseInt(dDay.replace(/\D/g, ""), 10) || params.daysLeft || 0;
+      if (daysLeft < 0) {
+        status = "모집마감";
+      }
       const applicationConfig = parseApplicationConfig(
         extractApplicationConfigRaw(d),
       );
-
-      const rawContent = get("content");
-      const rawAddress = get("address");
-      const deadlineAt =
-        get("deadlineAt") ?? get("deadline_at") ?? undefined;
       const scheduledAt =
         get("scheduledAt") ?? get("scheduled_at") ?? undefined;
 
@@ -347,6 +360,16 @@ const AnnouncementDetailScreen = () => {
     user,
   ]);
 
+  const onRefresh = useCallback(async () => {
+    if (!params.postId) return;
+    setRefreshing(true);
+    try {
+      await fetchDetail();
+    } finally {
+      setRefreshing(false);
+    }
+  }, [params.postId, fetchDetail]);
+
   useFocusEffect(
     useCallback(() => {
       if (params.postId) fetchDetail();
@@ -402,7 +425,10 @@ const AnnouncementDetailScreen = () => {
                 status: "CLOSED",
               });
               if (res.ok) {
-                fetchDetail();
+                setDetailData((prev) =>
+                  prev ? { ...prev, status: "모집마감" } : prev,
+                );
+                await fetchDetail();
                 Alert.alert("알림", "모집이 마감되었습니다.");
               } else {
                 Alert.alert(
@@ -506,6 +532,14 @@ const AnnouncementDetailScreen = () => {
             paddingBottom: canEarlyClose ? 88 : !isMine ? 100 : 32,
           },
         ]}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={MAIN.DEFAULT}
+            colors={[MAIN.DEFAULT]}
+          />
+        }
       >
         <View style={styles.contentSheetFlush}>
           <View style={{ paddingHorizontal: 12 }}>
@@ -514,6 +548,7 @@ const AnnouncementDetailScreen = () => {
               type={displayType}
               status={displayStatus}
               daysLeft={displayDaysLeft}
+              deadlineAt={detailData?.deadlineAt}
               viewCount={displayViewCount}
               priceType={detailData?.priceType}
               price={detailData?.price}
@@ -528,7 +563,10 @@ const AnnouncementDetailScreen = () => {
               announcementTitle={displayTitle}
               typeTag={displayType}
               statusTag={displayStatus}
-              dDay={`D-${displayDaysLeft}`}
+              dDay={formatAnnouncementDDayLabel(
+                displayDaysLeft,
+                displayStatus,
+              )}
             />
           </View>
         ) : null}

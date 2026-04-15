@@ -14,6 +14,8 @@ export type HomeAnnouncementItem = {
   viewCount?: number;
   /** 공연·모집 장소 */
   address?: string;
+  /** 마감일 ISO 8601 — API `deadlineAt` (D-day 표시 보정용) */
+  deadlineAt?: string;
 };
 
 export type HomeNewsItem = {

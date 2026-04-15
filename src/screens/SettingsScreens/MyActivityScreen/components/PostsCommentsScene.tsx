@@ -219,6 +219,7 @@ const PostsCommentsScene = () => {
             type={item.category ?? "기타"}
             status={normalizeStatus(item.status, item.deadlineAt)}
             daysLeft={getDaysLeft(item.deadlineAt)}
+            deadlineAt={item.deadlineAt}
             viewCount={item.viewCount}
             onPress={() =>
               navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {

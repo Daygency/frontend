@@ -184,6 +184,7 @@ const ApplicationScreen = () => {
   const [recruitmentMajorNames, setRecruitmentMajorNames] = useState<string[]>(
     [],
   );
+  const [postDeadlineAt, setPostDeadlineAt] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(null);
@@ -251,6 +252,12 @@ const ApplicationScreen = () => {
           return;
         }
         const d = detail as Record<string, unknown>;
+        const dlRaw = d.deadlineAt ?? d.deadline_at;
+        if (typeof dlRaw === "string" && dlRaw.trim()) {
+          setPostDeadlineAt(dlRaw.trim());
+        } else {
+          setPostDeadlineAt(undefined);
+        }
         const vcRaw = d.viewCount ?? d.view_count;
         if (
           typeof vcRaw === "number" &&
@@ -534,6 +541,7 @@ const ApplicationScreen = () => {
             type={type}
             status={status}
             daysLeft={daysLeft}
+            deadlineAt={postDeadlineAt}
             viewCount={viewCount}
             priceType={postPriceType}
             price={postPrice}

@@ -18,6 +18,7 @@ import { getHome } from "../../lib/apis/home/homeApi";
 import type { HomeAnnouncementItem, HomeNewsItem } from "../../lib/apis/home/types";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
+import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
 import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
 
 type ContentTabParamList = {
@@ -29,11 +30,6 @@ type ContentTabParamList = {
 };
 
 type NavigationProp = BottomTabNavigationProp<ContentTabParamList>;
-
-function parseDaysLeft(dDay: string): number {
-  const m = dDay.match(/D-?(\d+)/);
-  return m ? Number(m[1]) : 0;
-}
 
 function formatStartedAt(iso: string): string {
   try {
@@ -140,7 +136,8 @@ const AllContentScene = () => {
               title={item.title}
               type={item.type}
               status={item.isRecruiting ? "모집중" : "모집마감"}
-              daysLeft={parseDaysLeft(item.dDay)}
+              daysLeft={parseAnnouncementDaysLeft(item.dDay)}
+              deadlineAt={item.deadlineAt}
               viewCount={item.viewCount}
               priceType={item.priceType}
               price={item.price}
@@ -154,7 +151,7 @@ const AllContentScene = () => {
                   title: item.title,
                   type: item.type,
                   status: item.isRecruiting ? "모집중" : "모집마감",
-                  daysLeft: parseDaysLeft(item.dDay),
+                  daysLeft: parseAnnouncementDaysLeft(item.dDay),
                   postId: item.postId,
                   viewCount: item.viewCount,
                 });

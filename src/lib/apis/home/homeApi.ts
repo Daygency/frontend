@@ -2,6 +2,7 @@ import { API_BASE } from "../api";
 import type { HomeResponse } from "./types";
 import {
   pickAddressFromAnnouncementRaw,
+  pickDeadlineAtFromAnnouncementRaw,
   pickMajorsFromAnnouncementRaw,
 } from "../../announcement/recruitmentMajors";
 
@@ -11,10 +12,12 @@ function normalizeHomeResponse(raw: unknown): HomeResponse {
     latestAnnouncements: Array.isArray(data.latestAnnouncements)
       ? data.latestAnnouncements.map((item) => {
           const address = pickAddressFromAnnouncementRaw(item);
+          const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
           return {
             ...(item as HomeResponse["latestAnnouncements"][number]),
             ...pickMajorsFromAnnouncementRaw(item),
             ...(address ? { address } : {}),
+            ...(deadlineAt ? { deadlineAt } : {}),
           };
         })
       : [],

@@ -2,6 +2,11 @@ import { Text, View } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
 import shadowCardStyles from "../ShadowCardButton/styles";
 import type { AnnouncementPriceType } from "../../lib/apis/announcement/types";
+import {
+  effectiveAnnouncementDaysLeft,
+  formatAnnouncementDDayLabel,
+  isAnnouncementDeadlinePassed,
+} from "../../lib/announcement/announcementDeadline";
 import { formatAnnouncementPriceLineList } from "../../lib/announcement/announcementPrice";
 import styles from "./styles";
 
@@ -10,6 +15,8 @@ interface AnnouncementCardProps {
   type?: string;
   status?: string;
   daysLeft?: number;
+  /** 있으면 로컬 날짜 기준으로 남은 일수를 계산해 `dDay`보다 우선합니다 */
+  deadlineAt?: string;
   /** API가 내려줄 때만 표시 */
   priceType?: AnnouncementPriceType;
   price?: number;
@@ -27,6 +34,7 @@ const AnnouncementCard = ({
   type = "콩쿨(경연)",
   status = "모집중",
   daysLeft = 20,
+  deadlineAt,
   priceType,
   price,
   recruitmentMajorNames = [],
@@ -39,6 +47,21 @@ const AnnouncementCard = ({
     (typeof price === "number" && Number.isFinite(price));
   const showMajors = recruitmentMajorNames.length > 0;
 
+  const effectiveDaysLeft = effectiveAnnouncementDaysLeft(
+    deadlineAt,
+    daysLeft,
+  );
+  const displayStatus =
+    effectiveDaysLeft < 0 ? "모집마감" : status;
+  const isDeadlinePassed = isAnnouncementDeadlinePassed(
+    effectiveDaysLeft,
+    displayStatus,
+  );
+  const dDayLabel = formatAnnouncementDDayLabel(
+    effectiveDaysLeft,
+    displayStatus,
+  );
+
   const inner = (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -47,10 +70,14 @@ const AnnouncementCard = ({
         <Text
           style={[
             styles.dDayText,
-            daysLeft >= 0 && daysLeft <= 7 && styles.dDayTextRed,
+            isDeadlinePassed && styles.dDayTextGray,
+            !isDeadlinePassed &&
+              effectiveDaysLeft >= 0 &&
+              effectiveDaysLeft <= 7 &&
+              styles.dDayTextRed,
           ]}
         >
-          {daysLeft === 0 ? "오늘마감" : `D-${daysLeft}`}
+          {dDayLabel}
         </Text>
       </View>
       <View style={styles.tagsRow}>
@@ -58,7 +85,7 @@ const AnnouncementCard = ({
           <Text style={styles.typeTagText}>{type}</Text>
         </View>
         <View style={styles.statusTag}>
-          <Text style={styles.statusTagText}>{status}</Text>
+          <Text style={styles.statusTagText}>{displayStatus}</Text>
         </View>
         {address?.trim() ? (
           <Text

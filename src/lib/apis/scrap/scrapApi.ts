@@ -16,6 +16,7 @@ import type {
 } from "./types";
 import {
   pickAddressFromAnnouncementRaw,
+  pickDeadlineAtFromAnnouncementRaw,
   pickMajorsFromAnnouncementRaw,
 } from "../../announcement/recruitmentMajors";
 
@@ -119,10 +120,12 @@ export async function getMyScrappedAnnouncements(
     return {
       items: items.map((item) => {
         const address = pickAddressFromAnnouncementRaw(item);
+        const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
         return {
           ...item,
           ...pickMajorsFromAnnouncementRaw(item),
           ...(address ? { address } : {}),
+          ...(deadlineAt ? { deadlineAt } : {}),
         };
       }),
       nextCursor: raw.nextCursor ?? null,
