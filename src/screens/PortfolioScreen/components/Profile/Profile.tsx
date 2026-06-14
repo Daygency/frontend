@@ -6,8 +6,9 @@ import {
   Image,
   ActivityIndicator,
   Alert,
+  useWindowDimensions,
 } from "react-native";
-import styles from "./styles";
+import styles, { PROFILE_BANNER_RATIO } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../../color";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -69,6 +70,8 @@ function safeFollowCount(n: unknown): number {
 const Profile = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const route = useRoute();
+  const { height: windowHeight } = useWindowDimensions();
+  const bannerHeight = Math.round(windowHeight * PROFILE_BANNER_RATIO);
   const routeParams = (route.params ?? {}) as { userId?: string };
   const viewingUserId = routeParams.userId?.trim() ?? "";
   const isArtistPortfolio =
@@ -424,6 +427,13 @@ const Profile = () => {
       ? ROLE_LABEL[profile.role] ?? profile.role
       : "";
 
+  const headline =
+    profile?.activityName?.trim() ||
+    (typeof (profile as PublicProfileResponseDto)?.major === "object"
+      ? (profile as PublicProfileResponseDto).major?.name?.trim()
+      : (profile as ProfileResponseDto)?.major?.trim()) ||
+    "";
+
   const followerRow = (
     <View style={styles.profileFollowerRow}>
       <Pressable
@@ -488,67 +498,76 @@ const Profile = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.profileContainer}>
-        <View style={styles.profileImageContainer}>
-          {displayProfileImgUrl ? (
-            <Image
-              source={{ uri: displayProfileImgUrl }}
-              style={styles.profileImage}
-              resizeMode="cover"
-              onError={() => setImageError(true)}
-            />
-          ) : (
-            <Image
-              source={require("../../../../../assets/logo.png")}
-              style={styles.profileImage}
-              resizeMode="contain"
-            />
-          )}
-        </View>
-        <View style={styles.profileInfoContainer}>
-          <View style={styles.profileNameContainer}>
-            <View>
-              <Text style={styles.profileName}>{displayNickname}</Text>
+      <View style={styles.profileCard}>
+        <View style={[styles.banner, { height: bannerHeight }]} />
+        <View style={styles.profileBody}>
+          <View style={styles.avatarWrapper}>
+            <View style={styles.profileImageContainer}>
+              {displayProfileImgUrl ? (
+                <Image
+                  source={{ uri: displayProfileImgUrl }}
+                  style={styles.profileImage}
+                  resizeMode="cover"
+                  onError={() => setImageError(true)}
+                />
+              ) : (
+                <Image
+                  source={require("../../../../../assets/logo.png")}
+                  style={styles.profileImage}
+                  resizeMode="contain"
+                />
+              )}
             </View>
+          </View>
+
+          <View style={styles.profileNameRow}>
+            <Text style={styles.profileName}>{displayNickname}</Text>
             {roleLabel ? (
               <View style={styles.profileTagContainer}>
                 <Text style={styles.profileTag}>{roleLabel}</Text>
               </View>
             ) : null}
           </View>
+
+          {headline ? (
+            <Text style={styles.profileHeadline}>{headline}</Text>
+          ) : null}
+
           {isOtherProfile ? (
             otherProfileFollowChat
           ) : (
             followerRow
           )}
+
+          <Text style={styles.profileIntroduction}>
+            {profile?.aboutMe ? profile.aboutMe : "소개가 없습니다."}
+          </Text>
+
+          {!isOtherProfile ? (
+            <View style={styles.profileSettingContainer}>
+              <View style={styles.profileActionsRow}>
+                <Pressable
+                  style={styles.profileEditContainer}
+                  onPress={() => navigation.navigate(RootRoutes.PROFILE_EDIT)}
+                >
+                  <Ionicons name="create-outline" size={18} color="white" />
+                  <Text style={styles.profileEditText}>프로필 수정</Text>
+                </Pressable>
+                <View style={styles.profilePrivateContainer}>
+                  <Switch
+                    value={isEnabled}
+                    onValueChange={setIsEnabled}
+                    trackColor={{ true: MAIN.DEFAULT, false: GRAY.MEDIUM }}
+                    thumbColor={WHITE}
+                    style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
+                  />
+                  <Text style={styles.profilePrivateText}>비공개</Text>
+                </View>
+              </View>
+            </View>
+          ) : null}
         </View>
       </View>
-
-      <Text style={styles.profileIntroduction}>
-        {profile?.aboutMe ? profile.aboutMe : "소개가 없습니다."}
-      </Text>
-
-      {!isOtherProfile ? (
-        <View style={styles.profileSettingContainer}>
-          <Pressable
-            style={styles.profileEditContainer}
-            onPress={() => navigation.navigate(RootRoutes.PROFILE_EDIT)}
-          >
-            <Ionicons name="settings-outline" size={20} color="white" />
-            <Text style={styles.profileEditText}>프로필 수정</Text>
-          </Pressable>
-          <View style={styles.profilePrivateContainer}>
-            <Switch
-              value={isEnabled}
-              onValueChange={setIsEnabled}
-              trackColor={{ true: GRAY.DEFAULT_1, false: GRAY.MEDIUM }}
-              thumbColor={WHITE}
-              style={{ transform: [{ scaleX: 0.5 }, { scaleY: 0.5 }] }}
-            />
-            <Text style={styles.profilePrivateText}>프로필 비공개</Text>
-          </View>
-        </View>
-      ) : null}
     </View>
   );
 };

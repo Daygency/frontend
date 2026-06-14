@@ -4,12 +4,10 @@ import { BLACK, BLUE, GRAY, MAIN, WHITE } from "../../../../color";
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: WHITE,
-    marginTop: 12,
   },
   embeddedContainer: {
-    backgroundColor: WHITE,
-    marginTop: 12,
+    backgroundColor: "transparent",
+    marginTop: 0,
   },
   contentContainer: {
     paddingHorizontal: 12,
@@ -20,7 +18,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 12,
     alignItems: "center",
-    paddingHorizontal: 12,
+    paddingHorizontal: 0,
   },
   activityCountItem: {
     paddingHorizontal: 12,

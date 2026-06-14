@@ -1,5 +1,9 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, WHITE } from "../../../../color";
+import {
+  PORTFOLIO_BODY_BG,
+  PORTFOLIO_SECTION_GAP,
+} from "../../styles";
 
 const styles = StyleSheet.create({
   container: {
@@ -12,7 +16,13 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   embeddedRoot: {
+    backgroundColor: PORTFOLIO_BODY_BG,
+  },
+  embeddedSheet: {
     backgroundColor: WHITE,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginBottom: PORTFOLIO_SECTION_GAP,
   },
   sectionTitle: {
     fontSize: 16,

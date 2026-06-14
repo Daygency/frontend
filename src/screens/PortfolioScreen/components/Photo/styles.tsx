@@ -1,17 +1,15 @@
 import { StyleSheet } from "react-native";
-import { GRAY, WHITE } from "../../../../color";
+import { GRAY } from "../../../../color";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: WHITE,
   },
   contentContainer: {
-    paddingHorizontal: 12,
-    paddingVertical: 16,
+    paddingVertical: 0,
   },
   embeddedRoot: {
-    backgroundColor: WHITE,
+    backgroundColor: "transparent",
   },
   grid: {
     flexDirection: "row",

@@ -1,74 +1,88 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../../color";
+import { PORTFOLIO_BODY_BG, PORTFOLIO_SECTION_GAP } from "../../styles";
+
+export const PROFILE_AVATAR_SIZE = 100;
+export const PROFILE_BANNER_RATIO = 0.24;
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 12,
+    backgroundColor: PORTFOLIO_BODY_BG,
+    marginBottom: PORTFOLIO_SECTION_GAP,
   },
-  profileContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingTop: 9,
+  profileCard: {
+    backgroundColor: WHITE,
+    overflow: "hidden",
   },
-  profileName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: BLACK,
+  banner: {
+    width: "100%",
+    backgroundColor: "#C8D8E8",
   },
-  profileActivityId: {
-    fontSize: 12,
-    color: GRAY.DARK_2,
-    marginTop: 2,
+  profileBody: {
+    paddingHorizontal: 16,
+    paddingBottom: 16,
   },
-  profileTagContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  profileTag: {
-    fontSize: 12,
-    letterSpacing: 0.24,
-    fontWeight: "400",
-    color: WHITE,
-    backgroundColor: MAIN.DEFAULT,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+  avatarWrapper: {
+    width: PROFILE_AVATAR_SIZE,
+    height: PROFILE_AVATAR_SIZE,
+    marginTop: -(PROFILE_AVATAR_SIZE / 2),
+    marginBottom: 8,
   },
   profileImageContainer: {
-    width: 95,
-    height: 95,
-    borderRadius: 50,
+    width: PROFILE_AVATAR_SIZE,
+    height: PROFILE_AVATAR_SIZE,
+    borderRadius: PROFILE_AVATAR_SIZE / 2,
     backgroundColor: GRAY.MEDIUM,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+    borderWidth: 3,
+    borderColor: WHITE,
   },
   profileImage: {
-    width: 95,
-    height: 95,
-    borderRadius: 50,
+    width: PROFILE_AVATAR_SIZE,
+    height: PROFILE_AVATAR_SIZE,
+    borderRadius: PROFILE_AVATAR_SIZE / 2,
   },
-  profileInfoContainer: {
-    flex: 1,
-    gap: 10,
-  },
-  profileNameContainer: {
+  profileNameRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 4,
   },
-  profileFollowerContainer: {
+  profileName: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: BLACK,
+    letterSpacing: -0.3,
+  },
+  profileHeadline: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: GRAY.DARK_100,
+    marginBottom: 6,
+  },
+  profileTagContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
+  },
+  profileTag: {
+    fontSize: 11,
+    letterSpacing: 0.2,
+    fontWeight: "600",
+    color: WHITE,
+    backgroundColor: MAIN.DEFAULT,
+    borderRadius: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
   },
   profileFollowerRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
     flexWrap: "wrap",
+    marginBottom: 12,
   },
   followStatHit: {
     paddingVertical: 2,
@@ -76,21 +90,72 @@ const styles = StyleSheet.create({
   },
   followStatText: {
     fontSize: 14,
-    color: BLACK,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
   },
-  /** 타인 프로필: 팔로우 수 아래 팔로우·채팅 */
+  profileIntroduction: {
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: 0.2,
+    fontWeight: "400",
+    color: GRAY.DARK_100,
+    marginBottom: 14,
+  },
+  profileSettingContainer: {
+    gap: 8,
+  },
+  profileActionsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  profileEditContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    height: 36,
+    backgroundColor: MAIN.DEFAULT,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+  },
+  profilePrivateContainer: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 4,
+    height: 36,
+    backgroundColor: WHITE,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: MAIN.DEFAULT,
+    paddingHorizontal: 8,
+  },
+  profileEditText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: WHITE,
+  },
+  profilePrivateText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
+  },
   otherProfileActionsRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 10,
-    marginTop: 12,
+    gap: 8,
+    marginTop: 4,
     flexWrap: "wrap",
   },
   otherFollowBtn: {
+    flex: 1,
     minWidth: 100,
-    height: 38,
+    height: 36,
     paddingHorizontal: 16,
-    borderRadius: 100,
+    borderRadius: 20,
     backgroundColor: MAIN.DEFAULT,
     justifyContent: "center",
     alignItems: "center",
@@ -109,10 +174,11 @@ const styles = StyleSheet.create({
     color: MAIN.DEFAULT,
   },
   otherChatBtn: {
+    flex: 1,
     minWidth: 100,
-    height: 38,
+    height: 36,
     paddingHorizontal: 16,
-    borderRadius: 100,
+    borderRadius: 20,
     borderWidth: 1,
     borderColor: GRAY.DARK_2,
     backgroundColor: WHITE,
@@ -122,114 +188,7 @@ const styles = StyleSheet.create({
   otherChatBtnText: {
     fontSize: 14,
     fontWeight: "600",
-    color: BLACK,
-  },
-  profileFollowingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    marginTop: 10,
-  },
-  profileIntroduction: {
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.3,
-    fontWeight: "400",
-    color: GRAY.DARK,
-    marginTop: 13,
-  },
-  profileSettingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-    marginTop: 13,
-    justifyContent: "space-between",
-  },
-  profileEditContainer: {
-    flexDirection: "row",
-    flex: 1,
-    alignItems: "center",
-    gap: 4,
-    height: 37,
-    backgroundColor: MAIN.DEFAULT,
-    borderRadius: 10,
-    justifyContent: "center",
-    paddingVertical: 6,
-  },
-  profilePrivateContainer: {
-    flexDirection: "row",
-    flex: 1,
-    alignItems: "center",
-    gap: 4,
-    height: 37,
-    backgroundColor: MAIN.DEFAULT,
-    borderRadius: 10,
-    justifyContent: "center",
-  },
-  profileEditText: {
-    fontSize: 14,
-    letterSpacing: 0.24,
-    fontWeight: "400",
-    color: WHITE,
-  },
-  profilePrivateText: {
-    fontSize: 14,
-    letterSpacing: 0.24,
-    fontWeight: "400",
-    color: WHITE,
-  },
-
-  // ── 섹션 구분선 ──
-  sectionDivider: {
-    height: 1,
-    backgroundColor: GRAY.MEDIUM,
-    marginTop: 16,
-    marginBottom: 4,
-  },
-
-  // ── 학력/경력/수상/자격증 섹션 ──
-  sectionBlock: {
-    marginTop: 14,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: "600",
     color: GRAY.DARK_100,
-    marginBottom: 8,
-    letterSpacing: 0.2,
-  },
-  entryRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    marginBottom: 8,
-    gap: 6,
-  },
-  entryIcon: {
-    marginTop: 2,
-  },
-  entryTextBlock: {
-    flex: 1,
-    gap: 2,
-  },
-  entryDescription: {
-    fontSize: 13,
-    color: GRAY.DARK_100,
-    lineHeight: 18,
-  },
-  entryPeriod: {
-    fontSize: 12,
-    color: GRAY.DARK_2,
-  },
-  fileChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
-    marginTop: 2,
-  },
-  fileChipText: {
-    fontSize: 11,
-    color: MAIN.DEFAULT,
-    flex: 1,
   },
 });
 

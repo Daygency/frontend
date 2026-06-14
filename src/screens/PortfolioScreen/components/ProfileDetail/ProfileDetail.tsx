@@ -246,30 +246,27 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
   const certList =
     p?.certificateEntries ?? p?.certificates ?? [];
 
+  const Sheet = embedded ? View : ShadowCardButton;
+  const sheetProps = embedded
+    ? { style: styles.embeddedSheet }
+    : {
+        styles: {
+          container: {
+            paddingTop: 16,
+            paddingBottom: 17,
+            paddingHorizontal: 16,
+          },
+        },
+      };
+
   const body = (
     <>
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
+      <Sheet {...sheetProps}>
         <Text style={styles.sectionTitle}>소개</Text>
         <Text style={styles.sectionContent}>{aboutMe}</Text>
-      </ShadowCardButton>
+      </Sheet>
 
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
+      <Sheet {...sheetProps}>
         <Text style={styles.sectionTitle}>학력</Text>
         <Text style={styles.sectionContent}>
           {formatEntriesWithPeriod(
@@ -277,17 +274,9 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
             "정보가 없습니다.",
           )}
         </Text>
-      </ShadowCardButton>
+      </Sheet>
 
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
+      <Sheet {...sheetProps}>
         <Text style={styles.sectionTitle}>경력</Text>
         <Text style={styles.sectionContent}>
           {formatEntriesWithPeriod(
@@ -295,17 +284,9 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
             "정보가 없습니다.",
           )}
         </Text>
-      </ShadowCardButton>
+      </Sheet>
 
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
+      <Sheet {...sheetProps}>
         <Text style={styles.sectionTitle}>수상 경력</Text>
         <Text style={styles.sectionContent}>
           {formatAwardsWithDate(
@@ -313,17 +294,9 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
             "정보가 없습니다.",
           )}
         </Text>
-      </ShadowCardButton>
+      </Sheet>
 
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
+      <Sheet {...sheetProps}>
         <Text style={styles.sectionTitle}>수료증 / 자격증</Text>
         <Text style={styles.sectionContent}>
           {formatCertificatesWithDate(
@@ -331,18 +304,10 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
             "정보가 없습니다.",
           )}
         </Text>
-      </ShadowCardButton>
+      </Sheet>
 
       {!isOtherProfile ? (
-        <ShadowCardButton
-          styles={{
-            container: {
-              paddingTop: 16,
-              paddingBottom: 17,
-              paddingHorizontal: 16,
-            },
-          }}
-        >
+        <Sheet {...sheetProps}>
           <Text style={styles.sectionTitle}>연락처</Text>
           {hasContact ? (
             <>
@@ -356,15 +321,13 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
           ) : (
             <Text style={styles.sectionContent}>연락처 정보가 없습니다.</Text>
           )}
-        </ShadowCardButton>
+        </Sheet>
       ) : null}
     </>
   );
 
   if (embedded) {
-    return (
-      <View style={[styles.embeddedRoot, styles.contentContainer]}>{body}</View>
-    );
+    return <View style={styles.embeddedRoot}>{body}</View>;
   }
 
   return (
