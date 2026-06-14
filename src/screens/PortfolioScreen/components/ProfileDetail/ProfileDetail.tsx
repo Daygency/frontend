@@ -16,7 +16,6 @@ import {
   getProfileCache,
   saveProfileCache,
 } from "../../../../lib/profileCache";
-import { useAuth } from "../../../../contexts/AuthContext";
 import { RootRoutes } from "../../../../navigations/routes";
 
 type LoadedProfile = ProfileResponseDto | PublicProfileResponseDto | null;
@@ -26,7 +25,6 @@ type ProfileDetailProps = {
 };
 
 const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
-  const { user } = useAuth();
   const route = useRoute();
   const routeParams = (route.params ?? {}) as { userId?: string };
   const viewingUserId = routeParams.userId?.trim() ?? "";
@@ -99,24 +97,6 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
       return () => {};
     }, [loadProfile]),
   );
-
-  const getSectionText = (value: unknown, fallback: string) => {
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-      return trimmed || fallback;
-    }
-    if (Array.isArray(value)) {
-      const joined = value
-        .map((item: any) => {
-          const text = item?.description ?? item?.desc ?? item?.content ?? "";
-          return typeof text === "string" ? text.trim() : "";
-        })
-        .filter((text) => text.length > 0)
-        .join("\n");
-      return joined || fallback;
-    }
-    return fallback;
-  };
 
   /** API의 startedAt/endedAt → "2025.12 ~ 2026.07" */
   const formatPeriod = (item: any) => {
@@ -230,19 +210,6 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
   }
 
   const p = profile as any;
-  const aboutMe =
-    getSectionText(p?.selfIntroduction, "") ||
-    getSectionText(p?.aboutMe, "") ||
-    null;
-
-  const email = !isOtherProfile
-    ? profile?.contact?.email ?? user?.email ?? ""
-    : "";
-  const phoneNumber = !isOtherProfile
-    ? profile?.contact?.phoneNumber ?? ""
-    : "";
-  const hasContact = !isOtherProfile && (email || phoneNumber);
-
   const educationList =
     p?.educationEntries ?? p?.educations ?? [];
   const careerList = p?.careerEntries ?? p?.careers ?? [];
@@ -273,13 +240,6 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
 
   const body = (
     <>
-      {aboutMe ? (
-        <Sheet {...sheetProps}>
-          <Text style={styles.sectionTitle}>소개</Text>
-          <Text style={styles.sectionContent}>{aboutMe}</Text>
-        </Sheet>
-      ) : null}
-
       {educationContent ? (
         <Sheet {...sheetProps}>
           <Text style={styles.sectionTitle}>학력</Text>
@@ -305,18 +265,6 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
         <Sheet {...sheetProps}>
           <Text style={styles.sectionTitle}>수료증 / 자격증</Text>
           <Text style={styles.sectionContent}>{certificateContent}</Text>
-        </Sheet>
-      ) : null}
-
-      {!isOtherProfile && hasContact ? (
-        <Sheet {...sheetProps}>
-          <Text style={styles.sectionTitle}>연락처</Text>
-          {email ? (
-            <Text style={styles.sectionContent}>Email: {email}</Text>
-          ) : null}
-          {phoneNumber ? (
-            <Text style={styles.sectionContent}>Phone: {phoneNumber}</Text>
-          ) : null}
         </Sheet>
       ) : null}
     </>
