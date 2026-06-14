@@ -30,9 +30,7 @@ const Photo = ({ embedded = false }: PhotoProps) => {
   );
 
   if (embedded) {
-    return (
-      <View style={[styles.embeddedRoot, styles.contentContainer]}>{grid}</View>
-    );
+    return grid;
   }
 
   return (
