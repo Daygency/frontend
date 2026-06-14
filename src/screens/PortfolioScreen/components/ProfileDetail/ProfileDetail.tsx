@@ -133,12 +133,17 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
     return `${start} ~ ${end}`;
   };
 
+  const legacyStringContent = (value: unknown): string | null => {
+    if (typeof value !== "string") return null;
+    const trimmed = value.trim();
+    return trimmed || null;
+  };
+
   /** 학력/경력: description + (년.월 ~ 년.월) - API의 startedAt/endedAt 그대로 사용 */
   const formatEntriesWithPeriod = (
     arr: any[] | null | undefined,
-    fallback: string,
-  ) => {
-    if (!Array.isArray(arr) || arr.length === 0) return fallback;
+  ): string | null => {
+    if (!Array.isArray(arr) || arr.length === 0) return null;
     const lines = arr
       .map((item: any) => {
         const desc = (item?.description ?? "").trim();
@@ -147,15 +152,14 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
         return period ? `${desc} (${period})` : desc;
       })
       .filter((s) => s.length > 0);
-    return lines.join("\n") || fallback;
+    return lines.length > 0 ? lines.join("\n") : null;
   };
 
   /** 수료증/자격증: description + (취득 년.월) - API의 year/month 사용 */
   const formatCertificatesWithDate = (
     arr: any[] | null | undefined,
-    fallback: string,
-  ) => {
-    if (!Array.isArray(arr) || arr.length === 0) return fallback;
+  ): string | null => {
+    if (!Array.isArray(arr) || arr.length === 0) return null;
     const toYm = (y: string, m: string) =>
       y && m ? `${y}.${String(m).padStart(2, "0")}` : "";
     const lines = arr
@@ -166,15 +170,14 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
         return date ? `${desc} (취득 ${date})` : desc;
       })
       .filter((s) => s.length > 0);
-    return lines.join("\n") || fallback;
+    return lines.length > 0 ? lines.join("\n") : null;
   };
 
   /** 수상: description + (년.월) - API의 awardedAt 또는 year/month 사용 */
   const formatAwardsWithDate = (
     arr: any[] | null | undefined,
-    fallback: string,
-  ) => {
-    if (!Array.isArray(arr) || arr.length === 0) return fallback;
+  ): string | null => {
+    if (!Array.isArray(arr) || arr.length === 0) return null;
     const toYm = (d: string | undefined) => {
       if (!d) return "";
       const date = new Date(d);
@@ -193,7 +196,7 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
         return date ? `${desc} (${date})` : desc;
       })
       .filter((s) => s.length > 0);
-    return lines.join("\n") || fallback;
+    return lines.length > 0 ? lines.join("\n") : null;
   };
 
   if (isLoading) {
@@ -229,7 +232,8 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
   const p = profile as any;
   const aboutMe =
     getSectionText(p?.selfIntroduction, "") ||
-    getSectionText(p?.aboutMe, "소개가 없습니다.");
+    getSectionText(p?.aboutMe, "") ||
+    null;
 
   const email = !isOtherProfile
     ? profile?.contact?.email ?? user?.email ?? ""
@@ -246,6 +250,14 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
   const certList =
     p?.certificateEntries ?? p?.certificates ?? [];
 
+  const educationContent =
+    formatEntriesWithPeriod(educationList) ?? legacyStringContent(p?.education);
+  const careerContent =
+    formatEntriesWithPeriod(careerList) ?? legacyStringContent(p?.career);
+  const awardContent =
+    formatAwardsWithDate(awardList) ?? legacyStringContent(p?.awards);
+  const certificateContent = formatCertificatesWithDate(certList);
+
   const Sheet = embedded ? View : ShadowCardButton;
   const sheetProps = embedded
     ? { style: styles.embeddedSheet }
@@ -261,66 +273,50 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
 
   const body = (
     <>
-      <Sheet {...sheetProps}>
-        <Text style={styles.sectionTitle}>소개</Text>
-        <Text style={styles.sectionContent}>{aboutMe}</Text>
-      </Sheet>
+      {aboutMe ? (
+        <Sheet {...sheetProps}>
+          <Text style={styles.sectionTitle}>소개</Text>
+          <Text style={styles.sectionContent}>{aboutMe}</Text>
+        </Sheet>
+      ) : null}
 
-      <Sheet {...sheetProps}>
-        <Text style={styles.sectionTitle}>학력</Text>
-        <Text style={styles.sectionContent}>
-          {formatEntriesWithPeriod(
-            educationList,
-            "정보가 없습니다.",
-          )}
-        </Text>
-      </Sheet>
+      {educationContent ? (
+        <Sheet {...sheetProps}>
+          <Text style={styles.sectionTitle}>학력</Text>
+          <Text style={styles.sectionContent}>{educationContent}</Text>
+        </Sheet>
+      ) : null}
 
-      <Sheet {...sheetProps}>
-        <Text style={styles.sectionTitle}>경력</Text>
-        <Text style={styles.sectionContent}>
-          {formatEntriesWithPeriod(
-            careerList,
-            "정보가 없습니다.",
-          )}
-        </Text>
-      </Sheet>
+      {careerContent ? (
+        <Sheet {...sheetProps}>
+          <Text style={styles.sectionTitle}>경력</Text>
+          <Text style={styles.sectionContent}>{careerContent}</Text>
+        </Sheet>
+      ) : null}
 
-      <Sheet {...sheetProps}>
-        <Text style={styles.sectionTitle}>수상 경력</Text>
-        <Text style={styles.sectionContent}>
-          {formatAwardsWithDate(
-            awardList,
-            "정보가 없습니다.",
-          )}
-        </Text>
-      </Sheet>
+      {awardContent ? (
+        <Sheet {...sheetProps}>
+          <Text style={styles.sectionTitle}>수상 경력</Text>
+          <Text style={styles.sectionContent}>{awardContent}</Text>
+        </Sheet>
+      ) : null}
 
-      <Sheet {...sheetProps}>
-        <Text style={styles.sectionTitle}>수료증 / 자격증</Text>
-        <Text style={styles.sectionContent}>
-          {formatCertificatesWithDate(
-            certList,
-            "정보가 없습니다.",
-          )}
-        </Text>
-      </Sheet>
+      {certificateContent ? (
+        <Sheet {...sheetProps}>
+          <Text style={styles.sectionTitle}>수료증 / 자격증</Text>
+          <Text style={styles.sectionContent}>{certificateContent}</Text>
+        </Sheet>
+      ) : null}
 
-      {!isOtherProfile ? (
+      {!isOtherProfile && hasContact ? (
         <Sheet {...sheetProps}>
           <Text style={styles.sectionTitle}>연락처</Text>
-          {hasContact ? (
-            <>
-              {email ? (
-                <Text style={styles.sectionContent}>Email: {email}</Text>
-              ) : null}
-              {phoneNumber ? (
-                <Text style={styles.sectionContent}>Phone: {phoneNumber}</Text>
-              ) : null}
-            </>
-          ) : (
-            <Text style={styles.sectionContent}>연락처 정보가 없습니다.</Text>
-          )}
+          {email ? (
+            <Text style={styles.sectionContent}>Email: {email}</Text>
+          ) : null}
+          {phoneNumber ? (
+            <Text style={styles.sectionContent}>Phone: {phoneNumber}</Text>
+          ) : null}
         </Sheet>
       ) : null}
     </>
