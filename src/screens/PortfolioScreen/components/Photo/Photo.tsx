@@ -2,20 +2,32 @@ import { View, Text, ScrollView } from "react-native";
 import styles from "./styles";
 import { GRAY } from "../../../../color";
 
-type PhotoProps = {
-  embedded?: boolean;
+export const PHOTO_PREVIEW_LIMIT = 4;
+
+export type PortfolioPhoto = {
+  id: number;
+  uri: string | null;
 };
 
-const Photo = ({ embedded = false }: PhotoProps) => {
-  // 임시 이미지 데이터
-  const photos = [
-    { id: 1, uri: null },
-    { id: 2, uri: null },
-    { id: 3, uri: null },
-    { id: 4, uri: null },
-    { id: 5, uri: null },
-    { id: 6, uri: null },
-  ];
+// 임시 이미지 데이터
+export const PORTFOLIO_PHOTOS: PortfolioPhoto[] = [
+  { id: 1, uri: null },
+  { id: 2, uri: null },
+  { id: 3, uri: null },
+  { id: 4, uri: null },
+  { id: 5, uri: null },
+  { id: 6, uri: null },
+];
+
+type PhotoProps = {
+  embedded?: boolean;
+  /** 지정 시 해당 개수만 표시 (프로필 탭 미리보기) */
+  limit?: number;
+};
+
+const Photo = ({ embedded = false, limit }: PhotoProps) => {
+  const photos =
+    limit != null ? PORTFOLIO_PHOTOS.slice(0, limit) : PORTFOLIO_PHOTOS;
 
   const grid = (
     <View style={styles.grid}>
@@ -41,4 +53,3 @@ const Photo = ({ embedded = false }: PhotoProps) => {
 };
 
 export default Photo;
-
