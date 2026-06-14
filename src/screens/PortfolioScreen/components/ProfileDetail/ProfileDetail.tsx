@@ -1,6 +1,8 @@
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import type { ComponentProps } from "react";
 import styles from "./styles";
 import { GRAY, BLACK, MAIN } from "../../../../color";
 import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
@@ -19,6 +21,11 @@ import {
 import { RootRoutes } from "../../../../navigations/routes";
 
 type LoadedProfile = ProfileResponseDto | PublicProfileResponseDto | null;
+
+type ProfileEntryItem = {
+  description: string;
+  period?: string | null;
+};
 
 type ProfileDetailProps = {
   embedded?: boolean;
@@ -113,70 +120,75 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
     return `${start} ~ ${end}`;
   };
 
-  const legacyStringContent = (value: unknown): string | null => {
-    if (typeof value !== "string") return null;
-    const trimmed = value.trim();
-    return trimmed || null;
+  const legacyStringEntries = (value: unknown): ProfileEntryItem[] => {
+    if (typeof value !== "string") return [];
+    return value
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((description) => ({ description }));
   };
 
-  /** 학력/경력: description + (년.월 ~ 년.월) - API의 startedAt/endedAt 그대로 사용 */
-  const formatEntriesWithPeriod = (
+  const parseEntriesWithPeriod = (
     arr: any[] | null | undefined,
-  ): string | null => {
-    if (!Array.isArray(arr) || arr.length === 0) return null;
-    const lines = arr
+  ): ProfileEntryItem[] => {
+    if (!Array.isArray(arr) || arr.length === 0) return [];
+    return arr
       .map((item: any) => {
-        const desc = (item?.description ?? "").trim();
-        const period = formatPeriod(item);
-        if (!desc && !period) return "";
-        return period ? `${desc} (${period})` : desc;
+        const description = (item?.description ?? "").trim();
+        const period = formatPeriod(item) || null;
+        if (!description && !period) return null;
+        return {
+          description: description || period || "",
+          period: description && period ? period : null,
+        };
       })
-      .filter((s) => s.length > 0);
-    return lines.length > 0 ? lines.join("\n") : null;
+      .filter((item): item is ProfileEntryItem => item != null);
   };
 
-  /** 수료증/자격증: description + (취득 년.월) - API의 year/month 사용 */
-  const formatCertificatesWithDate = (
+  const parseCertificates = (
     arr: any[] | null | undefined,
-  ): string | null => {
-    if (!Array.isArray(arr) || arr.length === 0) return null;
+  ): ProfileEntryItem[] => {
+    if (!Array.isArray(arr) || arr.length === 0) return [];
     const toYm = (y: string, m: string) =>
       y && m ? `${y}.${String(m).padStart(2, "0")}` : "";
-    const lines = arr
+    return arr
       .map((item: any) => {
-        const desc = (item?.description ?? "").trim();
+        const description = (item?.description ?? "").trim();
         const date = toYm(item?.year ?? "", item?.month ?? "");
-        if (!desc && !date) return "";
-        return date ? `${desc} (취득 ${date})` : desc;
+        const period = date ? `취득 ${date}` : null;
+        if (!description && !period) return null;
+        return {
+          description: description || period || "",
+          period: description && period ? period : null,
+        };
       })
-      .filter((s) => s.length > 0);
-    return lines.length > 0 ? lines.join("\n") : null;
+      .filter((item): item is ProfileEntryItem => item != null);
   };
 
-  /** 수상: description + (년.월) - API의 awardedAt 또는 year/month 사용 */
-  const formatAwardsWithDate = (
-    arr: any[] | null | undefined,
-  ): string | null => {
-    if (!Array.isArray(arr) || arr.length === 0) return null;
+  const parseAwards = (arr: any[] | null | undefined): ProfileEntryItem[] => {
+    if (!Array.isArray(arr) || arr.length === 0) return [];
     const toYm = (d: string | undefined) => {
       if (!d) return "";
       const date = new Date(d);
       if (isNaN(date.getTime())) return "";
       return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}`;
     };
-    const lines = arr
+    return arr
       .map((item: any) => {
-        const desc = (item?.description ?? "").trim();
-        const date = item?.awardedAt
+        const description = (item?.description ?? "").trim();
+        const period = item?.awardedAt
           ? toYm(item.awardedAt)
           : item?.year && item?.month
             ? `${item.year}.${String(item.month).padStart(2, "0")}`
-            : "";
-        if (!desc && !date) return "";
-        return date ? `${desc} (${date})` : desc;
+            : null;
+        if (!description && !period) return null;
+        return {
+          description: description || period || "",
+          period: description && period ? period : null,
+        };
       })
-      .filter((s) => s.length > 0);
-    return lines.length > 0 ? lines.join("\n") : null;
+      .filter((item): item is ProfileEntryItem => item != null);
   };
 
   if (isLoading) {
@@ -217,13 +229,22 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
   const certList =
     p?.certificateEntries ?? p?.certificates ?? [];
 
-  const educationContent =
-    formatEntriesWithPeriod(educationList) ?? legacyStringContent(p?.education);
-  const careerContent =
-    formatEntriesWithPeriod(careerList) ?? legacyStringContent(p?.career);
-  const awardContent =
-    formatAwardsWithDate(awardList) ?? legacyStringContent(p?.awards);
-  const certificateContent = formatCertificatesWithDate(certList);
+  const mergeEntries = (
+    parsed: ProfileEntryItem[],
+    legacy: unknown,
+  ): ProfileEntryItem[] =>
+    parsed.length > 0 ? parsed : legacyStringEntries(legacy);
+
+  const educationEntries = mergeEntries(
+    parseEntriesWithPeriod(educationList),
+    p?.education,
+  );
+  const careerEntries = mergeEntries(
+    parseEntriesWithPeriod(careerList),
+    p?.career,
+  );
+  const awardEntries = mergeEntries(parseAwards(awardList), p?.awards);
+  const certificateEntries = parseCertificates(certList);
 
   const Sheet = embedded ? View : ShadowCardButton;
   const sheetProps = embedded
@@ -238,35 +259,47 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
         },
       };
 
+  const renderEntrySection = (
+    title: string,
+    items: ProfileEntryItem[],
+    iconName: ComponentProps<typeof Ionicons>["name"],
+  ) => {
+    if (items.length === 0) return null;
+    return (
+      <Sheet {...sheetProps}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <View style={styles.entryList}>
+          {items.map((item, index) => (
+            <View
+              key={`${title}-${index}-${item.description}`}
+              style={styles.entryRow}
+            >
+              <View style={styles.entryIconBox}>
+                <Ionicons name={iconName} size={20} color={MAIN.DEFAULT} />
+              </View>
+              <View style={styles.entryTextWrap}>
+                <Text style={styles.entryTitle}>{item.description}</Text>
+                {item.period ? (
+                  <Text style={styles.entryPeriod}>{item.period}</Text>
+                ) : null}
+              </View>
+            </View>
+          ))}
+        </View>
+      </Sheet>
+    );
+  };
+
   const body = (
     <>
-      {educationContent ? (
-        <Sheet {...sheetProps}>
-          <Text style={styles.sectionTitle}>학력</Text>
-          <Text style={styles.sectionContent}>{educationContent}</Text>
-        </Sheet>
-      ) : null}
-
-      {careerContent ? (
-        <Sheet {...sheetProps}>
-          <Text style={styles.sectionTitle}>경력</Text>
-          <Text style={styles.sectionContent}>{careerContent}</Text>
-        </Sheet>
-      ) : null}
-
-      {awardContent ? (
-        <Sheet {...sheetProps}>
-          <Text style={styles.sectionTitle}>수상 경력</Text>
-          <Text style={styles.sectionContent}>{awardContent}</Text>
-        </Sheet>
-      ) : null}
-
-      {certificateContent ? (
-        <Sheet {...sheetProps}>
-          <Text style={styles.sectionTitle}>수료증 / 자격증</Text>
-          <Text style={styles.sectionContent}>{certificateContent}</Text>
-        </Sheet>
-      ) : null}
+      {renderEntrySection("학력", educationEntries, "school-outline")}
+      {renderEntrySection("경력", careerEntries, "briefcase-outline")}
+      {renderEntrySection("수상 경력", awardEntries, "trophy-outline")}
+      {renderEntrySection(
+        "수료증 / 자격증",
+        certificateEntries,
+        "ribbon-outline",
+      )}
     </>
   );
 

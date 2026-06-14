@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../../../color";
 import {
   PORTFOLIO_BODY_BG,
   PORTFOLIO_SECTION_GAP,
@@ -34,6 +34,40 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     letterSpacing: 0.3,
+    fontWeight: "400",
+    color: GRAY.DARK,
+  },
+  entryList: {
+    gap: 12,
+  },
+  entryRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  entryIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 4,
+    backgroundColor: MAIN.LIGHT,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 12,
+  },
+  entryTextWrap: {
+    flex: 1,
+    paddingTop: 2,
+  },
+  entryTitle: {
+    fontSize: 15,
+    lineHeight: 21,
+    fontWeight: "700",
+    color: BLACK,
+  },
+  entryPeriod: {
+    marginTop: 4,
+    fontSize: 12,
+    lineHeight: 17,
+    letterSpacing: 0.2,
     fontWeight: "400",
     color: GRAY.DARK,
   },
