@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { View, ScrollView, Text } from "react-native";
+import { View, ScrollView } from "react-native";
 import Profile from "../Profile/Profile";
 import ProfileDetail from "../ProfileDetail/ProfileDetail";
 import Photo, {
@@ -38,10 +38,7 @@ const PortfolioScrollTabsLayout = ({ header }: Props) => {
                 ? () => setPhotosExpanded(true)
                 : undefined
             }
-            styles={{
-              header: { paddingHorizontal: 0 },
-              content: { paddingHorizontal: 0 },
-            }}
+            styles={portfolioStyles.sectionStyles}
           >
             <Photo
               embedded
@@ -50,7 +47,6 @@ const PortfolioScrollTabsLayout = ({ header }: Props) => {
           </Section>
         </View>
         <View style={portfolioStyles.contentSheet}>
-          <Text style={portfolioStyles.sectionGroupTitle}>활동</Text>
           <Activity embedded />
         </View>
       </ScrollView>

@@ -34,6 +34,27 @@ const styles = StyleSheet.create({
     color: BLACK,
     marginBottom: 12,
   },
+  /** contentSheet 안 Section(사진, 받은 후기 등) 공통 */
+  sectionStyles: {
+    container: {
+      marginBottom: 0,
+    },
+    header: {
+      paddingHorizontal: 0,
+      marginBottom: 12,
+    },
+    title: {
+      fontSize: 16,
+      fontWeight: "700",
+      lineHeight: 22,
+      letterSpacing: 0,
+    },
+    content: {
+      paddingHorizontal: 0,
+      marginTop: 0,
+      gap: 0,
+    },
+  },
   icon: {
     position: "absolute",
     left: 8,

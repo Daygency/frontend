@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import styles from "./styles";
+import portfolioStyles from "../../styles";
 import { GRAY } from "../../../../color";
 import Section from "../../../../components/Section/Section";
 import ReviewCard from "../../../../components/ReviewCard/ReviewCard";
@@ -46,20 +47,10 @@ const Activity = ({ embedded = false }: ActivityProps) => {
 
   const inner = (
     <View style={embedded ? styles.embeddedContainer : styles.container}>
-      <View style={styles.activityContiner}>
-        <View style={styles.activityCountItem}>
-          <Text>활동 횟수</Text>
-          <Text>15회</Text>
-        </View>
-        <View style={styles.activityTempoItem}>
-          <Text>예술 템포</Text>
-          <Text>84점</Text>
-        </View>
-      </View>
       <Section
         title="받은 후기"
         onPressMore={() => {}}
-        styles={{ title: { marginTop: 12 } }}
+        styles={embedded ? portfolioStyles.sectionStyles : undefined}
       >
         {loading ? (
           <View style={{ paddingVertical: 24, alignItems: "center" }}>
