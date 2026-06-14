@@ -6,7 +6,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: WHITE,
   },
-  tabView: {
+  content: {
     flex: 1,
   },
 });
