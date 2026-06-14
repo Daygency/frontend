@@ -48,6 +48,7 @@ export const RootRoutes = {
   RECEIVED_APPLICATION_DETAIL: "ReceivedApplicationDetail",
   PROFILE_EDIT: "ProfileEdit",
   ARTIST_PORTFOLIO: "ArtistPortfolio",
+  PORTFOLIO_PHOTO_GALLERY: "PortfolioPhotoGallery",
   SEARCH: "Search",
   SEARCH_RESULTS: "SearchResults",
   MUSIC_NEWS_DETAIL: "MusicNewsDetail",

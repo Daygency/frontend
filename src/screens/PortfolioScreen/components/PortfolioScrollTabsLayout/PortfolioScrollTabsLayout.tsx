@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
-import { useState } from "react";
 import { View, ScrollView } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Profile from "../Profile/Profile";
 import ProfileDetail from "../ProfileDetail/ProfileDetail";
 import Photo, {
@@ -10,13 +11,15 @@ import Photo, {
 import Activity from "../Activity/Activity";
 import Section from "../../../../components/Section/Section";
 import portfolioStyles from "../../styles";
+import { RootRoutes } from "../../../../navigations/routes";
 
 type Props = {
   header: ReactNode;
 };
 
 const PortfolioScrollTabsLayout = ({ header }: Props) => {
-  const [photosExpanded, setPhotosExpanded] = useState(false);
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const hasPhotos = PORTFOLIO_PHOTOS.length > 0;
   const hasMorePhotos = PORTFOLIO_PHOTOS.length > PHOTO_PREVIEW_LIMIT;
 
   return (
@@ -30,22 +33,21 @@ const PortfolioScrollTabsLayout = ({ header }: Props) => {
       >
         <Profile />
         <ProfileDetail embedded />
-        <View style={portfolioStyles.contentSheet}>
-          <Section
-            title="사진"
-            onPressMore={
-              hasMorePhotos && !photosExpanded
-                ? () => setPhotosExpanded(true)
-                : undefined
-            }
-            styles={portfolioStyles.sectionStyles}
-          >
-            <Photo
-              embedded
-              limit={photosExpanded ? undefined : PHOTO_PREVIEW_LIMIT}
-            />
-          </Section>
-        </View>
+        {hasPhotos ? (
+          <View style={portfolioStyles.contentSheet}>
+            <Section
+              title="사진"
+              onPressMore={
+                hasMorePhotos
+                  ? () => navigation.navigate(RootRoutes.PORTFOLIO_PHOTO_GALLERY)
+                  : undefined
+              }
+              styles={portfolioStyles.sectionStyles}
+            >
+              <Photo embedded limit={PHOTO_PREVIEW_LIMIT} />
+            </Section>
+          </View>
+        ) : null}
         <View style={portfolioStyles.contentSheet}>
           <Activity embedded />
         </View>

@@ -9,15 +9,8 @@ export type PortfolioPhoto = {
   uri: string | null;
 };
 
-// 임시 이미지 데이터
-export const PORTFOLIO_PHOTOS: PortfolioPhoto[] = [
-  { id: 1, uri: null },
-  { id: 2, uri: null },
-  { id: 3, uri: null },
-  { id: 4, uri: null },
-  { id: 5, uri: null },
-  { id: 6, uri: null },
-];
+// TODO: 포트폴리오 사진 API 연동 전까지 빈 배열 (없으면 섹션 미표시)
+export const PORTFOLIO_PHOTOS: PortfolioPhoto[] = [];
 
 type PhotoProps = {
   embedded?: boolean;
@@ -28,6 +21,10 @@ type PhotoProps = {
 const Photo = ({ embedded = false, limit }: PhotoProps) => {
   const photos =
     limit != null ? PORTFOLIO_PHOTOS.slice(0, limit) : PORTFOLIO_PHOTOS;
+
+  if (photos.length === 0) {
+    return null;
+  }
 
   const grid = (
     <View style={styles.grid}>

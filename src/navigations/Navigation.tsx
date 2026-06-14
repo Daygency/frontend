@@ -36,6 +36,7 @@ import ActivityReviewScreen from "../screens/ActivityReviewScreen/ActivityReview
 import ReceivedApplicationDetailScreen from "../screens/ReceivedApplicationDetailScreen/ReceivedApplicationDetailScreen";
 import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
 import ArtistPortfolioScreen from "../screens/ArtistPortfolioScreen/ArtistPortfolioScreen";
+import PortfolioPhotoGalleryScreen from "../screens/PortfolioPhotoGalleryScreen/PortfolioPhotoGalleryScreen";
 import SearchScreen from "../screens/SearchScreen/SearchScreen";
 import MusicNewsDetailScreen from "../screens/MusicNewsDetailScreen/MusicNewsDetailScreen";
 import MusicNewsRegistrationScreen from "../screens/MusicNewsRegistrationScreen";
@@ -242,6 +243,37 @@ const Navigation = () => {
         <Stack.Screen
           name={RootRoutes.ARTIST_PORTFOLIO}
           component={ArtistPortfolioScreen}
+        />
+        <Stack.Screen
+          name={RootRoutes.PORTFOLIO_PHOTO_GALLERY}
+          component={PortfolioPhotoGalleryScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>사진</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
         />
         <Stack.Screen name={RootRoutes.SEARCH} component={SearchScreen} />
         <Stack.Screen
