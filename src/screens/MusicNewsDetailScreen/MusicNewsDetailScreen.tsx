@@ -22,14 +22,19 @@ import navigationHeaderStyles from "../../navigations/styles";
 import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
 import { Ionicons } from "@expo/vector-icons";
 import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
-import { getNewsDetail } from "../../lib/apis/news/newsApi";
+import { getNewsDetail, deleteNews } from "../../lib/apis/news/newsApi";
 import type { NewsDetailResponse } from "../../lib/apis/news/types";
 import styles from "./styles";
 import {
   createComment,
+  deleteComment,
   getComments,
+  updateComment,
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
+import PostDetailOptionsMenu from "../../components/PostDetailOptionsMenu/PostDetailOptionsMenu";
+import { RootRoutes } from "../../navigations/routes";
+import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
 import {
   createLike,
   deleteLikeByTarget,
@@ -161,8 +166,9 @@ function formatTimeAgo(value?: string): string {
   return `${Math.floor(diffMonths / 12)}년`;
 }
 
-function mapCommentToUi(comment: ApiCommentItem): CommentItem {
+function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem {
   const uid = String(comment.user?.userId ?? "").trim();
+  const isMine = Boolean(myUserId && uid && uid === myUserId);
   return {
     id: String(comment.id),
     author: String(comment.user?.nickname ?? "익명"),
@@ -171,18 +177,18 @@ function mapCommentToUi(comment: ApiCommentItem): CommentItem {
     likeCount: Number((comment as any)?.likeCount ?? 0),
     replyCount: 0,
     isLiked: Boolean((comment as any)?.isLiked),
-    isMine: Boolean((comment as any)?.isMine),
+    isMine,
     ...(uid ? { authorUserId: uid } : {}),
     replies: [],
   };
 }
 
-function buildCommentTree(raw: ApiCommentItem[]): CommentItem[] {
+function buildCommentTree(raw: ApiCommentItem[], myUserId?: string): CommentItem[] {
   const roots: CommentItem[] = [];
   const childrenByParent = new Map<string, CommentItem[]>();
 
   raw.forEach((comment) => {
-    const ui = mapCommentToUi(comment);
+    const ui = mapCommentToUi(comment, myUserId);
     const parentId = comment.parentId ? String(comment.parentId) : null;
     if (!parentId) {
       roots.push(ui);
@@ -244,6 +250,10 @@ const MusicNewsDetailScreen = () => {
   );
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
+  const [editingComment, setEditingComment] = useState<{
+    commentId: string;
+    initialContent: string;
+  } | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [scraped, setScraped] = useState(false);
@@ -287,6 +297,7 @@ const MusicNewsDetailScreen = () => {
   const { width } = Dimensions.get("window");
   const displayedComments = comments;
   const targetNewsId = newsId ?? news?.id;
+  const myUserId = user?.socialId?.trim() ?? "";
   const commentCount = Number(
     (news as any)?.commentCount ?? news?.comments ?? comments.length,
   );
@@ -298,9 +309,18 @@ const MusicNewsDetailScreen = () => {
         targetType: "NEWS",
         targetId: targetNewsId,
       });
-      if (res) setComments(buildCommentTree(res));
+      if (res) setComments(buildCommentTree(res, myUserId));
     })();
-  }, [targetNewsId]);
+  }, [targetNewsId, myUserId]);
+
+  const refreshComments = useCallback(async () => {
+    if (!targetNewsId) return;
+    const res = await getComments({
+      targetType: "NEWS",
+      targetId: targetNewsId,
+    });
+    if (res) setComments(buildCommentTree(res, myUserId));
+  }, [targetNewsId, myUserId]);
 
   useEffect(() => {
     if (!targetNewsId) return;
@@ -396,12 +416,38 @@ const MusicNewsDetailScreen = () => {
     [isLoggedIn, user?.socialId],
   );
 
-  /** 타인 글 + id 있으면 ⋮ 메뉴 — 작성자 id는 정규화·openReportPost에서 처리 */
   const canOpenPostReportMenu =
     !loading &&
     Boolean(news) &&
     !isNewsMine &&
     Boolean(targetNewsId);
+
+  const onEditNews = useCallback(() => {
+    if (!targetNewsId) return;
+    navigation.navigate(
+      RootRoutes.MUSIC_NEWS_REGISTRATION as never,
+      { newsId: targetNewsId } as never,
+    );
+  }, [navigation, targetNewsId]);
+
+  const onDeleteNews = useCallback(() => {
+    if (!targetNewsId) return;
+    Alert.alert("삭제", "이 공연소식을 삭제할까요?", [
+      { text: "취소", style: "cancel" },
+      {
+        text: "삭제",
+        style: "destructive",
+        onPress: async () => {
+          const res = await deleteNews(targetNewsId);
+          if (res.ok) {
+            navigation.goBack();
+          } else {
+            Alert.alert("알림", "삭제에 실패했습니다.");
+          }
+        },
+      },
+    ]);
+  }, [navigation, targetNewsId]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -421,16 +467,33 @@ const MusicNewsDetailScreen = () => {
               color="#000"
             />
           </Pressable>
-          <ReportDotsDropdownMenu
-            enabled={canOpenPostReportMenu}
-            loading={loading}
-            onReport={openReportPost}
-            variant="header"
-          />
+          {isNewsMine ? (
+            <PostDetailOptionsMenu
+              isMine
+              loading={loading}
+              onEdit={onEditNews}
+              onDelete={onDeleteNews}
+            />
+          ) : (
+            <ReportDotsDropdownMenu
+              enabled={canOpenPostReportMenu}
+              loading={loading}
+              onReport={openReportPost}
+              variant="header"
+            />
+          )}
         </View>
       ),
     });
-  }, [navigation, loading, canOpenPostReportMenu, openReportPost]);
+  }, [
+    navigation,
+    loading,
+    canOpenPostReportMenu,
+    openReportPost,
+    isNewsMine,
+    onEditNews,
+    onDeleteNews,
+  ]);
 
   const handlePickReportCategory = useCallback(
     (category: ReportCategory) => {
@@ -514,6 +577,16 @@ const MusicNewsDetailScreen = () => {
 
   const handleCreateComment = async (content: string) => {
     if (!targetNewsId) return;
+    if (editingComment) {
+      const updated = await updateComment(editingComment.commentId, { content });
+      if (!updated) {
+        Alert.alert("알림", "댓글 수정에 실패했습니다.");
+        return;
+      }
+      setEditingComment(null);
+      await refreshComments();
+      return;
+    }
     const created = await createComment({
       content,
       targetType: "NEWS",
@@ -524,13 +597,49 @@ const MusicNewsDetailScreen = () => {
       Alert.alert("알림", "댓글 작성에 실패했습니다.");
       return;
     }
-    const res = await getComments({
-      targetType: "NEWS",
-      targetId: targetNewsId,
-    });
-    if (res) setComments(buildCommentTree(res));
+    await refreshComments();
     setReplyTarget(null);
   };
+
+  const handleDeleteComment = useCallback(
+    (commentId: string) => {
+      Alert.alert("삭제", "댓글을 삭제할까요?", [
+        { text: "취소", style: "cancel" },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: async () => {
+            const res = await deleteComment(commentId);
+            if (!res.ok) {
+              Alert.alert("알림", "댓글 삭제에 실패했습니다.");
+              return;
+            }
+            if (editingComment?.commentId === commentId) {
+              setEditingComment(null);
+            }
+            await refreshComments();
+          },
+        },
+      ]);
+    },
+    [editingComment, refreshComments],
+  );
+
+  const openOwnCommentActions = useCallback(
+    (comment: Pick<CommentItem, "id" | "content">) => {
+      promptOwnCommentActions({
+        onEdit: () => {
+          setReplyTarget(null);
+          setEditingComment({
+            commentId: comment.id,
+            initialContent: comment.content,
+          });
+        },
+        onDelete: () => handleDeleteComment(comment.id),
+      });
+    },
+    [handleDeleteComment],
+  );
 
   const handleToggleCommentLike = async (targetId: string, currentLiked: boolean) => {
     if (currentLiked) {
@@ -774,6 +883,14 @@ const MusicNewsDetailScreen = () => {
                       variant="comment"
                       disabledMessage="신고할 수 없습니다."
                     />
+                  ) : comment.isMine ? (
+                    <Pressable hitSlop={8} onPress={() => openOwnCommentActions(comment)}>
+                      <MaterialCommunityIcons
+                        name="dots-vertical"
+                        size={18}
+                        color={GRAY.DARK_2}
+                      />
+                    </Pressable>
                   ) : (
                     <View style={{ width: 18 }} />
                   )}
@@ -873,6 +990,17 @@ const MusicNewsDetailScreen = () => {
                                 variant="reply"
                                 disabledMessage="신고할 수 없습니다."
                               />
+                            ) : reply.isMine ? (
+                              <Pressable
+                                hitSlop={8}
+                                onPress={() => openOwnCommentActions(reply)}
+                              >
+                                <MaterialCommunityIcons
+                                  name="dots-vertical"
+                                  size={16}
+                                  color={GRAY.DARK_2}
+                                />
+                              </Pressable>
                             ) : null}
                           </View>
                           <Text style={styles.replyContent}>
@@ -937,10 +1065,14 @@ const MusicNewsDetailScreen = () => {
           )}
           <CommentInputBar
             placeholder={
-              replyTarget
-                ? `${replyTarget.author}님에게 답글을 입력하세요`
-                : "댓글을 입력하세요"
+              editingComment
+                ? "댓글을 수정하세요"
+                : replyTarget
+                  ? `${replyTarget.author}님에게 답글을 입력하세요`
+                  : "댓글을 입력하세요"
             }
+            editMode={editingComment}
+            onCancelEdit={() => setEditingComment(null)}
             onSubmit={handleCreateComment}
           />
         </View>

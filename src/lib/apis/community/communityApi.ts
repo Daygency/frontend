@@ -312,7 +312,7 @@ export async function updateCommunity(
 ): Promise<CommunityDetailResponse | null> {
   try {
     const headers = await getAuthHeadersRequired();
-    const res = await fetch(`${API_BASE}/community/${id}`, {
+    const res = await fetchWithAuth(`${API_BASE}/community/${id}`, {
       method: "PATCH",
       headers,
       body: JSON.stringify(dto),
@@ -337,7 +337,7 @@ export async function deleteCommunity(
 ): Promise<{ ok: boolean; status?: number }> {
   try {
     const headers = await getAuthHeadersRequired();
-    const res = await fetch(`${API_BASE}/community/${id}`, {
+    const res = await fetchWithAuth(`${API_BASE}/community/${id}`, {
       method: "DELETE",
       headers,
     });

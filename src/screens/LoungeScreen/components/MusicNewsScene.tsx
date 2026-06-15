@@ -3,14 +3,12 @@ import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
-import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 import EventNewsCard from "../../../components/EventNewsCard/EventNewsCard";
 import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
@@ -45,6 +43,49 @@ function formatRelativeTime(iso?: string): string {
   const years = Math.floor(diffMs / yearMs);
   return `${years}년전`;
 }
+
+const localStyles = StyleSheet.create({
+  flatList: {
+    flex: 1,
+    marginTop: 0,
+  },
+  listContent: {
+    paddingHorizontal: 12,
+    paddingTop: 0,
+    paddingBottom: 24,
+    flexGrow: 1,
+    justifyContent: "flex-start",
+    alignSelf: "stretch",
+  },
+  columnWrapper: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    gap: 12,
+    marginBottom: 16,
+  },
+  card: {
+    flex: 1,
+    maxWidth: "48%",
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 24,
+  },
+  errorText: {
+    fontSize: 14,
+    color: "#999",
+  },
+  emptyText: {
+    fontSize: 14,
+    color: "#999",
+  },
+  footerLoader: {
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+});
 
 const MusicNewsScene = () => {
   const navigation = useNavigation<any>();
@@ -120,20 +161,6 @@ const MusicNewsScene = () => {
 
   return (
     <View style={styles.newsSceneContainer}>
-      <View style={styles.sortFilterWrap}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.sortFilterContainer}
-          nestedScrollEnabled
-          directionalLockEnabled
-          scrollEventThrottle={16}
-          bounces={false}
-          style={localStyles.sortScrollView}
-        >
-          <SelectableTag label="최신순" selected />
-        </ScrollView>
-      </View>
       {loading ? (
         <View style={localStyles.loaderContainer}>
           <ActivityIndicator size="small" />
@@ -174,52 +201,6 @@ const MusicNewsScene = () => {
     </View>
   );
 };
-
-const localStyles = StyleSheet.create({
-  sortScrollView: {
-    flexGrow: 0,
-  },
-  flatList: {
-    flex: 1,
-    marginTop: 0,
-  },
-  listContent: {
-    paddingHorizontal: 12,
-    paddingTop: 0,
-    paddingBottom: 24,
-    flexGrow: 1,
-    justifyContent: "flex-start",
-    alignSelf: "stretch",
-  },
-  columnWrapper: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    gap: 12,
-    marginBottom: 16,
-  },
-  card: {
-    flex: 1,
-    maxWidth: "48%",
-  },
-  loaderContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 24,
-  },
-  errorText: {
-    fontSize: 14,
-    color: "#999",
-  },
-  emptyText: {
-    fontSize: 14,
-    color: "#999",
-  },
-  footerLoader: {
-    paddingVertical: 16,
-    alignItems: "center",
-  },
-});
 
 export default MusicNewsScene;
 

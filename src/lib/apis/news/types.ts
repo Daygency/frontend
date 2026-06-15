@@ -87,3 +87,5 @@ export type CreateNewsResponse = {
   place: string;
   startedAt: string;
 };
+
+export type UpdateNewsDto = Partial<CreateNewsDto>;

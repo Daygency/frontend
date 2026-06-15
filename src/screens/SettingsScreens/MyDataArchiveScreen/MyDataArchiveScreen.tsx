@@ -14,11 +14,7 @@ import ShadowCardButton from "../../../components/ShadowCardButton/ShadowCardBut
 import FabButton from "../../../components/FabButton/FabButton";
 import styles from "./styles";
 
-const MOCK_DOCUMENTS = [
-  { id: "1", title: "2025 재즈페스티벌 출연계약서", date: "2025.09.15", size: "245 KB" },
-  { id: "2", title: "음원 사용 동의서", date: "2025.09.10", size: "180 KB" },
-  { id: "3", title: "공연 기획서", date: "2025.08.28", size: "1.2 MB" },
-];
+const MOCK_DOCUMENTS: { id: string; title: string; date: string; size: string }[] = [];
 
 const DocumentCard = ({
   title,
@@ -207,6 +203,13 @@ const MyDataArchiveScreen = () => {
           styles.listContent,
           isManageMode && styles.listContentManage,
         ]}
+        ListEmptyComponent={
+          <View style={{ paddingVertical: 48, alignItems: "center" }}>
+            <Text style={{ fontSize: 15, color: GRAY.DARK_2, textAlign: "center" }}>
+              자료 보관함 기능은 준비 중입니다.
+            </Text>
+          </View>
+        }
       />
       <Animated.View
         style={{

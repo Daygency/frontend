@@ -60,6 +60,9 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
   },
+  googleButtonDisabled: {
+    opacity: 0.55,
+  },
   buttonText: {
     fontSize: 16,
     fontWeight: "600",

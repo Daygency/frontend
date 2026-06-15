@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { GRAY, MAIN, WHITE } from "../../color";
 import {
@@ -78,6 +79,9 @@ const ProfileEditScreen = () => {
     [],
   );
   const [submitting, setSubmitting] = useState(false);
+  const [pickedProfileImageUri, setPickedProfileImageUri] = useState<string | null>(
+    null,
+  );
   const [isProfileEntryEditingFocused, setIsProfileEntryEditingFocused] =
     useState(false);
   const [isTopCustomMajorFocused, setIsTopCustomMajorFocused] = useState(false);
@@ -237,9 +241,33 @@ const ProfileEditScreen = () => {
   };
 
   const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
-  const displayProfileImgUrl = isValidImageSource(rawProfileImgUrl)
-    ? toDisplayImageUri(rawProfileImgUrl)
-    : null;
+  const displayProfileImgUrl = pickedProfileImageUri
+    ? pickedProfileImageUri
+    : isValidImageSource(rawProfileImgUrl)
+      ? toDisplayImageUri(rawProfileImgUrl)
+      : null;
+
+  const pickProfileImage = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+      if (result.canceled || !result.assets[0]?.uri) return;
+      setPickedProfileImageUri(result.assets[0].uri);
+    } catch (e) {
+      console.warn("[pickProfileImage]", e);
+      Alert.alert("알림", "이미지 선택에 실패했습니다.");
+    }
+  };
 
   const renderTabBar = () => (
     <View style={styles.tabBarContainer}>
@@ -514,7 +542,13 @@ const ProfileEditScreen = () => {
         "[ProfileEditScreen] update payload:",
         JSON.stringify(payload),
       );
-      const updated = await updateProfile(payload);
+      const updated = await updateProfile(payload, pickedProfileImageUri
+        ? {
+            profileImageUri: pickedProfileImageUri,
+            profileImageName: "profile.jpg",
+            profileImageType: "image/jpeg",
+          }
+        : undefined);
       if (!updated) {
         await persistToCache();
         return;
@@ -609,7 +643,7 @@ const ProfileEditScreen = () => {
                 />
               </View>
             )}
-            <Pressable style={styles.profileImageEditButton}>
+            <Pressable style={styles.profileImageEditButton} onPress={pickProfileImage}>
               <MaterialCommunityIcons
                 name="dots-horizontal"
                 size={20}

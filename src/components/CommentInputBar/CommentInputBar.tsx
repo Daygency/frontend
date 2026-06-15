@@ -1,51 +1,76 @@
-import { useState } from "react";
-import { TextInput, View, Pressable } from "react-native";
+import { useEffect, useState } from "react";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { GRAY } from "../../color";
+import { GRAY, MAIN } from "../../color";
 import styles from "./styles";
 
 interface CommentInputBarProps {
   placeholder?: string;
   paddingBottom?: number;
   onSubmit?: (content: string) => void | Promise<void>;
+  editMode?: { commentId: string; initialContent: string } | null;
+  onCancelEdit?: () => void;
 }
 
 const CommentInputBar = ({
   placeholder = "댓글을 입력해주세요",
   paddingBottom = 0,
   onSubmit,
+  editMode = null,
+  onCancelEdit,
 }: CommentInputBarProps) => {
   const [text, setText] = useState("");
   const hasText = text.trim().length > 0;
+
+  useEffect(() => {
+    if (editMode) {
+      setText(editMode.initialContent);
+      return;
+    }
+    setText("");
+  }, [editMode?.commentId, editMode?.initialContent, editMode]);
+
   const handleSubmit = async () => {
     const content = text.trim();
     if (!content) return;
     await onSubmit?.(content);
-    setText("");
+    if (!editMode) {
+      setText("");
+    }
   };
 
   return (
     <View style={[styles.container, { paddingBottom }]}>
-      <TextInput
-        style={styles.input}
-        value={text}
-        onChangeText={setText}
-        placeholder={placeholder}
-        placeholderTextColor={GRAY.DARK_2}
-        multiline
-      />
-      <Pressable
-        style={[styles.sendButton, !hasText && styles.sendButtonDisabled]}
-        hitSlop={10}
-        disabled={!hasText}
-        onPress={handleSubmit}
-      >
-        <MaterialCommunityIcons
-          name="send"
-          size={22}
-          color={hasText ? "#000" : GRAY.DARK_2}
+      {editMode ? (
+        <View style={styles.editBanner}>
+          <Text style={styles.editBannerText}>댓글 수정 중</Text>
+          <Pressable hitSlop={8} onPress={onCancelEdit}>
+            <Text style={styles.editCancelText}>취소</Text>
+          </Pressable>
+        </View>
+      ) : null}
+      <View style={styles.inputRow}>
+        <TextInput
+          style={styles.input}
+          value={text}
+          onChangeText={setText}
+          placeholder={editMode ? "수정할 댓글을 입력하세요" : placeholder}
+          placeholderTextColor={GRAY.DARK_2}
+          multiline
         />
-      </Pressable>
+        <Pressable
+          style={[styles.sendButton, !hasText && styles.sendButtonDisabled]}
+          hitSlop={10}
+          disabled={!hasText}
+          onPress={handleSubmit}
+        >
+          <MaterialCommunityIcons
+            name="send"
+            size={22}
+            color={hasText ? "#000" : GRAY.DARK_2}
+          />
+        </Pressable>
+      </View>
     </View>
   );
 };

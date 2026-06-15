@@ -22,7 +22,7 @@ import type { AnnouncementListItem } from "../../../../../lib/apis/announcement/
 import { formatChatListTime } from "../../../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../../../lib/chat/chatRoomNavigation";
 import { CHAT_APPLIED_ROOMS_REFRESH } from "../../../../../lib/chat/chatRoomsEvents";
-import { GRAY } from "../../../../../color";
+import { shouldShowAnnouncementDDayChip } from "../../../../../lib/announcement/announcementDeadline";
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
 
@@ -327,7 +327,13 @@ function MyAnnouncementsList() {
           </Text>
         </View>
       }
-      renderItem={({ item }) => (
+      renderItem={({ item }) => {
+        const showDDayChip = shouldShowAnnouncementDDayChip(
+          item.isRecruiting,
+          item.dDay,
+        );
+
+        return (
         <Pressable
           onPress={() =>
             navigation.navigate(RootRoutes.MY_POSTED_CHAT_ROOMS, {
@@ -335,7 +341,7 @@ function MyAnnouncementsList() {
               title: item.title,
               typeTag: item.type,
               statusTag: item.isRecruiting ? "모집중" : "마감",
-              dDay: item.dDay,
+              dDay: showDDayChip ? item.dDay : undefined,
             })
           }
           style={{
@@ -401,7 +407,7 @@ function MyAnnouncementsList() {
                         color: "#000000",
                       }}
                     >
-                      –
+                      {item.chatRoomCount ?? 0}
                     </Text>
                   </View>
                 </View>
@@ -445,6 +451,7 @@ function MyAnnouncementsList() {
                       {item.isRecruiting ? "모집중" : "마감"}
                     </Text>
                   </View>
+                  {showDDayChip ? (
                   <View
                     style={{
                       backgroundColor: "#1F2A44",
@@ -464,23 +471,14 @@ function MyAnnouncementsList() {
                       {item.dDay}
                     </Text>
                   </View>
+                  ) : null}
                 </View>
-                {typeof item.viewCount === "number" ? (
-                  <Text
-                    style={{
-                      fontSize: 12,
-                      color: GRAY.MEDIUM_100,
-                      flexShrink: 0,
-                    }}
-                  >
-                    조회 {item.viewCount}
-                  </Text>
-                ) : null}
               </View>
             </View>
           </View>
         </Pressable>
-      )}
+        );
+      }}
       contentContainerStyle={[
         { paddingBottom: 20 },
         isEmpty && { flexGrow: 1, justifyContent: "center" },

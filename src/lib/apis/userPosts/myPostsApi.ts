@@ -3,8 +3,10 @@ import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
 import type {
   MyAnnouncementPostItem,
+  MyCommentPostItem,
   MyPostHighlightsResponse,
   MyPostsResponse,
+  MyNewsPostItem,
 } from "./types";
 
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {
@@ -87,6 +89,50 @@ export async function getMyAnnouncements(): Promise<MyAnnouncementPostItem[] | n
     return Array.isArray(raw) ? (raw as MyAnnouncementPostItem[]) : [];
   } catch (e) {
     console.warn("[getMyAnnouncements] 에러:", e);
+    return null;
+  }
+}
+
+export async function getMyNewsPosts(): Promise<MyNewsPostItem[] | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/users/posts/my/news`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[getMyNewsPosts] 실패:", res.status, errText);
+      return null;
+    }
+
+    const raw = await res.json();
+    return Array.isArray(raw) ? (raw as MyNewsPostItem[]) : [];
+  } catch (e) {
+    console.warn("[getMyNewsPosts] 에러:", e);
+    return null;
+  }
+}
+
+export async function getMyComments(): Promise<MyCommentPostItem[] | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/users/posts/my/comments`, {
+      method: "GET",
+      headers,
+    });
+
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[getMyComments] 실패:", res.status, errText);
+      return null;
+    }
+
+    const raw = await res.json();
+    return Array.isArray(raw) ? (raw as MyCommentPostItem[]) : [];
+  } catch (e) {
+    console.warn("[getMyComments] 에러:", e);
     return null;
   }
 }

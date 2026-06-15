@@ -1,26 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
-import { FlatList, Text, View, useWindowDimensions } from "react-native";
+import { ActivityIndicator, FlatList, Text, View, useWindowDimensions } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import EventNewsCard from "../../components/EventNewsCard/EventNewsCard";
 import styles from "./styles";
 import { getMyScrappedNews } from "../../lib/apis/scrap/scrapApi";
 import type { MyScrappedNewsItem } from "../../lib/apis/scrap/types";
+import { getMyNewsPosts } from "../../lib/apis/userPosts/myPostsApi";
+import type { MyNewsPostItem } from "../../lib/apis/userPosts/types";
 import { RootRoutes } from "../../navigations/routes";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
-
-const MOCK_NEWS = [
-  { id: "1", title: "교향악단 바이올린 객원단원 채용 공연", place: "예술의전당", dateRange: "2025.11.20 ~ 2025.12.15" },
-  { id: "2", title: "봄 정기연주회", place: "세종문화회관", dateRange: "2025.03.10 ~ 2025.03.12" },
-  { id: "3", title: "청소년 콩쿠르 본선", place: "토끼마을 콘서트홀", dateRange: "2000.05.16 ~ 2003.07.15" },
-  { id: "4", title: "첼로 독주회", place: "롯데콘서트홀", dateRange: "2025.04.01 ~ 2025.04.03" },
-  { id: "5", title: "오케스트라 정기공연", place: "예술의전당", dateRange: "2025.05.20 ~ 2025.05.22" },
-  { id: "6", title: "앙상블 페스티벌", place: "세종문화회관", dateRange: "2025.06.15 ~ 2025.06.17" },
-  { id: "7", title: "여름 음악축제", place: "잠실 체조경기장", dateRange: "2025.07.25 ~ 2025.07.27" },
-  { id: "8", title: "오페라 갈라 콘서트", place: "국립오페라극장", dateRange: "2025.08.10 ~ 2025.08.12" },
-  { id: "9", title: "가을 실내악 축제", place: "예술의전당", dateRange: "2025.09.20 ~ 2025.09.22" },
-  { id: "10", title: "겨울 송년 연주회", place: "롯데콘서트홀", dateRange: "2025.12.28 ~ 2025.12.29" },
-];
 
 const CARD_GAP = 12;
 const HORIZONTAL_PADDING = 16;
@@ -50,6 +39,7 @@ const MyActivityNewsListScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, "MyActivityNewsList">>();
   const source = route.params?.source;
   const [scrappedNews, setScrappedNews] = useState<MyScrappedNewsItem[]>([]);
+  const [myNews, setMyNews] = useState<MyNewsPostItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingInitial, setLoadingInitial] = useState(false);
@@ -59,20 +49,29 @@ const MyActivityNewsListScreen = () => {
     source === "scrap" ? "스크랩한 공연 소식이 없습니다." : "공연 소식이 없습니다.";
 
   useEffect(() => {
-    if (source !== "scrap") return;
+    if (source === "scrap") {
+      (async () => {
+        setLoadingInitial(true);
+        const res = await getMyScrappedNews({ limit: 20 });
+        if (!res) {
+          setScrappedNews([]);
+          setNextCursor(null);
+          setHasMore(false);
+          setLoadingInitial(false);
+          return;
+        }
+        setScrappedNews(res.items);
+        setNextCursor(res.nextCursor);
+        setHasMore(res.hasMore);
+        setLoadingInitial(false);
+      })();
+      return;
+    }
+
     (async () => {
       setLoadingInitial(true);
-      const res = await getMyScrappedNews({ limit: 20 });
-      if (!res) {
-        setScrappedNews([]);
-        setNextCursor(null);
-        setHasMore(false);
-        setLoadingInitial(false);
-        return;
-      }
-      setScrappedNews(res.items);
-      setNextCursor(res.nextCursor);
-      setHasMore(res.hasMore);
+      const res = await getMyNewsPosts();
+      setMyNews(res ?? []);
       setLoadingInitial(false);
     })();
   }, [source]);
@@ -88,11 +87,15 @@ const MyActivityNewsListScreen = () => {
         imageUrl: normalizeListThumbnailUrl(item.thumbnailUrl),
       }));
     }
-    return MOCK_NEWS.map((item) => ({
-      ...item,
-      newsId: item.id,
+    return myNews.map((item) => ({
+      id: item.newsId,
+      newsId: item.newsId,
+      title: item.title,
+      place: item.place ?? "",
+      dateRange: formatDate(item.createdAt),
+      imageUrl: normalizeListThumbnailUrl(item.thumbnailUrl),
     }));
-  }, [source, scrappedNews]);
+  }, [source, scrappedNews, myNews]);
 
   return (
     <View style={styles.container}>
@@ -120,9 +123,15 @@ const MyActivityNewsListScreen = () => {
           </View>
         )}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{emptyMessage}</Text>
-          </View>
+          loadingInitial ? (
+            <View style={styles.emptyContainer}>
+              <ActivityIndicator size="small" color="#1F2A44" />
+            </View>
+          ) : (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>{emptyMessage}</Text>
+            </View>
+          )
         }
         onEndReachedThreshold={0.4}
         onEndReached={async () => {

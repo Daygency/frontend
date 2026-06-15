@@ -1,30 +1,14 @@
 import { ProfileUpdateRequestDto } from "./dto/update-profile.dto";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE, AUTH_TOKEN_KEY } from "../api";
+import { API_BASE } from "../api";
+import { fetchWithAuth } from "../fetchWithAuth";
 
-export async function updateProfile(
-  profile: ProfileUpdateRequestDto,
-): Promise<any | null> {
-  const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
-  if (!token) return null;
+export type UpdateProfileOptions = {
+  profileImageUri?: string;
+  profileImageName?: string;
+  profileImageType?: string;
+};
 
-  console.log(
-    "[updateProfile] 요청 payload:",
-    JSON.stringify(profile, null, 2),
-  );
-
-  const response = await fetch(`${API_BASE}/users/profile/my`, {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(profile),
-  }).catch((error) => {
-    console.log("[updateProfile] fetch 에러:", error);
-    throw error;
-  });
-
+async function parseUpdateProfileResponse(response: Response): Promise<Record<string, unknown> | null> {
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
     console.log(
@@ -36,28 +20,57 @@ export async function updateProfile(
     return null;
   }
 
-  // 일부 서버는 200/204에 body 없이 응답할 수 있음 → 성공으로 처리
   const rawText = await response.text().catch(() => "");
   if (!rawText) {
-    console.log("[updateProfile] 성공 (empty body), status:", response.status);
     return {};
   }
 
-  const data = (() => {
-    try {
-      return JSON.parse(rawText);
-    } catch {
-      return null;
-    }
-  })();
-  if (!data) {
+  try {
+    return JSON.parse(rawText) as Record<string, unknown>;
+  } catch {
     console.log(
       "[updateProfile] 성공 but non-JSON body:",
       rawText.slice(0, 300),
     );
     return {};
   }
+}
 
-  console.log("[updateProfile] API 응답:", JSON.stringify(data, null, 2));
-  return data;
+export async function updateProfile(
+  profile: ProfileUpdateRequestDto,
+  options?: UpdateProfileOptions,
+): Promise<Record<string, unknown> | null> {
+  const imageUri = options?.profileImageUri?.trim();
+  console.log(
+    "[updateProfile] 요청 payload:",
+    JSON.stringify(profile, null, 2),
+  );
+
+  try {
+    if (imageUri) {
+      const formData = new FormData();
+      formData.append("payload", JSON.stringify(profile));
+      formData.append("profileImage", {
+        uri: imageUri,
+        name: options?.profileImageName ?? "profile.jpg",
+        type: options?.profileImageType ?? "image/jpeg",
+      } as unknown as Blob);
+
+      const response = await fetchWithAuth(`${API_BASE}/users/profile/my`, {
+        method: "PATCH",
+        body: formData,
+      });
+      return parseUpdateProfileResponse(response);
+    }
+
+    const response = await fetchWithAuth(`${API_BASE}/users/profile/my`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(profile),
+    });
+    return parseUpdateProfileResponse(response);
+  } catch (error) {
+    console.log("[updateProfile] fetch 에러:", error);
+    throw error;
+  }
 }

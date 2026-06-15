@@ -21,6 +21,7 @@ import { getRoomsByPost } from "../../../lib/apis/chat/chatApi";
 import type { ChatRoomListItem } from "../../../lib/apis/chat/types";
 import { formatChatListTime } from "../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../lib/chat/chatRoomNavigation";
+import { shouldShowAnnouncementDDayChip } from "../../../lib/announcement/announcementDeadline";
 
 type Params = {
   postId: string;
@@ -36,6 +37,10 @@ export default function MyPostedChatRoomsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteParams>();
   const { postId, title, typeTag, statusTag, dDay } = route.params;
+  const showDDayChip = shouldShowAnnouncementDDayChip(
+    statusTag === "모집중",
+    dDay,
+  );
 
   const [rooms, setRooms] = useState<ChatRoomListItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -132,7 +137,7 @@ export default function MyPostedChatRoomsScreen() {
                 <Text style={[styles.tagText, styles.tagTextGray]}>{statusTag}</Text>
               </View>
             ) : null}
-            {dDay ? (
+            {showDDayChip ? (
               <View style={[styles.tagChip, styles.tagChipNavy]}>
                 <Text style={[styles.tagText, styles.tagTextNavy]}>{dDay}</Text>
               </View>

@@ -2,6 +2,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { useEffect, useMemo, useState } from "react";
 import {
   Alert,
+  ActivityIndicator,
   Image,
   Pressable,
   ScrollView,
@@ -22,6 +23,8 @@ import {
   getCommunityCategories,
   createCommunity,
   createCommunityWithFiles,
+  getCommunityDetail,
+  updateCommunity,
 } from "../../lib/apis/community/communityApi";
 import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
 import type { LocalImageAsset } from "../../lib/apis/fileApi";
@@ -45,17 +48,20 @@ const PLACEHOLDER_BY_CATEGORY: Record<string, string> = {
   학원운용: "학원 운영과 관련된 정보를 공유해주세요.",
 };
 
-type CommunityRegistrationParams = { initialCategory?: string };
+type CommunityRegistrationParams = { initialCategory?: string; communityId?: string };
 
 const CommunityRegistrationScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<{ CommunityRegistration: CommunityRegistrationParams }, "CommunityRegistration">>();
+  const editCommunityId = route.params?.communityId?.trim();
+  const isEditMode = Boolean(editCommunityId);
   const { bottom } = useSafeAreaInsets();
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [categoryId, setCategoryId] = useState<string | null>(null);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [loadingEdit, setLoadingEdit] = useState(Boolean(editCommunityId));
   const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
   const MAX_IMAGES = MAX_MULTIPART_FILES;
 
@@ -73,6 +79,7 @@ const CommunityRegistrationScreen = () => {
       const cats = await getCommunityCategories();
       if (cats && cats.length > 0) {
         setCategories(cats);
+        if (editCommunityId) return;
         const fromRoute = route.params?.initialCategory;
         if (fromRoute) {
           const match = cats.find((c) => c.name === fromRoute);
@@ -84,10 +91,34 @@ const CommunityRegistrationScreen = () => {
         setCategoryId(cats[0].categoryId);
       }
     })();
-  }, [route.params?.initialCategory]);
+  }, [route.params?.initialCategory, editCommunityId]);
+
+  useEffect(() => {
+    if (!editCommunityId) return;
+    (async () => {
+      const detail = await getCommunityDetail(editCommunityId);
+      if (!detail) {
+        Alert.alert("알림", "게시글을 불러오지 못했습니다.");
+        navigation.goBack();
+        return;
+      }
+      setTitle(detail.title ?? "");
+      setContent(detail.content ?? "");
+      if (detail.category?.categoryId) setCategoryId(detail.category.categoryId);
+      setLoadingEdit(false);
+    })();
+  }, [editCommunityId, navigation]);
 
   const selectedCategoryName =
     categories.find((c) => c.categoryId === categoryId)?.name ?? "";
+
+  if (loadingEdit) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={MAIN.DEFAULT} />
+      </View>
+    );
+  }
 
   const pickImages = async () => {
     try {
@@ -125,6 +156,19 @@ const CommunityRegistrationScreen = () => {
     if (!categoryId || !title || !content || submitting) return;
     try {
       setSubmitting(true);
+      if (isEditMode && editCommunityId) {
+        const res = await updateCommunity(editCommunityId, {
+          title,
+          content,
+          categoryId,
+        });
+        if (!res?.communityId) {
+          Alert.alert("수정 실패", "게시글을 수정하지 못했습니다.");
+          return;
+        }
+        navigation.goBack();
+        return;
+      }
       const res =
         pendingImages.length > 0
           ? await createCommunityWithFiles(
@@ -294,7 +338,9 @@ const CommunityRegistrationScreen = () => {
           onPress={handleRegister}
           disabled={!(title && content && categoryId) || submitting}
         >
-          <Text style={styles.registerButtonText}>등록하기</Text>
+          <Text style={styles.registerButtonText}>
+            {isEditMode ? "수정 완료" : "등록하기"}
+          </Text>
         </Pressable>
       </View>
     </View>

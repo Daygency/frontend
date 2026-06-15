@@ -5,6 +5,7 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -15,19 +16,17 @@ import { styles } from "./styles";
 
 const SocialLoginScreen = () => {
   const { top, bottom } = useSafeAreaInsets();
-  const { login, enterBrowse } = useAuth();
+  const { enterBrowse } = useAuth();
   const { handleKakaoLogin, isLoading: isKakaoLoading } = useKakaoLogin();
   const { handleNaverLogin, isLoading: isNaverLoading } = useNaverLogin();
 
   const authBusy = isKakaoLoading || isNaverLoading;
 
-  const handleGoogleLogin = async () => {
-    await login("google_dummy_token", {
-      socialId: "",
-      nickname: "",
-      email: "",
-      profileImgUrl: "",
-    });
+  const handleGoogleLogin = () => {
+    Alert.alert(
+      "준비 중",
+      "구글 로그인은 현재 준비 중입니다. 카카오 또는 네이버로 로그인해 주세요.",
+    );
   };
 
   return (
@@ -95,8 +94,10 @@ const SocialLoginScreen = () => {
             styles.socialButton,
             styles.googleButton,
             pressed && styles.buttonPressed,
+            styles.googleButtonDisabled,
           ]}
           onPress={handleGoogleLogin}
+          disabled={authBusy}
         >
           <View style={styles.googleIconContainer}>
             <Text style={styles.googleG}>G</Text>

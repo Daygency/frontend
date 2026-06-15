@@ -14,6 +14,7 @@ import type {
   NewsAttachmentItem,
   NewsUserInfo,
   NewsFileInfo,
+  UpdateNewsDto,
 } from "./types";
 
 function pickNumber(...vals: unknown[]): number | undefined {
@@ -284,5 +285,47 @@ export async function createNewsWithFiles(
   } catch (e) {
     console.warn("[createNewsWithFiles] 에러:", e);
     return null;
+  }
+}
+
+/** 공연소식 수정 (PATCH /news/:id) */
+export async function updateNews(
+  id: string,
+  dto: UpdateNewsDto,
+): Promise<NewsDetailResponse | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/news/${id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(dto),
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[updateNews] 실패:", res.status, errText);
+      return null;
+    }
+    const raw = await res.json();
+    return normalizeNewsDetail(raw);
+  } catch (e) {
+    console.warn("[updateNews] 에러:", e);
+    return null;
+  }
+}
+
+/** 공연소식 삭제 (DELETE /news/:id) */
+export async function deleteNews(
+  id: string,
+): Promise<{ ok: boolean; status?: number }> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/news/${id}`, {
+      method: "DELETE",
+      headers,
+    });
+    return { ok: res.ok, status: res.status };
+  } catch (e) {
+    console.warn("[deleteNews] 에러:", e);
+    return { ok: false };
   }
 }

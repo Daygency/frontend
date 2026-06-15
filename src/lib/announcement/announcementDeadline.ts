@@ -46,3 +46,13 @@ export function formatAnnouncementDDayLabel(
   if (daysLeft === 0) return "오늘마감";
   return `D-${daysLeft}`;
 }
+
+/** 상태 칩이 이미 "마감"일 때 D-day 칩까지 "마감"으로 중복 표시하지 않음 */
+export function shouldShowAnnouncementDDayChip(
+  isRecruiting: boolean,
+  dDay?: string | null,
+): boolean {
+  if (!dDay?.trim()) return false;
+  if (!isRecruiting && dDay.trim() === "마감") return false;
+  return true;
+}

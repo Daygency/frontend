@@ -1,13 +1,30 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: "row",
-    alignItems: "flex-end",
     paddingHorizontal: 16,
     paddingTop: 12,
     backgroundColor: WHITE,
+  },
+  editBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  editBannerText: {
+    fontSize: 12,
+    color: GRAY.DARK_100,
+  },
+  editCancelText: {
+    fontSize: 12,
+    color: MAIN.DEFAULT,
+    fontWeight: "600",
+  },
+  inputRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
     gap: 10,
   },
   input: {

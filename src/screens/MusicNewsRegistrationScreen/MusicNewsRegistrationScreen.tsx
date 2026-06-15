@@ -1,6 +1,6 @@
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { CommonActions } from "@react-navigation/native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -20,7 +20,7 @@ import Form from "../../components/Form/Form";
 import FormTextInput from "../../components/FormTextInput/FormTextInput";
 import { GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
-import { createNews, createNewsWithFiles } from "../../lib/apis/news/newsApi";
+import { createNews, createNewsWithFiles, getNewsDetail, updateNews } from "../../lib/apis/news/newsApi";
 import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
 import type { LocalImageAsset } from "../../lib/apis/fileApi";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
@@ -48,6 +48,9 @@ function dateToISO(d: Date, timeOverride?: string): string {
 
 const MusicNewsRegistrationScreen = () => {
   const navigation = useNavigation<any>();
+  const route = useRoute<RouteProp<{ MusicNewsRegistration: { newsId?: string } }, "MusicNewsRegistration">>();
+  const editNewsId = route.params?.newsId?.trim();
+  const isEditMode = Boolean(editNewsId);
   const { bottom } = useSafeAreaInsets();
 
   const now = new Date();
@@ -71,6 +74,38 @@ const MusicNewsRegistrationScreen = () => {
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [loadingEdit, setLoadingEdit] = useState(Boolean(editNewsId));
+
+  useEffect(() => {
+    if (!editNewsId) return;
+    (async () => {
+      const detail = await getNewsDetail(editNewsId);
+      if (!detail) {
+        Alert.alert("알림", "공연소식을 불러오지 못했습니다.");
+        navigation.goBack();
+        return;
+      }
+      setTitle(detail.title ?? "");
+      setContent(detail.content ?? "");
+      setPlace(detail.place ?? "");
+      setContact(detail.contact ?? "");
+      if (detail.ticketPrice != null) {
+        setTicketPrice(String(detail.ticketPrice));
+      }
+      if (detail.startedAt) {
+        const start = new Date(detail.startedAt);
+        if (!isNaN(start.getTime())) setStartedAt(start);
+      }
+      if (detail.endedAt) {
+        const end = new Date(detail.endedAt);
+        if (!isNaN(end.getTime())) {
+          setEndedAt(end);
+          setUseEndDate(true);
+        }
+      }
+      setLoadingEdit(false);
+    })();
+  }, [editNewsId, navigation]);
 
   const pickImage = async () => {
     try {
@@ -130,6 +165,17 @@ const MusicNewsRegistrationScreen = () => {
     };
 
     try {
+      if (isEditMode && editNewsId) {
+        const updated = await updateNews(editNewsId, dto);
+        setIsSubmitting(false);
+        if (updated) {
+          navigation.goBack();
+        } else {
+          Alert.alert("수정 실패", "공연소식 수정에 실패했습니다. 다시 시도해주세요.");
+        }
+        return;
+      }
+
       const res =
         pendingImages.length > 0
           ? await createNewsWithFiles(dto, pendingImages)
@@ -159,6 +205,14 @@ const MusicNewsRegistrationScreen = () => {
   };
 
   const isValid = !!title.trim() && !!content.trim() && !!place.trim() && !!contact.trim();
+
+  if (loadingEdit) {
+    return (
+      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
+        <ActivityIndicator size="large" color={MAIN.DEFAULT} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -395,7 +449,9 @@ const MusicNewsRegistrationScreen = () => {
           {isSubmitting ? (
             <ActivityIndicator size="small" color={WHITE} />
           ) : (
-            <Text style={styles.registerButtonText}>등록하기</Text>
+            <Text style={styles.registerButtonText}>
+              {isEditMode ? "수정 완료" : "등록하기"}
+            </Text>
           )}
         </Pressable>
       </View>

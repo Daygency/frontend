@@ -20,14 +20,19 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
 import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
 import styles from "./styles";
-import { getCommunityDetail } from "../../lib/apis/community/communityApi";
+import { getCommunityDetail, deleteCommunity } from "../../lib/apis/community/communityApi";
 import type { CommunityDetailResponse } from "../../lib/apis/community/types";
 import { BLACK, GRAY, MAIN, RED } from "../../color";
 import {
   createComment,
+  deleteComment,
   getComments,
+  updateComment,
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
+import PostDetailOptionsMenu from "../../components/PostDetailOptionsMenu/PostDetailOptionsMenu";
+import { RootRoutes } from "../../navigations/routes";
+import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
 import {
   createLike,
   deleteLikeByTarget,
@@ -96,8 +101,9 @@ function formatTimeAgo(value?: string): string {
   return `${Math.floor(diffMonths / 12)}년`;
 }
 
-function mapCommentToUi(comment: ApiCommentItem): CommentItem {
+function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem {
   const uid = String(comment.user?.userId ?? "").trim();
+  const isMine = Boolean(myUserId && uid && uid === myUserId);
   return {
     id: String(comment.id),
     author: String(comment.user?.nickname ?? "익명"),
@@ -106,18 +112,18 @@ function mapCommentToUi(comment: ApiCommentItem): CommentItem {
     likeCount: Number((comment as any)?.likeCount ?? 0),
     replyCount: 0,
     isLiked: Boolean((comment as any)?.isLiked),
-    isMine: Boolean((comment as any)?.isMine),
+    isMine,
     ...(uid ? { authorUserId: uid } : {}),
     replies: [],
   };
 }
 
-function buildCommentTree(raw: ApiCommentItem[]): CommentItem[] {
+function buildCommentTree(raw: ApiCommentItem[], myUserId?: string): CommentItem[] {
   const roots: CommentItem[] = [];
   const childrenByParent = new Map<string, CommentItem[]>();
 
   raw.forEach((comment) => {
-    const ui = mapCommentToUi(comment);
+    const ui = mapCommentToUi(comment, myUserId);
     const parentId = comment.parentId ? String(comment.parentId) : null;
     if (!parentId) {
       roots.push(ui);
@@ -175,6 +181,10 @@ const CommunityDetailScreen = () => {
   const [data, setData] = useState<CommunityDetailResponse | null>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
+  const [editingComment, setEditingComment] = useState<{
+    commentId: string;
+    initialContent: string;
+  } | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [scraped, setScraped] = useState(false);
@@ -196,6 +206,7 @@ const CommunityDetailScreen = () => {
     return urls.length > 0 ? urls : fromFile ? [fromFile] : [];
   }, [data]);
   const displayedComments = comments;
+  const myUserId = user?.socialId?.trim() ?? "";
   const commentCount = Number(
     (data as any)?.commentCount ?? (data as any)?.commentsCount ?? comments.length
   );
@@ -215,9 +226,17 @@ const CommunityDetailScreen = () => {
         targetType: "COMMUNITY",
         targetId: communityId,
       });
-      if (res) setComments(buildCommentTree(res));
+      if (res) setComments(buildCommentTree(res, myUserId));
     })();
-  }, [communityId]);
+  }, [communityId, myUserId]);
+
+  const refreshComments = useCallback(async () => {
+    const res = await getComments({
+      targetType: "COMMUNITY",
+      targetId: communityId,
+    });
+    if (res) setComments(buildCommentTree(res, myUserId));
+  }, [communityId, myUserId]);
 
   useEffect(() => {
     (async () => {
@@ -301,9 +320,33 @@ const CommunityDetailScreen = () => {
     [isLoggedIn, user?.socialId],
   );
 
-  /** 타인 글이면 ⋮ 메뉴 표시 — 작성자 id는 API 정규화·openReportPost에서 처리 */
   const canOpenPostReportMenu =
     !loading && Boolean(data) && !data?.isMine;
+
+  const onEditCommunity = useCallback(() => {
+    navigation.navigate(
+      RootRoutes.COMMUNITY_REGISTRATION as never,
+      { communityId } as never,
+    );
+  }, [navigation, communityId]);
+
+  const onDeleteCommunity = useCallback(() => {
+    Alert.alert("삭제", "이 게시글을 삭제할까요?", [
+      { text: "취소", style: "cancel" },
+      {
+        text: "삭제",
+        style: "destructive",
+        onPress: async () => {
+          const res = await deleteCommunity(communityId);
+          if (res.ok) {
+            navigation.goBack();
+          } else {
+            Alert.alert("알림", "삭제에 실패했습니다.");
+          }
+        },
+      },
+    ]);
+  }, [communityId, navigation]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -323,16 +366,33 @@ const CommunityDetailScreen = () => {
               color="#000"
             />
           </Pressable>
-          <ReportDotsDropdownMenu
-            enabled={canOpenPostReportMenu}
-            loading={loading}
-            onReport={openReportPost}
-            variant="header"
-          />
+          {data?.isMine ? (
+            <PostDetailOptionsMenu
+              isMine
+              loading={loading}
+              onEdit={onEditCommunity}
+              onDelete={onDeleteCommunity}
+            />
+          ) : (
+            <ReportDotsDropdownMenu
+              enabled={canOpenPostReportMenu}
+              loading={loading}
+              onReport={openReportPost}
+              variant="header"
+            />
+          )}
         </View>
       ),
     });
-  }, [navigation, loading, canOpenPostReportMenu, openReportPost]);
+  }, [
+    navigation,
+    loading,
+    canOpenPostReportMenu,
+    openReportPost,
+    data?.isMine,
+    onEditCommunity,
+    onDeleteCommunity,
+  ]);
 
   const handlePickReportCategory = useCallback(
     (category: ReportCategory) => {
@@ -413,6 +473,16 @@ const CommunityDetailScreen = () => {
   };
 
   const handleCreateComment = async (content: string) => {
+    if (editingComment) {
+      const updated = await updateComment(editingComment.commentId, { content });
+      if (!updated) {
+        Alert.alert("알림", "댓글 수정에 실패했습니다.");
+        return;
+      }
+      setEditingComment(null);
+      await refreshComments();
+      return;
+    }
     const created = await createComment({
       content,
       targetType: "COMMUNITY",
@@ -423,13 +493,49 @@ const CommunityDetailScreen = () => {
       Alert.alert("알림", "댓글 작성에 실패했습니다.");
       return;
     }
-    const res = await getComments({
-      targetType: "COMMUNITY",
-      targetId: communityId,
-    });
-    if (res) setComments(buildCommentTree(res));
+    await refreshComments();
     setReplyTarget(null);
   };
+
+  const handleDeleteComment = useCallback(
+    (commentId: string) => {
+      Alert.alert("삭제", "댓글을 삭제할까요?", [
+        { text: "취소", style: "cancel" },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: async () => {
+            const res = await deleteComment(commentId);
+            if (!res.ok) {
+              Alert.alert("알림", "댓글 삭제에 실패했습니다.");
+              return;
+            }
+            if (editingComment?.commentId === commentId) {
+              setEditingComment(null);
+            }
+            await refreshComments();
+          },
+        },
+      ]);
+    },
+    [editingComment, refreshComments],
+  );
+
+  const openOwnCommentActions = useCallback(
+    (comment: Pick<CommentItem, "id" | "content">) => {
+      promptOwnCommentActions({
+        onEdit: () => {
+          setReplyTarget(null);
+          setEditingComment({
+            commentId: comment.id,
+            initialContent: comment.content,
+          });
+        },
+        onDelete: () => handleDeleteComment(comment.id),
+      });
+    },
+    [handleDeleteComment],
+  );
 
   const handleToggleCommentLike = async (targetId: string, currentLiked: boolean) => {
     if (currentLiked) {
@@ -579,6 +685,14 @@ const CommunityDetailScreen = () => {
                       variant="comment"
                       disabledMessage="신고할 수 없습니다."
                     />
+                  ) : comment.isMine ? (
+                    <Pressable hitSlop={8} onPress={() => openOwnCommentActions(comment)}>
+                      <MaterialCommunityIcons
+                        name="dots-vertical"
+                        size={18}
+                        color={GRAY.DARK_2}
+                      />
+                    </Pressable>
                   ) : (
                     <View style={{ width: 18 }} />
                   )}
@@ -657,6 +771,17 @@ const CommunityDetailScreen = () => {
                                 variant="reply"
                                 disabledMessage="신고할 수 없습니다."
                               />
+                            ) : reply.isMine ? (
+                              <Pressable
+                                hitSlop={8}
+                                onPress={() => openOwnCommentActions(reply)}
+                              >
+                                <MaterialCommunityIcons
+                                  name="dots-vertical"
+                                  size={16}
+                                  color={GRAY.DARK_2}
+                                />
+                              </Pressable>
                             ) : null}
                           </View>
                           <Text style={styles.replyContent}>{reply.content}</Text>
@@ -706,10 +831,14 @@ const CommunityDetailScreen = () => {
           )}
           <CommentInputBar
             placeholder={
-              replyTarget
-                ? `${replyTarget.author}님에게 답글을 입력해주세요`
-                : "댓글을 입력해주세요"
+              editingComment
+                ? "댓글을 수정하세요"
+                : replyTarget
+                  ? `${replyTarget.author}님에게 답글을 입력해주세요`
+                  : "댓글을 입력해주세요"
             }
+            editMode={editingComment}
+            onCancelEdit={() => setEditingComment(null)}
             onSubmit={handleCreateComment}
           />
         </View>

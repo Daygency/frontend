@@ -43,3 +43,12 @@ export type MyPostHighlightsResponse = {
   recentNews: MyNewsPostItem[];
   latestAnnouncement: MyAnnouncementPostItem | null;
 };
+
+export type MyCommentPostItem = {
+  commentId: string;
+  content: string;
+  createdAt: string;
+  targetType: "NEWS" | "COMMUNITY";
+  targetId: string;
+  postTitle?: string | null;
+};
