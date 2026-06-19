@@ -74,3 +74,46 @@ export function toOptionalIsoDate(
   }
   return new Date(y, m - 1, 1).toISOString();
 }
+
+function parseApiDateToTimestamp(
+  value: string | Date | undefined | null,
+): number {
+  if (!value) return 0;
+  const date = typeof value === "string" ? new Date(value) : value;
+  return Number.isNaN(date.getTime()) ? 0 : date.getTime();
+}
+
+/** 학력·경력: 재학/재직 중 → 최상단, 그 외 종료일 → 시작일 순으로 최신 우선 */
+export function getPeriodEntrySortKey(item: {
+  startedAt?: string | Date | null;
+  endedAt?: string | Date | null;
+  isOngoing?: boolean;
+}): number {
+  const start = parseApiDateToTimestamp(item.startedAt);
+  if (item.isOngoing) {
+    return 1e15 + start;
+  }
+  const end = parseApiDateToTimestamp(item.endedAt);
+  if (end > 0) return end;
+  return start;
+}
+
+export function getAwardEntrySortKey(item: {
+  awardedAt?: string | Date | null;
+}): number {
+  return parseApiDateToTimestamp(item.awardedAt);
+}
+
+export function getCertificateEntrySortKey(item: {
+  obtainedAt?: string | Date | null;
+}): number {
+  return parseApiDateToTimestamp(item.obtainedAt);
+}
+
+export function sortByRecentDesc<T>(
+  items: T[] | null | undefined,
+  getSortKey: (item: T) => number,
+): T[] {
+  if (!Array.isArray(items) || items.length === 0) return [];
+  return [...items].sort((a, b) => getSortKey(b) - getSortKey(a));
+}

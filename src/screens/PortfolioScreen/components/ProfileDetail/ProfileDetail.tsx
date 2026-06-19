@@ -21,6 +21,10 @@ import {
   formatPeriodFromApiItem,
   formatYearMonth,
   formatYearMonthFromApiDate,
+  getAwardEntrySortKey,
+  getCertificateEntrySortKey,
+  getPeriodEntrySortKey,
+  sortByRecentDesc,
 } from "../../../../lib/profile/profileEntryDates";
 import { RootRoutes } from "../../../../navigations/routes";
 
@@ -251,15 +255,26 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
     parsed.length > 0 ? parsed : legacyStringEntries(legacy);
 
   const educationEntries = mergeEntries(
-    parseEntriesWithPeriod(educationList, "재학 중"),
+    parseEntriesWithPeriod(
+      sortByRecentDesc(educationList, getPeriodEntrySortKey),
+      "재학 중",
+    ),
     p?.education,
   );
   const careerEntries = mergeEntries(
-    parseEntriesWithPeriod(careerList, "재직 중"),
+    parseEntriesWithPeriod(
+      sortByRecentDesc(careerList, getPeriodEntrySortKey),
+      "재직 중",
+    ),
     p?.career,
   );
-  const awardEntries = mergeEntries(parseAwards(awardList), p?.awards);
-  const certificateEntries = parseCertificates(certList);
+  const awardEntries = mergeEntries(
+    parseAwards(sortByRecentDesc(awardList, getAwardEntrySortKey)),
+    p?.awards,
+  );
+  const certificateEntries = parseCertificates(
+    sortByRecentDesc(certList, getCertificateEntrySortKey),
+  );
 
   const Sheet = embedded ? View : ShadowCardButton;
   const sheetProps = embedded
