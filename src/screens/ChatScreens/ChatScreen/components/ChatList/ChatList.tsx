@@ -22,6 +22,7 @@ import type { AnnouncementListItem } from "../../../../../lib/apis/announcement/
 import { formatChatListTime } from "../../../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../../../lib/chat/chatRoomNavigation";
 import { CHAT_APPLIED_ROOMS_REFRESH } from "../../../../../lib/chat/chatRoomsEvents";
+import { matchesAnnouncement, matchesChatRoom } from "../../../../../lib/chat/chatSearch";
 import { shouldShowAnnouncementDDayChip } from "../../../../../lib/announcement/announcementDeadline";
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
@@ -34,14 +35,17 @@ export function getUnreadCountByTopTabMock(_topTab: ChatTopTab): number {
 interface ChatListProps {
   topTab: ChatTopTab;
   filter?: ChatFilter;
+  searchQuery?: string;
 }
 
 function ChatRoomsFlatList({
   mode,
   filter,
+  searchQuery = "",
 }: {
   mode: "coffee" | "applied";
   filter: ChatFilter;
+  searchQuery?: string;
 }) {
   const navigation = useNavigation<any>();
   const { isLoggedIn } = useAuth();
@@ -111,8 +115,10 @@ function ChatRoomsFlatList({
 
   const filteredItems = useMemo(() => {
     if (filter === "안읽음") return [];
-    return items;
-  }, [items, filter]);
+    const q = searchQuery.trim();
+    if (!q) return items;
+    return items.filter((item) => matchesChatRoom(item, q));
+  }, [items, filter, searchQuery]);
 
   const openRoom = (room: ChatRoomListItem) => {
     const params = chatRoomItemToParams(room);
@@ -182,7 +188,9 @@ function ChatRoomsFlatList({
       ListEmptyComponent={
         <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
           <Text style={{ color: "#888", textAlign: "center" }}>
-            채팅방이 없습니다.
+            {searchQuery.trim()
+              ? "검색 결과가 없습니다."
+              : "채팅방이 없습니다."}
           </Text>
         </View>
       }
@@ -223,7 +231,7 @@ function ChatRoomsFlatList({
   );
 }
 
-function MyAnnouncementsList() {
+function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
   const navigation = useNavigation<any>();
   const { isLoggedIn } = useAuth();
   const [posts, setPosts] = useState<AnnouncementListItem[]>([]);
@@ -277,6 +285,12 @@ function MyAnnouncementsList() {
     setLoadingMore(false);
   };
 
+  const filteredPosts = useMemo(() => {
+    const q = searchQuery.trim();
+    if (!q) return posts;
+    return posts.filter((item) => matchesAnnouncement(item, q));
+  }, [posts, searchQuery]);
+
   if (!isLoggedIn) {
     return (
       <View style={{ padding: 24, alignItems: "center" }}>
@@ -301,12 +315,12 @@ function MyAnnouncementsList() {
     );
   }
 
-  const isEmpty = posts.length === 0;
+  const isEmpty = filteredPosts.length === 0;
 
   return (
     <FlatList
       style={{ flex: 1 }}
-      data={posts}
+      data={filteredPosts}
       keyExtractor={(p) => p.postId}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -323,7 +337,9 @@ function MyAnnouncementsList() {
       ListEmptyComponent={
         <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
           <Text style={{ color: "#888", textAlign: "center" }}>
-            작성한 공고가 없습니다.
+            {searchQuery.trim()
+              ? "검색 결과가 없습니다."
+              : "작성한 공고가 없습니다."}
           </Text>
         </View>
       }
@@ -487,16 +503,20 @@ function MyAnnouncementsList() {
   );
 }
 
-const ChatList = ({ topTab, filter = "전체" }: ChatListProps) => {
+const ChatList = ({ topTab, filter = "전체", searchQuery = "" }: ChatListProps) => {
   if (topTab === "내 공고") {
-    return <MyAnnouncementsList />;
+    return <MyAnnouncementsList searchQuery={searchQuery} />;
   }
 
   if (topTab === "일반") {
-    return <ChatRoomsFlatList mode="coffee" filter={filter} />;
+    return (
+      <ChatRoomsFlatList mode="coffee" filter={filter} searchQuery={searchQuery} />
+    );
   }
 
-  return <ChatRoomsFlatList mode="applied" filter={filter} />;
+  return (
+    <ChatRoomsFlatList mode="applied" filter={filter} searchQuery={searchQuery} />
+  );
 };
 
 export default ChatList;

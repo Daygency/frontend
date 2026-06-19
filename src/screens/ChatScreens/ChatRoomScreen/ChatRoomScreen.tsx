@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import {
   View,
   Text,
@@ -22,8 +22,10 @@ import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { GRAY, MAIN } from "../../../color";
 import styles from "./styles";
 import { getChatMessages } from "../../../lib/apis/chat/chatApi";
+import { findMessageMatchIndices } from "../../../lib/chat/chatSearch";
 import { createChatSocket } from "../../../lib/chat/createChatSocket";
 import { usePeerAvatarUrl } from "../../../lib/chat/usePeerAvatarUrl";
+import HighlightText from "../../../components/HighlightText/HighlightText";
 import type { Socket } from "socket.io-client";
 
 export type ChatRoomParams = {
@@ -112,8 +114,66 @@ const ChatRoomScreen = () => {
   const [sendReady, setSendReady] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeMatchIndex, setActiveMatchIndex] = useState(0);
   const scrollViewRef = useRef<ScrollView>(null);
+  const messageRowRefs = useRef<Record<string, View | null>>({});
   const socketRef = useRef<Socket | null>(null);
+
+  const matchIndices = useMemo(
+    () => findMessageMatchIndices(messages, searchQuery),
+    [messages, searchQuery],
+  );
+
+  const activeMatchMessageId =
+    matchIndices.length > 0
+      ? messages[matchIndices[activeMatchIndex]]?.id
+      : null;
+
+  const scrollToMessage = useCallback((messageId: string) => {
+    const node = messageRowRefs.current[messageId];
+    const scrollNode = scrollViewRef.current;
+    if (!node || !scrollNode) return;
+    node.measureLayout(
+      scrollNode as unknown as number,
+      (_x, y) => {
+        scrollViewRef.current?.scrollTo({
+          y: Math.max(0, y - 16),
+          animated: true,
+        });
+      },
+      () => {},
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!isSearchOpen) return;
+    setActiveMatchIndex(0);
+  }, [searchQuery, isSearchOpen]);
+
+  useEffect(() => {
+    if (!isSearchOpen || !activeMatchMessageId) return;
+    requestAnimationFrame(() => scrollToMessage(activeMatchMessageId));
+  }, [activeMatchIndex, activeMatchMessageId, isSearchOpen, scrollToMessage]);
+
+  const goToPrevMatch = () => {
+    if (!matchIndices.length) return;
+    setActiveMatchIndex(
+      (prev) => (prev - 1 + matchIndices.length) % matchIndices.length,
+    );
+  };
+
+  const goToNextMatch = () => {
+    if (!matchIndices.length) return;
+    setActiveMatchIndex((prev) => (prev + 1) % matchIndices.length);
+  };
+
+  const closeSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+    setActiveMatchIndex(0);
+  };
 
   const appendFromSocket = useCallback(
     (payload: WsMessagePayload) => {
@@ -324,34 +384,68 @@ const ChatRoomScreen = () => {
         </Pressable>
 
         <View style={styles.userInfo}>
-          <View style={styles.avatarContainer}>
-            <View style={styles.avatar}>
-              {peerAvatarDisplay && !avatarLoadError ? (
-                <Image
-                  source={{ uri: peerAvatarDisplay }}
-                  style={styles.avatarImage}
-                  resizeMode="cover"
-                  onError={() => setAvatarLoadError(true)}
-                />
-              ) : (
-                <Text style={styles.avatarText}>{name?.charAt(0) ?? "?"}</Text>
-              )}
+          {isSearchOpen ? (
+            <View style={styles.headerSearchWrap}>
+              <Feather name="search" size={18} color={GRAY.DARK_2} />
+              <TextInput
+                style={styles.headerSearchInput}
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="대화 내용 검색"
+                placeholderTextColor={GRAY.DARK_2}
+                autoFocus
+                autoCapitalize="none"
+                autoCorrect={false}
+                returnKeyType="search"
+              />
+              {searchQuery.length > 0 ? (
+                <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
+                  <Feather name="x-circle" size={18} color={GRAY.DARK_2} />
+                </Pressable>
+              ) : null}
             </View>
-            {isOnline && <View style={styles.onlineIndicator} />}
-          </View>
-          <View style={styles.nameContainer}>
-            <Text style={styles.name} numberOfLines={1}>
-              {name ?? "채팅방"}
-            </Text>
-            <Text style={styles.handle} numberOfLines={1}>
-              {displayHandle}
-            </Text>
-          </View>
+          ) : (
+            <>
+              <View style={styles.avatarContainer}>
+                <View style={styles.avatar}>
+                  {peerAvatarDisplay && !avatarLoadError ? (
+                    <Image
+                      source={{ uri: peerAvatarDisplay }}
+                      style={styles.avatarImage}
+                      resizeMode="cover"
+                      onError={() => setAvatarLoadError(true)}
+                    />
+                  ) : (
+                    <Text style={styles.avatarText}>{name?.charAt(0) ?? "?"}</Text>
+                  )}
+                </View>
+                {isOnline && <View style={styles.onlineIndicator} />}
+              </View>
+              <View style={styles.nameContainer}>
+                <Text style={styles.name} numberOfLines={1}>
+                  {name ?? "채팅방"}
+                </Text>
+                <Text style={styles.handle} numberOfLines={1}>
+                  {displayHandle}
+                </Text>
+              </View>
+            </>
+          )}
         </View>
 
         <View style={styles.headerRightButtons}>
-          <Pressable hitSlop={10} style={styles.headerButton}>
-            <Feather name="search" size={22} color="#000" />
+          <Pressable
+            hitSlop={10}
+            style={styles.headerButton}
+            onPress={() => {
+              if (isSearchOpen) {
+                closeSearch();
+              } else {
+                setIsSearchOpen(true);
+              }
+            }}
+          >
+            <Feather name={isSearchOpen ? "x" : "search"} size={22} color="#000" />
           </Pressable>
           <Pressable
             hitSlop={10}
@@ -362,6 +456,32 @@ const ChatRoomScreen = () => {
           </Pressable>
         </View>
       </View>
+
+      {isSearchOpen && searchQuery.trim() ? (
+        <View style={styles.searchMatchNav}>
+          <Text style={styles.searchMatchCount}>
+            {matchIndices.length > 0
+              ? `${activeMatchIndex + 1} / ${matchIndices.length}`
+              : "결과 없음"}
+          </Text>
+          <View style={styles.searchMatchButtons}>
+            <Pressable
+              onPress={goToPrevMatch}
+              disabled={matchIndices.length === 0}
+              style={styles.searchMatchButton}
+            >
+              <Feather name="chevron-up" size={20} color={MAIN.DEFAULT} />
+            </Pressable>
+            <Pressable
+              onPress={goToNextMatch}
+              disabled={matchIndices.length === 0}
+              style={styles.searchMatchButton}
+            >
+              <Feather name="chevron-down" size={20} color={MAIN.DEFAULT} />
+            </Pressable>
+          </View>
+        </View>
+      ) : null}
 
       {/* Message area */}
       <View style={styles.messageArea}>
@@ -375,29 +495,64 @@ const ChatRoomScreen = () => {
             style={styles.messageAreaScroll}
             contentContainerStyle={styles.messageAreaContent}
             keyboardShouldPersistTaps="handled"
-            onContentSizeChange={() =>
-              scrollViewRef.current?.scrollToEnd({ animated: false })
-            }
+            onContentSizeChange={() => {
+              if (!isSearchOpen) {
+                scrollViewRef.current?.scrollToEnd({ animated: false });
+              }
+            }}
           >
-            {messages.map((msg) =>
-              msg.isFromMe ? (
+            {messages.map((msg) => {
+              const isActiveMatch = activeMatchMessageId === msg.id;
+              const rowRef = (node: View | null) => {
+                messageRowRefs.current[msg.id] = node;
+              };
+              const textContent = isSearchOpen && searchQuery.trim() ? (
+                <HighlightText
+                  text={msg.text}
+                  query={searchQuery}
+                  style={
+                    msg.isFromMe
+                      ? [styles.messageText, styles.messageTextMe]
+                      : styles.messageText
+                  }
+                  highlightStyle={styles.messageHighlight}
+                />
+              ) : (
+                <Text
+                  style={
+                    msg.isFromMe
+                      ? [styles.messageText, styles.messageTextMe]
+                      : styles.messageText
+                  }
+                >
+                  {msg.text}
+                </Text>
+              );
+
+              return msg.isFromMe ? (
                 <View
                   key={msg.id}
-                  style={[styles.messageRow, styles.messageRowFromMe]}
+                  ref={rowRef}
+                  style={[
+                    styles.messageRow,
+                    styles.messageRowFromMe,
+                    isActiveMatch && styles.messageRowActiveMatch,
+                  ]}
                 >
                   <Text style={[styles.messageTime, styles.messageTimeBeforeBubble]}>
                     {msg.timestamp}
                   </Text>
-                  <View style={styles.messageBubbleMe}>
-                    <Text style={[styles.messageText, styles.messageTextMe]}>
-                      {msg.text}
-                    </Text>
-                  </View>
+                  <View style={styles.messageBubbleMe}>{textContent}</View>
                 </View>
               ) : (
                 <View
                   key={msg.id}
-                  style={[styles.messageRow, styles.messageRowFromOther]}
+                  ref={rowRef}
+                  style={[
+                    styles.messageRow,
+                    styles.messageRowFromOther,
+                    isActiveMatch && styles.messageRowActiveMatch,
+                  ]}
                 >
                   <View style={styles.otherAvatar}>
                     {peerAvatarDisplay && !avatarLoadError ? (
@@ -413,15 +568,13 @@ const ChatRoomScreen = () => {
                       </Text>
                     )}
                   </View>
-                  <View style={styles.messageBubbleOther}>
-                    <Text style={styles.messageText}>{msg.text}</Text>
-                  </View>
+                  <View style={styles.messageBubbleOther}>{textContent}</View>
                   <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
                     {msg.timestamp}
                   </Text>
                 </View>
-              ),
-            )}
+              );
+            })}
           </ScrollView>
         )}
         {isAttachmentMenuOpen && (

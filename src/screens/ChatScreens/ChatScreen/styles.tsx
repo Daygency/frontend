@@ -26,6 +26,23 @@ const styles = StyleSheet.create({
     position: "relative",
     flexShrink: 0,
   },
+  headerSearchWrap: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    height: 40,
+    marginRight: 12,
+    backgroundColor: GRAY.DEFAULT_1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+  },
+  headerSearchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: GRAY.DARK_100,
+    paddingVertical: 0,
+  },
   content: {
     flex: 1,
     justifyContent: "center",
