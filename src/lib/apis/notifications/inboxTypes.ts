@@ -5,7 +5,8 @@ export type NoticeTargetType =
   | "FOLLOW"
   | "APPLICATION"
   | "LIKE"
-  | "REVIEW";
+  | "REVIEW"
+  | "INQUIRY";
 
 export type NoticeLikeKind =
   | "NEWS"

@@ -3,6 +3,7 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../navigations/routes";
 import { getCommentById } from "../apis/comment/commentApi";
 import type { InboxRecipientItem } from "../apis/notifications/inboxTypes";
+import { getMyInquiry, mapInquiryToItem } from "../apis/inquiry/inquiryApi";
 
 type RootNav = NativeStackNavigationProp<Record<string, object | undefined>>;
 
@@ -122,6 +123,18 @@ export async function navigateFromInboxItem(
   if (targetType === "COMMENT") {
     const ok = await navigateToCommentTarget(navigation, targetId);
     if (!ok) showNoScreenAlert();
+    return;
+  }
+
+  if (targetType === "INQUIRY") {
+    const row = await getMyInquiry(targetId);
+    if (!row) {
+      navigation.navigate(RootRoutes.CUSTOMER_SERVICE);
+      return;
+    }
+    navigation.navigate(RootRoutes.INQUIRY_DETAIL, {
+      inquiry: mapInquiryToItem(row),
+    });
     return;
   }
 

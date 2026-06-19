@@ -55,6 +55,8 @@ function displayLine(item: InboxRecipientItem): string {
       return `${name}님이 댓글을 남겼습니다.`;
     case "REVIEW":
       return `${name}님이 활동 후기를 남겼습니다.`;
+    case "INQUIRY":
+      return "고객센터 문의에 답변이 등록되었습니다.";
     default:
       return "새 알림이 있습니다.";
   }
