@@ -34,6 +34,7 @@ const CareerItem = ({
     entry.startMonth,
     entry.endYear,
     entry.endMonth,
+    { isOngoing: entry.isOngoing, ongoingLabel: "재직 중" },
   );
   const isDraftEntry =
     !entry.careerId &&
@@ -41,7 +42,8 @@ const CareerItem = ({
     !entry.startYear &&
     !entry.startMonth &&
     !entry.endYear &&
-    !entry.endMonth;
+    !entry.endMonth &&
+    !entry.isOngoing;
 
   const handleCancel = () => {
     if (isDraftEntry) {
@@ -124,8 +126,22 @@ const CareerItem = ({
         startMonth={entry.startMonth}
         endYear={entry.endYear}
         endMonth={entry.endMonth}
+        isOngoing={entry.isOngoing ?? false}
         onChangeStart={(y, m) => onChange({ startYear: y, startMonth: m })}
-        onChangeEnd={(y, m) => onChange({ endYear: y, endMonth: m })}
+        onChangeEnd={(y, m) =>
+          onChange({
+            endYear: y,
+            endMonth: m,
+            ...(y || m ? { isOngoing: false } : {}),
+          })
+        }
+        onChangeOngoing={(value) =>
+          onChange(
+            value
+              ? { isOngoing: true, endYear: "", endMonth: "" }
+              : { isOngoing: false },
+          )
+        }
         currentLabel="현재 재직 중"
       />
       <View style={styles.entryButtonRow} ref={actionRowRef}>

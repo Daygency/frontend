@@ -50,8 +50,8 @@ const ProfileTab = ({
   const [isAboutFocused, setIsAboutFocused] = React.useState(false);
   // ── 학력 ──
   const updateEducation = (id: string, updates: Partial<EducationEntry>) =>
-    setEducationList(
-      educationList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+    setEducationList((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteEducation = (id: string) =>
     setEducationList((prev) => prev.filter((e) => e.id !== id));
@@ -69,14 +69,15 @@ const ProfileTab = ({
         startMonth: "",
         endYear: "",
         endMonth: "",
+        isOngoing: false,
       },
     ]);
   };
 
   // ── 경력 ──
   const updateCareer = (id: string, updates: Partial<CareerEntry>) =>
-    setCareerList(
-      careerList.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+    setCareerList((prev) =>
+      prev.map((e) => (e.id === id ? { ...e, ...updates } : e)),
     );
   const deleteCareer = (id: string) =>
     setCareerList((prev) => prev.filter((e) => e.id !== id));
@@ -94,6 +95,7 @@ const ProfileTab = ({
         startMonth: "",
         endYear: "",
         endMonth: "",
+        isOngoing: false,
       },
     ]);
   };

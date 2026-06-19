@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY, MAIN } from "../../../color";
@@ -10,8 +10,10 @@ type Props = {
   startMonth: string;
   endYear: string;
   endMonth: string;
+  isOngoing: boolean;
   onChangeStart: (year: string, month: string) => void;
   onChangeEnd: (year: string, month: string) => void;
+  onChangeOngoing: (value: boolean) => void;
   currentLabel: string;
 };
 
@@ -20,27 +22,18 @@ const PeriodDateFields = ({
   startMonth,
   endYear,
   endMonth,
+  isOngoing,
   onChangeStart,
   onChangeEnd,
+  onChangeOngoing,
   currentLabel,
 }: Props) => {
-  const [isCurrent, setIsCurrent] = useState(
-    () => !endYear && !endMonth && !!(startYear && startMonth),
-  );
-
   const handleEndChange = (year: string, month: string) => {
-    if (year || month) {
-      setIsCurrent(false);
-    }
     onChangeEnd(year, month);
   };
 
   const toggleCurrent = () => {
-    const next = !isCurrent;
-    setIsCurrent(next);
-    if (next) {
-      onChangeEnd("", "");
-    }
+    onChangeOngoing(!isOngoing);
   };
 
   return (
@@ -56,13 +49,13 @@ const PeriodDateFields = ({
         year={endYear}
         month={endMonth}
         onChange={handleEndChange}
-        disabled={isCurrent}
+        disabled={isOngoing}
       />
       <Pressable style={styles.currentToggleRow} onPress={toggleCurrent}>
         <MaterialCommunityIcons
-          name={isCurrent ? "checkbox-marked" : "checkbox-blank-outline"}
+          name={isOngoing ? "checkbox-marked" : "checkbox-blank-outline"}
           size={22}
-          color={isCurrent ? MAIN.DEFAULT : GRAY.DARK_2}
+          color={isOngoing ? MAIN.DEFAULT : GRAY.DARK_2}
         />
         <Text style={styles.currentToggleText}>{currentLabel}</Text>
       </Pressable>

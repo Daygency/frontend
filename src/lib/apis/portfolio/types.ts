@@ -8,6 +8,7 @@ export type EducationEntry = {
   startMonth: string;
   endYear: string;
   endMonth: string;
+  isOngoing?: boolean;
 };
 
 export type CareerEntry = {
@@ -18,6 +19,7 @@ export type CareerEntry = {
   startMonth: string;
   endYear: string;
   endMonth: string;
+  isOngoing?: boolean;
 };
 
 export type AwardEntry = {

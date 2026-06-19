@@ -1,8 +1,6 @@
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import type { ComponentProps } from "react";
 import styles from "./styles";
 import { GRAY, BLACK, MAIN } from "../../../../color";
 import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
@@ -19,6 +17,11 @@ import {
   getProfileCache,
   saveProfileCache,
 } from "../../../../lib/profileCache";
+import {
+  formatPeriodFromApiItem,
+  formatYearMonth,
+  formatYearMonthFromApiDate,
+} from "../../../../lib/profile/profileEntryDates";
 import { RootRoutes } from "../../../../navigations/routes";
 
 type LoadedProfile = ProfileResponseDto | PublicProfileResponseDto | null;
@@ -117,21 +120,6 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
     }, [loadProfile]),
   );
 
-  /** API의 startedAt/endedAt → "2025.12 ~ 2026.07" */
-  const formatPeriod = (item: any) => {
-    const toYm = (d: string | undefined) => {
-      if (!d) return "";
-      const date = new Date(d);
-      if (isNaN(date.getTime())) return "";
-      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}`;
-    };
-    const start = toYm(item?.startedAt);
-    const end = toYm(item?.endedAt);
-    if (!start && !end) return "";
-    if (!end) return start;
-    return `${start} ~ ${end}`;
-  };
-
   const legacyStringEntries = (value: unknown): ProfileEntryItem[] => {
     if (typeof value !== "string") return [];
     return value
@@ -143,12 +131,14 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
 
   const parseEntriesWithPeriod = (
     arr: any[] | null | undefined,
+    ongoingLabel?: string,
   ): ProfileEntryItem[] => {
     if (!Array.isArray(arr) || arr.length === 0) return [];
     return arr
       .map((item: any) => {
         const description = (item?.description ?? "").trim();
-        const period = formatPeriod(item) || null;
+        const period =
+          formatPeriodFromApiItem(item, { ongoingLabel }) || null;
         if (!description && !period) return null;
         return {
           description: description || period || "",
@@ -162,20 +152,12 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
     arr: any[] | null | undefined,
   ): ProfileEntryItem[] => {
     if (!Array.isArray(arr) || arr.length === 0) return [];
-    const toYmFromDate = (d: string | undefined) => {
-      if (!d?.trim()) return "";
-      const date = new Date(d);
-      if (Number.isNaN(date.getTime())) return "";
-      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}`;
-    };
-    const toYm = (y: string, m: string) =>
-      y && m ? `${y}.${String(m).padStart(2, "0")}` : "";
     return arr
       .map((item: any) => {
         const description = (item?.description ?? "").trim();
         const date =
-          toYmFromDate(item?.obtainedAt) ||
-          toYm(item?.year ?? "", item?.month ?? "");
+          formatYearMonthFromApiDate(item?.obtainedAt) ||
+          formatYearMonth(String(item?.year ?? ""), String(item?.month ?? ""));
         const period = date ? `취득 ${date}` : null;
         if (!description && !period) return null;
         return {
@@ -188,20 +170,17 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
 
   const parseAwards = (arr: any[] | null | undefined): ProfileEntryItem[] => {
     if (!Array.isArray(arr) || arr.length === 0) return [];
-    const toYm = (d: string | undefined) => {
-      if (!d) return "";
-      const date = new Date(d);
-      if (isNaN(date.getTime())) return "";
-      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}`;
-    };
     return arr
       .map((item: any) => {
         const description = (item?.description ?? "").trim();
-        const period = item?.awardedAt
-          ? toYm(item.awardedAt)
-          : item?.year && item?.month
-            ? `${item.year}.${String(item.month).padStart(2, "0")}`
-            : null;
+        const period =
+          formatYearMonthFromApiDate(item?.awardedAt) ||
+          formatYearMonth(String(item?.year ?? ""), String(item?.month ?? "")) ||
+          null;
+        if (!period) {
+          if (!description) return null;
+          return { description, period: null };
+        }
         if (!description && !period) return null;
         return {
           description: description || period || "",
@@ -272,11 +251,11 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
     parsed.length > 0 ? parsed : legacyStringEntries(legacy);
 
   const educationEntries = mergeEntries(
-    parseEntriesWithPeriod(educationList),
+    parseEntriesWithPeriod(educationList, "재학 중"),
     p?.education,
   );
   const careerEntries = mergeEntries(
-    parseEntriesWithPeriod(careerList),
+    parseEntriesWithPeriod(careerList, "재직 중"),
     p?.career,
   );
   const awardEntries = mergeEntries(parseAwards(awardList), p?.awards);
@@ -298,7 +277,6 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
   const renderEntrySection = (
     title: string,
     items: ProfileEntryItem[],
-    iconName: ComponentProps<typeof Ionicons>["name"],
   ) => {
     if (items.length === 0) return null;
     return (
@@ -306,19 +284,11 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
         <Text style={styles.sectionTitle}>{title}</Text>
         <View style={styles.entryList}>
           {items.map((item, index) => (
-            <View
-              key={`${title}-${index}-${item.description}`}
-              style={styles.entryRow}
-            >
-              <View style={styles.entryIconBox}>
-                <Ionicons name={iconName} size={20} color={MAIN.DEFAULT} />
-              </View>
-              <View style={styles.entryTextWrap}>
-                <Text style={styles.entryTitle}>{item.description}</Text>
-                {item.period ? (
-                  <Text style={styles.entryPeriod}>{item.period}</Text>
-                ) : null}
-              </View>
+            <View key={`${title}-${index}-${item.description}`}>
+              <Text style={styles.entryTitle}>{item.description}</Text>
+              {item.period ? (
+                <Text style={styles.entryPeriod}>{item.period}</Text>
+              ) : null}
             </View>
           ))}
         </View>
@@ -328,14 +298,10 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
 
   const body = (
     <>
-      {renderEntrySection("학력", educationEntries, "school-outline")}
-      {renderEntrySection("경력", careerEntries, "briefcase-outline")}
-      {renderEntrySection("수상 경력", awardEntries, "trophy-outline")}
-      {renderEntrySection(
-        "수료증 / 자격증",
-        certificateEntries,
-        "ribbon-outline",
-      )}
+      {renderEntrySection("학력", educationEntries)}
+      {renderEntrySection("경력", careerEntries)}
+      {renderEntrySection("수상 경력", awardEntries)}
+      {renderEntrySection("수료증 / 자격증", certificateEntries)}
     </>
   );
 

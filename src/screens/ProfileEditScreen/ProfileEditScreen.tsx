@@ -28,6 +28,10 @@ import type {
 import { getProfileCache, saveProfileCache } from "../../lib/profileCache";
 import { useAuth } from "../../contexts/AuthContext";
 import { updateProfile } from "../../lib/apis/portfolio/profileUpdate";
+import {
+  toOptionalIsoDate,
+  yearMonthFromApiDate,
+} from "../../lib/profile/profileEntryDates";
 import type { ProfileUpdateRequestDto } from "../../lib/apis/portfolio/dto/update-profile.dto";
 import { isDupActivityName } from "../../lib/apis/portfolio/IsDupActivityName";
 import { MAJOR_OPTIONS } from "../../constants/majors";
@@ -191,8 +195,8 @@ const ProfileEditScreen = () => {
       (p as any).educations ?? (p as any).educationEntries ?? [];
     setEducationList(
       rawEducations.map((e: any) => {
-        const start = parseApiDateToYearMonth(e.startedAt);
-        const end = parseApiDateToYearMonth(e.endedAt);
+        const start = yearMonthFromApiDate(e.startedAt);
+        const end = yearMonthFromApiDate(e.endedAt);
         return {
           id:
             e.educationId ??
@@ -203,14 +207,15 @@ const ProfileEditScreen = () => {
           startMonth: start.month,
           endYear: end.year,
           endMonth: end.month,
+          isOngoing: Boolean(e.isOngoing),
         };
       }),
     );
     const rawCareers = (p as any).careers ?? (p as any).careerEntries ?? [];
     setCareerList(
       rawCareers.map((c: any) => {
-        const start = parseApiDateToYearMonth(c.startedAt);
-        const end = parseApiDateToYearMonth(c.endedAt);
+        const start = yearMonthFromApiDate(c.startedAt);
+        const end = yearMonthFromApiDate(c.endedAt);
         return {
           id:
             c.careerId ??
@@ -221,13 +226,14 @@ const ProfileEditScreen = () => {
           startMonth: start.month,
           endYear: end.year,
           endMonth: end.month,
+          isOngoing: Boolean(c.isOngoing),
         };
       }),
     );
     const rawAwards = (p as any).awards ?? (p as any).awardEntries ?? [];
     setAwardList(
       rawAwards.map((a: any) => {
-        const d = parseApiDateToYearMonth(a.awardedAt);
+        const d = yearMonthFromApiDate(a.awardedAt);
         return {
           id: a.awardId ?? newTempId(),
           awardId: a.awardId,
@@ -246,7 +252,7 @@ const ProfileEditScreen = () => {
     const raw = (p as any).certificates ?? p.certificateEntries ?? [];
     if (!Array.isArray(raw)) return [];
     return raw.map((c: any) => {
-      const d = parseApiDateToYearMonth(c.obtainedAt);
+      const d = yearMonthFromApiDate(c.obtainedAt);
       return {
         id: c.certificateId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
         certificateId: c.certificateId,
@@ -375,24 +381,39 @@ const ProfileEditScreen = () => {
     });
   };
 
-  const toDate = (year: string, month: string): Date => {
-    const y = Number(year || new Date().getFullYear());
-    const m = Number(month || 1);
-    return new Date(y, m - 1, 1);
-  };
-
-  const parseApiDateToYearMonth = (d: string | Date | undefined) => {
-    if (!d) return { year: "", month: "" };
-    const date = typeof d === "string" ? new Date(d) : d;
-    if (isNaN(date.getTime())) return { year: "", month: "" };
-    return {
-      year: String(date.getFullYear()),
-      month: String(date.getMonth() + 1).padStart(2, "0"),
-    };
-  };
-
   const newTempId = () =>
     `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+  const mapEducationPayload = (e: EducationEntry) => ({
+    ...(e.educationId ? { educationId: e.educationId } : {}),
+    description: e.description,
+    startedAt: toOptionalIsoDate(e.startYear, e.startMonth),
+    endedAt: e.isOngoing
+      ? null
+      : toOptionalIsoDate(e.endYear, e.endMonth),
+    isOngoing: e.isOngoing ?? false,
+  });
+
+  const mapCareerPayload = (c: CareerEntry) => ({
+    ...(c.careerId ? { careerId: c.careerId } : {}),
+    description: c.description,
+    startedAt: toOptionalIsoDate(c.startYear, c.startMonth),
+    endedAt: c.isOngoing
+      ? null
+      : toOptionalIsoDate(c.endYear, c.endMonth),
+    isOngoing: c.isOngoing ?? false,
+  });
+
+  const mapAwardPayload = (a: AwardEntry) => ({
+    description: a.description,
+    awardedAt: toOptionalIsoDate(a.year, a.month),
+  });
+
+  const mapCertificatePayload = (c: CertificateEntry) => ({
+    ...(c.certificateId ? { certificateId: c.certificateId } : {}),
+    description: c.description,
+    obtainedAt: toOptionalIsoDate(c.year, c.month),
+  });
 
   const buildUpdatePayload = (): ProfileUpdateRequestDto | null => {
     if (!profile) return null;
@@ -412,26 +433,20 @@ const ProfileEditScreen = () => {
       isEmailSubscribed: current.isEmailSubscribed,
       isPushEnabled: current.isPushEnabled,
       socialId: current.socialId,
-      educations: (current.educationEntries ?? []).map((e: any) => ({
-        description: e.description,
-        startedAt: toDate(e.startYear, e.startMonth),
-        endedAt: toDate(e.endYear, e.endMonth),
-      })),
-      careers: (current.careerEntries ?? []).map((c: any) => ({
-        description: c.description,
-        startedAt: toDate(c.startYear, c.startMonth),
-        endedAt: toDate(c.endYear, c.endMonth),
-      })),
-      awards: (current.awardEntries ?? []).map((a: any) => ({
-        description: a.description,
-        awardedAt: toDate(a.year, a.month),
-      })),
+      educations: (current.educationEntries ?? []).map((e: any) =>
+        mapEducationPayload(e),
+      ),
+      careers: (current.careerEntries ?? []).map((c: any) =>
+        mapCareerPayload(c),
+      ),
+      awards: (current.awardEntries ?? []).map((a: any) =>
+        mapAwardPayload(a),
+      ),
       majorId: (current as any).majorId ?? null,
       majorDetail: (current as any).majorDetail,
-      certificates: (current.certificateEntries ?? []).map((c: any) => ({
-        description: c.description,
-        obtainedAt: toDate(c.year, c.month),
-      })),
+      certificates: (current.certificateEntries ?? []).map((c: any) =>
+        mapCertificatePayload(c),
+      ),
     };
 
     const fullPayload: ProfileUpdateRequestDto = {
@@ -449,29 +464,12 @@ const ProfileEditScreen = () => {
       isEmailSubscribed: current.isEmailSubscribed ?? false,
       isPushEnabled: current.isPushEnabled ?? false,
       socialId: current.socialId ?? "",
-      educations: educationList.map((e) => ({
-        ...(e.educationId ? { educationId: e.educationId } : {}),
-        description: e.description,
-        startedAt: toDate(e.startYear, e.startMonth),
-        endedAt: toDate(e.endYear, e.endMonth),
-      })),
-      careers: careerList.map((c) => ({
-        ...(c.careerId ? { careerId: c.careerId } : {}),
-        description: c.description,
-        startedAt: toDate(c.startYear, c.startMonth),
-        endedAt: toDate(c.endYear, c.endMonth),
-      })),
-      awards: awardList.map((a) => ({
-        description: a.description,
-        awardedAt: toDate(a.year, a.month),
-      })),
+      educations: educationList.map(mapEducationPayload),
+      careers: careerList.map(mapCareerPayload),
+      awards: awardList.map(mapAwardPayload),
       majorId: majorId ?? null,
       majorDetail,
-      certificates: certificateList.map((c) => ({
-        ...(c.certificateId ? { certificateId: c.certificateId } : {}),
-        description: c.description,
-        obtainedAt: toDate(c.year, c.month),
-      })),
+      certificates: certificateList.map(mapCertificatePayload),
     };
 
     const diff: ProfileUpdateRequestDto = {};
