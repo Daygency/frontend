@@ -90,6 +90,7 @@ const Profile = () => {
   const [imageError, setImageError] = useState(false);
   const [coverImageError, setCoverImageError] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
+  const [profileUploading, setProfileUploading] = useState(false);
   const [following, setFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
@@ -328,6 +329,47 @@ const Profile = () => {
       Alert.alert("알림", "배경 사진 변경에 실패했습니다.");
     } finally {
       setCoverUploading(false);
+    }
+  };
+
+  const pickProfileImage = async () => {
+    if (isOtherProfile || profileUploading) return;
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+      if (result.canceled || !result.assets[0]?.uri) return;
+
+      setProfileUploading(true);
+      const updated = await updateProfile({}, {
+        profileImageUri: result.assets[0].uri,
+        profileImageName: "profile.jpg",
+        profileImageType: "image/jpeg",
+      });
+      if (!updated) {
+        Alert.alert("알림", "프로필 사진 변경에 실패했습니다.");
+        return;
+      }
+      const fresh = await getMyProfile();
+      if (fresh) {
+        setProfile(fresh);
+        await saveProfileCache(fresh);
+      }
+      setImageError(false);
+    } catch (e) {
+      console.warn("[pickProfileImage]", e);
+      Alert.alert("알림", "프로필 사진 변경에 실패했습니다.");
+    } finally {
+      setProfileUploading(false);
     }
   };
 
@@ -579,9 +621,15 @@ const Profile = () => {
           ) : null}
         </Pressable>
         <View style={styles.profileBody}>
-          <View style={styles.avatarWrapper}>
+          <Pressable
+            style={styles.avatarWrapper}
+            onPress={!isOtherProfile ? () => void pickProfileImage() : undefined}
+            disabled={isOtherProfile || profileUploading}
+          >
             <View style={styles.profileImageContainer}>
-              {displayProfileImgUrl ? (
+              {profileUploading ? (
+                <ActivityIndicator size="small" color={MAIN.DEFAULT} />
+              ) : displayProfileImgUrl ? (
                 <Image
                   source={{ uri: displayProfileImgUrl }}
                   style={styles.profileImage}
@@ -596,7 +644,12 @@ const Profile = () => {
                 />
               )}
             </View>
-          </View>
+            {!isOtherProfile ? (
+              <View style={styles.avatarEditBadge}>
+                <Ionicons name="camera-outline" size={14} color={WHITE} />
+              </View>
+            ) : null}
+          </Pressable>
 
           <View style={styles.profileNameRow}>
             <Text style={styles.profileName}>{displayNickname}</Text>

@@ -19,6 +19,12 @@ const styles = StyleSheet.create({
     paddingVertical: 24,
     backgroundColor: WHITE,
   },
+  profileImageChangeText: {
+    marginTop: 10,
+    fontSize: 13,
+    fontWeight: "500",
+    color: GRAY.DARK,
+  },
   profileImageWrapper: {
     width: 120,
     height: 120,

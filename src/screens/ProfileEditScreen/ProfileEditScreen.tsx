@@ -541,13 +541,15 @@ const ProfileEditScreen = () => {
     }
 
     const payload = buildUpdatePayload();
-    if (!payload || submitting) {
+    const hasProfileImage = Boolean(pickedProfileImageUri);
+
+    if (submitting) {
+      return;
+    }
+
+    if (!payload && !hasProfileImage) {
       console.log(
-        "[ProfileEditScreen] early return (no payload or submitting)",
-        {
-          hasPayload: !!payload,
-          submitting,
-        },
+        "[ProfileEditScreen] early return (no payload or profile image)",
       );
       await persistToCache();
       navigation.goBack();
@@ -558,16 +560,16 @@ const ProfileEditScreen = () => {
       setSubmitting(true);
       console.log(
         "[ProfileEditScreen] update payload:",
-        JSON.stringify(payload),
+        JSON.stringify(payload ?? {}),
       );
-      const imageOptions = pickedProfileImageUri
+      const imageOptions = hasProfileImage
         ? {
-            profileImageUri: pickedProfileImageUri,
+            profileImageUri: pickedProfileImageUri!,
             profileImageName: "profile.jpg",
             profileImageType: "image/jpeg",
           }
         : undefined;
-      const updated = await updateProfile(payload, imageOptions);
+      const updated = await updateProfile(payload ?? {}, imageOptions);
       if (!updated) {
         await persistToCache();
         return;
@@ -645,7 +647,7 @@ const ProfileEditScreen = () => {
         stickyHeaderIndices={[1]}
       >
         {/* 프로필 이미지 */}
-        <View style={styles.profileImageSection}>
+        <Pressable style={styles.profileImageSection} onPress={pickProfileImage}>
           <View style={styles.profileImageWrapper}>
             {displayProfileImgUrl ? (
               <Image
@@ -662,15 +664,16 @@ const ProfileEditScreen = () => {
                 />
               </View>
             )}
-            <Pressable style={styles.profileImageEditButton} onPress={pickProfileImage}>
+            <View style={styles.profileImageEditButton}>
               <MaterialCommunityIcons
-                name="dots-horizontal"
-                size={20}
+                name="camera-outline"
+                size={18}
                 color={WHITE}
               />
-            </Pressable>
+            </View>
           </View>
-        </View>
+          <Text style={styles.profileImageChangeText}>사진 변경</Text>
+        </Pressable>
 
         {/* 탭 */}
         {renderTabBar()}
