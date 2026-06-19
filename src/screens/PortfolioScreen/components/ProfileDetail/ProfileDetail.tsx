@@ -283,14 +283,31 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
       <Sheet {...sheetProps}>
         <Text style={styles.sectionTitle}>{title}</Text>
         <View style={styles.entryList}>
-          {items.map((item, index) => (
-            <View key={`${title}-${index}-${item.description}`}>
-              <Text style={styles.entryTitle}>{item.description}</Text>
-              {item.period ? (
-                <Text style={styles.entryPeriod}>{item.period}</Text>
-              ) : null}
-            </View>
-          ))}
+          {items.map((item, index) => {
+            const isLast = index === items.length - 1;
+            return (
+              <View
+                key={`${title}-${index}-${item.description}`}
+                style={styles.entryRow}
+              >
+                <View style={styles.timelineTrack}>
+                  <View style={styles.timelineDot} />
+                  {!isLast ? <View style={styles.timelineLine} /> : null}
+                </View>
+                <View
+                  style={[
+                    styles.entryBody,
+                    isLast ? styles.entryBodyLast : null,
+                  ]}
+                >
+                  <Text style={styles.entryTitle}>{item.description}</Text>
+                  {item.period ? (
+                    <Text style={styles.entryPeriod}>{item.period}</Text>
+                  ) : null}
+                </View>
+              </View>
+            );
+          })}
         </View>
       </Sheet>
     );

@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../../../color";
 import {
   PORTFOLIO_BODY_BG,
   PORTFOLIO_SECTION_GAP,
@@ -37,8 +37,35 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: GRAY.DARK,
   },
-  entryList: {
-    gap: 12,
+  entryList: {},
+  entryRow: {
+    flexDirection: "row",
+  },
+  timelineTrack: {
+    width: 20,
+    alignItems: "center",
+    marginRight: 10,
+  },
+  timelineDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: MAIN.DEFAULT,
+    marginTop: 6,
+  },
+  timelineLine: {
+    width: 1.5,
+    flex: 1,
+    backgroundColor: GRAY.DARK_1,
+    marginTop: 4,
+    minHeight: 12,
+  },
+  entryBody: {
+    flex: 1,
+    paddingBottom: 16,
+  },
+  entryBodyLast: {
+    paddingBottom: 0,
   },
   entryTitle: {
     fontSize: 15,
