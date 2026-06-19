@@ -172,6 +172,7 @@ export async function getNewsList(
     const q = new URLSearchParams();
     if (params?.cursor) q.set("cursor", params.cursor);
     if (params?.limit != null) q.set("limit", String(params.limit));
+    if (params?.q?.trim()) q.set("q", params.q.trim());
     const query = q.toString();
     const url = `${API_BASE}/news${query ? `?${query}` : ""}`;
     const res = await fetch(url);

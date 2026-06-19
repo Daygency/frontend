@@ -23,6 +23,7 @@ export type CommunityListItem = {
 
 export type CommunityListParams = {
   categoryId?: string;
+  q?: string;
 };
 
 export type CommunityAttachmentItem = {

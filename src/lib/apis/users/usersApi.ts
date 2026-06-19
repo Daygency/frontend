@@ -54,6 +54,7 @@ export type GetUsersParams = {
   cursor?: string;
   /** 콤마로 구분된 전공 UUID */
   majorIds?: string;
+  q?: string;
 };
 
 /**
@@ -68,6 +69,7 @@ export async function getUsers(
     if (params?.limit != null) q.set("limit", String(params.limit));
     if (params?.cursor) q.set("cursor", params.cursor);
     if (params?.majorIds) q.set("majorIds", params.majorIds);
+    if (params?.q?.trim()) q.set("q", params.q.trim());
 
     const qs = q.toString();
     const url = `${API_BASE}/users${qs ? `?${qs}` : ""}`;

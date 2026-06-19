@@ -67,13 +67,22 @@ const styles = StyleSheet.create({
   suggestedTag: {
     paddingHorizontal: 14,
     paddingVertical: 8,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 12,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM,
+  },
+  suggestedTagActive: {
+    backgroundColor: MAIN.DEFAULT,
+    borderColor: MAIN.DEFAULT,
   },
   suggestedTagText: {
     fontSize: 14,
-    color: WHITE,
+    color: MAIN.DEFAULT,
     fontWeight: "500",
+  },
+  suggestedTagTextActive: {
+    color: WHITE,
   },
   content: {
     flex: 1,

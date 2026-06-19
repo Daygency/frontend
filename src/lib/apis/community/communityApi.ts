@@ -199,6 +199,7 @@ export async function getCommunityList(
   try {
     const q = new URLSearchParams();
     if (params?.categoryId) q.set("categoryId", params.categoryId);
+    if (params?.q?.trim()) q.set("q", params.q.trim());
 
     const query = q.toString();
     const url = `${API_BASE}/community${query ? `?${query}` : ""}`;

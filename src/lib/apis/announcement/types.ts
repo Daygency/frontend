@@ -81,6 +81,8 @@ export type AnnouncementListParams = {
   majorIds?: string; // 콤마 구분: uuid1,uuid2
   /** 금액 구분 단일 값 — ListAnnouncementQueryDto */
   priceType?: AnnouncementPriceType;
+  /** 제목·본문·주소 키워드 검색 */
+  q?: string;
 };
 
 /** README: 작성·수정 성공 응답 — majors·priceType·price 포함 */

@@ -138,6 +138,7 @@ export async function getAnnouncementList(
     if (params?.categoryId) q.set("categoryId", params.categoryId);
     if (params?.majorIds) q.set("majorIds", params.majorIds);
     if (params?.priceType) q.set("priceType", params.priceType);
+    if (params?.q?.trim()) q.set("q", params.q.trim());
 
     const query = q.toString();
     const url = `${API_BASE}/announcement${query ? `?${query}` : ""}`;

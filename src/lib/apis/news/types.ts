@@ -2,6 +2,7 @@
 export type NewsListParams = {
   cursor?: string;
   limit?: number;
+  q?: string;
 };
 
 /** 공연소식 목록 항목 (GET /news) — README: `thumbnailUrl` 우선 */
