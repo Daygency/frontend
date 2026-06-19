@@ -1,6 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BLACK, GRAY, RED } from "../../../color";
+import NewBadge from "../../../components/NewBadge/NewBadge";
 
 type CommunityCardProps = {
   tag?: string;
@@ -15,6 +16,7 @@ type CommunityCardProps = {
   views?: number;
   /** README 목록 썸네일 — 없으면 회색 플레이스홀더 없음 */
   thumbnailUrl?: string;
+  showNew?: boolean;
   onPress?: () => void;
 };
 
@@ -30,6 +32,7 @@ const CommunityCard = ({
   scraps = 0,
   views,
   thumbnailUrl,
+  showNew = false,
   onPress,
 }: CommunityCardProps) => {
   const showThumb = Boolean(thumbnailUrl?.trim());
@@ -50,9 +53,12 @@ const CommunityCard = ({
               </Text>
             </View>
           )}
-          <Text style={styles.title} numberOfLines={1}>
-            {title}
-          </Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title} numberOfLines={1}>
+              {title}
+            </Text>
+            {showNew ? <NewBadge /> : null}
+          </View>
           <Text style={styles.content} numberOfLines={contentPreviewLines}>
             {contentPreview}
           </Text>
@@ -61,11 +67,13 @@ const CommunityCard = ({
           </Text>
         </View>
         {showThumb ? (
-          <Image
-            source={{ uri: thumbnailUrl! }}
-            style={styles.thumbnail}
-            resizeMode="cover"
-          />
+          <View style={styles.thumbnailWrap}>
+            <Image
+              source={{ uri: thumbnailUrl! }}
+              style={styles.thumbnail}
+              resizeMode="cover"
+            />
+          </View>
         ) : null}
       </View>
 
@@ -129,9 +137,15 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   title: {
+    flex: 1,
     fontSize: 15,
     fontWeight: "600",
     color: BLACK,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     marginBottom: 4,
   },
   content: {
@@ -150,6 +164,12 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     borderRadius: 8,
     backgroundColor: GRAY.MEDIUM,
+  },
+  thumbnailWrap: {
+    width: 64,
+    height: 64,
+    flexShrink: 0,
+    borderRadius: 8,
     overflow: "hidden",
   },
   footer: {

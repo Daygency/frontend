@@ -21,6 +21,7 @@ export type NewsListItem = {
   /** 목록에 내려올 수 있는 첨부/대표 file (썸네일 폴백) */
   attachments?: unknown;
   file?: Record<string, unknown> | null;
+  createdAt?: string;
 };
 
 /** 공연소식 목록 응답 */

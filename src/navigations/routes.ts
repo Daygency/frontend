@@ -53,4 +53,6 @@ export const RootRoutes = {
   SEARCH_RESULTS: "SearchResults",
   MUSIC_NEWS_DETAIL: "MusicNewsDetail",
   MUSIC_NEWS_REGISTRATION: "MusicNewsRegistration",
+  HOME_BANNER_DETAIL: "HomeBannerDetail",
+  HOME_BANNER_LIST: "HomeBannerList",
 } as const;

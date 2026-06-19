@@ -67,6 +67,7 @@ import type { ReportCategory } from "../../lib/apis/report/types";
 import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";
 import { confirmReportSubmission } from "../../lib/report/confirmReportSubmission";
 import { pickReportedUserIdFromUnknown } from "../../lib/report/pickReportedUserId";
+import { isContentNew } from "../../lib/content/newBadge";
 import styles from "./styles";
 
 export type AnnouncementDetailParams = {
@@ -167,6 +168,7 @@ const AnnouncementDetailScreen = () => {
     viewCount?: number;
     /** 공연·일정 종료 처리 여부(API `completed`) */
     completed?: boolean;
+    createdAt?: string;
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [closingEarly, setClosingEarly] = useState(false);
@@ -342,6 +344,8 @@ const AnnouncementDetailScreen = () => {
       const completedRaw = d.completed ?? d.completed_manually;
       const completedFlag =
         typeof completedRaw === "boolean" ? completedRaw : false;
+      const createdAt =
+        get("createdAt") ?? get("created_at") ?? undefined;
 
       setDetailData({
         title: String(title),
@@ -364,6 +368,7 @@ const AnnouncementDetailScreen = () => {
         ...(imageUrls.length > 0 ? { imageUrls } : {}),
         ...(attachmentRows.length > 0 ? { attachments: attachmentRows } : {}),
         ...(majorsList.length > 0 ? { majors: majorsList } : {}),
+        ...(createdAt ? { createdAt: String(createdAt) } : {}),
       });
     });
   }, [
@@ -654,6 +659,7 @@ const AnnouncementDetailScreen = () => {
               priceType={detailData?.priceType}
               price={detailData?.price}
               address={addressLabel}
+              showNew={isContentNew(detailData?.createdAt)}
             />
           </View>
         </View>

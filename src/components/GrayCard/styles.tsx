@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, RED } from "../../color";
+import { BLACK, GRAY } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -20,8 +20,15 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     fontWeight: "600",
     color: BLACK,
+    flexShrink: 1,
+  },
+  boardNameWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     flexShrink: 0,
     marginRight: 8,
+    maxWidth: "42%",
   },
   latestPostWrap: {
     flex: 1,
@@ -35,13 +42,10 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: BLACK,
     flex: 1,
+    minWidth: 0,
   },
-  newDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: RED.DARK,
-    flexShrink: 0,
+  itemPressed: {
+    opacity: 0.7,
   },
 });
 

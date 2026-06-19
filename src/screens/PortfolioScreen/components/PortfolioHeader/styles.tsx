@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../../color";
+import { MAIN, WHITE } from "../../../../color";
 import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../styles";
 
 const styles = StyleSheet.create({
@@ -15,13 +15,13 @@ const styles = StyleSheet.create({
   },
   leftContainer: {
     flexShrink: 1,
+    flex: 1,
+    marginRight: 12,
   },
-  title: {
-    marginLeft: 4,
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    color: BLACK,
+  handleText: {
+    fontSize: 24,
+    fontWeight: "700",
+    color: MAIN.DEFAULT,
   },
   iconContainer: {
     flexDirection: "row",
@@ -43,17 +43,6 @@ const styles = StyleSheet.create({
   iconText: {
     fontSize: 11,
     color: WHITE,
-    fontWeight: "600",
-  },
-  activityBar: {
-    marginTop: 2,
-    backgroundColor: "transparent",
-    alignSelf: "flex-start",
-    justifyContent: "center",
-  },
-  activityBarText: {
-    fontSize: 13,
-    color: GRAY.DARK,
     fontWeight: "600",
   },
 });

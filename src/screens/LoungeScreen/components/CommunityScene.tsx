@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View, Text } from 
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
+import { isContentNew } from "../../../lib/content/newBadge";
 import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 import { RootRoutes } from "../../../navigations/routes";
 import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
@@ -129,6 +130,7 @@ const CommunityScene = () => {
         comments={item.commentCount ?? 0}
         views={item.viewCount ?? 0}
         thumbnailUrl={pickCommunityListThumbnailUrl(item)}
+        showNew={isContentNew(item.createdAt)}
         onPress={() =>
           navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
             communityId: item.communityId,

@@ -16,6 +16,7 @@ export type HomeAnnouncementItem = {
   address?: string;
   /** 마감일 ISO 8601 — API `deadlineAt` (D-day 표시 보정용) */
   deadlineAt?: string;
+  createdAt?: string;
 };
 
 export type HomeNewsItem = {
@@ -23,6 +24,7 @@ export type HomeNewsItem = {
   title: string;
   place: string;
   startedAt: string;
+  createdAt?: string;
   thumbnailUrl: string | null;
 };
 
@@ -32,6 +34,7 @@ export type HomeCommunityLatestPost = {
   likeCount: number;
   commentCount: number;
   viewCount: number;
+  createdAt?: string;
 };
 
 export type HomeCommunityCategoryItem = {
@@ -40,7 +43,14 @@ export type HomeCommunityCategoryItem = {
   latestPost: HomeCommunityLatestPost | null;
 };
 
+export type HomeBannerItem = {
+  bannerId: string;
+  title: string;
+  imageUrl: string;
+};
+
 export type HomeResponse = {
+  banners?: HomeBannerItem[];
   latestAnnouncements: HomeAnnouncementItem[];
   recentNews: HomeNewsItem[];
   latestCommunityByCategory: HomeCommunityCategoryItem[];

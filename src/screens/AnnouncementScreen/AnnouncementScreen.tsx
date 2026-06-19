@@ -32,6 +32,7 @@ import {
 } from "../../lib/announcement/announcementPrice";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
 import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
+import { isContentNew } from "../../lib/content/newBadge";
 import { MAIN } from "../../color";
 
 type RootStackParamList = {
@@ -359,6 +360,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                   priceType={item.priceType}
                   price={item.price}
                   address={item.address}
+                  showNew={isContentNew(item.createdAt)}
                   recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
                     item,
                     majors,

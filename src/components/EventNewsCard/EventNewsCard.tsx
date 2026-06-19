@@ -12,6 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import styles from "../ImageScrollView/styles";
 import { GRAY } from "../../color";
+import NewBadge from "../NewBadge/NewBadge";
 
 interface EventNewsCardProps {
   title: string;
@@ -24,6 +25,7 @@ interface EventNewsCardProps {
   relativeTimeText?: string;
   showPlace?: boolean;
   showDate?: boolean;
+  showNew?: boolean;
   width?: number | string;
   height?: number;
   containerStyle?: StyleProp<ViewStyle>;
@@ -41,6 +43,7 @@ const EventNewsCard = ({
   relativeTimeText,
   showPlace = true,
   showDate = true,
+  showNew = false,
   width = "100%",
   height = 193,
   containerStyle,
@@ -58,11 +61,14 @@ const EventNewsCard = ({
       disabled={!onPress}
     >
       {hasImage ? (
-        <Image
-          source={{ uri: imageUrl! }}
-          style={[styles.image, { height }]}
-          resizeMode="cover"
-        />
+        <View style={[localStyles.imageWrap, { height }]}>
+          <Image
+            source={{ uri: imageUrl! }}
+            style={[styles.image, localStyles.imageFill]}
+            resizeMode="cover"
+          />
+          {showNew ? <NewBadge style={localStyles.newBadge} /> : null}
+        </View>
       ) : (
         <View
           style={[styles.image, localStyles.noImagePlaceholder, { height }]}
@@ -74,6 +80,7 @@ const EventNewsCard = ({
             style={{ width: logoSize, height: logoSize }}
             resizeMode="contain"
           />
+          {showNew ? <NewBadge style={localStyles.newBadge} /> : null}
         </View>
       )}
       <Text
@@ -117,11 +124,26 @@ const EventNewsCard = ({
 };
 
 const localStyles = StyleSheet.create({
+  imageWrap: {
+    position: "relative",
+    overflow: "hidden",
+    borderRadius: 10,
+  },
+  imageFill: {
+    width: "100%",
+    height: "100%",
+  },
+  newBadge: {
+    position: "absolute",
+    top: 8,
+    left: 8,
+  },
   noImagePlaceholder: {
     backgroundColor: GRAY.MEDIUM,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",
+    position: "relative",
   },
   statsRow: {
     flexDirection: "row",

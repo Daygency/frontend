@@ -13,6 +13,18 @@ export default StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 3,
   },
+  titleWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    width: "80%",
+    maxWidth: "80%",
+    flexShrink: 1,
+  },
+  titleInHeader: {
+    flex: 1,
+    minWidth: 0,
+  },
   tagsRow: {
     flexDirection: "row",
     alignItems: "center",

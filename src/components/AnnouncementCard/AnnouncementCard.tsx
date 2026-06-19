@@ -1,6 +1,7 @@
 import { Text, View } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
 import shadowCardStyles from "../ShadowCardButton/styles";
+import NewBadge from "../NewBadge/NewBadge";
 import type { AnnouncementPriceType } from "../../lib/apis/announcement/types";
 import {
   effectiveAnnouncementDaysLeft,
@@ -26,6 +27,7 @@ interface AnnouncementCardProps {
   viewCount?: number;
   /** 장소 (목록에서 태그 오른쪽에 표시) */
   address?: string;
+  showNew?: boolean;
   onPress?: () => void;
 }
 
@@ -40,6 +42,7 @@ const AnnouncementCard = ({
   recruitmentMajorNames = [],
   viewCount,
   address,
+  showNew = false,
   onPress,
 }: AnnouncementCardProps) => {
   const showPrice =
@@ -65,8 +68,16 @@ const AnnouncementCard = ({
   const inner = (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        <View style={styles.tagsContainer} />
+        <View style={styles.titleWrap}>
+          {showNew ? <NewBadge /> : null}
+          <Text
+            style={[styles.title, styles.titleInHeader]}
+            numberOfLines={1}
+            ellipsizeMode="tail"
+          >
+            {title}
+          </Text>
+        </View>
         <Text
           style={[
             styles.dDayText,

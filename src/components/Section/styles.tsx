@@ -1,5 +1,4 @@
 import { StyleSheet } from "react-native";
-import { GRAY } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -18,19 +17,8 @@ const styles = StyleSheet.create({
     lineHeight: 27,
     letterSpacing: -0.32,
     fontWeight: "600",
+    color: "#000",
   },
-  moreContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  more: {
-    fontSize: 13,
-    lineHeight: 20,
-    letterSpacing: 0.3,
-    fontWeight: 400,
-    color: GRAY.DARK,
-  },
-  moreIcon: {},
   content: {
     marginTop: 5,
     gap: 5,

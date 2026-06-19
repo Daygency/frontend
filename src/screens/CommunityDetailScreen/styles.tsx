@@ -34,9 +34,15 @@ const styles = StyleSheet.create({
     color: BLACK,
   },
   title: {
+    flexShrink: 1,
     fontSize: 18,
     fontWeight: "700",
     color: BLACK,
+  },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
     marginBottom: 8,
   },
   meta: {

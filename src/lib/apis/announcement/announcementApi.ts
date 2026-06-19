@@ -108,13 +108,16 @@ export async function getMyAnnouncementList(
     const items = Array.isArray(data?.items) ? data.items : [];
     return {
       items: items.map((item) => {
+        const row = item as Record<string, unknown>;
         const address = pickAddressFromAnnouncementRaw(item);
         const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
+        const createdAtRaw = row.createdAt ?? row.created_at;
         return {
           ...(item as AnnouncementListItem),
           ...pickMajorsFromAnnouncementRaw(item),
           ...(address ? { address } : {}),
           ...(deadlineAt ? { deadlineAt } : {}),
+          ...(createdAtRaw ? { createdAt: String(createdAtRaw) } : {}),
         };
       }),
       nextCursor: data?.nextCursor ?? null,
@@ -156,13 +159,16 @@ export async function getAnnouncementList(
     console.log("[getAnnouncementList] 성공:", url, "items:", itemCount);
     return {
       items: items.map((item) => {
+        const row = item as Record<string, unknown>;
         const address = pickAddressFromAnnouncementRaw(item);
         const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
+        const createdAtRaw = row.createdAt ?? row.created_at;
         return {
           ...(item as AnnouncementListItem),
           ...pickMajorsFromAnnouncementRaw(item),
           ...(address ? { address } : {}),
           ...(deadlineAt ? { deadlineAt } : {}),
+          ...(createdAtRaw ? { createdAt: String(createdAtRaw) } : {}),
         };
       }),
       nextCursor: data?.nextCursor ?? null,

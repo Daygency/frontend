@@ -22,6 +22,7 @@ import navigationHeaderStyles from "../../navigations/styles";
 import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
 import { Ionicons } from "@expo/vector-icons";
 import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
+import CommentAuthorAvatar from "../../components/CommentAuthorAvatar/CommentAuthorAvatar";
 import { getNewsDetail, deleteNews } from "../../lib/apis/news/newsApi";
 import type { NewsDetailResponse } from "../../lib/apis/news/types";
 import styles from "./styles";
@@ -32,6 +33,7 @@ import {
   updateComment,
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
+import { pickCommentUserProfileImgUrl } from "../../lib/apis/comment/commentUserProfile";
 import PostDetailOptionsMenu from "../../components/PostDetailOptionsMenu/PostDetailOptionsMenu";
 import { RootRoutes } from "../../navigations/routes";
 import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
@@ -91,6 +93,7 @@ type MusicNewsDetailRouteProp = RouteProp<
 type CommentItem = {
   id: string;
   author: string;
+  profileImgUrl?: string;
   createdAt: string;
   content: string;
   likeCount: number;
@@ -101,6 +104,7 @@ type CommentItem = {
   replies?: Array<{
     id: string;
     author: string;
+    profileImgUrl?: string;
     createdAt?: string;
     content: string;
     likeCount?: number;
@@ -169,9 +173,11 @@ function formatTimeAgo(value?: string): string {
 function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem {
   const uid = String(comment.user?.userId ?? "").trim();
   const isMine = Boolean(myUserId && uid && uid === myUserId);
+  const profileImgUrl = pickCommentUserProfileImgUrl(comment.user);
   return {
     id: String(comment.id),
     author: String(comment.user?.nickname ?? "익명"),
+    ...(profileImgUrl ? { profileImgUrl } : {}),
     createdAt: String(comment.createdAt ?? ""),
     content: String(comment.content ?? ""),
     likeCount: Number((comment as any)?.likeCount ?? 0),
@@ -851,13 +857,7 @@ const MusicNewsDetailScreen = () => {
               >
                 <View style={styles.commentTopRow}>
                   <View style={styles.commentAuthorRow}>
-                    <View style={styles.avatarCircle}>
-                      <Ionicons
-                        name="person-outline"
-                        size={18}
-                        color={GRAY.MEDIUM}
-                      />
-                    </View>
+                    <CommentAuthorAvatar profileImgUrl={comment.profileImgUrl} />
                     <View style={styles.commentHeaderText}>
                       <View style={styles.commentMetaRow}>
                         <Text style={styles.commentAuthor}>
@@ -947,13 +947,11 @@ const MusicNewsDetailScreen = () => {
                   <View style={styles.replyList}>
                     {comment.replies.map((reply) => (
                       <View key={reply.id} style={styles.replyRow}>
-                        <View style={styles.replyAvatarCircle}>
-                          <Ionicons
-                            name="person-outline"
-                            size={14}
-                            color={GRAY.MEDIUM}
-                          />
-                        </View>
+                        <CommentAuthorAvatar
+                          profileImgUrl={reply.profileImgUrl}
+                          size={24}
+                          style={styles.replyAvatarCircle}
+                        />
                         <View style={styles.replyBody}>
                           <View
                             style={[

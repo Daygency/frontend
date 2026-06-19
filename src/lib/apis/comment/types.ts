@@ -3,6 +3,8 @@ export type CommentTargetType = "NEWS" | "COMMUNITY";
 export type CommentUser = {
   userId?: string;
   nickname?: string;
+  profileImgUrl?: string;
+  profile_img_url?: string;
   [key: string]: unknown;
 };
 

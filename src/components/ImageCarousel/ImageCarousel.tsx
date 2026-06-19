@@ -2,8 +2,11 @@ import { useRef } from "react";
 import {
   Dimensions,
   Image,
+  Pressable,
+  Text,
   View,
 } from "react-native";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useSharedValue } from "react-native-reanimated";
 import Carousel, {
   ICarouselInstance,
@@ -11,82 +14,122 @@ import Carousel, {
 } from "react-native-reanimated-carousel";
 import styles from "./styles";
 
+export type CarouselBannerItem = {
+  bannerId: string;
+  imageUrl: string;
+};
+
 interface ImageCarouselProps {
-  width: number;
-  height: number;
-  gap: number;
+  gap?: number;
   images?: string[];
+  banners?: CarouselBannerItem[];
+  onPressBanner?: (bannerId: string) => void;
+  headerTitle?: string;
+  onPressMore?: () => void;
 }
 
-const ImageCarousel = ({ width, height, gap, images }: ImageCarouselProps) => {
-  const WIDTH = Dimensions.get("window").width;
+const ImageCarousel = ({
+  gap = 12,
+  images,
+  banners,
+  onPressBanner,
+  headerTitle,
+  onPressMore,
+}: ImageCarouselProps) => {
+  const screenWidth = Dimensions.get("window").width;
+  const slideSize = screenWidth - gap * 2;
   const progress = useSharedValue<number>(0);
   const ref = useRef<ICarouselInstance>(null);
 
-  const imageLinkList = images || [
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
-    "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s",
-  ];
+  if (banners !== undefined && banners.length === 0) {
+    return null;
+  }
 
-  const onPressPagination = (index: number) => {
-    ref.current?.scrollTo({
-      count: index - progress.value,
-      animated: true,
-    });
-  };
+  if (banners === undefined && images !== undefined && images.length === 0) {
+    return null;
+  }
 
-  const data = images || imageLinkList;
+  const data =
+    banners && banners.length > 0
+      ? banners
+      : images && images.length > 0
+        ? images
+        : [];
+
+  if (data.length === 0) {
+    return null;
+  }
+
+  const showPagination = data.length > 1;
 
   return (
     <View style={styles.container}>
-      <View style={styles.carouselWrapper}>
-        <Carousel
-          ref={ref}
-          style={styles.carouselContainer}
-          width={WIDTH}
-          height={height}
-          scrollAnimationDuration={1000}
-          onProgressChange={(offsetProgress, absoluteProgress) => {
-            progress.value = absoluteProgress;
-          }}
-          data={data}
-          renderItem={({ item }) => (
-            <View style={[styles.imageWrapper, { paddingHorizontal: gap }]}>
+      {headerTitle && onPressMore ? (
+        <Pressable onPress={onPressMore} style={styles.header}>
+          <Text style={styles.headerTitle}>{headerTitle}</Text>
+          <MaterialIcons name="chevron-right" size={28} color="#000" />
+        </Pressable>
+      ) : null}
+      <Carousel
+        ref={ref}
+        width={screenWidth}
+        height={slideSize}
+        scrollAnimationDuration={500}
+        onProgressChange={(_offsetProgress, absoluteProgress) => {
+          progress.value = absoluteProgress;
+        }}
+        data={data}
+        renderItem={({ item }) => {
+          const isBanner =
+            typeof item === "object" && item !== null && "bannerId" in item;
+          const uri = isBanner
+            ? (item as CarouselBannerItem).imageUrl
+            : String(item);
+          const bannerId = isBanner
+            ? (item as CarouselBannerItem).bannerId
+            : undefined;
+
+          const slide = (
+            <View
+              style={[
+                styles.slide,
+                {
+                  width: slideSize,
+                  height: slideSize,
+                  marginHorizontal: gap,
+                },
+              ]}
+            >
               <Image
-                source={{ uri: item }}
-                style={styles.image}
+                source={{ uri }}
+                style={styles.slideImage}
                 resizeMode="cover"
               />
             </View>
-          )}
+          );
+
+          return bannerId && onPressBanner ? (
+            <Pressable onPress={() => onPressBanner(bannerId)}>{slide}</Pressable>
+          ) : (
+            slide
+          );
+        }}
+      />
+      {showPagination ? (
+        <Pagination.Basic
+          progress={progress}
+          data={data}
+          dotStyle={styles.dot}
+          activeDotStyle={styles.activeDot}
+          containerStyle={styles.pagination}
+          onPress={(index) => {
+            ref.current?.scrollTo({
+              count: index - progress.value,
+              animated: true,
+            });
+          }}
         />
-        {/* <View style={styles.paginationContainer}>
-          <Pagination.Basic
-            progress={progress}
-            data={data}
-            dotStyle={{
-              width: 10,
-              height: 10,
-              borderRadius: 5,
-              backgroundColor: "rgba(255, 255, 255, 0.5)",
-            }}
-            activeDotStyle={{
-              width: 10,
-              height: 10,
-              borderRadius: 5,
-              backgroundColor: "#f1f1f1",
-            }}
-            containerStyle={{
-              gap: 5,
-              marginBottom: 10,
-            }}
-            onPress={onPressPagination}
-          />
-        </View> */}
-      </View>
+      ) : null}
     </View>
   );
 };

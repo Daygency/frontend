@@ -14,6 +14,7 @@ import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
 import { pickNewsListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
+import { isContentNew } from "../../../lib/content/newBadge";
 
 function formatRelativeTime(iso?: string): string {
   if (!iso) return "";
@@ -158,7 +159,8 @@ const MusicNewsScene = () => {
       likeCount={item.likeCount ?? 0}
       commentCount={item.commentCount ?? 0}
       viewCount={item.viewCount ?? 0}
-      relativeTimeText={formatRelativeTime(item.startedAt)}
+      relativeTimeText={formatRelativeTime(item.createdAt ?? item.startedAt)}
+      showNew={isContentNew(item.createdAt)}
       showPlace={false}
       showDate={false}
       containerStyle={localStyles.card}

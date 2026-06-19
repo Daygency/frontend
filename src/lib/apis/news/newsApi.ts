@@ -56,6 +56,7 @@ function normalizeNewsListItem(raw: unknown): NewsListItem {
     imageUrl: pickOptionalString(r.imageUrl, r.image_url),
     attachments: r.attachments,
     file,
+    createdAt: String(r.createdAt ?? r.created_at ?? ""),
   };
 }
 

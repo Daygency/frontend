@@ -31,6 +31,8 @@ import {
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
 import PostDetailOptionsMenu from "../../components/PostDetailOptionsMenu/PostDetailOptionsMenu";
+import { isContentNew } from "../../lib/content/newBadge";
+import NewBadge from "../../components/NewBadge/NewBadge";
 import { RootRoutes } from "../../navigations/routes";
 import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
 import {
@@ -600,7 +602,10 @@ const CommunityDetailScreen = () => {
           <View style={styles.tagBadge}>
             <Text style={styles.tagText}>{data.category?.name}</Text>
           </View>
-          <Text style={styles.title}>{data.title}</Text>
+          <View style={styles.titleRow}>
+            <Text style={styles.title}>{data.title}</Text>
+            {isContentNew(data.createdAt) ? <NewBadge /> : null}
+          </View>
           <Text style={styles.meta}>
             {data.user && (data.user as any).nickname
               ? String((data.user as any).nickname)
