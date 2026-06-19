@@ -37,7 +37,10 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
   },
   rowUnread: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "#EEF2F8",
+  },
+  rowRead: {
+    backgroundColor: WHITE,
   },
   avatar: {
     width: 44,
@@ -53,12 +56,24 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 15,
     lineHeight: 21,
-    color: "#111",
+  },
+  titleUnread: {
+    color: MAIN.DEFAULT,
+    fontWeight: "600",
+  },
+  titleRead: {
+    color: GRAY.DARK_100,
+    fontWeight: "400",
   },
   meta: {
     marginTop: 4,
     fontSize: 12,
+  },
+  metaUnread: {
     color: GRAY.DARK,
+  },
+  metaRead: {
+    color: GRAY.MEDIUM_100,
   },
   unreadDot: {
     width: 8,

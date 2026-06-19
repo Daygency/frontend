@@ -12,6 +12,22 @@ async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   };
 }
 
+export async function getCommentById(id: string): Promise<CommentItem | null> {
+  try {
+    const url = `${API_BASE}/comment/${encodeURIComponent(id)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[getCommentById] 실패:", res.status, url, errText);
+      return null;
+    }
+    return (await res.json()) as CommentItem;
+  } catch (e) {
+    console.warn("[getCommentById] 네트워크 에러:", e);
+    return null;
+  }
+}
+
 export async function getComments(
   params: GetCommentsParams,
 ): Promise<CommentItem[] | null> {

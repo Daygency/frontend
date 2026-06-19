@@ -1,6 +1,11 @@
 /** GET /notifications 인박스 항목 — README 알림 API */
 
-export type NoticeTargetType = "COMMENT" | "FOLLOW" | "APPLICATION" | "LIKE";
+export type NoticeTargetType =
+  | "COMMENT"
+  | "FOLLOW"
+  | "APPLICATION"
+  | "LIKE"
+  | "REVIEW";
 
 export type NoticeLikeKind =
   | "NEWS"

@@ -53,6 +53,8 @@ function displayLine(item: InboxRecipientItem): string {
       return `${name}님이 좋아요를 눌렀습니다.`;
     case "COMMENT":
       return `${name}님이 댓글을 남겼습니다.`;
+    case "REVIEW":
+      return `${name}님이 활동 후기를 남겼습니다.`;
     default:
       return "새 알림이 있습니다.";
   }
@@ -60,7 +62,7 @@ function displayLine(item: InboxRecipientItem): string {
 
 const NotificationsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
-  const { isLoggedIn } = useAuth();
+  const { isLoggedIn, user } = useAuth();
   const [items, setItems] = useState<InboxRecipientItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -165,9 +167,11 @@ const NotificationsScreen = () => {
           );
         }
       }
-      navigateFromInboxItem(navigation, row);
+      await navigateFromInboxItem(navigation, row, {
+        currentUserId: user?.socialId,
+      });
     },
-    [navigation],
+    [navigation, user?.socialId],
   );
 
   if (!isLoggedIn) {
@@ -244,7 +248,10 @@ const NotificationsScreen = () => {
           const uri = item.notice.actor?.profileImgUrl?.trim();
           return (
             <Pressable
-              style={[styles.row, unread && styles.rowUnread]}
+              style={[
+                styles.row,
+                unread ? styles.rowUnread : styles.rowRead,
+              ]}
               onPress={() => void onPressRow(item)}
             >
               {uri ? (
@@ -267,8 +274,20 @@ const NotificationsScreen = () => {
                 </View>
               )}
               <View style={styles.body}>
-                <Text style={styles.title}>{displayLine(item)}</Text>
-                <Text style={styles.meta}>
+                <Text
+                  style={[
+                    styles.title,
+                    unread ? styles.titleUnread : styles.titleRead,
+                  ]}
+                >
+                  {displayLine(item)}
+                </Text>
+                <Text
+                  style={[
+                    styles.meta,
+                    unread ? styles.metaUnread : styles.metaRead,
+                  ]}
+                >
                   {formatListTime(item.notice.createdAt)}
                 </Text>
               </View>
