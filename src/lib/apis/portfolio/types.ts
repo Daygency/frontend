@@ -62,6 +62,7 @@ export type ProfileResponseDto = {
   userId?: string;
   followerCount?: number;
   followingCount?: number;
+  isPortfolioPrivate?: boolean;
 };
 
 /** GET /users/:id/profile — 공개 프로필 (연락처 없음) */

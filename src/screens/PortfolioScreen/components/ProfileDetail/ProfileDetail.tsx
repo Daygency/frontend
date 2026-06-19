@@ -9,6 +9,7 @@ import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCard
 import {
   getMyProfile,
   getUserPublicProfile,
+  PortfolioPrivateError,
 } from "../../../../lib/apis/portfolio/profileApi";
 import type {
   ProfileResponseDto,
@@ -42,6 +43,8 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
 
   const [profile, setProfile] = useState<LoadedProfile>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPortfolioPrivateBlocked, setIsPortfolioPrivateBlocked] =
+    useState(false);
 
   const loadProfile = useCallback(
     (skipCache = false) => {
@@ -58,12 +61,21 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
       }
 
       if (isOtherProfile && viewingUserId) {
-        getUserPublicProfile(viewingUserId).then((data) => {
-          if (!cancelled) {
-            setProfile(data);
-            setIsLoading(false);
-          }
-        });
+        setIsPortfolioPrivateBlocked(false);
+        getUserPublicProfile(viewingUserId)
+          .then((data) => {
+            if (!cancelled) {
+              setProfile(data);
+              setIsLoading(false);
+            }
+          })
+          .catch((e) => {
+            if (!cancelled && e instanceof PortfolioPrivateError) {
+              setIsPortfolioPrivateBlocked(true);
+              setProfile(null);
+            }
+            if (!cancelled) setIsLoading(false);
+          });
         return () => {
           cancelled = true;
         };
@@ -224,6 +236,22 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
       >
         <Text style={{ color: GRAY.DARK, textAlign: "center" }}>
           프로필 상세를 불러올 수 없습니다.
+        </Text>
+      </View>
+    );
+  }
+
+  if (isOtherProfile && isPortfolioPrivateBlocked) {
+    return (
+      <View
+        style={[
+          embedded ? styles.embeddedRoot : styles.container,
+          embedded ? undefined : styles.contentContainer,
+          { padding: 24, justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text style={{ color: GRAY.DARK_100, textAlign: "center", fontWeight: "600" }}>
+          비공개 프로필입니다
         </Text>
       </View>
     );

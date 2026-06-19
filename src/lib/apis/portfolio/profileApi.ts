@@ -129,6 +129,14 @@ function parseIsFollowing(data: Record<string, unknown>): boolean | undefined {
   return undefined;
 }
 
+/** GET /users/:id/profile — 비공개(403) 시 throw */
+export class PortfolioPrivateError extends Error {
+  constructor() {
+    super("PORTFOLIO_PRIVATE");
+    this.name = "PortfolioPrivateError";
+  }
+}
+
 /**
  * GET /users/:id/profile — 공개 프로필 (연락처 없음).
  * 인증 토큰이 있으면 전달(팔로우 여부 등). 응답에 followerCount / followingCount 포함.
@@ -150,6 +158,9 @@ export async function getUserPublicProfile(
         : undefined,
     });
     if (!res.ok) {
+      if (res.status === 403) {
+        throw new PortfolioPrivateError();
+      }
       console.warn("[getUserPublicProfile] 실패:", res.status);
       return null;
     }
@@ -216,6 +227,9 @@ export async function getUserPublicProfile(
     };
     return dto;
   } catch (e) {
+    if (e instanceof PortfolioPrivateError) {
+      throw e;
+    }
     console.warn("[getUserPublicProfile] 에러:", e);
     return null;
   }
@@ -261,6 +275,11 @@ export async function getMyProfile(): Promise<ProfileResponseDto | null> {
   }
   if (profile.coverImgUrl?.startsWith("/")) {
     profile.coverImgUrl = `${API_BASE}${profile.coverImgUrl}`;
+  }
+  if (typeof raw.isPortfolioPrivate === "boolean") {
+    profile.isPortfolioPrivate = raw.isPortfolioPrivate;
+  } else if (typeof raw.is_portfolio_private === "boolean") {
+    profile.isPortfolioPrivate = raw.is_portfolio_private;
   }
   return profile;
 }

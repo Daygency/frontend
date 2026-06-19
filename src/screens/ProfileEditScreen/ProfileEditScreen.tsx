@@ -375,11 +375,6 @@ const ProfileEditScreen = () => {
     });
   };
 
-  const handlePreview = async () => {
-    await persistToCache();
-    navigation.goBack();
-  };
-
   const toDate = (year: string, month: string): Date => {
     const y = Number(year || new Date().getFullYear());
     const m = Number(month || 1);
@@ -683,20 +678,15 @@ const ProfileEditScreen = () => {
 
       {/* 수정 완료 버튼 */}
       <View style={styles.buttonContainer}>
-        <View style={styles.buttonRow}>
-          <Pressable style={styles.previewButton} onPress={handlePreview}>
-            <Text style={styles.previewButtonText}>미리보기</Text>
-          </Pressable>
-          <Pressable
-            style={styles.button}
-            onPress={handleComplete}
-            disabled={submitting}
-          >
-            <Text style={styles.buttonText}>
-              {submitting ? "저장 중..." : "수정 완료"}
-            </Text>
-          </Pressable>
-        </View>
+        <Pressable
+          style={styles.button}
+          onPress={handleComplete}
+          disabled={submitting}
+        >
+          <Text style={styles.buttonText}>
+            {submitting ? "저장 중..." : "수정 완료"}
+          </Text>
+        </Pressable>
       </View>
     </View>
   );

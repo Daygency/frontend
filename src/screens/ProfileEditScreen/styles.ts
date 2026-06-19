@@ -190,41 +190,19 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  buttonRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
   button: {
-    flex: 2,
+    width: "100%",
     backgroundColor: MAIN.DEFAULT,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
   },
-  previewButton: {
-    flex: 1,
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: MAIN.DEFAULT,
-    backgroundColor: WHITE,
-  },
   buttonText: {
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "600",
     color: WHITE,
-  },
-  previewButtonText: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    color: MAIN.DEFAULT,
   },
 
   // ── 섹션 & 헤더 ──

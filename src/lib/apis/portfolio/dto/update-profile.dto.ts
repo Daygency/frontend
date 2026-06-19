@@ -36,6 +36,7 @@ export type ProfileUpdateRequestDto = {
   profileImgUrl?: string;
   isEmailSubscribed?: boolean;
   isPushEnabled?: boolean;
+  isPortfolioPrivate?: boolean;
   socialId?: string;
   educations?: Education[];
   careers?: Career[];

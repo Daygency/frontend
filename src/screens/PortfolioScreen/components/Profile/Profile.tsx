@@ -18,6 +18,7 @@ import { RootRoutes } from "../../../../navigations/routes";
 import {
   getMyProfile,
   getUserPublicProfile,
+  PortfolioPrivateError,
 } from "../../../../lib/apis/portfolio/profileApi";
 import { updateProfile } from "../../../../lib/apis/portfolio/profileUpdate";
 import type {
@@ -86,7 +87,9 @@ const Profile = () => {
   const myUserId = user?.socialId?.trim() ?? "";
   const [profile, setProfile] = useState<LoadedProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [isEnabled, setIsEnabled] = useState(false);
+  const [isPortfolioPrivateBlocked, setIsPortfolioPrivateBlocked] =
+    useState(false);
+  const [privateUpdating, setPrivateUpdating] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [coverImageError, setCoverImageError] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
@@ -119,6 +122,9 @@ const Profile = () => {
   const followingCount = safeFollowCount(
     (profile as ProfileResponseDto)?.followingCount ??
       (profile as PublicProfileResponseDto)?.followingCount,
+  );
+  const isPortfolioPrivate = Boolean(
+    (profile as ProfileResponseDto | null)?.isPortfolioPrivate,
   );
 
   const publicProf = profile as PublicProfileResponseDto | null;
@@ -373,6 +379,28 @@ const Profile = () => {
     }
   };
 
+  const handleTogglePortfolioPrivate = async (next: boolean) => {
+    if (privateUpdating || isOtherProfile) return;
+    setPrivateUpdating(true);
+    try {
+      const updated = await updateProfile({ isPortfolioPrivate: next });
+      if (!updated) {
+        Alert.alert("알림", "비공개 설정 변경에 실패했습니다.");
+        return;
+      }
+      const fresh = await getMyProfile();
+      if (fresh) {
+        setProfile(fresh);
+        await saveProfileCache(fresh);
+      }
+    } catch (e) {
+      console.warn("[handleTogglePortfolioPrivate]", e);
+      Alert.alert("알림", "비공개 설정 변경에 실패했습니다.");
+    } finally {
+      setPrivateUpdating(false);
+    }
+  };
+
   /** 같은 화면에서 재포커스 시 전체 스피너 없이 새로고침 (팔로우 버튼이 안 바뀐 것처럼 보이는 문제 방지) */
   const profileFocusRef = useRef<{ scope: string; n: number }>({
     scope: "",
@@ -398,7 +426,9 @@ const Profile = () => {
     }
 
     if (isOtherProfile && viewingUserId) {
-      getUserPublicProfile(viewingUserId).then(async (data) => {
+      setIsPortfolioPrivateBlocked(false);
+      getUserPublicProfile(viewingUserId)
+        .then(async (data) => {
         if (cancelled) return;
         apiResponded.current = true;
         setProfile(data);
@@ -426,7 +456,15 @@ const Profile = () => {
             /* ignore */
           }
         }
-      });
+      })
+        .catch((e) => {
+          if (cancelled) return;
+          if (e instanceof PortfolioPrivateError) {
+            setIsPortfolioPrivateBlocked(true);
+            setProfile(null);
+          }
+          if (!silent) setIsLoading(false);
+        });
       return () => {
         cancelled = true;
       };
@@ -463,6 +501,7 @@ const Profile = () => {
     if (!isOtherProfile) return;
     setProfile(null);
     setFollowing(false);
+    setIsPortfolioPrivateBlocked(false);
   }, [viewingUserId, isOtherProfile]);
 
   useFocusEffect(
@@ -512,6 +551,19 @@ const Profile = () => {
       <View style={[styles.container, { paddingVertical: 16 }]}>
         <Text style={{ color: GRAY.DARK, textAlign: "center" }}>
           프로필을 불러올 수 없습니다. (userId 없음)
+        </Text>
+      </View>
+    );
+  }
+
+  if (isOtherProfile && isPortfolioPrivateBlocked) {
+    return (
+      <View style={[styles.container, { paddingVertical: 24, paddingHorizontal: 16 }]}>
+        <Text style={{ color: GRAY.DARK_100, textAlign: "center", fontSize: 15, fontWeight: "600" }}>
+          비공개 프로필입니다
+        </Text>
+        <Text style={{ color: GRAY.DARK, textAlign: "center", marginTop: 8, fontSize: 13 }}>
+          이 사용자는 포트폴리오를 비공개로 설정했습니다.
         </Text>
       </View>
     );
@@ -686,8 +738,9 @@ const Profile = () => {
                 </Pressable>
                 <View style={styles.profilePrivateContainer}>
                   <Switch
-                    value={isEnabled}
-                    onValueChange={setIsEnabled}
+                    value={isPortfolioPrivate}
+                    onValueChange={handleTogglePortfolioPrivate}
+                    disabled={privateUpdating}
                     trackColor={{ true: MAIN.DEFAULT, false: GRAY.MEDIUM }}
                     thumbColor={WHITE}
                     style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
