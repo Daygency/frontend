@@ -3,7 +3,8 @@ import { View, Text, TextInput, Pressable, findNodeHandle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
 import type { EducationEntry } from "../../../lib/apis/portfolio/types";
-import DatePickerField from "./DatePickerField";
+import PeriodDateFields from "./PeriodDateFields";
+import { formatPeriod } from "./profileEntryUtils";
 import styles from "../styles";
 
 type Props = {
@@ -17,28 +18,12 @@ type Props = {
   ) => void;
 };
 
-const formatPeriod = (
-  sY: string,
-  sM: string,
-  eY: string,
-  eM: string,
-): string => {
-  const fmt = (y: string, m: string) =>
-    y && m ? `${y}.${m.padStart(2, "0")}` : y || "";
-  const start = fmt(sY, sM);
-  const end = fmt(eY, eM);
-  if (!start && !end) return "";
-  if (!end) return start;
-  return `${start} ~ ${end}`;
-};
-
 const EducationItem = ({
   entry,
   onChange,
   onDelete,
   onEditingFocusChange,
 }: Props) => {
-  // 내용이 없으면 바로 편집 모드로 열림
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -85,7 +70,7 @@ const EducationItem = ({
           >
             <MaterialCommunityIcons
               name="pencil-outline"
-              size={16}
+              size={18}
               color={GRAY.DARK}
             />
           </Pressable>
@@ -96,7 +81,7 @@ const EducationItem = ({
           >
             <MaterialCommunityIcons
               name="close"
-              size={16}
+              size={18}
               color={GRAY.DARK_2}
             />
           </Pressable>
@@ -112,7 +97,6 @@ const EducationItem = ({
           styles.input,
           styles.multilineInput,
           isFocused && styles.inputFocused,
-          { marginRight: 28 },
         ]}
         value={entry.description}
         onChangeText={(v) => onChange({ description: v })}
@@ -135,25 +119,17 @@ const EducationItem = ({
         }}
         ref={inputRef}
       />
-      <DatePickerField
-        label="시작"
-        year={entry.startYear}
-        month={entry.startMonth}
-        pickerTitle="시작 년월"
-        onConfirm={(y, m) => onChange({ startYear: y, startMonth: m })}
-      />
-      <DatePickerField
-        label="종료"
-        year={entry.endYear}
-        month={entry.endMonth}
-        pickerTitle="종료 년월"
-        onConfirm={(y, m) => onChange({ endYear: y, endMonth: m })}
+      <PeriodDateFields
+        startYear={entry.startYear}
+        startMonth={entry.startMonth}
+        endYear={entry.endYear}
+        endMonth={entry.endMonth}
+        onChangeStart={(y, m) => onChange({ startYear: y, startMonth: m })}
+        onChangeEnd={(y, m) => onChange({ endYear: y, endMonth: m })}
+        currentLabel="현재 재학 중"
       />
       <View style={styles.entryButtonRow} ref={actionRowRef}>
-        <Pressable
-          style={styles.entryCancelButton}
-          onPress={handleCancel}
-        >
+        <Pressable style={styles.entryCancelButton} onPress={handleCancel}>
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>
         <Pressable

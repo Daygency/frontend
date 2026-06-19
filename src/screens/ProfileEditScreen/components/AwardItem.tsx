@@ -4,6 +4,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
 import type { AwardEntry } from "../../../lib/apis/portfolio/types";
 import DatePickerField from "./DatePickerField";
+import { formatYearMonth } from "./profileEntryUtils";
 import styles from "../styles";
 
 type Props = {
@@ -28,15 +29,9 @@ const AwardItem = ({
   const inputRef = useRef<TextInput>(null);
   const actionRowRef = useRef<View>(null);
 
-  const date =
-    entry.year && entry.month
-      ? `${entry.year}.${entry.month.padStart(2, "0")}`
-      : entry.year || "";
+  const date = formatYearMonth(entry.year, entry.month);
   const isDraftEntry =
-    !entry.awardId &&
-    !entry.description.trim() &&
-    !entry.year &&
-    !entry.month;
+    !entry.description.trim() && !entry.year && !entry.month;
 
   const handleCancel = () => {
     if (isDraftEntry) {
@@ -63,7 +58,7 @@ const AwardItem = ({
           >
             <MaterialCommunityIcons
               name="pencil-outline"
-              size={16}
+              size={18}
               color={GRAY.DARK}
             />
           </Pressable>
@@ -74,7 +69,7 @@ const AwardItem = ({
           >
             <MaterialCommunityIcons
               name="close"
-              size={16}
+              size={18}
               color={GRAY.DARK_2}
             />
           </Pressable>
@@ -90,7 +85,6 @@ const AwardItem = ({
           styles.input,
           styles.multilineInput,
           isFocused && styles.inputFocused,
-          { marginRight: 28 },
         ]}
         value={entry.description}
         onChangeText={(v) => onChange({ description: v })}
@@ -114,17 +108,13 @@ const AwardItem = ({
         ref={inputRef}
       />
       <DatePickerField
-        label="수상시점"
+        label="수상 시기"
         year={entry.year}
         month={entry.month}
-        pickerTitle="수상 년월"
         onConfirm={(y, m) => onChange({ year: y, month: m })}
       />
       <View style={styles.entryButtonRow} ref={actionRowRef}>
-        <Pressable
-          style={styles.entryCancelButton}
-          onPress={handleCancel}
-        >
+        <Pressable style={styles.entryCancelButton} onPress={handleCancel}>
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>
         <Pressable

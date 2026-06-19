@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { View, Text, TextInput } from "react-native";
 import { GRAY } from "../../../color";
 import type {
@@ -136,10 +136,11 @@ const ProfileTab = ({
 
   return (
     <View style={[styles.tabContent, styles.tabContentContainer]}>
-      <View style={styles.field}>
-        <Text style={[styles.label, isAboutFocused && styles.labelFocused]}>
-          소개
-        </Text>
+      <View style={styles.contentSheet}>
+        <View style={[styles.field, styles.fieldLast]}>
+          <Text style={[styles.label, isAboutFocused && styles.labelFocused]}>
+            소개
+          </Text>
         <TextInput
           style={[
             styles.input,
@@ -155,85 +156,94 @@ const ProfileTab = ({
           onFocus={() => setIsAboutFocused(true)}
           onBlur={() => setIsAboutFocused(false)}
         />
+        </View>
       </View>
 
       {/* 학력 */}
-      <View style={styles.field}>
-        <View style={styles.sectionCard}>
-          <SectionHeader
-            title="학력"
-            description="최근 학력부터 등록"
-            onAdd={addEducation}
-          />
-          {educationList.map((entry) => (
+      <View style={styles.contentSheet}>
+        <View style={styles.section}>
+        <SectionHeader
+          title="학력"
+          description="최근 학력부터 등록"
+          onAdd={addEducation}
+        />
+        {educationList.map((entry, index) => (
+          <Fragment key={entry.id}>
+            {index > 0 ? <View style={styles.entryDivider} /> : null}
             <EducationItem
-              key={entry.id}
               entry={entry}
               onChange={(u) => updateEducation(entry.id, u)}
               onDelete={() => deleteEducation(entry.id)}
               onEditingFocusChange={onEditingFocusChange}
             />
-          ))}
+          </Fragment>
+        ))}
         </View>
       </View>
 
       {/* 경력 */}
-      <View style={styles.field}>
-        <View style={styles.sectionCard}>
-          <SectionHeader
-            title="경력사항"
-            description="최근 경력부터 등록"
-            onAdd={addCareer}
-          />
-          {careerList.map((entry) => (
+      <View style={styles.contentSheet}>
+        <View style={styles.section}>
+        <SectionHeader
+          title="경력사항"
+          description="최근 경력부터 등록"
+          onAdd={addCareer}
+        />
+        {careerList.map((entry, index) => (
+          <Fragment key={entry.id}>
+            {index > 0 ? <View style={styles.entryDivider} /> : null}
             <CareerItem
-              key={entry.id}
               entry={entry}
               onChange={(u) => updateCareer(entry.id, u)}
               onDelete={() => deleteCareer(entry.id)}
               onEditingFocusChange={onEditingFocusChange}
             />
-          ))}
+          </Fragment>
+        ))}
         </View>
       </View>
 
       {/* 수상경력 */}
-      <View style={styles.field}>
-        <View style={styles.sectionCard}>
-          <SectionHeader
-            title="수상경력"
-            description="가장 의미 있는 수상부터 등록"
-            onAdd={addAward}
-          />
-          {awardList.map((entry) => (
+      <View style={styles.contentSheet}>
+        <View style={styles.section}>
+        <SectionHeader
+          title="수상경력"
+          description="가장 의미 있는 수상부터 등록"
+          onAdd={addAward}
+        />
+        {awardList.map((entry, index) => (
+          <Fragment key={entry.id}>
+            {index > 0 ? <View style={styles.entryDivider} /> : null}
             <AwardItem
-              key={entry.id}
               entry={entry}
               onChange={(u) => updateAward(entry.id, u)}
               onDelete={() => deleteAward(entry.id)}
               onEditingFocusChange={onEditingFocusChange}
             />
-          ))}
+          </Fragment>
+        ))}
         </View>
       </View>
 
       {/* 수료증/자격증 */}
-      <View style={styles.field}>
-        <View style={styles.sectionCard}>
-          <SectionHeader
-            title="수료증 / 자격증"
-            description="보유 자격증을 등록"
-            onAdd={addCertificate}
-          />
-          {certificateList.map((entry) => (
+      <View style={styles.contentSheet}>
+        <View style={styles.section}>
+        <SectionHeader
+          title="수료증 / 자격증"
+          description="보유 자격증을 등록"
+          onAdd={addCertificate}
+        />
+        {certificateList.map((entry, index) => (
+          <Fragment key={entry.id}>
+            {index > 0 ? <View style={styles.entryDivider} /> : null}
             <CertificateItem
-              key={entry.id}
               entry={entry}
               onChange={(u) => updateCertificate(entry.id, u)}
               onDelete={() => deleteCertificate(entry.id)}
               onEditingFocusChange={onEditingFocusChange}
             />
-          ))}
+          </Fragment>
+        ))}
         </View>
       </View>
     </View>

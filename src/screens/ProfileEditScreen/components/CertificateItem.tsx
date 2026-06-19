@@ -5,6 +5,7 @@ import * as DocumentPicker from "expo-document-picker";
 import { GRAY, MAIN } from "../../../color";
 import type { CertificateEntry } from "../../../lib/apis/portfolio/types";
 import DatePickerField from "./DatePickerField";
+import { formatYearMonth } from "./profileEntryUtils";
 import styles from "../styles";
 
 type Props = {
@@ -29,12 +30,8 @@ const CertificateItem = ({
   const inputRef = useRef<TextInput>(null);
   const actionRowRef = useRef<View>(null);
 
-  const date =
-    entry.year && entry.month
-      ? `취득 ${entry.year}.${entry.month.padStart(2, "0")}`
-      : entry.year
-        ? `취득 ${entry.year}`
-        : "";
+  const dateLabel = formatYearMonth(entry.year, entry.month);
+  const date = dateLabel ? `취득 ${dateLabel}` : "";
   const isDraftEntry =
     !entry.description.trim() &&
     !entry.year &&
@@ -90,7 +87,7 @@ const CertificateItem = ({
           >
             <MaterialCommunityIcons
               name="pencil-outline"
-              size={16}
+              size={18}
               color={GRAY.DARK}
             />
           </Pressable>
@@ -101,7 +98,7 @@ const CertificateItem = ({
           >
             <MaterialCommunityIcons
               name="close"
-              size={16}
+              size={18}
               color={GRAY.DARK_2}
             />
           </Pressable>
@@ -117,7 +114,6 @@ const CertificateItem = ({
           styles.input,
           styles.multilineInput,
           isFocused && styles.inputFocused,
-          { marginRight: 28 },
         ]}
         value={entry.description}
         onChangeText={(v) => onChange({ description: v })}
@@ -141,10 +137,9 @@ const CertificateItem = ({
         ref={inputRef}
       />
       <DatePickerField
-        label="취득시점"
+        label="취득 시기"
         year={entry.year}
         month={entry.month}
-        pickerTitle="취득 년월"
         onConfirm={(y, m) => onChange({ year: y, month: m })}
       />
       <Pressable style={styles.filePickerButton} onPress={handlePickFile}>
@@ -158,10 +153,7 @@ const CertificateItem = ({
         </Text>
       </Pressable>
       <View style={styles.entryButtonRow} ref={actionRowRef}>
-        <Pressable
-          style={styles.entryCancelButton}
-          onPress={handleCancel}
-        >
+        <Pressable style={styles.entryCancelButton} onPress={handleCancel}>
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>
         <Pressable

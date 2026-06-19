@@ -146,6 +146,7 @@ const TopIntroductionTab = ({
 
   return (
     <View style={[styles.tabContent, styles.tabContentContainer]}>
+      <View style={styles.contentSheet}>
       <View style={styles.field}>
         <Text style={[styles.label, isNameFocused && styles.labelFocused]}>
           닉네임 *
@@ -320,7 +321,9 @@ const TopIntroductionTab = ({
           onBlur={() => setIsDetailMajorFocused(false)}
         />
       </View>
-      <View style={styles.field}>
+      </View>
+      <View style={styles.contentSheet}>
+      <View style={[styles.field, styles.fieldLast]}>
         <Text style={[styles.label, isIntroFocused && styles.labelFocused]}>
           한 줄 소개
         </Text>
@@ -339,6 +342,7 @@ const TopIntroductionTab = ({
           onFocus={() => setIsIntroFocused(true)}
           onBlur={() => setIsIntroFocused(false)}
         />
+      </View>
       </View>
     </View>
   );
