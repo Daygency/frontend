@@ -197,6 +197,24 @@ export async function getChatMessages(
           typeof m.content === "string" || m.content === null
             ? (m.content as string | null)
             : null,
+        fileUrl:
+          typeof m.fileUrl === "string"
+            ? m.fileUrl
+            : typeof m.file_url === "string"
+              ? m.file_url
+              : null,
+        fileName:
+          typeof m.fileName === "string"
+            ? m.fileName
+            : typeof m.file_name === "string"
+              ? m.file_name
+              : null,
+        fileMime:
+          typeof m.fileMime === "string"
+            ? m.fileMime
+            : typeof m.file_mime === "string"
+              ? m.file_mime
+              : null,
         createdAt:
           typeof m.createdAt === "string"
             ? m.createdAt
@@ -264,5 +282,164 @@ export async function createAnnouncementRoom(
   } catch (e) {
     console.warn("[createAnnouncementRoom]", e);
     return null;
+  }
+}
+
+export async function sendChatFileMessage(
+  roomId: string,
+  uri: string,
+  options?: { name?: string; type?: string },
+): Promise<ChatMessagesPage["items"][number] | null> {
+  try {
+    const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+    if (!token) throw new Error("인증이 필요합니다.");
+
+    const formData = new FormData();
+    formData.append("file", {
+      uri,
+      name: options?.name ?? "file",
+      type: options?.type ?? "application/octet-stream",
+    } as unknown as Blob);
+
+    const res = await fetchWithAuth(
+      `${API_BASE}/chat/rooms/${encodeURIComponent(roomId)}/messages/file`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      },
+    );
+
+    if (!res.ok) {
+      console.warn(
+        "[sendChatFileMessage]",
+        res.status,
+        await res.text().catch(() => ""),
+      );
+      return null;
+    }
+
+    const m = asRecord(await res.json());
+    return {
+      id: String(m.id ?? ""),
+      chatRoomId: String(m.chatRoomId ?? m.chat_room_id ?? roomId),
+      userId: String(m.userId ?? m.user_id ?? ""),
+      content:
+        typeof m.content === "string" || m.content === null
+          ? (m.content as string | null)
+          : null,
+      fileUrl:
+        typeof m.fileUrl === "string"
+          ? m.fileUrl
+          : typeof m.file_url === "string"
+            ? m.file_url
+            : null,
+      fileName:
+        typeof m.fileName === "string"
+          ? m.fileName
+          : typeof m.file_name === "string"
+            ? m.file_name
+            : null,
+      fileMime:
+        typeof m.fileMime === "string"
+          ? m.fileMime
+          : typeof m.file_mime === "string"
+            ? m.file_mime
+            : null,
+      createdAt:
+        typeof m.createdAt === "string"
+          ? m.createdAt
+          : typeof m.created_at === "string"
+            ? m.created_at
+            : new Date().toISOString(),
+    };
+  } catch (e) {
+    console.warn("[sendChatFileMessage]", e);
+    return null;
+  }
+}
+
+export async function getChatRoomMemberSettings(
+  roomId: string,
+): Promise<{ notificationsMuted: boolean } | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(
+      `${API_BASE}/chat/rooms/${encodeURIComponent(roomId)}/member-settings`,
+      { method: "GET", headers },
+    );
+    if (!res.ok) {
+      console.warn(
+        "[getChatRoomMemberSettings]",
+        res.status,
+        await res.text().catch(() => ""),
+      );
+      return null;
+    }
+    const data = asRecord(await res.json());
+    return {
+      notificationsMuted: Boolean(
+        data.notificationsMuted ?? data.notifications_muted,
+      ),
+    };
+  } catch (e) {
+    console.warn("[getChatRoomMemberSettings]", e);
+    return null;
+  }
+}
+
+export async function setChatRoomNotificationsMuted(
+  roomId: string,
+  muted: boolean,
+): Promise<{ notificationsMuted: boolean } | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(
+      `${API_BASE}/chat/rooms/${encodeURIComponent(roomId)}/notifications-muted`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ muted }),
+      },
+    );
+    if (!res.ok) {
+      console.warn(
+        "[setChatRoomNotificationsMuted]",
+        res.status,
+        await res.text().catch(() => ""),
+      );
+      return null;
+    }
+    const data = asRecord(await res.json());
+    return {
+      notificationsMuted: Boolean(
+        data.notificationsMuted ?? data.notifications_muted,
+      ),
+    };
+  } catch (e) {
+    console.warn("[setChatRoomNotificationsMuted]", e);
+    return null;
+  }
+}
+
+export async function leaveChatRoom(roomId: string): Promise<boolean> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(
+      `${API_BASE}/chat/rooms/${encodeURIComponent(roomId)}/leave`,
+      { method: "POST", headers },
+    );
+    if (!res.ok) {
+      console.warn(
+        "[leaveChatRoom]",
+        res.status,
+        await res.text().catch(() => ""),
+      );
+      return false;
+    }
+    return true;
+  } catch (e) {
+    console.warn("[leaveChatRoom]", e);
+    return false;
   }
 }

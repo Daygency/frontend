@@ -38,6 +38,9 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#000",
   },
+  optionTextDanger: {
+    color: "#EC1313",
+  },
   optionDivider: {
     height: 1,
     backgroundColor: GRAY.DEFAULT,

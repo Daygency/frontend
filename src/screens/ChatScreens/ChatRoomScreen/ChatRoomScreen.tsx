@@ -13,15 +13,19 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
 } from "react-native";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { useAuth } from "../../../contexts/AuthContext";
 import { RootRoutes } from "../../../navigations/routes";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
-import { GRAY, MAIN } from "../../../color";
+import { GRAY, MAIN, WHITE } from "../../../color";
 import styles from "./styles";
-import { getChatMessages } from "../../../lib/apis/chat/chatApi";
+import { getChatMessages, sendChatFileMessage } from "../../../lib/apis/chat/chatApi";
+import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
 import { findMessageMatchIndices } from "../../../lib/chat/chatSearch";
 import { createChatSocket } from "../../../lib/chat/createChatSocket";
 import { usePeerAvatarUrl } from "../../../lib/chat/usePeerAvatarUrl";
@@ -45,6 +49,9 @@ type MessageItem = {
   text: string;
   isFromMe: boolean;
   timestamp: string;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileMime?: string | null;
 };
 
 type WsMessagePayload = {
@@ -52,7 +59,33 @@ type WsMessagePayload = {
   chatRoomId?: string;
   userId?: string;
   content?: string | null;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileMime?: string | null;
   createdAt?: string;
+};
+
+const isImageMime = (mime?: string | null) =>
+  Boolean(mime?.startsWith("image/"));
+
+const mapToMessageItem = (
+  m: WsMessagePayload,
+  myUserId: string,
+  peerUserId: string,
+): MessageItem | null => {
+  const id = String(m.id ?? "");
+  const createdAt = m.createdAt;
+  if (!id || !createdAt) return null;
+  const uid = String(m.userId ?? "");
+  return {
+    id,
+    text: m.content ?? "",
+    isFromMe: myUserId ? uid === myUserId : uid !== String(peerUserId),
+    timestamp: formatTime(new Date(createdAt)),
+    fileUrl: m.fileUrl ?? null,
+    fileName: m.fileName ?? null,
+    fileMime: m.fileMime ?? null,
+  };
 };
 
 const formatTime = (date: Date) => {
@@ -114,6 +147,7 @@ const ChatRoomScreen = () => {
   const [sendReady, setSendReady] = useState(false);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
+  const [fileUploading, setFileUploading] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeMatchIndex, setActiveMatchIndex] = useState(0);
@@ -177,19 +211,11 @@ const ChatRoomScreen = () => {
 
   const appendFromSocket = useCallback(
     (payload: WsMessagePayload) => {
-      const id = String(payload.id ?? "");
-      const uid = String(payload.userId ?? "");
-      const createdAt = payload.createdAt;
-      if (!id || !createdAt) return;
-      const text = payload.content ?? "";
-      /** README `MessagePayload.userId` — 본인 여부는 발신 userId로 판별 */
-      const isFromMe = myUserId
-        ? uid === myUserId
-        : uid !== String(peerUserId);
-      const timestamp = formatTime(new Date(createdAt));
+      const item = mapToMessageItem(payload, myUserId, peerUserId);
+      if (!item) return;
       setMessages((prev) => {
-        if (prev.some((m) => m.id === id)) return prev;
-        return [...prev, { id, text, isFromMe, timestamp }];
+        if (prev.some((m) => m.id === item.id)) return prev;
+        return [...prev, item];
       });
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
@@ -219,6 +245,9 @@ const ChatRoomScreen = () => {
             ? String(m.userId) === myUserId
             : String(m.userId) !== String(peerUserId),
           timestamp: formatTime(new Date(m.createdAt)),
+          fileUrl: m.fileUrl ?? null,
+          fileName: m.fileName ?? null,
+          fileMime: m.fileMime ?? null,
         })),
       );
       setLoading(false);
@@ -326,6 +355,80 @@ const ChatRoomScreen = () => {
       Keyboard.dismiss();
     }
     setIsAttachmentMenuOpen((prev) => !prev);
+  };
+
+  const uploadAndSendFile = async (
+    uri: string,
+    opts: { name?: string; type?: string },
+  ) => {
+    if (!chatRoomId || fileUploading) return;
+    setFileUploading(true);
+    try {
+      const sent = await sendChatFileMessage(chatRoomId, uri, opts);
+      if (!sent) {
+        Alert.alert(
+          "전송 실패",
+          "파일을 보내지 못했습니다. 다시 시도해 주세요.",
+        );
+        return;
+      }
+      appendFromSocket(sent);
+    } catch {
+      Alert.alert("오류", "파일을 전송하는 중 오류가 발생했습니다.");
+    } finally {
+      setFileUploading(false);
+    }
+  };
+
+  const handlePickAlbum = async () => {
+    setIsAttachmentMenuOpen(false);
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("권한 필요", "사진을 보내려면 앨범 접근 권한이 필요합니다.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        quality: 0.85,
+      });
+      if (result.canceled || !result.assets?.length) return;
+      const asset = result.assets[0];
+      await uploadAndSendFile(asset.uri, {
+        name: asset.fileName ?? `image_${Date.now()}.jpg`,
+        type: asset.mimeType ?? "image/jpeg",
+      });
+    } catch {
+      Alert.alert("오류", "사진을 선택하는 중 오류가 발생했습니다.");
+    }
+  };
+
+  const handlePickFile = async () => {
+    setIsAttachmentMenuOpen(false);
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["*/*"],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled || !result.assets?.length) return;
+      const asset = result.assets[0];
+      await uploadAndSendFile(asset.uri, {
+        name: asset.name,
+        type: asset.mimeType ?? "application/octet-stream",
+      });
+    } catch {
+      Alert.alert("오류", "파일을 선택하는 중 오류가 발생했습니다.");
+    }
+  };
+
+  const openFileUrl = async (url?: string | null) => {
+    const resolved = resolveProfileImageUrlForDisplay(url);
+    if (!resolved) return;
+    try {
+      await Linking.openURL(resolved);
+    } catch {
+      Alert.alert("열기 실패", "파일을 열 수 없습니다.");
+    }
   };
 
   const displayHandle = handle.startsWith("@") ? handle : `@${handle}`;
@@ -450,7 +553,13 @@ const ChatRoomScreen = () => {
           <Pressable
             hitSlop={10}
             style={styles.headerButton}
-            onPress={() => navigation.navigate(RootRoutes.CHAT_ROOM_OPTIONS)}
+            onPress={() =>
+              navigation.navigate(RootRoutes.CHAT_ROOM_OPTIONS, {
+                chatRoomId,
+                peerUserId,
+                name,
+              })
+            }
           >
             <MaterialCommunityIcons name="menu" size={22} color="#000" />
           </Pressable>
@@ -506,6 +615,12 @@ const ChatRoomScreen = () => {
               const rowRef = (node: View | null) => {
                 messageRowRefs.current[msg.id] = node;
               };
+              const hasFile = Boolean(msg.fileUrl);
+              const fileDisplayUrl = resolveProfileImageUrlForDisplay(msg.fileUrl);
+              const showImage = hasFile && isImageMime(msg.fileMime) && fileDisplayUrl;
+              const showFileRow = hasFile && !showImage;
+              const showText = Boolean(msg.text?.trim()) && !hasFile;
+
               const textContent = isSearchOpen && searchQuery.trim() ? (
                 <HighlightText
                   text={msg.text}
@@ -529,6 +644,52 @@ const ChatRoomScreen = () => {
                 </Text>
               );
 
+              const bubbleContent = (
+                <>
+                  {showImage ? (
+                    <Pressable onPress={() => openFileUrl(msg.fileUrl)}>
+                      <Image
+                        source={{ uri: fileDisplayUrl }}
+                        style={styles.messageFileImage}
+                        resizeMode="cover"
+                      />
+                    </Pressable>
+                  ) : null}
+                  {showFileRow ? (
+                    <Pressable
+                      style={styles.messageFileRow}
+                      onPress={() => openFileUrl(msg.fileUrl)}
+                    >
+                      <MaterialCommunityIcons
+                        name="file-outline"
+                        size={22}
+                        color={msg.isFromMe ? WHITE : GRAY.DARK_100}
+                      />
+                      <Text
+                        style={[
+                          styles.messageFileName,
+                          msg.isFromMe && styles.messageTextMe,
+                        ]}
+                        numberOfLines={2}
+                      >
+                        {msg.fileName ??
+                          msg.text.replace(/^\[파일\]\s*/, "") ??
+                          "파일"}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                  {showText ? textContent : null}
+                </>
+              );
+
+              const bubbleStyle = showImage
+                ? msg.isFromMe
+                  ? [styles.messageBubbleMe, styles.messageBubbleMedia]
+                  : [styles.messageBubbleOther, styles.messageBubbleMedia]
+                : msg.isFromMe
+                  ? styles.messageBubbleMe
+                  : styles.messageBubbleOther;
+
               return msg.isFromMe ? (
                 <View
                   key={msg.id}
@@ -542,7 +703,7 @@ const ChatRoomScreen = () => {
                   <Text style={[styles.messageTime, styles.messageTimeBeforeBubble]}>
                     {msg.timestamp}
                   </Text>
-                  <View style={styles.messageBubbleMe}>{textContent}</View>
+                  <View style={bubbleStyle}>{bubbleContent}</View>
                 </View>
               ) : (
                 <View
@@ -568,7 +729,7 @@ const ChatRoomScreen = () => {
                       </Text>
                     )}
                   </View>
-                  <View style={styles.messageBubbleOther}>{textContent}</View>
+                  <View style={bubbleStyle}>{bubbleContent}</View>
                   <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
                     {msg.timestamp}
                   </Text>
@@ -588,7 +749,11 @@ const ChatRoomScreen = () => {
       {/* Attachment menu */}
       {isAttachmentMenuOpen && (
         <View style={[styles.attachmentMenu, { paddingBottom: bottom || 16 }]}>
-          <Pressable style={styles.attachmentOption}>
+          <Pressable
+            style={styles.attachmentOption}
+            onPress={handlePickAlbum}
+            disabled={fileUploading}
+          >
             <View style={[styles.attachmentIconCircle, { backgroundColor: "rgba(76, 175, 80, 0.15)" }]}>
               <MaterialCommunityIcons
                 name="image-multiple-outline"
@@ -598,21 +763,31 @@ const ChatRoomScreen = () => {
             </View>
             <Text style={styles.attachmentLabel}>앨범</Text>
           </Pressable>
-          <Pressable style={styles.attachmentOption}>
-            <View style={[styles.attachmentIconCircle, { backgroundColor: "rgba(255, 193, 7, 0.2)" }]}>
+          <Pressable
+            style={styles.attachmentOption}
+            onPress={handlePickFile}
+            disabled={fileUploading}
+          >
+            <View style={[styles.attachmentIconCircle, { backgroundColor: "rgba(33, 150, 243, 0.15)" }]}>
               <MaterialCommunityIcons
-                name="bank-transfer-out"
+                name="file-outline"
                 size={28}
-                color="#F9A825"
+                color="#2196F3"
               />
             </View>
-            <Text style={styles.attachmentLabel}>송금</Text>
+            <Text style={styles.attachmentLabel}>파일</Text>
           </Pressable>
         </View>
       )}
 
       {/* Input bar */}
       <View style={[styles.inputBar, { paddingBottom: inputBarPaddingBottom }]}>
+        {fileUploading ? (
+          <View style={styles.uploadingRow}>
+            <ActivityIndicator size="small" color={MAIN.DEFAULT} />
+            <Text style={styles.uploadingText}>파일 전송 중…</Text>
+          </View>
+        ) : null}
         <Pressable style={styles.addButton} onPress={toggleAttachmentMenu}>
           {isAttachmentMenuOpen ? (
             <MaterialCommunityIcons name="close" size={22} color="#666" />

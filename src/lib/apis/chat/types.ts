@@ -31,6 +31,9 @@ export type ChatMessageDto = {
   chatRoomId: string;
   userId: string;
   content: string | null;
+  fileUrl?: string | null;
+  fileName?: string | null;
+  fileMime?: string | null;
   createdAt: string;
 };
 

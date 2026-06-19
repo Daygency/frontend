@@ -177,6 +177,27 @@ const styles = StyleSheet.create({
   messageTextMe: {
     color: WHITE,
   },
+  messageBubbleMedia: {
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+  },
+  messageFileImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 12,
+  },
+  messageFileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    maxWidth: 220,
+  },
+  messageFileName: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#000",
+  },
   messageTime: {
     fontSize: 12,
     color: GRAY.DARK_2,
@@ -216,6 +237,7 @@ const styles = StyleSheet.create({
   inputBar: {
     flexDirection: "row",
     alignItems: "flex-end",
+    flexWrap: "wrap",
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 16,
@@ -223,6 +245,17 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: GRAY.DEFAULT,
     gap: 10,
+  },
+  uploadingRow: {
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingBottom: 4,
+  },
+  uploadingText: {
+    fontSize: 13,
+    color: GRAY.DARK_2,
   },
   addButton: {
     width: 40,
