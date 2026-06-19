@@ -1,25 +1,44 @@
-import { useState, useRef, useLayoutEffect } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   Animated,
   FlatList,
+  Linking,
   Pressable,
   Text,
   View,
 } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
+import * as LegacyFileSystem from "expo-file-system/legacy";
 import { GRAY } from "../../../color";
 import ShadowCardButton from "../../../components/ShadowCardButton/ShadowCardButton";
 import FabButton from "../../../components/FabButton/FabButton";
+import {
+  deleteMyDocument,
+  getMyDocuments,
+  uploadMyDocument,
+} from "../../../lib/apis/userDocuments/userDocumentsApi";
+import type { UserDocumentItem } from "../../../lib/apis/userDocuments/types";
+import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
 import styles from "./styles";
 
-const MOCK_DOCUMENTS: { id: string; title: string; date: string; size: string }[] = [];
+type DocumentRow = {
+  id: string;
+  fileId: string | null;
+  title: string;
+  date: string;
+  meta: string;
+  url: string;
+  canDelete: boolean;
+};
 
 const DocumentCard = ({
   title,
-  date,
-  size,
+  meta,
   onMorePress,
   isManageMode,
   isSelected,
@@ -28,8 +47,7 @@ const DocumentCard = ({
   circleOpacityAnim,
 }: {
   title: string;
-  date: string;
-  size: string;
+  meta: string;
   onMorePress: () => void;
   isManageMode?: boolean;
   isSelected?: boolean;
@@ -60,23 +78,23 @@ const DocumentCard = ({
     >
       <ShadowCardButton styles={{ container: [styles.card, isManageMode && styles.cardManage] }}>
         <View style={styles.cardContent}>
-        <View style={styles.textContainer}>
-          <Text style={styles.cardTitle} numberOfLines={1}>
-            {title}
-          </Text>
-          <Text style={styles.cardMeta}>
-            {date} · {size}
-          </Text>
-        </View>
-        {!isManageMode && (
-          <Pressable hitSlop={10} onPress={onMorePress} style={styles.moreButton}>
-            <MaterialCommunityIcons
-              name="dots-vertical"
-              size={24}
-              color={GRAY.DARK_100}
-            />
-          </Pressable>
-        )}
+          <View style={styles.textContainer}>
+            <Text style={styles.cardTitle} numberOfLines={1}>
+              {title}
+            </Text>
+            <Text style={styles.cardMeta} numberOfLines={1}>
+              {meta}
+            </Text>
+          </View>
+          {!isManageMode && (
+            <Pressable hitSlop={10} onPress={onMorePress} style={styles.moreButton}>
+              <MaterialCommunityIcons
+                name="dots-vertical"
+                size={24}
+                color={GRAY.DARK_100}
+              />
+            </Pressable>
+          )}
         </View>
       </ShadowCardButton>
     </Animated.View>
@@ -88,12 +106,29 @@ const ANIM_DURATION = 250;
 const MyDataArchiveScreen = () => {
   const navigation = useNavigation<any>();
   const { bottom } = useSafeAreaInsets();
+  const [documents, setDocuments] = useState<DocumentRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [isManageMode, setIsManageMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const slideAnim = useRef(new Animated.Value(0)).current;
   const circleOpacityAnim = useRef(new Animated.Value(0)).current;
   const bottomBarAnim = useRef(new Animated.Value(0)).current;
   const fabOpacityAnim = useRef(new Animated.Value(1)).current;
+
+  const loadDocuments = useCallback(async () => {
+    setLoading(true);
+    const items = await getMyDocuments();
+    setDocuments((items ?? []).map(mapDocumentItem));
+    setLoading(false);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void loadDocuments();
+    }, [loadDocuments]),
+  );
+
   const toggleRef = useRef(() => {});
   toggleRef.current = () => {
     const entering = !isManageMode;
@@ -171,6 +206,143 @@ const MyDataArchiveScreen = () => {
     });
   };
 
+  const openDocument = async (item: DocumentRow) => {
+    const url = resolveProfileImageUrlForDisplay(item.url);
+    if (!url) {
+      Alert.alert("알림", "파일 주소를 불러오지 못했습니다.");
+      return;
+    }
+    const supported = await Linking.canOpenURL(url);
+    if (!supported) {
+      Alert.alert("알림", "이 파일 형식은 기기에서 열 수 없습니다.");
+      return;
+    }
+    await Linking.openURL(url);
+  };
+
+  const showDocumentMenu = (item: DocumentRow) => {
+    const actions: {
+      text: string;
+      style?: "destructive" | "cancel";
+      onPress?: () => void;
+    }[] = [{ text: "열기", onPress: () => void openDocument(item) }];
+
+    if (item.canDelete && item.fileId) {
+      actions.push({
+        text: "삭제",
+        style: "destructive",
+        onPress: () => confirmDelete([item.fileId!]),
+      });
+    }
+    actions.push({ text: "취소", style: "cancel" });
+
+    Alert.alert(item.title, undefined, actions);
+  };
+
+  const confirmDelete = (fileIds: string[]) => {
+    Alert.alert(
+      "삭제",
+      `선택한 ${fileIds.length}개 파일을 보관함에서 삭제할까요?`,
+      [
+        { text: "취소", style: "cancel" },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: async () => {
+            let failed = 0;
+            for (const fileId of fileIds) {
+              const ok = await deleteMyDocument(fileId);
+              if (!ok) failed += 1;
+            }
+            if (failed > 0) {
+              Alert.alert("알림", `${failed}개 파일 삭제에 실패했습니다.`);
+            }
+            await loadDocuments();
+            setSelectedIds(new Set());
+          },
+        },
+      ],
+    );
+  };
+
+  const handleUpload = async () => {
+    if (uploading) return;
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "application/pdf", "video/*"],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled || !result.assets?.length) return;
+
+      setUploading(true);
+      const asset = result.assets[0];
+      const uploaded = await uploadMyDocument(asset.uri, {
+        name: asset.name,
+        type: asset.mimeType ?? undefined,
+      });
+      setUploading(false);
+
+      if (!uploaded) {
+        Alert.alert("업로드 실패", "파일을 보관함에 저장하지 못했습니다.");
+        return;
+      }
+      await loadDocuments();
+    } catch {
+      setUploading(false);
+      Alert.alert("오류", "파일을 선택하는 중 오류가 발생했습니다.");
+    }
+  };
+
+  const saveSelectedToDevice = async () => {
+    const selected = documents.filter((doc) => selectedIds.has(doc.id));
+    if (selected.length === 0) {
+      Alert.alert("알림", "저장할 파일을 선택해 주세요.");
+      return;
+    }
+
+    let saved = 0;
+    for (const item of selected) {
+      const url = resolveProfileImageUrlForDisplay(item.url);
+      if (!url) continue;
+      const safeName = sanitizeFileName(item.title);
+      const dest = `${LegacyFileSystem.documentDirectory ?? ""}${safeName}`;
+      try {
+        await LegacyFileSystem.downloadAsync(url, dest);
+        saved += 1;
+      } catch {
+        // fallback: open externally
+        try {
+          await Linking.openURL(url);
+          saved += 1;
+        } catch {
+          // skip
+        }
+      }
+    }
+
+    Alert.alert(
+      "저장 완료",
+      saved > 0
+        ? `${saved}개 파일을 저장했습니다.`
+        : "파일을 저장하지 못했습니다.",
+    );
+  };
+
+  const deleteSelected = () => {
+    const fileIds = documents
+      .filter((doc) => selectedIds.has(doc.id) && doc.canDelete && doc.fileId)
+      .map((doc) => doc.fileId!);
+
+    if (fileIds.length === 0) {
+      Alert.alert(
+        "알림",
+        "보관함에 직접 올린 파일만 삭제할 수 있습니다.",
+      );
+      return;
+    }
+    confirmDelete(fileIds);
+  };
+
   const bottomBarTranslateY = bottomBarAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [100, 0],
@@ -183,34 +355,41 @@ const MyDataArchiveScreen = () => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={MOCK_DOCUMENTS}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <DocumentCard
-            title={item.title}
-            date={item.date}
-            size={item.size}
-            onMorePress={() => {}}
-            isManageMode={isManageMode}
-            isSelected={selectedIds.has(item.id)}
-            onSelect={() => toggleSelect(item.id)}
-            cardSlideAnim={cardSlideAnim}
-            circleOpacityAnim={circleOpacityAnim}
-          />
-        )}
-        contentContainerStyle={[
-          styles.listContent,
-          isManageMode && styles.listContentManage,
-        ]}
-        ListEmptyComponent={
-          <View style={{ paddingVertical: 48, alignItems: "center" }}>
-            <Text style={{ fontSize: 15, color: GRAY.DARK_2, textAlign: "center" }}>
-              자료 보관함 기능은 준비 중입니다.
-            </Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+          <ActivityIndicator size="small" color="#1F2A44" />
+        </View>
+      ) : (
+        <FlatList
+          data={documents}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <DocumentCard
+              title={item.title}
+              meta={item.meta}
+              onMorePress={() => showDocumentMenu(item)}
+              isManageMode={isManageMode}
+              isSelected={selectedIds.has(item.id)}
+              onSelect={() => toggleSelect(item.id)}
+              cardSlideAnim={cardSlideAnim}
+              circleOpacityAnim={circleOpacityAnim}
+            />
+          )}
+          contentContainerStyle={[
+            styles.listContent,
+            isManageMode && styles.listContentManage,
+            documents.length === 0 && { flexGrow: 1, justifyContent: "center" },
+          ]}
+          ListEmptyComponent={
+            <View style={{ paddingVertical: 48, alignItems: "center", paddingHorizontal: 24 }}>
+              <Text style={{ fontSize: 15, color: GRAY.DARK_2, textAlign: "center" }}>
+                보관된 자료가 없습니다.{"\n"}+ 버튼으로 파일을 추가하거나, 지원서·게시글
+                첨부 파일이 여기 모입니다.
+              </Text>
+            </View>
+          }
+        />
+      )}
       <Animated.View
         style={{
           position: "absolute",
@@ -222,10 +401,25 @@ const MyDataArchiveScreen = () => {
         }}
         pointerEvents={isManageMode ? "none" : "auto"}
       >
-        <FabButton
-          onPress={() => {}}
-          containerStyle={{ right: 0, bottom: 0 }}
-        />
+        {uploading ? (
+          <View
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 28,
+              backgroundColor: "#1F2A44",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <ActivityIndicator color="#fff" />
+          </View>
+        ) : (
+          <FabButton
+            onPress={() => void handleUpload()}
+            containerStyle={{ right: 0, bottom: 0 }}
+          />
+        )}
       </Animated.View>
       {isManageMode && (
         <Animated.View
@@ -238,7 +432,7 @@ const MyDataArchiveScreen = () => {
             },
           ]}
         >
-          <Pressable style={styles.bottomBarButton}>
+          <Pressable style={styles.bottomBarButton} onPress={() => void saveSelectedToDevice()}>
             <MaterialCommunityIcons
               name="content-save-outline"
               size={24}
@@ -246,7 +440,7 @@ const MyDataArchiveScreen = () => {
             />
             <Text style={styles.bottomBarLabel}>파일 저장</Text>
           </Pressable>
-          <Pressable style={styles.bottomBarButton}>
+          <Pressable style={styles.bottomBarButton} onPress={deleteSelected}>
             <MaterialCommunityIcons
               name="delete-outline"
               size={24}
@@ -259,5 +453,31 @@ const MyDataArchiveScreen = () => {
     </View>
   );
 };
+
+function mapDocumentItem(item: UserDocumentItem): DocumentRow {
+  return {
+    id: item.id,
+    fileId: item.fileId,
+    title: item.title?.trim() || "제목 없음",
+    date: formatDate(item.createdAt),
+    meta: `${formatDate(item.createdAt)} · ${item.sourceLabel ?? "자료"}`,
+    url: item.url,
+    canDelete: Boolean(item.canDelete),
+  };
+}
+
+function formatDate(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return value;
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+}
+
+function sanitizeFileName(name: string): string {
+  const trimmed = name.trim() || "document";
+  return trimmed.replace(/[^\w.\-가-힣]/g, "_");
+}
 
 export default MyDataArchiveScreen;

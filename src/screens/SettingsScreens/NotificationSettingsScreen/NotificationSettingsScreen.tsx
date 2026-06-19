@@ -7,12 +7,6 @@ import ShadowCardList, {
   ShadowCardListToggleItem,
 } from "../../../components/ShadowCardList/ShadowCardList";
 import {
-  getEmailOptOut,
-  getSmsOptOut,
-  setEmailOptOut,
-  setSmsOptOut,
-} from "../../../lib/notificationPreferences";
-import {
   getOsPushPermission,
   getPushReceivePreference,
   isFcmMessagingAvailable,
@@ -24,8 +18,6 @@ import styles from "./styles";
 
 const NotificationSettingsScreen = () => {
   const [pushOn, setPushOn] = useState(false);
-  const [smsOptOut, setSmsOptOutState] = useState(false);
-  const [emailOptOut, setEmailOptOutState] = useState(false);
   /** null: 확인 전, false: FCM 네이티브 없음(Expo Go 등) */
   const [pushModuleOk, setPushModuleOk] = useState<boolean | null>(null);
 
@@ -49,12 +41,7 @@ const NotificationSettingsScreen = () => {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      const [sms, email] = await Promise.all([getSmsOptOut(), getEmailOptOut()]);
-      setSmsOptOutState(sms);
-      setEmailOptOutState(email);
-      await refreshPushState();
-    })();
+    void refreshPushState();
   }, [refreshPushState]);
 
   const onPushChange = async (value: boolean) => {
@@ -98,24 +85,6 @@ const NotificationSettingsScreen = () => {
           value={pushOn}
           onValueChange={onPushChange}
           disabled={pushModuleOk === false}
-        />
-        <ShadowCardListToggleItem
-          label="SMS 수신 중단"
-          description="문자(SMS)로 보내는 안내를 받지 않습니다."
-          value={smsOptOut}
-          onValueChange={async (v) => {
-            setSmsOptOutState(v);
-            await setSmsOptOut(v);
-          }}
-        />
-        <ShadowCardListToggleItem
-          label="이메일 알림 중단"
-          description="이메일로 보내는 알림을 받지 않습니다."
-          value={emailOptOut}
-          onValueChange={async (v) => {
-            setEmailOptOutState(v);
-            await setEmailOptOut(v);
-          }}
           isLast
         />
       </ShadowCardList>

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -98,22 +98,29 @@ const MusicNewsScene = () => {
   const [error, setError] = useState<string | null>(null);
 
   const loadPage = useCallback(
-    async (cursor?: string | null, append = false) => {
+    async (
+      cursor?: string | null,
+      append = false,
+      mode: "initial" | "refresh" | "more" = "initial",
+    ) => {
       if (append && !cursor) return;
-      if (append) setLoadingMore(true);
-      else if (!cursor) setLoading(true);
+      if (mode === "more") setLoadingMore(true);
+      else if (mode === "refresh") setRefreshing(true);
+      else setLoading(true);
 
       const res = await getNewsList({
         cursor: cursor ?? undefined,
         limit: 20,
       });
 
-      if (append) setLoadingMore(false);
+      if (mode === "more") setLoadingMore(false);
+      else if (mode === "refresh") setRefreshing(false);
       else setLoading(false);
-      setRefreshing(false);
 
       if (!res) {
-        setError("목록을 불러오지 못했습니다.");
+        if (mode !== "more") {
+          setError("목록을 불러오지 못했습니다.");
+        }
         return;
       }
       setError(null);
@@ -121,24 +128,26 @@ const MusicNewsScene = () => {
       setNextCursor(res.nextCursor);
       setHasMore(res.hasMore);
     },
-    []
+    [],
   );
 
   const refresh = useCallback(() => {
-    setRefreshing(true);
+    if (refreshing || loadingMore) return;
     setNextCursor(null);
-    loadPage(null, false);
-  }, [loadPage]);
+    void loadPage(null, false, "refresh");
+  }, [loadPage, refreshing, loadingMore]);
 
   useEffect(() => {
-    loadPage(null, false);
-  }, []);
+    void loadPage(null, false, "initial");
+  }, [loadPage]);
+
+  const endReachReadyRef = useRef(false);
 
   const handleEndReached = useCallback(() => {
-    if (!loadingMore && hasMore && nextCursor) {
-      loadPage(nextCursor, true);
-    }
-  }, [loadPage, loadingMore, hasMore, nextCursor]);
+    if (!endReachReadyRef.current) return;
+    if (loadingMore || refreshing || loading || !hasMore || !nextCursor) return;
+    void loadPage(nextCursor, true, "more");
+  }, [loadPage, loadingMore, refreshing, loading, hasMore, nextCursor]);
 
   const renderItem = ({ item }: { item: NewsListItem }) => (
     <EventNewsCard
@@ -161,7 +170,7 @@ const MusicNewsScene = () => {
 
   return (
     <View style={styles.newsSceneContainer}>
-      {loading ? (
+      {loading && items.length === 0 ? (
         <View style={localStyles.loaderContainer}>
           <ActivityIndicator size="small" />
         </View>
@@ -187,8 +196,11 @@ const MusicNewsScene = () => {
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={refresh} />
           }
+          onMomentumScrollBegin={() => {
+            endReachReadyRef.current = true;
+          }}
           onEndReached={handleEndReached}
-          onEndReachedThreshold={0.3}
+          onEndReachedThreshold={0.5}
           ListFooterComponent={
             loadingMore ? (
               <View style={localStyles.footerLoader}>

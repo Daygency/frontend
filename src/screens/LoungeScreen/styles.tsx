@@ -11,6 +11,7 @@ const styles = StyleSheet.create({
   },
   newsSceneContainer: {
     flex: 1,
+    paddingTop: 8,
   },
   sortFilterContainer: {
     flexDirection: "row",
