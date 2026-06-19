@@ -1,9 +1,11 @@
-import React from "react";
-import { ScrollView, Text, View, StyleSheet, Image } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ScrollView, Text, View, StyleSheet, Image, ActivityIndicator } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import ShadowCardList from "../../components/ShadowCardList/ShadowCardList";
-import { GRAY } from "../../color";
+import { GRAY, MAIN } from "../../color";
 import type { InquiryItem } from "../SettingsScreens/CustomerServiceScreen/components/InquiryHistoryItem";
+import { getMyInquiry, mapInquiryToItem } from "../../lib/apis/inquiry/inquiryApi";
+import { resolveProfileImageUrlForDisplay } from "../../lib/chat/resolveProfileImageUrl";
 
 export type InquiryDetailParams = {
   inquiry: InquiryItem;
@@ -15,7 +17,23 @@ type RootStackParamList = {
 
 const InquiryDetailScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, "InquiryDetail">>();
-  const { inquiry } = route.params;
+  const initial = route.params.inquiry;
+  const [inquiry, setInquiry] = useState(initial);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const row = await getMyInquiry(initial.id);
+      if (cancelled) return;
+      if (row) setInquiry(mapInquiryToItem(row));
+      setLoading(false);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [initial.id]);
 
   return (
     <ScrollView
@@ -23,7 +41,12 @@ const InquiryDetailScreen = () => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      {/* 내가 올린 글 */}
+      {loading ? (
+        <View style={{ paddingVertical: 24, alignItems: "center" }}>
+          <ActivityIndicator color={MAIN.DEFAULT} />
+        </View>
+      ) : null}
+
       <Text style={styles.sectionTitle}>내가 올린 글</Text>
       <ShadowCardList>
         <View style={styles.sectionContent}>
@@ -31,20 +54,22 @@ const InquiryDetailScreen = () => {
           <Text style={styles.content}>{inquiry.content}</Text>
           {inquiry.images && inquiry.images.length > 0 && (
             <View style={styles.imageList}>
-              {inquiry.images.map((uri, index) => (
-                <Image
-                  key={index}
-                  source={{ uri }}
-                  style={styles.attachedImage}
-                  resizeMode="cover"
-                />
-              ))}
+              {inquiry.images.map((uri, index) => {
+                const displayUri = resolveProfileImageUrlForDisplay(uri) ?? uri;
+                return (
+                  <Image
+                    key={`${uri}-${index}`}
+                    source={{ uri: displayUri }}
+                    style={styles.attachedImage}
+                    resizeMode="cover"
+                  />
+                );
+              })}
             </View>
           )}
         </View>
       </ShadowCardList>
 
-      {/* 답변 내역 */}
       <Text style={[styles.sectionTitle, styles.sectionTitleMargin]}>
         답변 내역
       </Text>

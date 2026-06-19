@@ -72,9 +72,6 @@ const PortfolioHeader = () => {
         ) : null}
       </View>
       <View style={styles.iconContainer}>
-        <Pressable style={styles.iconButton}>
-          <MaterialCommunityIcons name="share-variant" size={23} color={MAIN.DEFAULT} />
-        </Pressable>
         <Pressable
           style={styles.iconButton}
           onPress={() => navigation.navigate(RootRoutes.SETTINGS)}

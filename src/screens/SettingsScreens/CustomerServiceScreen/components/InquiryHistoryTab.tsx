@@ -1,14 +1,40 @@
-import React, { useMemo, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import React, { useCallback, useMemo, useState } from "react";
+import { ScrollView, Text, View, ActivityIndicator } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
+import InquiryHistoryItem from "./InquiryHistoryItem";
+import { getMyInquiries, mapInquiryToItem } from "../../../../lib/apis/inquiry/inquiryApi";
+import { MAIN } from "../../../../color";
 import styles from "../styles";
 
 type FilterType = "answered" | "unanswered";
 
 const InquiryHistoryTab = () => {
   const [filter, setFilter] = useState<FilterType>("unanswered");
-  const filteredInquiries = useMemo(() => [], [filter]);
-  const totalCount = 0;
+  const [inquiries, setInquiries] = useState<ReturnType<typeof mapInquiryToItem>[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const rows = await getMyInquiries();
+    setInquiries(rows.map(mapInquiryToItem));
+    setLoading(false);
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      void load();
+    }, [load]),
+  );
+
+  const filteredInquiries = useMemo(() => {
+    if (filter === "answered") {
+      return inquiries.filter((item) => item.isAnswered);
+    }
+    return inquiries.filter((item) => !item.isAnswered);
+  }, [filter, inquiries]);
+
+  const totalCount = inquiries.length;
 
   return (
     <ScrollView
@@ -32,10 +58,22 @@ const InquiryHistoryTab = () => {
       </View>
 
       <View style={styles.historyList}>
-        {filteredInquiries.length > 0 ? null : (
+        {loading ? (
+          <View style={styles.emptyState}>
+            <ActivityIndicator color={MAIN.DEFAULT} />
+          </View>
+        ) : filteredInquiries.length > 0 ? (
+          filteredInquiries.map((inquiry, index) => (
+            <InquiryHistoryItem
+              key={inquiry.id}
+              inquiry={inquiry}
+              isLast={index === filteredInquiries.length - 1}
+            />
+          ))
+        ) : (
           <View style={styles.emptyState}>
             <Text style={styles.emptyStateText}>
-              문의 내역 기능은 준비 중입니다.
+              {filter === "answered" ? "답변 완료된 문의가 없습니다." : "미답변 문의가 없습니다."}
             </Text>
           </View>
         )}

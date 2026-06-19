@@ -10,16 +10,21 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MAIN, WHITE } from "../../color";
+import { createInquiry } from "../../lib/apis/inquiry/inquiryApi";
 
 const MAX_IMAGES = 3;
 
 const InquiryScreen = () => {
+  const navigation = useNavigation<any>();
   const [inquiryText, setInquiryText] = useState("");
   const [images, setImages] = useState<string[]>([]);
+  const [submitting, setSubmitting] = useState(false);
 
   const pickImages = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -48,8 +53,37 @@ const InquiryScreen = () => {
     setImages((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
-    // TODO: 제출 로직 구현 (inquiryText, images 포함)
+  const handleSubmit = async () => {
+    const trimmed = inquiryText.trim();
+    if (!trimmed) {
+      Alert.alert("알림", "문의 내용을 입력해 주세요.");
+      return;
+    }
+    if (submitting) return;
+
+    setSubmitting(true);
+    try {
+      const files = images.map((uri, index) => ({
+        uri,
+        name: `inquiry_${index}.jpg`,
+        type: "image/jpeg",
+      }));
+      const created = await createInquiry(trimmed, files);
+      if (!created) {
+        Alert.alert("실패", "문의를 제출하지 못했습니다. 다시 시도해 주세요.");
+        return;
+      }
+      Alert.alert("접수 완료", "문의가 접수되었습니다.", [
+        {
+          text: "확인",
+          onPress: () => navigation.goBack(),
+        },
+      ]);
+    } catch {
+      Alert.alert("오류", "문의 제출 중 오류가 발생했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -64,7 +98,6 @@ const InquiryScreen = () => {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        {/* 상단: 로고 + 데이전시 고객센터 + 운영시간 */}
         <View style={styles.headerSection}>
           <View style={styles.logoWrap}>
             <Image
@@ -77,10 +110,8 @@ const InquiryScreen = () => {
           <Text style={styles.hours}>평일 09시~18시 (점심시간 12~13시)</Text>
         </View>
 
-        {/* 회색 선 (두께 5) */}
         <View style={styles.divider} />
 
-        {/* TextArea */}
         <TextInput
           style={styles.textArea}
           placeholder="문의 내용을 입력해 주세요."
@@ -92,7 +123,6 @@ const InquiryScreen = () => {
           onChangeText={setInquiryText}
         />
 
-        {/* 사진 첨부 */}
         <Text style={styles.photoLabel}>사진 첨부 (최대 {MAX_IMAGES}개)</Text>
         <View style={styles.photoSection}>
           {images.map((uri, index) => (
@@ -123,8 +153,16 @@ const InquiryScreen = () => {
           )}
         </View>
 
-        <Pressable style={styles.submitButton} onPress={handleSubmit}>
-          <Text style={styles.submitButtonText}>제출하기</Text>
+        <Pressable
+          style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
+          onPress={handleSubmit}
+          disabled={submitting}
+        >
+          {submitting ? (
+            <ActivityIndicator color={WHITE} />
+          ) : (
+            <Text style={styles.submitButtonText}>제출하기</Text>
+          )}
         </Pressable>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -233,6 +271,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 24,
+    minHeight: 52,
+  },
+  submitButtonDisabled: {
+    opacity: 0.7,
   },
   submitButtonText: {
     fontSize: 16,
