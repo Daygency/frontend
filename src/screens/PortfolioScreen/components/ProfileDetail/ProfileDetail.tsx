@@ -1,156 +1,193 @@
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { useState, useEffect, useCallback } from "react";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useRoute } from "@react-navigation/native";
 import styles from "./styles";
 import { GRAY, BLACK, MAIN } from "../../../../color";
 import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
-import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
+import {
+  getMyProfile,
+  getUserPublicProfile,
+  PortfolioPrivateError,
+} from "../../../../lib/apis/portfolio/profileApi";
+import type {
+  ProfileResponseDto,
+  PublicProfileResponseDto,
+} from "../../../../lib/apis/portfolio/types";
 import {
   getProfileCache,
   saveProfileCache,
 } from "../../../../lib/profileCache";
-import { useAuth } from "../../../../contexts/AuthContext";
+import {
+  formatPeriodFromApiItem,
+  formatYearMonth,
+  formatYearMonthFromApiDate,
+} from "../../../../lib/profile/profileEntryDates";
+import { RootRoutes } from "../../../../navigations/routes";
 
-const ProfileDetail = () => {
-  const { user } = useAuth();
-  const [profile, setProfile] =
-    useState<Awaited<ReturnType<typeof getMyProfile>>>(null);
+type LoadedProfile = ProfileResponseDto | PublicProfileResponseDto | null;
+
+type ProfileEntryItem = {
+  description: string;
+  period?: string | null;
+};
+
+type ProfileDetailProps = {
+  embedded?: boolean;
+};
+
+const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
+  const route = useRoute();
+  const routeParams = (route.params ?? {}) as { userId?: string };
+  const viewingUserId = routeParams.userId?.trim() ?? "";
+  const isArtistPortfolio =
+    route.name === RootRoutes.ARTIST_PORTFOLIO;
+  const isOtherProfile = Boolean(viewingUserId);
+  const isInvalidOtherRoute = isArtistPortfolio && !viewingUserId;
+
+  const [profile, setProfile] = useState<LoadedProfile>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isPortfolioPrivateBlocked, setIsPortfolioPrivateBlocked] =
+    useState(false);
 
-  const loadProfile = useCallback((skipCache = false) => {
-    let cancelled = false;
-    const apiResponded = { current: false };
-    setIsLoading(true);
+  const loadProfile = useCallback(
+    (skipCache = false) => {
+      let cancelled = false;
+      const apiResponded = { current: false };
+      setIsLoading(true);
 
-    if (!skipCache) {
-      getProfileCache().then((cached) => {
-        if (!cancelled && cached && !apiResponded.current) {
-          setProfile(cached);
+      if (isInvalidOtherRoute) {
+        setProfile(null);
+        setIsLoading(false);
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      if (isOtherProfile && viewingUserId) {
+        setIsPortfolioPrivateBlocked(false);
+        getUserPublicProfile(viewingUserId)
+          .then((data) => {
+            if (!cancelled) {
+              setProfile(data);
+              setIsLoading(false);
+            }
+          })
+          .catch((e) => {
+            if (!cancelled && e instanceof PortfolioPrivateError) {
+              setIsPortfolioPrivateBlocked(true);
+              setProfile(null);
+            }
+            if (!cancelled) setIsLoading(false);
+          });
+        return () => {
+          cancelled = true;
+        };
+      }
+
+      if (!skipCache) {
+        getProfileCache().then((cached) => {
+          if (!cancelled && cached && !apiResponded.current) {
+            setProfile(cached);
+            setIsLoading(false);
+          }
+        });
+      }
+
+      getMyProfile().then((data) => {
+        if (!cancelled) {
+          apiResponded.current = true;
+          if (data) saveProfileCache(data);
+          setProfile(data);
           setIsLoading(false);
         }
       });
-    }
 
-    getMyProfile().then((data) => {
-      if (!cancelled) {
-        apiResponded.current = true;
-        if (data) saveProfileCache(data);
-        setProfile(data);
-        setIsLoading(false);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+      return () => {
+        cancelled = true;
+      };
+    },
+    [isOtherProfile, viewingUserId, isInvalidOtherRoute],
+  );
 
   useEffect(() => {
     loadProfile(false);
   }, [loadProfile]);
 
-  // 포커스 시 캐시 건너뛰고 API에서 바로 조회 → 프로필 수정 후 최신 selfIntroduction 반영
   useFocusEffect(
     useCallback(() => {
       loadProfile(true);
       return () => {};
-    }, [loadProfile])
+    }, [loadProfile]),
   );
 
-  const getSectionText = (value: unknown, fallback: string) => {
-    if (typeof value === "string") {
-      const trimmed = value.trim();
-      return trimmed || fallback;
-    }
-    if (Array.isArray(value)) {
-      const joined = value
-        .map((item: any) => {
-          const text = item?.description ?? item?.desc ?? item?.content ?? "";
-          return typeof text === "string" ? text.trim() : "";
-        })
-        .filter((text) => text.length > 0)
-        .join("\n");
-      return joined || fallback;
-    }
-    return fallback;
+  const legacyStringEntries = (value: unknown): ProfileEntryItem[] => {
+    if (typeof value !== "string") return [];
+    return value
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((description) => ({ description }));
   };
 
-  /** API의 startedAt/endedAt → "2025.12 ~ 2026.07" */
-  const formatPeriod = (item: any) => {
-    const toYm = (d: string | undefined) => {
-      if (!d) return "";
-      const date = new Date(d);
-      if (isNaN(date.getTime())) return "";
-      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}`;
-    };
-    const start = toYm(item?.startedAt);
-    const end = toYm(item?.endedAt);
-    if (!start && !end) return "";
-    if (!end) return start;
-    return `${start} ~ ${end}`;
-  };
-
-  /** 학력/경력: description + (년.월 ~ 년.월) - API의 startedAt/endedAt 그대로 사용 */
-  const formatEntriesWithPeriod = (
+  const parseEntriesWithPeriod = (
     arr: any[] | null | undefined,
-    fallback: string,
-  ) => {
-    if (!Array.isArray(arr) || arr.length === 0) return fallback;
-    const lines = arr
+    ongoingLabel?: string,
+  ): ProfileEntryItem[] => {
+    if (!Array.isArray(arr) || arr.length === 0) return [];
+    return arr
       .map((item: any) => {
-        const desc = (item?.description ?? "").trim();
-        const period = formatPeriod(item);
-        if (!desc && !period) return "";
-        return period ? `${desc} (${period})` : desc;
+        const description = (item?.description ?? "").trim();
+        const period =
+          formatPeriodFromApiItem(item, { ongoingLabel }) || null;
+        if (!description && !period) return null;
+        return {
+          description: description || period || "",
+          period: description && period ? period : null,
+        };
       })
-      .filter((s) => s.length > 0);
-    return lines.join("\n") || fallback;
+      .filter((item): item is ProfileEntryItem => item != null);
   };
 
-  /** 수료증/자격증: description + (취득 년.월) - API의 year/month 사용 */
-  const formatCertificatesWithDate = (
+  const parseCertificates = (
     arr: any[] | null | undefined,
-    fallback: string,
-  ) => {
-    if (!Array.isArray(arr) || arr.length === 0) return fallback;
-    const toYm = (y: string, m: string) =>
-      y && m ? `${y}.${String(m).padStart(2, "0")}` : "";
-    const lines = arr
+  ): ProfileEntryItem[] => {
+    if (!Array.isArray(arr) || arr.length === 0) return [];
+    return arr
       .map((item: any) => {
-        const desc = (item?.description ?? "").trim();
-        const date = toYm(item?.year ?? "", item?.month ?? "");
-        if (!desc && !date) return "";
-        return date ? `${desc} (취득 ${date})` : desc;
+        const description = (item?.description ?? "").trim();
+        const date =
+          formatYearMonthFromApiDate(item?.obtainedAt) ||
+          formatYearMonth(String(item?.year ?? ""), String(item?.month ?? ""));
+        const period = date ? `취득 ${date}` : null;
+        if (!description && !period) return null;
+        return {
+          description: description || period || "",
+          period: description && period ? period : null,
+        };
       })
-      .filter((s) => s.length > 0);
-    return lines.join("\n") || fallback;
+      .filter((item): item is ProfileEntryItem => item != null);
   };
 
-  /** 수상: description + (년.월) - API의 awardedAt 또는 year/month 사용 */
-  const formatAwardsWithDate = (
-    arr: any[] | null | undefined,
-    fallback: string,
-  ) => {
-    if (!Array.isArray(arr) || arr.length === 0) return fallback;
-    const toYm = (d: string | undefined) => {
-      if (!d) return "";
-      const date = new Date(d);
-      if (isNaN(date.getTime())) return "";
-      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}`;
-    };
-    const lines = arr
+  const parseAwards = (arr: any[] | null | undefined): ProfileEntryItem[] => {
+    if (!Array.isArray(arr) || arr.length === 0) return [];
+    return arr
       .map((item: any) => {
-        const desc = (item?.description ?? "").trim();
-        const date = item?.awardedAt
-          ? toYm(item.awardedAt)
-          : item?.year && item?.month
-            ? `${item.year}.${String(item.month).padStart(2, "0")}`
-            : "";
-        if (!desc && !date) return "";
-        return date ? `${desc} (${date})` : desc;
+        const description = (item?.description ?? "").trim();
+        const period =
+          formatYearMonthFromApiDate(item?.awardedAt) ||
+          formatYearMonth(String(item?.year ?? ""), String(item?.month ?? "")) ||
+          null;
+        if (!period) {
+          if (!description) return null;
+          return { description, period: null };
+        }
+        if (!description && !period) return null;
+        return {
+          description: description || period || "",
+          period: description && period ? period : null,
+        };
       })
-      .filter((s) => s.length > 0);
-    return lines.join("\n") || fallback;
+      .filter((item): item is ProfileEntryItem => item != null);
   };
 
   if (isLoading) {
@@ -167,128 +204,117 @@ const ProfileDetail = () => {
     );
   }
 
-  const aboutMe =
-    getSectionText((profile as any)?.selfIntroduction, "") ||
-    getSectionText((profile as any)?.aboutMe, "소개가 없습니다.");
-  const email = profile?.contact?.email ?? user?.email ?? "";
-  const phoneNumber = profile?.contact?.phoneNumber ?? "";
-  const hasContact = email || phoneNumber;
+  if (isInvalidOtherRoute) {
+    return (
+      <View
+        style={[
+          styles.container,
+          styles.contentContainer,
+          { padding: 24, justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text style={{ color: GRAY.DARK, textAlign: "center" }}>
+          프로필 상세를 불러올 수 없습니다.
+        </Text>
+      </View>
+    );
+  }
+
+  if (isOtherProfile && isPortfolioPrivateBlocked) {
+    return (
+      <View
+        style={[
+          embedded ? styles.embeddedRoot : styles.container,
+          embedded ? undefined : styles.contentContainer,
+          { padding: 24, justifyContent: "center", alignItems: "center" },
+        ]}
+      >
+        <Text style={{ color: GRAY.DARK_100, textAlign: "center", fontWeight: "600" }}>
+          비공개 프로필입니다
+        </Text>
+      </View>
+    );
+  }
+
+  const p = profile as any;
+  const educationList =
+    p?.educationEntries ?? p?.educations ?? [];
+  const careerList = p?.careerEntries ?? p?.careers ?? [];
+  const awardList = p?.awardEntries ?? p?.awards ?? [];
+  const certList =
+    p?.certificateEntries ?? p?.certificates ?? [];
+
+  const mergeEntries = (
+    parsed: ProfileEntryItem[],
+    legacy: unknown,
+  ): ProfileEntryItem[] =>
+    parsed.length > 0 ? parsed : legacyStringEntries(legacy);
+
+  const educationEntries = mergeEntries(
+    parseEntriesWithPeriod(educationList, "재학 중"),
+    p?.education,
+  );
+  const careerEntries = mergeEntries(
+    parseEntriesWithPeriod(careerList, "재직 중"),
+    p?.career,
+  );
+  const awardEntries = mergeEntries(parseAwards(awardList), p?.awards);
+  const certificateEntries = parseCertificates(certList);
+
+  const Sheet = embedded ? View : ShadowCardButton;
+  const sheetProps = embedded
+    ? { style: styles.embeddedSheet }
+    : {
+        styles: {
+          container: {
+            paddingTop: 16,
+            paddingBottom: 17,
+            paddingHorizontal: 16,
+          },
+        },
+      };
+
+  const renderEntrySection = (
+    title: string,
+    items: ProfileEntryItem[],
+  ) => {
+    if (items.length === 0) return null;
+    return (
+      <Sheet {...sheetProps}>
+        <Text style={styles.sectionTitle}>{title}</Text>
+        <View style={styles.entryList}>
+          {items.map((item, index) => (
+            <View key={`${title}-${index}-${item.description}`}>
+              <Text style={styles.entryTitle}>{item.description}</Text>
+              {item.period ? (
+                <Text style={styles.entryPeriod}>{item.period}</Text>
+              ) : null}
+            </View>
+          ))}
+        </View>
+      </Sheet>
+    );
+  };
+
+  const body = (
+    <>
+      {renderEntrySection("학력", educationEntries)}
+      {renderEntrySection("경력", careerEntries)}
+      {renderEntrySection("수상 경력", awardEntries)}
+      {renderEntrySection("수료증 / 자격증", certificateEntries)}
+    </>
+  );
+
+  if (embedded) {
+    return <View style={styles.embeddedRoot}>{body}</View>;
+  }
 
   return (
     <ScrollView
       style={styles.container}
       contentContainerStyle={styles.contentContainer}
     >
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
-        <Text style={styles.sectionTitle}>소개</Text>
-        <Text style={styles.sectionContent}>{aboutMe}</Text>
-      </ShadowCardButton>
-
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
-        <Text style={styles.sectionTitle}>학력</Text>
-        <Text style={styles.sectionContent}>
-          {formatEntriesWithPeriod(
-            (profile as any)?.educationEntries ?? (profile as any)?.educations ?? [],
-            "정보가 없습니다.",
-          )}
-        </Text>
-      </ShadowCardButton>
-
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
-        <Text style={styles.sectionTitle}>경력</Text>
-        <Text style={styles.sectionContent}>
-          {formatEntriesWithPeriod(
-            (profile as any)?.careerEntries ?? (profile as any)?.careers ?? [],
-            "정보가 없습니다.",
-          )}
-        </Text>
-      </ShadowCardButton>
-
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
-        <Text style={styles.sectionTitle}>수상 경력</Text>
-        <Text style={styles.sectionContent}>
-          {formatAwardsWithDate(
-            (profile as any)?.awardEntries ?? (profile as any)?.awards ?? [],
-            "정보가 없습니다.",
-          )}
-        </Text>
-      </ShadowCardButton>
-
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
-        <Text style={styles.sectionTitle}>수료증 / 자격증</Text>
-        <Text style={styles.sectionContent}>
-          {formatCertificatesWithDate(
-            (profile as any)?.certificateEntries ??
-              (profile as any)?.certificates ??
-              [],
-            "정보가 없습니다.",
-          )}
-        </Text>
-      </ShadowCardButton>
-
-      <ShadowCardButton
-        styles={{
-          container: {
-            paddingTop: 16,
-            paddingBottom: 17,
-            paddingHorizontal: 16,
-          },
-        }}
-      >
-        <Text style={styles.sectionTitle}>연락처</Text>
-        {hasContact ? (
-          <>
-            {email ? (
-              <Text style={styles.sectionContent}>Email: {email}</Text>
-            ) : null}
-            {phoneNumber ? (
-              <Text style={styles.sectionContent}>Phone: {phoneNumber}</Text>
-            ) : null}
-          </>
-        ) : (
-          <Text style={styles.sectionContent}>연락처 정보가 없습니다.</Text>
-        )}
-      </ShadowCardButton>
+      {body}
     </ScrollView>
   );
 };

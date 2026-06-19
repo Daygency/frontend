@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { Pressable, Text, View } from "react-native";
+import { Pressable, Text, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Logo from "../../../components/Logo/Logo";
-import { MAIN } from "../../../color";
+import { GRAY, MAIN } from "../../../color";
 import styles from "./styles";
 import ChatList, { getUnreadCountByTopTabMock } from "./components/ChatList/ChatList";
 
@@ -13,6 +13,8 @@ const TOP_TABS: ChatTopTab[] = ["일반", "내 공고", "지원 공고"];
 const ChatScreen = () => {
   const { top } = useSafeAreaInsets();
   const [selectedTopTab, setSelectedTopTab] = useState<ChatTopTab>("일반");
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const unreadCountByTab = useMemo(() => {
     const map = new Map<ChatTopTab, number>();
@@ -20,13 +22,56 @@ const ChatScreen = () => {
     return map;
   }, []);
 
+  const searchPlaceholder =
+    selectedTopTab === "내 공고" ? "공고 제목 검색" : "이름, 메시지 검색";
+
+  const closeSearch = () => {
+    setIsSearchOpen(false);
+    setSearchQuery("");
+  };
+
   return (
     <View style={[styles.container, { paddingTop: top }]}>
       <View style={styles.header}>
-        <Logo size={24} logoName="채팅" />
+        {isSearchOpen ? (
+          <View style={styles.headerSearchWrap}>
+            <Feather name="search" size={18} color={GRAY.DARK_2} />
+            <TextInput
+              style={styles.headerSearchInput}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              placeholder={searchPlaceholder}
+              placeholderTextColor={GRAY.DARK_2}
+              autoFocus
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+            {searchQuery.length > 0 ? (
+              <Pressable onPress={() => setSearchQuery("")} hitSlop={8}>
+                <Feather name="x-circle" size={18} color={GRAY.DARK_2} />
+              </Pressable>
+            ) : null}
+          </View>
+        ) : (
+          <Logo size={24} logoName="채팅" />
+        )}
         <View style={styles.iconContainer}>
-          <Pressable style={styles.iconButton}>
-            <Feather name="search" size={23} color={MAIN.DEFAULT} />
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => {
+              if (isSearchOpen) {
+                closeSearch();
+              } else {
+                setIsSearchOpen(true);
+              }
+            }}
+          >
+            <Feather
+              name={isSearchOpen ? "x" : "search"}
+              size={23}
+              color={MAIN.DEFAULT}
+            />
           </Pressable>
         </View>
       </View>
@@ -56,7 +101,9 @@ const ChatScreen = () => {
         })}
       </View>
 
-      <ChatList topTab={selectedTopTab} />
+      <View style={{ flex: 1 }}>
+        <ChatList topTab={selectedTopTab} searchQuery={searchQuery} />
+      </View>
     </View>
   );
 };

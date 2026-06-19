@@ -1,19 +1,16 @@
+import messaging from "@react-native-firebase/messaging";
 import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView } from "react-native";
+import { unregisterPushDevice } from "../../../lib/apis/notifications/notificationsApi";
+import { syncFcmTokenToServer } from "../../../lib/fcmServerSync";
 import ShadowCardList, {
   ShadowCardListToggleItem,
 } from "../../../components/ShadowCardList/ShadowCardList";
 import {
-  getEmailOptOut,
-  getSmsOptOut,
-  setEmailOptOut,
-  setSmsOptOut,
-} from "../../../lib/notificationPreferences";
-import {
   getOsPushPermission,
   getPushReceivePreference,
+  isFcmMessagingAvailable,
   isPushSupportedNative,
-  loadExpoNotifications,
   requestOsPushPermission,
   setPushReceivePreference,
 } from "../../../lib/pushNotifications";
@@ -21,9 +18,7 @@ import styles from "./styles";
 
 const NotificationSettingsScreen = () => {
   const [pushOn, setPushOn] = useState(false);
-  const [smsOptOut, setSmsOptOutState] = useState(false);
-  const [emailOptOut, setEmailOptOutState] = useState(false);
-  /** null: 확인 전, false: ExpoPushTokenManager 등 네이티브 없음 */
+  /** null: 확인 전, false: FCM 네이티브 없음(Expo Go 등) */
   const [pushModuleOk, setPushModuleOk] = useState<boolean | null>(null);
 
   const refreshPushState = useCallback(async () => {
@@ -32,9 +27,9 @@ const NotificationSettingsScreen = () => {
       setPushOn(false);
       return;
     }
-    const mod = await loadExpoNotifications();
-    setPushModuleOk(mod != null);
-    if (!mod) {
+    const ok = await isFcmMessagingAvailable();
+    setPushModuleOk(ok);
+    if (!ok) {
       setPushOn(false);
       return;
     }
@@ -46,17 +41,12 @@ const NotificationSettingsScreen = () => {
   }, []);
 
   useEffect(() => {
-    (async () => {
-      const [sms, email] = await Promise.all([getSmsOptOut(), getEmailOptOut()]);
-      setSmsOptOutState(sms);
-      setEmailOptOutState(email);
-      await refreshPushState();
-    })();
+    void refreshPushState();
   }, [refreshPushState]);
 
   const onPushChange = async (value: boolean) => {
     if (!isPushSupportedNative()) return;
-    if (!(await loadExpoNotifications())) return;
+    if (!(await isFcmMessagingAvailable())) return;
     if (value) {
       await setPushReceivePreference(true);
       const perm = await requestOsPushPermission();
@@ -66,7 +56,16 @@ const NotificationSettingsScreen = () => {
         return;
       }
       setPushOn(true);
+      void syncFcmTokenToServer();
       return;
+    }
+    try {
+      if (await isFcmMessagingAvailable()) {
+        const t = await messaging().getToken();
+        if (t) void unregisterPushDevice({ fcmToken: t });
+      }
+    } catch {
+      /* ignore */
     }
     await setPushReceivePreference(false);
     setPushOn(false);
@@ -86,24 +85,6 @@ const NotificationSettingsScreen = () => {
           value={pushOn}
           onValueChange={onPushChange}
           disabled={pushModuleOk === false}
-        />
-        <ShadowCardListToggleItem
-          label="SMS 수신 중단"
-          description="문자(SMS)로 보내는 안내를 받지 않습니다."
-          value={smsOptOut}
-          onValueChange={async (v) => {
-            setSmsOptOutState(v);
-            await setSmsOptOut(v);
-          }}
-        />
-        <ShadowCardListToggleItem
-          label="이메일 알림 중단"
-          description="이메일로 보내는 알림을 받지 않습니다."
-          value={emailOptOut}
-          onValueChange={async (v) => {
-            setEmailOptOutState(v);
-            await setEmailOptOut(v);
-          }}
           isLast
         />
       </ShadowCardList>

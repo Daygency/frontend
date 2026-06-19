@@ -1,28 +1,51 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable, Alert } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, Pressable, Alert, findNodeHandle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import { GRAY, MAIN } from "../../../color";
-import type { CertificateEntry } from "../../../lib/apis/portfolio/profileApi";
+import type { CertificateEntry } from "../../../lib/apis/portfolio/types";
 import DatePickerField from "./DatePickerField";
+import { formatYearMonth } from "./profileEntryUtils";
 import styles from "../styles";
 
 type Props = {
   entry: CertificateEntry;
   onChange: (updates: Partial<CertificateEntry>) => void;
   onDelete: () => void;
+  onEditingFocusChange?: (
+    focused: boolean,
+    inputNode?: number | null,
+    actionRowNode?: number | null,
+  ) => void;
 };
 
-const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
+const CertificateItem = ({
+  entry,
+  onChange,
+  onDelete,
+  onEditingFocusChange,
+}: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+  const actionRowRef = useRef<View>(null);
 
-  const date =
-    entry.year && entry.month
-      ? `취득 ${entry.year}.${entry.month.padStart(2, "0")}`
-      : entry.year
-        ? `취득 ${entry.year}`
-        : "";
+  const dateLabel = formatYearMonth(entry.year, entry.month);
+  const date = dateLabel ? `취득 ${dateLabel}` : "";
+  const isDraftEntry =
+    !entry.description.trim() &&
+    !entry.year &&
+    !entry.month &&
+    !entry.fileName &&
+    !entry.fileUri;
+
+  const handleCancel = () => {
+    if (isDraftEntry) {
+      onDelete();
+      return;
+    }
+    setIsEditing(false);
+  };
 
   const handlePickFile = async () => {
     try {
@@ -64,7 +87,7 @@ const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
           >
             <MaterialCommunityIcons
               name="pencil-outline"
-              size={16}
+              size={18}
               color={GRAY.DARK}
             />
           </Pressable>
@@ -75,7 +98,7 @@ const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
           >
             <MaterialCommunityIcons
               name="close"
-              size={16}
+              size={18}
               color={GRAY.DARK_2}
             />
           </Pressable>
@@ -91,7 +114,6 @@ const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
           styles.input,
           styles.multilineInput,
           isFocused && styles.inputFocused,
-          { marginRight: 28 },
         ]}
         value={entry.description}
         onChangeText={(v) => onChange({ description: v })}
@@ -99,14 +121,25 @@ const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        autoFocus={isEditing && !entry.description.trim()}
+        onFocus={() => {
+          setIsFocused(true);
+          onEditingFocusChange?.(
+            true,
+            findNodeHandle(inputRef.current),
+            findNodeHandle(actionRowRef.current),
+          );
+        }}
+        onBlur={() => {
+          setIsFocused(false);
+          onEditingFocusChange?.(false);
+        }}
+        ref={inputRef}
       />
       <DatePickerField
-        label="취득시점"
+        label="취득 시기"
         year={entry.year}
         month={entry.month}
-        pickerTitle="취득 년월"
         onConfirm={(y, m) => onChange({ year: y, month: m })}
       />
       <Pressable style={styles.filePickerButton} onPress={handlePickFile}>
@@ -119,11 +152,8 @@ const CertificateItem = ({ entry, onChange, onDelete }: Props) => {
           {entry.fileName ? entry.fileName : "증명서 파일 첨부"}
         </Text>
       </Pressable>
-      <View style={styles.entryButtonRow}>
-        <Pressable
-          style={styles.entryCancelButton}
-          onPress={() => setIsEditing(false)}
-        >
+      <View style={styles.entryButtonRow} ref={actionRowRef}>
+        <Pressable style={styles.entryCancelButton} onPress={handleCancel}>
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>
         <Pressable

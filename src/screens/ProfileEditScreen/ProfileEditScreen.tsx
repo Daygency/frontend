@@ -1,20 +1,24 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
   Pressable,
   Image,
-  KeyboardAvoidingView,
+  Keyboard,
+  KeyboardEvent,
   Platform,
-  useWindowDimensions,
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { TabView } from "react-native-tab-view";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as ImagePicker from "expo-image-picker";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { GRAY, MAIN, WHITE } from "../../color";
-import { getMyProfile } from "../../lib/apis/portfolio/profileApi";
+import {
+  getMyProfile,
+  pickFollowCountsFromApiJson,
+} from "../../lib/apis/portfolio/profileApi";
 import type {
   EducationEntry,
   CareerEntry,
@@ -24,6 +28,10 @@ import type {
 import { getProfileCache, saveProfileCache } from "../../lib/profileCache";
 import { useAuth } from "../../contexts/AuthContext";
 import { updateProfile } from "../../lib/apis/portfolio/profileUpdate";
+import {
+  toOptionalIsoDate,
+  yearMonthFromApiDate,
+} from "../../lib/profile/profileEntryDates";
 import type { ProfileUpdateRequestDto } from "../../lib/apis/portfolio/dto/update-profile.dto";
 import { isDupActivityName } from "../../lib/apis/portfolio/IsDupActivityName";
 import { MAJOR_OPTIONS } from "../../constants/majors";
@@ -47,8 +55,8 @@ const toDisplayImageUri = (uri: string | undefined): string | null => {
 
 const ProfileEditScreen = () => {
   const navigation = useNavigation();
-  const layout = useWindowDimensions();
   const { user } = useAuth();
+  const scrollRef = useRef<KeyboardAwareScrollView | null>(null);
 
   const [tabIndex, setTabIndex] = useState(0);
   const [routes] = useState([
@@ -75,6 +83,57 @@ const ProfileEditScreen = () => {
     [],
   );
   const [submitting, setSubmitting] = useState(false);
+  const [pickedProfileImageUri, setPickedProfileImageUri] = useState<string | null>(
+    null,
+  );
+  const [isProfileEntryEditingFocused, setIsProfileEntryEditingFocused] =
+    useState(false);
+  const [isTopCustomMajorFocused, setIsTopCustomMajorFocused] = useState(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  const handleProfileEntryFocusChange = (
+    focused: boolean,
+    inputNode?: number | null,
+    actionRowNode?: number | null,
+  ) => {
+    setIsProfileEntryEditingFocused(focused);
+    if (!focused || !inputNode) return;
+    setTimeout(() => {
+      scrollRef.current?.scrollToFocusedInput(inputNode);
+      if (actionRowNode) {
+        setTimeout(() => {
+          scrollRef.current?.scrollToFocusedInput(actionRowNode);
+        }, 90);
+      }
+    }, 60);
+  };
+
+  const handleTopCustomMajorFocusChange = (
+    focused: boolean,
+    inputNode?: number | null,
+  ) => {
+    setIsTopCustomMajorFocused(focused);
+    if (!focused || !inputNode) return;
+    setTimeout(() => {
+      scrollRef.current?.scrollToFocusedInput(inputNode);
+    }, 60);
+  };
+
+  useEffect(() => {
+    const onShow = (e: KeyboardEvent) =>
+      setKeyboardHeight(e.endCoordinates?.height ?? 0);
+    const onHide = () => setKeyboardHeight(0);
+    const showEvent =
+      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow";
+    const hideEvent =
+      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide";
+    const showSub = Keyboard.addListener(showEvent, onShow);
+    const hideSub = Keyboard.addListener(hideEvent, onHide);
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -136,39 +195,45 @@ const ProfileEditScreen = () => {
       (p as any).educations ?? (p as any).educationEntries ?? [];
     setEducationList(
       rawEducations.map((e: any) => {
-        const start = parseApiDateToYearMonth(e.startedAt);
-        const end = parseApiDateToYearMonth(e.endedAt);
+        const start = yearMonthFromApiDate(e.startedAt);
+        const end = yearMonthFromApiDate(e.endedAt);
         return {
-          id: e.educationId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          id:
+            e.educationId ??
+            `${Date.now()}-${Math.random().toString(36).slice(2)}`,
           educationId: e.educationId,
           description: e.description ?? "",
           startYear: start.year,
           startMonth: start.month,
           endYear: end.year,
           endMonth: end.month,
+          isOngoing: Boolean(e.isOngoing),
         };
       }),
     );
     const rawCareers = (p as any).careers ?? (p as any).careerEntries ?? [];
     setCareerList(
       rawCareers.map((c: any) => {
-        const start = parseApiDateToYearMonth(c.startedAt);
-        const end = parseApiDateToYearMonth(c.endedAt);
+        const start = yearMonthFromApiDate(c.startedAt);
+        const end = yearMonthFromApiDate(c.endedAt);
         return {
-          id: c.careerId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+          id:
+            c.careerId ??
+            `${Date.now()}-${Math.random().toString(36).slice(2)}`,
           careerId: c.careerId,
           description: c.description ?? "",
           startYear: start.year,
           startMonth: start.month,
           endYear: end.year,
           endMonth: end.month,
+          isOngoing: Boolean(c.isOngoing),
         };
       }),
     );
     const rawAwards = (p as any).awards ?? (p as any).awardEntries ?? [];
     setAwardList(
       rawAwards.map((a: any) => {
-        const d = parseApiDateToYearMonth(a.awardedAt);
+        const d = yearMonthFromApiDate(a.awardedAt);
         return {
           id: a.awardId ?? newTempId(),
           awardId: a.awardId,
@@ -178,37 +243,83 @@ const ProfileEditScreen = () => {
         };
       }),
     );
-    setCertificateList(p.certificateEntries ?? []);
+    setCertificateList(mapCertificatesFromApi(p));
   };
 
+  function mapCertificatesFromApi(
+    p: NonNullable<Awaited<ReturnType<typeof getMyProfile>>>,
+  ): CertificateEntry[] {
+    const raw = (p as any).certificates ?? p.certificateEntries ?? [];
+    if (!Array.isArray(raw)) return [];
+    return raw.map((c: any) => {
+      const d = yearMonthFromApiDate(c.obtainedAt);
+      return {
+        id: c.certificateId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        certificateId: c.certificateId,
+        description: c.description ?? "",
+        year: c.year ?? d.year,
+        month: c.month ?? d.month,
+      };
+    });
+  }
+
   const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
-  const displayProfileImgUrl = isValidImageSource(rawProfileImgUrl)
-    ? toDisplayImageUri(rawProfileImgUrl)
-    : null;
+  const displayProfileImgUrl = pickedProfileImageUri
+    ? pickedProfileImageUri
+    : isValidImageSource(rawProfileImgUrl)
+      ? toDisplayImageUri(rawProfileImgUrl)
+      : null;
+
+  const pickProfileImage = async () => {
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85,
+      });
+      if (result.canceled || !result.assets[0]?.uri) return;
+      setPickedProfileImageUri(result.assets[0].uri);
+    } catch (e) {
+      console.warn("[pickProfileImage]", e);
+      Alert.alert("알림", "이미지 선택에 실패했습니다.");
+    }
+  };
 
   const renderTabBar = () => (
     <View style={styles.tabBarContainer}>
-      {routes.map((route, i) => (
-        <Pressable
-          key={route.key}
-          style={[
-            styles.tabButton,
-            i === tabIndex ? styles.tabButtonActive : styles.tabButtonInactive,
-          ]}
-          onPress={() => setTabIndex(i)}
-        >
-          <Text
+      <View style={styles.tabBarRow}>
+        {routes.map((route, i) => (
+          <Pressable
+            key={route.key}
             style={[
-              styles.tabButtonText,
+              styles.tabButton,
+              i === 0 ? styles.tabButtonLeft : styles.tabButtonRight,
               i === tabIndex
-                ? styles.tabButtonTextActive
-                : styles.tabButtonTextInactive,
+                ? styles.tabButtonActive
+                : styles.tabButtonInactive,
             ]}
+            onPress={() => setTabIndex(i)}
           >
-            {route.title}
-          </Text>
-        </Pressable>
-      ))}
+            <Text
+              style={[
+                styles.tabButtonText,
+                i === tabIndex
+                  ? styles.tabButtonTextActive
+                  : styles.tabButtonTextInactive,
+              ]}
+            >
+              {route.title}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
     </View>
   );
 
@@ -229,6 +340,7 @@ const ProfileEditScreen = () => {
           setMajor={setMajor}
           majorDetail={majorDetail}
           setMajorDetail={setMajorDetail}
+          onCustomMajorFocusChange={handleTopCustomMajorFocusChange}
         />
       );
     }
@@ -245,6 +357,7 @@ const ProfileEditScreen = () => {
           setAwardList={setAwardList}
           certificateList={certificateList}
           setCertificateList={setCertificateList}
+          onEditingFocusChange={handleProfileEntryFocusChange}
         />
       );
     }
@@ -259,7 +372,6 @@ const ProfileEditScreen = () => {
       activityName,
       aboutMe,
       selfIntroduction,
-      majorId,
       major,
       majorDetail,
       educationEntries: educationList,
@@ -269,28 +381,39 @@ const ProfileEditScreen = () => {
     });
   };
 
-  const handlePreview = async () => {
-    await persistToCache();
-    navigation.goBack();
-  };
+  const newTempId = () =>
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-  const toDate = (year: string, month: string): Date => {
-    const y = Number(year || new Date().getFullYear());
-    const m = Number(month || 1);
-    return new Date(y, m - 1, 1);
-  };
+  const mapEducationPayload = (e: EducationEntry) => ({
+    ...(e.educationId ? { educationId: e.educationId } : {}),
+    description: e.description,
+    startedAt: toOptionalIsoDate(e.startYear, e.startMonth),
+    endedAt: e.isOngoing
+      ? null
+      : toOptionalIsoDate(e.endYear, e.endMonth),
+    isOngoing: e.isOngoing ?? false,
+  });
 
-  const parseApiDateToYearMonth = (d: string | Date | undefined) => {
-    if (!d) return { year: "", month: "" };
-    const date = typeof d === "string" ? new Date(d) : d;
-    if (isNaN(date.getTime())) return { year: "", month: "" };
-    return {
-      year: String(date.getFullYear()),
-      month: String(date.getMonth() + 1).padStart(2, "0"),
-    };
-  };
+  const mapCareerPayload = (c: CareerEntry) => ({
+    ...(c.careerId ? { careerId: c.careerId } : {}),
+    description: c.description,
+    startedAt: toOptionalIsoDate(c.startYear, c.startMonth),
+    endedAt: c.isOngoing
+      ? null
+      : toOptionalIsoDate(c.endYear, c.endMonth),
+    isOngoing: c.isOngoing ?? false,
+  });
 
-  const newTempId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const mapAwardPayload = (a: AwardEntry) => ({
+    description: a.description,
+    awardedAt: toOptionalIsoDate(a.year, a.month),
+  });
+
+  const mapCertificatePayload = (c: CertificateEntry) => ({
+    ...(c.certificateId ? { certificateId: c.certificateId } : {}),
+    description: c.description,
+    obtainedAt: toOptionalIsoDate(c.year, c.month),
+  });
 
   const buildUpdatePayload = (): ProfileUpdateRequestDto | null => {
     if (!profile) return null;
@@ -310,26 +433,20 @@ const ProfileEditScreen = () => {
       isEmailSubscribed: current.isEmailSubscribed,
       isPushEnabled: current.isPushEnabled,
       socialId: current.socialId,
-      educations: (current.educationEntries ?? []).map((e: any) => ({
-        description: e.description,
-        startedAt: toDate(e.startYear, e.startMonth),
-        endedAt: toDate(e.endYear, e.endMonth),
-      })),
-      careers: (current.careerEntries ?? []).map((c: any) => ({
-        description: c.description,
-        startedAt: toDate(c.startYear, c.startMonth),
-        endedAt: toDate(c.endYear, c.endMonth),
-      })),
-      awards: (current.awardEntries ?? []).map((a: any) => ({
-        description: a.description,
-        awardedAt: toDate(a.year, a.month),
-      })),
+      educations: (current.educationEntries ?? []).map((e: any) =>
+        mapEducationPayload(e),
+      ),
+      careers: (current.careerEntries ?? []).map((c: any) =>
+        mapCareerPayload(c),
+      ),
+      awards: (current.awardEntries ?? []).map((a: any) =>
+        mapAwardPayload(a),
+      ),
       majorId: (current as any).majorId ?? null,
       majorDetail: (current as any).majorDetail,
-      certificates: (current.certificateEntries ?? []).map((c: any) => ({
-        description: c.description,
-        obtainedAt: toDate(c.year, c.month),
-      })),
+      certificates: (current.certificateEntries ?? []).map((c: any) =>
+        mapCertificatePayload(c),
+      ),
     };
 
     const fullPayload: ProfileUpdateRequestDto = {
@@ -347,28 +464,12 @@ const ProfileEditScreen = () => {
       isEmailSubscribed: current.isEmailSubscribed ?? false,
       isPushEnabled: current.isPushEnabled ?? false,
       socialId: current.socialId ?? "",
-      educations: educationList.map((e) => ({
-        ...(e.educationId ? { educationId: e.educationId } : {}),
-        description: e.description,
-        startedAt: toDate(e.startYear, e.startMonth),
-        endedAt: toDate(e.endYear, e.endMonth),
-      })),
-      careers: careerList.map((c) => ({
-        ...(c.careerId ? { careerId: c.careerId } : {}),
-        description: c.description,
-        startedAt: toDate(c.startYear, c.startMonth),
-        endedAt: toDate(c.endYear, c.endMonth),
-      })),
-      awards: awardList.map((a) => ({
-        description: a.description,
-        awardedAt: toDate(a.year, a.month),
-      })),
+      educations: educationList.map(mapEducationPayload),
+      careers: careerList.map(mapCareerPayload),
+      awards: awardList.map(mapAwardPayload),
       majorId: majorId ?? null,
       majorDetail,
-      certificates: certificateList.map((c) => ({
-        description: c.description,
-        obtainedAt: toDate(c.year, c.month),
-      })),
+      certificates: certificateList.map(mapCertificatePayload),
     };
 
     const diff: ProfileUpdateRequestDto = {};
@@ -433,13 +534,15 @@ const ProfileEditScreen = () => {
     }
 
     const payload = buildUpdatePayload();
-    if (!payload || submitting) {
+    const hasProfileImage = Boolean(pickedProfileImageUri);
+
+    if (submitting) {
+      return;
+    }
+
+    if (!payload && !hasProfileImage) {
       console.log(
-        "[ProfileEditScreen] early return (no payload or submitting)",
-        {
-          hasPayload: !!payload,
-          submitting,
-        },
+        "[ProfileEditScreen] early return (no payload or profile image)",
       );
       await persistToCache();
       navigation.goBack();
@@ -450,9 +553,16 @@ const ProfileEditScreen = () => {
       setSubmitting(true);
       console.log(
         "[ProfileEditScreen] update payload:",
-        JSON.stringify(payload),
+        JSON.stringify(payload ?? {}),
       );
-      const updated = await updateProfile(payload);
+      const imageOptions = hasProfileImage
+        ? {
+            profileImageUri: pickedProfileImageUri!,
+            profileImageName: "profile.jpg",
+            profileImageType: "image/jpeg",
+          }
+        : undefined;
+      const updated = await updateProfile(payload ?? {}, imageOptions);
       if (!updated) {
         await persistToCache();
         return;
@@ -463,9 +573,13 @@ const ProfileEditScreen = () => {
       if (fresh) {
         await saveProfileCache(fresh as any);
       } else {
+        const patchCounts = pickFollowCountsFromApiJson(
+          updated as Record<string, unknown>,
+        );
         const updatedProfileForCache: any = {
           ...(profile as any),
           ...(updated as any),
+          ...patchCounts,
           nickname,
           activityName,
           aboutMe,
@@ -495,68 +609,84 @@ const ProfileEditScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={0}
-    >
-      {/* 프로필 이미지 */}
-      <View style={styles.profileImageSection}>
-        <View style={styles.profileImageWrapper}>
-          {displayProfileImgUrl ? (
-            <Image
-              source={{ uri: displayProfileImgUrl }}
-              style={styles.profileImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={styles.profileImagePlaceholder}>
+    <View style={styles.container}>
+      <KeyboardAwareScrollView
+        ref={scrollRef}
+        style={styles.tabView}
+        contentContainerStyle={styles.scrollContentContainer}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid
+        enableAutomaticScroll
+        extraHeight={
+          tabIndex === 1 && isProfileEntryEditingFocused
+            ? Math.max(110, Math.floor(keyboardHeight * 0.34))
+            : tabIndex === 0 && isTopCustomMajorFocused
+              ? Math.max(90, Math.floor(keyboardHeight * 0.24))
+              : Platform.OS === "ios"
+                ? 36
+                : 56
+        }
+        extraScrollHeight={
+          tabIndex === 1 && isProfileEntryEditingFocused
+            ? Math.max(100, Math.floor(keyboardHeight * 0.28))
+            : tabIndex === 0 && isTopCustomMajorFocused
+              ? Math.max(80, Math.floor(keyboardHeight * 0.2))
+              : Platform.OS === "ios"
+                ? 24
+                : 36
+        }
+        keyboardOpeningTime={250}
+        enableResetScrollToCoords
+        stickyHeaderIndices={[1]}
+      >
+        {/* 프로필 이미지 */}
+        <Pressable style={styles.profileImageSection} onPress={pickProfileImage}>
+          <View style={styles.profileImageWrapper}>
+            {displayProfileImgUrl ? (
+              <Image
+                source={{ uri: displayProfileImgUrl }}
+                style={styles.profileImage}
+                resizeMode="cover"
+              />
+            ) : (
+              <View style={styles.profileImagePlaceholder}>
+                <MaterialCommunityIcons
+                  name="account"
+                  size={48}
+                  color={GRAY.DARK_2}
+                />
+              </View>
+            )}
+            <View style={styles.profileImageEditButton}>
               <MaterialCommunityIcons
-                name="account"
-                size={48}
-                color={GRAY.DARK_2}
+                name="camera-outline"
+                size={18}
+                color={WHITE}
               />
             </View>
-          )}
-          <Pressable style={styles.profileImageEditButton}>
-            <MaterialCommunityIcons
-              name="dots-horizontal"
-              size={20}
-              color={WHITE}
-            />
-          </Pressable>
-        </View>
-      </View>
+          </View>
+          <Text style={styles.profileImageChangeText}>사진 변경</Text>
+        </Pressable>
 
-      {/* 탭 */}
-      <TabView
-        navigationState={{ index: tabIndex, routes }}
-        renderScene={renderScene}
-        onIndexChange={setTabIndex}
-        renderTabBar={renderTabBar}
-        initialLayout={{ width: layout.width }}
-        style={styles.tabView}
-        swipeEnabled={false}
-      />
+        {/* 탭 */}
+        {renderTabBar()}
+
+        {renderScene({ route: routes[tabIndex] })}
+      </KeyboardAwareScrollView>
 
       {/* 수정 완료 버튼 */}
       <View style={styles.buttonContainer}>
-        <View style={styles.buttonRow}>
-          <Pressable style={styles.previewButton} onPress={handlePreview}>
-            <Text style={styles.previewButtonText}>미리보기</Text>
-          </Pressable>
-          <Pressable
-            style={styles.button}
-            onPress={handleComplete}
-            disabled={submitting}
-          >
-            <Text style={styles.buttonText}>
-              {submitting ? "저장 중..." : "수정 완료"}
-            </Text>
-          </Pressable>
-        </View>
+        <Pressable
+          style={styles.button}
+          onPress={handleComplete}
+          disabled={submitting}
+        >
+          <Text style={styles.buttonText}>
+            {submitting ? "저장 중..." : "수정 완료"}
+          </Text>
+        </Pressable>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

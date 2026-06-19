@@ -21,6 +21,12 @@ const styles = StyleSheet.create({
     backgroundColor: "#F2F3F5",
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
   },
   avatarText: {
     fontSize: 18,

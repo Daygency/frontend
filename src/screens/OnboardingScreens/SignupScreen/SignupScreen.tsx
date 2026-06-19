@@ -224,11 +224,14 @@ const SignupScreen = () => {
 
         <View style={styles.agreementSection}>
           <Pressable style={styles.agreementRow} onPress={handleAgreeAll}>
-            <MaterialCommunityIcons
-              name={agreeAll ? "radiobox-marked" : "radiobox-blank"}
-              size={22}
-              color={agreeAll ? MAIN.DEFAULT : GRAY.DARK_2}
-            />
+            <View
+              style={[
+                styles.agreementRadioBox,
+                agreeAll && styles.agreementRadioBoxChecked,
+              ]}
+            >
+              {agreeAll ? <View style={styles.agreementCheckmark} /> : null}
+            </View>
             <Text style={styles.agreementTitle}>모두 동의합니다.</Text>
           </Pressable>
           <Text style={styles.agreementDesc}>
@@ -240,22 +243,28 @@ const SignupScreen = () => {
             style={styles.agreementRow}
             onPress={() => setAgeChecked(!ageChecked)}
           >
-            <MaterialCommunityIcons
-              name={ageChecked ? "radiobox-marked" : "radiobox-blank"}
-              size={22}
-              color={ageChecked ? MAIN.DEFAULT : GRAY.DARK_2}
-            />
+            <View
+              style={[
+                styles.agreementRadioBox,
+                ageChecked && styles.agreementRadioBoxChecked,
+              ]}
+            >
+              {ageChecked ? <View style={styles.agreementCheckmark} /> : null}
+            </View>
             <Text style={styles.agreementItem}>14세 이상입니다.</Text>
           </Pressable>
           <Pressable
             style={styles.agreementRow}
             onPress={() => setTermsChecked(!termsChecked)}
           >
-            <MaterialCommunityIcons
-              name={termsChecked ? "radiobox-marked" : "radiobox-blank"}
-              size={22}
-              color={termsChecked ? MAIN.DEFAULT : GRAY.DARK_2}
-            />
+            <View
+              style={[
+                styles.agreementRadioBox,
+                termsChecked && styles.agreementRadioBoxChecked,
+              ]}
+            >
+              {termsChecked ? <View style={styles.agreementCheckmark} /> : null}
+            </View>
             <Text style={styles.agreementItem}>
               서비스 이용약관에 동의합니다.
             </Text>
@@ -264,11 +273,14 @@ const SignupScreen = () => {
             style={styles.agreementRow}
             onPress={() => setPrivacyChecked(!privacyChecked)}
           >
-            <MaterialCommunityIcons
-              name={privacyChecked ? "radiobox-marked" : "radiobox-blank"}
-              size={22}
-              color={privacyChecked ? MAIN.DEFAULT : GRAY.DARK_2}
-            />
+            <View
+              style={[
+                styles.agreementRadioBox,
+                privacyChecked && styles.agreementRadioBoxChecked,
+              ]}
+            >
+              {privacyChecked ? <View style={styles.agreementCheckmark} /> : null}
+            </View>
             <Text style={styles.agreementItem}>
               개인정보 수집 및 이용에 동의합니다.
             </Text>
@@ -277,11 +289,16 @@ const SignupScreen = () => {
             style={styles.agreementRow}
             onPress={() => setMarketingChecked(!marketingChecked)}
           >
-            <MaterialCommunityIcons
-              name={marketingChecked ? "radiobox-marked" : "radiobox-blank"}
-              size={22}
-              color={marketingChecked ? MAIN.DEFAULT : GRAY.DARK_2}
-            />
+            <View
+              style={[
+                styles.agreementRadioBox,
+                marketingChecked && styles.agreementRadioBoxChecked,
+              ]}
+            >
+              {marketingChecked ? (
+                <View style={styles.agreementCheckmark} />
+              ) : null}
+            </View>
             <Text style={[styles.agreementItem, styles.agreementOptional]}>
               마케팅(홍보) 목적의 개인정보 수집 및 이용에 동의합니다. (선택)
             </Text>

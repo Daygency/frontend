@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   tag: {
@@ -28,16 +28,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.24,
     color: BLACK,
     fontWeight: "400",
-  },
-  countdownTag: {
-    backgroundColor: MAIN.DEFAULT,
-  },
-  countdownTagText: {
-    fontSize: 12,
-    lineHeight: 21,
-    letterSpacing: 0.24,
-    color: WHITE,
-    fontWeight: "500",
   },
   reactionTag: {
     backgroundColor: GRAY.MEDIUM,

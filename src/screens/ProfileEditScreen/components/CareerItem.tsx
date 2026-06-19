@@ -1,42 +1,57 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, Pressable, findNodeHandle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
-import type { CareerEntry } from "../../../lib/apis/portfolio/profileApi";
-import DatePickerField from "./DatePickerField";
+import type { CareerEntry } from "../../../lib/apis/portfolio/types";
+import PeriodDateFields from "./PeriodDateFields";
+import { formatPeriod } from "./profileEntryUtils";
 import styles from "../styles";
 
 type Props = {
   entry: CareerEntry;
   onChange: (updates: Partial<CareerEntry>) => void;
   onDelete: () => void;
+  onEditingFocusChange?: (
+    focused: boolean,
+    inputNode?: number | null,
+    actionRowNode?: number | null,
+  ) => void;
 };
 
-const formatPeriod = (
-  sY: string,
-  sM: string,
-  eY: string,
-  eM: string,
-): string => {
-  const fmt = (y: string, m: string) =>
-    y && m ? `${y}.${m.padStart(2, "0")}` : y || "";
-  const start = fmt(sY, sM);
-  const end = fmt(eY, eM);
-  if (!start && !end) return "";
-  if (!end) return start;
-  return `${start} ~ ${end}`;
-};
-
-const CareerItem = ({ entry, onChange, onDelete }: Props) => {
+const CareerItem = ({
+  entry,
+  onChange,
+  onDelete,
+  onEditingFocusChange,
+}: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+  const actionRowRef = useRef<View>(null);
 
   const period = formatPeriod(
     entry.startYear,
     entry.startMonth,
     entry.endYear,
     entry.endMonth,
+    { isOngoing: entry.isOngoing, ongoingLabel: "재직 중" },
   );
+  const isDraftEntry =
+    !entry.careerId &&
+    !entry.description.trim() &&
+    !entry.startYear &&
+    !entry.startMonth &&
+    !entry.endYear &&
+    !entry.endMonth &&
+    !entry.isOngoing;
+
+  const handleCancel = () => {
+    if (isDraftEntry) {
+      onDelete();
+      return;
+    }
+    setIsEditing(false);
+  };
 
   if (!isEditing) {
     return (
@@ -57,7 +72,7 @@ const CareerItem = ({ entry, onChange, onDelete }: Props) => {
           >
             <MaterialCommunityIcons
               name="pencil-outline"
-              size={16}
+              size={18}
               color={GRAY.DARK}
             />
           </Pressable>
@@ -68,7 +83,7 @@ const CareerItem = ({ entry, onChange, onDelete }: Props) => {
           >
             <MaterialCommunityIcons
               name="close"
-              size={16}
+              size={18}
               color={GRAY.DARK_2}
             />
           </Pressable>
@@ -84,7 +99,6 @@ const CareerItem = ({ entry, onChange, onDelete }: Props) => {
           styles.input,
           styles.multilineInput,
           isFocused && styles.inputFocused,
-          { marginRight: 28 },
         ]}
         value={entry.description}
         onChangeText={(v) => onChange({ description: v })}
@@ -92,28 +106,46 @@ const CareerItem = ({ entry, onChange, onDelete }: Props) => {
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        autoFocus={isEditing && !entry.description.trim()}
+        onFocus={() => {
+          setIsFocused(true);
+          onEditingFocusChange?.(
+            true,
+            findNodeHandle(inputRef.current),
+            findNodeHandle(actionRowRef.current),
+          );
+        }}
+        onBlur={() => {
+          setIsFocused(false);
+          onEditingFocusChange?.(false);
+        }}
+        ref={inputRef}
       />
-      <DatePickerField
-        label="시작"
-        year={entry.startYear}
-        month={entry.startMonth}
-        pickerTitle="시작 년월"
-        onConfirm={(y, m) => onChange({ startYear: y, startMonth: m })}
+      <PeriodDateFields
+        startYear={entry.startYear}
+        startMonth={entry.startMonth}
+        endYear={entry.endYear}
+        endMonth={entry.endMonth}
+        isOngoing={entry.isOngoing ?? false}
+        onChangeStart={(y, m) => onChange({ startYear: y, startMonth: m })}
+        onChangeEnd={(y, m) =>
+          onChange({
+            endYear: y,
+            endMonth: m,
+            ...(y || m ? { isOngoing: false } : {}),
+          })
+        }
+        onChangeOngoing={(value) =>
+          onChange(
+            value
+              ? { isOngoing: true, endYear: "", endMonth: "" }
+              : { isOngoing: false },
+          )
+        }
+        currentLabel="현재 재직 중"
       />
-      <DatePickerField
-        label="종료"
-        year={entry.endYear}
-        month={entry.endMonth}
-        pickerTitle="종료 년월"
-        onConfirm={(y, m) => onChange({ endYear: y, endMonth: m })}
-      />
-      <View style={styles.entryButtonRow}>
-        <Pressable
-          style={styles.entryCancelButton}
-          onPress={() => setIsEditing(false)}
-        >
+      <View style={styles.entryButtonRow} ref={actionRowRef}>
+        <Pressable style={styles.entryCancelButton} onPress={handleCancel}>
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>
         <Pressable

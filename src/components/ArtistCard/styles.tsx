@@ -17,6 +17,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginRight: 10,
   },
+  avatarImage: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 25,
+  },
   textContainer: {
     flex: 1,
   },

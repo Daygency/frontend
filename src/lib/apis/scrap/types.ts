@@ -36,6 +36,13 @@ export type MyScrappedAnnouncementItem = {
   type: string;
   isRecruiting: boolean;
   dDay: string;
+  majorIds?: string[];
+  majors?: { majorId: string; name: string }[];
+  viewCount?: number;
+  /** 공연·모집 장소 */
+  address?: string;
+  /** 마감일 ISO 8601 — API `deadlineAt` (D-day 표시 보정용) */
+  deadlineAt?: string;
 };
 
 export type MyScrappedAnnouncementsResponse = {
@@ -59,6 +66,7 @@ export type MyScrappedCommunityItem = {
   likeCount?: number;
   viewCount?: number;
   commentCount?: number;
+  thumbnailUrl?: string | null;
 };
 
 export type MyScrappedNewsItem = {
@@ -71,6 +79,7 @@ export type MyScrappedNewsItem = {
   likeCount?: number;
   viewCount?: number;
   commentCount?: number;
+  thumbnailUrl?: string | null;
 };
 
 export type MyScrappedCommunityResponse = {

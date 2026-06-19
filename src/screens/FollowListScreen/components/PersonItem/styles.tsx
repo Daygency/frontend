@@ -6,42 +6,40 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
-    borderBottomWidth: 0, // No border as per image
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "#F0F0F0",
+  },
+  pressed: {
+    opacity: 0.7,
   },
   profileImage: {
-    width: 65,
-    height: 65,
-    borderRadius: 32.5,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: GRAY.DARK_1,
   },
   placeholderImage: {
-    width: 65,
-    height: 65,
-    borderRadius: 32.5,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: GRAY.DARK_1,
+    justifyContent: "center",
+    alignItems: "center",
   },
   infoContainer: {
     flex: 1,
     marginLeft: 12,
-  },
-  nameRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 2,
+    marginRight: 8,
   },
   name: {
-    fontSize: 22,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
     color: BLACK,
-    marginRight: 6,
   },
-  introduction: {
-    fontSize: 15,
-    color: BLACK,
-    fontWeight: "400",
-  },
-  deleteButton: {
-    padding: 8,
+  subtitle: {
+    fontSize: 14,
+    color: GRAY.DARK_2,
+    marginTop: 4,
   },
 });
 

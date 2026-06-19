@@ -1,24 +1,19 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
   RefreshControl,
-  ScrollView,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
-import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 import EventNewsCard from "../../../components/EventNewsCard/EventNewsCard";
 import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
-
-/** 메인 화면 공연소식 섹션과 동일한 기본 이미지 */
-const DEFAULT_NEWS_IMAGE_URL =
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
+import { pickNewsListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
 
 function formatRelativeTime(iso?: string): string {
   if (!iso) return "";
@@ -49,139 +44,7 @@ function formatRelativeTime(iso?: string): string {
   return `${years}년전`;
 }
 
-const MusicNewsScene = () => {
-  const navigation = useNavigation<any>();
-  const [items, setItems] = useState<NewsListItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const loadPage = useCallback(
-    async (cursor?: string | null, append = false) => {
-      if (append && !cursor) return;
-      if (append) setLoadingMore(true);
-      else if (!cursor) setLoading(true);
-
-      const res = await getNewsList({
-        cursor: cursor ?? undefined,
-        limit: 20,
-      });
-
-      if (append) setLoadingMore(false);
-      else setLoading(false);
-      setRefreshing(false);
-
-      if (!res) {
-        setError("목록을 불러오지 못했습니다.");
-        return;
-      }
-      setError(null);
-      setItems((prev) => (append ? [...prev, ...res.items] : res.items));
-      setNextCursor(res.nextCursor);
-      setHasMore(res.hasMore);
-    },
-    []
-  );
-
-  const refresh = useCallback(() => {
-    setRefreshing(true);
-    setNextCursor(null);
-    loadPage(null, false);
-  }, [loadPage]);
-
-  useEffect(() => {
-    loadPage(null, false);
-  }, []);
-
-  const handleEndReached = useCallback(() => {
-    if (!loadingMore && hasMore && nextCursor) {
-      loadPage(nextCursor, true);
-    }
-  }, [loadPage, loadingMore, hasMore, nextCursor]);
-
-  const renderItem = ({ item }: { item: NewsListItem }) => (
-    <EventNewsCard
-      title={item.title}
-      place={item.place}
-      dateRange=""
-      imageUrl={item.imageUrl || DEFAULT_NEWS_IMAGE_URL}
-      likeCount={item.likeCount ?? 0}
-      commentCount={item.commentCount ?? 0}
-      viewCount={item.viewCount ?? 0}
-      relativeTimeText={formatRelativeTime(item.startedAt)}
-      showPlace={false}
-      showDate={false}
-      containerStyle={localStyles.card}
-      onPress={() =>
-        navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, { newsId: item.newsId })
-      }
-    />
-  );
-
-  return (
-    <View style={styles.newsSceneContainer}>
-      <View style={styles.sortFilterWrap}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.sortFilterContainer}
-          nestedScrollEnabled
-          directionalLockEnabled
-          scrollEventThrottle={16}
-          bounces={false}
-          style={localStyles.sortScrollView}
-        >
-          <SelectableTag label="최신순" selected />
-        </ScrollView>
-      </View>
-      {loading ? (
-        <View style={localStyles.loaderContainer}>
-          <ActivityIndicator size="small" />
-        </View>
-      ) : error ? (
-        <View style={localStyles.loaderContainer}>
-          <Text style={localStyles.errorText}>{error}</Text>
-        </View>
-      ) : items.length === 0 ? (
-        <View style={localStyles.loaderContainer}>
-          <Text style={localStyles.emptyText}>등록된 공연소식이 없습니다.</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={items}
-          keyExtractor={(item) => item.newsId}
-          numColumns={2}
-          style={localStyles.flatList}
-          columnWrapperStyle={localStyles.columnWrapper}
-          contentContainerStyle={localStyles.listContent}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={refresh} />
-          }
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.3}
-          ListFooterComponent={
-            loadingMore ? (
-              <View style={localStyles.footerLoader}>
-                <ActivityIndicator size="small" />
-              </View>
-            ) : null
-          }
-        />
-      )}
-    </View>
-  );
-};
-
 const localStyles = StyleSheet.create({
-  sortScrollView: {
-    flexGrow: 0,
-  },
   flatList: {
     flex: 1,
     marginTop: 0,
@@ -223,6 +86,133 @@ const localStyles = StyleSheet.create({
     alignItems: "center",
   },
 });
+
+const MusicNewsScene = () => {
+  const navigation = useNavigation<any>();
+  const [items, setItems] = useState<NewsListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadPage = useCallback(
+    async (
+      cursor?: string | null,
+      append = false,
+      mode: "initial" | "refresh" | "more" = "initial",
+    ) => {
+      if (append && !cursor) return;
+      if (mode === "more") setLoadingMore(true);
+      else if (mode === "refresh") setRefreshing(true);
+      else setLoading(true);
+
+      const res = await getNewsList({
+        cursor: cursor ?? undefined,
+        limit: 20,
+      });
+
+      if (mode === "more") setLoadingMore(false);
+      else if (mode === "refresh") setRefreshing(false);
+      else setLoading(false);
+
+      if (!res) {
+        if (mode !== "more") {
+          setError("목록을 불러오지 못했습니다.");
+        }
+        return;
+      }
+      setError(null);
+      setItems((prev) => (append ? [...prev, ...res.items] : res.items));
+      setNextCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    },
+    [],
+  );
+
+  const refresh = useCallback(() => {
+    if (refreshing || loadingMore) return;
+    setNextCursor(null);
+    void loadPage(null, false, "refresh");
+  }, [loadPage, refreshing, loadingMore]);
+
+  useEffect(() => {
+    void loadPage(null, false, "initial");
+  }, [loadPage]);
+
+  const endReachReadyRef = useRef(false);
+
+  const handleEndReached = useCallback(() => {
+    if (!endReachReadyRef.current) return;
+    if (loadingMore || refreshing || loading || !hasMore || !nextCursor) return;
+    void loadPage(nextCursor, true, "more");
+  }, [loadPage, loadingMore, refreshing, loading, hasMore, nextCursor]);
+
+  const renderItem = ({ item }: { item: NewsListItem }) => (
+    <EventNewsCard
+      title={item.title}
+      place={item.place}
+      dateRange=""
+      imageUrl={pickNewsListThumbnailUrl(item)}
+      likeCount={item.likeCount ?? 0}
+      commentCount={item.commentCount ?? 0}
+      viewCount={item.viewCount ?? 0}
+      relativeTimeText={formatRelativeTime(item.startedAt)}
+      showPlace={false}
+      showDate={false}
+      containerStyle={localStyles.card}
+      onPress={() =>
+        navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, { newsId: item.newsId })
+      }
+    />
+  );
+
+  return (
+    <View style={styles.newsSceneContainer}>
+      {loading && items.length === 0 ? (
+        <View style={localStyles.loaderContainer}>
+          <ActivityIndicator size="small" />
+        </View>
+      ) : error ? (
+        <View style={localStyles.loaderContainer}>
+          <Text style={localStyles.errorText}>{error}</Text>
+        </View>
+      ) : items.length === 0 ? (
+        <View style={localStyles.loaderContainer}>
+          <Text style={localStyles.emptyText}>등록된 공연소식이 없습니다.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.newsId}
+          numColumns={2}
+          style={localStyles.flatList}
+          columnWrapperStyle={localStyles.columnWrapper}
+          contentContainerStyle={localStyles.listContent}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+          removeClippedSubviews={false}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+          }
+          onMomentumScrollBegin={() => {
+            endReachReadyRef.current = true;
+          }}
+          onEndReached={handleEndReached}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <View style={localStyles.footerLoader}>
+                <ActivityIndicator size="small" />
+              </View>
+            ) : null
+          }
+        />
+      )}
+    </View>
+  );
+};
 
 export default MusicNewsScene;
 

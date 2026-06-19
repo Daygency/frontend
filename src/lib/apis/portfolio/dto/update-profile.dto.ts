@@ -3,25 +3,28 @@ import { UserRole } from "../types";
 export type Education = {
   educationId?: string;
   description: string;
-  startedAt: Date;
-  endedAt: Date;
+  startedAt?: string | null;
+  endedAt?: string | null;
+  isOngoing?: boolean;
 };
 
 export type Career = {
   careerId?: string;
   description: string;
-  startedAt: Date;
-  endedAt: Date;
+  startedAt?: string | null;
+  endedAt?: string | null;
+  isOngoing?: boolean;
 };
 
 export type Award = {
   description: string;
-  awardedAt: Date;
+  awardedAt?: string | null;
 };
 
 export type Certificate = {
+  certificateId?: string;
   description: string;
-  obtainedAt: Date;
+  obtainedAt?: string | null;
 };
 
 export type ProfileUpdateRequestDto = {
@@ -36,6 +39,7 @@ export type ProfileUpdateRequestDto = {
   profileImgUrl?: string;
   isEmailSubscribed?: boolean;
   isPushEnabled?: boolean;
+  isPortfolioPrivate?: boolean;
   socialId?: string;
   educations?: Education[];
   careers?: Career[];

@@ -1,4 +1,4 @@
-import { Platform, TextInput } from "react-native";
+import { Platform, TextInput, type TextInputProps } from "react-native";
 import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
 import styles from "./styles";
 
@@ -7,6 +7,7 @@ type FormTextInputProps = {
   value?: string;
   onChangeText?: (text: string) => void;
   hasError?: boolean;
+  keyboardType?: TextInputProps["keyboardType"];
 };
 
 const FormTextInput = ({
@@ -14,6 +15,7 @@ const FormTextInput = ({
   value,
   onChangeText,
   hasError,
+  keyboardType,
 }: FormTextInputProps) => {
   return (
     <ShadowCardButton
@@ -31,6 +33,7 @@ const FormTextInput = ({
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
+        keyboardType={keyboardType}
       />
     </ShadowCardButton>
   );

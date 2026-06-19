@@ -1,7 +1,9 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY } from "../../color";
+import { sharedAnnouncementStyles } from "../AnnouncementShared/sharedAnnouncementStyles";
 
-const styles = StyleSheet.create({
+export default StyleSheet.create({
+  ...sharedAnnouncementStyles,
   container: {
     width: "100%",
   },
@@ -11,58 +13,48 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     marginBottom: 3,
   },
-  tagsContainer: {
+  tagsRow: {
     flexDirection: "row",
+    alignItems: "center",
     gap: 6,
+    width: "100%",
+  },
+  addressInline: {
     flex: 1,
-  },
-  typeTag: {
-    backgroundColor: GRAY.DARK_1,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  typeTagText: {
+    minWidth: 0,
     fontSize: 12,
-    lineHeight: 13,
-    letterSpacing: 0.24,
+    lineHeight: 14,
+    letterSpacing: 0.2,
     color: BLACK,
-    fontWeight: "400",
-  },
-  statusTag: {
-    backgroundColor: WHITE,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  statusTagText: {
-    fontSize: 12,
-    lineHeight: 13,
-    letterSpacing: 0.24,
-    color: BLACK,
-    fontWeight: "400",
-  },
-  countdownBadge: {
-    backgroundColor: MAIN.DEFAULT,
-    borderRadius: 6,
-    paddingHorizontal: 9,
-    paddingVertical: 3,
-  },
-  countdownText: {
-    fontSize: 12,
-    lineHeight: 13,
-    color: WHITE,
     fontWeight: "500",
   },
-  title: {
-    fontSize: 14,
-    lineHeight: 24,
-    letterSpacing: 0.3,
-    fontWeight: "600",
+  recruitmentMajorsSection: {
+    marginTop: 10,
+  },
+  recruitmentMajorsLabel: {
+    fontSize: 11,
+    lineHeight: 14,
+    color: GRAY.DARK_2,
+    fontWeight: "500",
+    marginBottom: 6,
+  },
+  recruitmentMajorsChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 5,
+  },
+  recruitmentMajorChip: {
+    backgroundColor: GRAY.DEFAULT,
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+  },
+  recruitmentMajorChipText: {
+    fontSize: 10,
+    lineHeight: 13,
     color: BLACK,
+    fontWeight: "400",
   },
 });
-
-export default styles;

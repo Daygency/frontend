@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
-import type { CommentItem, CreateCommentDto, GetCommentsParams } from "./types";
+import type { CommentItem, CreateCommentDto, GetCommentsParams, UpdateCommentDto } from "./types";
 
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
@@ -10,6 +10,22 @@ async function getAuthHeadersRequired(): Promise<Record<string, string>> {
     "Content-Type": "application/json",
     Authorization: `Bearer ${token}`,
   };
+}
+
+export async function getCommentById(id: string): Promise<CommentItem | null> {
+  try {
+    const url = `${API_BASE}/comment/${encodeURIComponent(id)}`;
+    const res = await fetch(url);
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[getCommentById] 실패:", res.status, url, errText);
+      return null;
+    }
+    return (await res.json()) as CommentItem;
+  } catch (e) {
+    console.warn("[getCommentById] 네트워크 에러:", e);
+    return null;
+  }
 }
 
 export async function getComments(
@@ -53,5 +69,44 @@ export async function createComment(
   } catch (e) {
     console.warn("[createComment] 에러:", e);
     return null;
+  }
+}
+
+export async function updateComment(
+  id: string,
+  dto: UpdateCommentDto,
+): Promise<CommentItem | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/comment/${id}`, {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify(dto),
+    });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[updateComment] 실패:", res.status, errText);
+      return null;
+    }
+    return res.json() as Promise<CommentItem>;
+  } catch (e) {
+    console.warn("[updateComment] 에러:", e);
+    return null;
+  }
+}
+
+export async function deleteComment(
+  id: string,
+): Promise<{ ok: boolean; status?: number }> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/comment/${id}`, {
+      method: "DELETE",
+      headers,
+    });
+    return { ok: res.ok, status: res.status };
+  } catch (e) {
+    console.warn("[deleteComment] 에러:", e);
+    return { ok: false };
   }
 }

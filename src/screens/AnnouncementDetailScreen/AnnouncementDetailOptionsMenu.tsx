@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
+  InteractionManager,
   Modal,
   Pressable,
   Text,
@@ -94,7 +95,10 @@ const AnnouncementDetailOptionsMenu = ({
 
   const handleReport = () => {
     setMenuVisible(false);
-    onReport?.();
+    /** 전체 화면 Pressable과 겹치지 않게 메뉴 닫은 뒤 신고 모달 오픈 */
+    InteractionManager.runAfterInteractions(() => {
+      onReport?.();
+    });
   };
 
   const menuItems: { label: string; onPress: () => void }[] = [];
@@ -143,13 +147,20 @@ const AnnouncementDetailOptionsMenu = ({
         animationType="fade"
         onRequestClose={() => setMenuVisible(false)}
       >
-        <Pressable
-          style={StyleSheet.absoluteFill}
-          onPress={() => setMenuVisible(false)}
-        >
+        <View style={styles.modalRoot} pointerEvents="box-none">
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => setMenuVisible(false)}
+          />
           <View
-            style={[styles.dropdown, { top: dropdownPosition.y, right: undefined, left: dropdownPosition.x }]}
-            onStartShouldSetResponder={() => true}
+            style={[
+              styles.dropdown,
+              {
+                top: dropdownPosition.y,
+                left: dropdownPosition.x,
+              },
+            ]}
+            pointerEvents="box-none"
           >
             {menuItems.map((item) => (
               <Pressable
@@ -164,13 +175,16 @@ const AnnouncementDetailOptionsMenu = ({
               </Pressable>
             ))}
           </View>
-        </Pressable>
+        </View>
       </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  modalRoot: {
+    flex: 1,
+  },
   rightItemsWrap: {
     flexDirection: "row",
     alignItems: "center",

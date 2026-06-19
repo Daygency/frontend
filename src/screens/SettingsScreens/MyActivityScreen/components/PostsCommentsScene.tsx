@@ -9,42 +9,31 @@ import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
 import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
 import styles from "../styles";
 import AnnouncementCard from "../../../../components/AnnouncementCard/AnnouncementCard";
-import EventNewsCard, {
-  DEFAULT_NEWS_IMAGE_URI,
-} from "../../../../components/EventNewsCard/EventNewsCard";
-import { getMyPostHighlights } from "../../../../lib/apis/userPosts/myPostsApi";
+import EventNewsCard from "../../../../components/EventNewsCard/EventNewsCard";
+import { normalizeListThumbnailUrl } from "../../../../lib/media/listThumbnailUrl";
+import { getMyPostHighlights, getMyComments } from "../../../../lib/apis/userPosts/myPostsApi";
 import type {
   MyAnnouncementPostItem,
   MyCommunityPostItem,
+  MyCommentPostItem,
   MyNewsPostItem,
 } from "../../../../lib/apis/userPosts/types";
 
 type FilterOption = "작성글" | "댓글";
-
-const MOCK_COMMENTS = [
-  {
-    id: "c1",
-    title: "오늘 공연 후기 모음",
-    contentPreview: "다들 수고 많으셨습니다! 다음 공연도 기대됩니다",
-    author: "관람객A",
-    date: "2025.11.18",
-    likes: 32,
-    comments: 12,
-    scraps: 8,
-  },
-];
 
 type RootStackParamList = {
   MyActivityList: { type: "posts" | "comments" };
   MyActivityNewsList: undefined;
   MyActivityAnnouncementList: undefined;
   CommunityDetail: { communityId: string };
+  MusicNewsDetail: { newsId: string };
   AnnouncementDetail: {
     postId?: string;
     title: string;
     type: string;
     status: string;
     daysLeft: number;
+    viewCount?: number;
   };
 };
 
@@ -58,6 +47,7 @@ type ActivityCardItem = {
   comments: number;
   scraps: number;
   views?: number;
+  thumbnailUrl?: string;
 };
 
 const PostsCommentsScene = () => {
@@ -69,7 +59,23 @@ const PostsCommentsScene = () => {
   const [recentNews, setRecentNews] = useState<MyNewsPostItem[]>([]);
   const [latestAnnouncement, setLatestAnnouncement] =
     useState<MyAnnouncementPostItem | null>(null);
-  const commentsData = selectedFilter === "댓글" ? MOCK_COMMENTS : [];
+  const [myComments, setMyComments] = useState<MyCommentPostItem[]>([]);
+  const commentsData = useMemo(
+    (): ActivityCardItem[] =>
+      selectedFilter === "댓글"
+        ? myComments.slice(0, 1).map((item) => ({
+            id: item.commentId,
+            title: item.postTitle?.trim() || "댓글 단 글",
+            contentPreview: item.content,
+            author: "나",
+            date: formatDate(item.createdAt),
+            likes: 0,
+            comments: 0,
+            scraps: 0,
+          }))
+        : [],
+    [selectedFilter, myComments],
+  );
   const postsData = useMemo(
     () =>
       selectedFilter === "작성글"
@@ -85,6 +91,7 @@ const PostsCommentsScene = () => {
                 comments: Number(latestCommunity.commentCount ?? 0),
                 scraps: 0,
                 views: Number(latestCommunity.viewCount ?? 0),
+                thumbnailUrl: normalizeListThumbnailUrl(latestCommunity.thumbnailUrl),
               },
             ]
           : []
@@ -106,6 +113,14 @@ const PostsCommentsScene = () => {
       setLatestAnnouncement(res.latestAnnouncement);
     })();
   }, []);
+
+  useEffect(() => {
+    if (selectedFilter !== "댓글") return;
+    (async () => {
+      const res = await getMyComments();
+      setMyComments(res ?? []);
+    })();
+  }, [selectedFilter]);
 
   const handlePressCommunity = () => {
     navigation.navigate(RootRoutes.MY_ACTIVITY_LIST, {
@@ -145,6 +160,7 @@ const PostsCommentsScene = () => {
             comments={item.comments}
             scraps={item.scraps}
             views={item.views}
+            thumbnailUrl={item.thumbnailUrl}
             onPress={onPressItem ? () => onPressItem(item) : undefined}
           />
         ))
@@ -176,7 +192,7 @@ const PostsCommentsScene = () => {
                   title={item.title}
                   place={item.place ?? ""}
                   dateRange={formatDate(item.createdAt)}
-                  imageUrl={DEFAULT_NEWS_IMAGE_URI}
+                  imageUrl={normalizeListThumbnailUrl(item.thumbnailUrl)}
                   width={138}
                   height={138}
                 />
@@ -216,6 +232,8 @@ const PostsCommentsScene = () => {
             type={item.category ?? "기타"}
             status={normalizeStatus(item.status, item.deadlineAt)}
             daysLeft={getDaysLeft(item.deadlineAt)}
+            deadlineAt={item.deadlineAt}
+            viewCount={item.viewCount}
             onPress={() =>
               navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                 postId: item.postId,
@@ -223,6 +241,7 @@ const PostsCommentsScene = () => {
                 type: item.category ?? "기타",
                 status: normalizeStatus(item.status, item.deadlineAt),
                 daysLeft: getDaysLeft(item.deadlineAt),
+                viewCount: item.viewCount,
               })
             }
           />
@@ -286,7 +305,7 @@ const localStyles = StyleSheet.create({
     display: "none",
   },
   newsRow: {
-    paddingHorizontal: 0,
+    paddingHorizontal: 20,
     gap: 14,
   },
   newsCard: {

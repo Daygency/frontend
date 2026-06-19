@@ -8,6 +8,7 @@ export type EducationEntry = {
   startMonth: string;
   endYear: string;
   endMonth: string;
+  isOngoing?: boolean;
 };
 
 export type CareerEntry = {
@@ -18,6 +19,7 @@ export type CareerEntry = {
   startMonth: string;
   endYear: string;
   endMonth: string;
+  isOngoing?: boolean;
 };
 
 export type AwardEntry = {
@@ -29,6 +31,7 @@ export type AwardEntry = {
 
 export type CertificateEntry = {
   id: string;
+  certificateId?: string;
   description: string;
   year: string;
   month: string;
@@ -38,6 +41,7 @@ export type CertificateEntry = {
 
 export type ProfileResponseDto = {
   profileImgUrl: string;
+  coverImgUrl?: string;
   nickname: string;
   activityName?: string;
   role: UserRole;
@@ -56,4 +60,32 @@ export type ProfileResponseDto = {
     email: string;
     phoneNumber: string;
   };
+  /** 내 프로필 API가 내려주는 경우 */
+  userId?: string;
+  followerCount?: number;
+  followingCount?: number;
+  isPortfolioPrivate?: boolean;
+};
+
+/** GET /users/:id/profile — 공개 프로필 (연락처 없음) */
+export type PublicProfileResponseDto = {
+  userId: string;
+  profileImgUrl: string;
+  coverImgUrl?: string;
+  nickname: string;
+  activityName: string;
+  role: string;
+  aboutMe: string;
+  selfIntroduction: string;
+  educations: unknown[] | null;
+  careers: unknown[] | null;
+  awards: unknown[] | null;
+  certificates?: unknown[] | null;
+  major: { majorId: string; name: string } | null;
+  followerCount?: number;
+  followingCount?: number;
+  /**
+   * 로그인한 조회자 기준 팔로우 여부 (백엔드가 내려줄 때)
+   */
+  isFollowing?: boolean;
 };

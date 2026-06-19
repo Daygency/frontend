@@ -5,15 +5,16 @@ export const styles = StyleSheet.create({
   container: {
     marginBottom: 8,
   },
+  /** 모집공고 상단 필터 — 정렬 탭과 동일한 비선택(연회색) 톤 */
   triggerButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     alignSelf: "flex-start",
-    backgroundColor: WHITE,
+    backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 100,
     borderWidth: 1,
-    borderColor: MAIN.DEFAULT,
+    borderColor: GRAY.MEDIUM_2,
     paddingHorizontal: 12,
     height: 36,
     overflow: "hidden",

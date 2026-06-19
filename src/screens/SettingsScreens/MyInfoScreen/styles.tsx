@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { WHITE } from "../../../color";
+import { GRAY, WHITE } from "../../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -8,6 +8,14 @@ const styles = StyleSheet.create({
   },
   contentContainer: {
     padding: 20,
+  },
+  centered: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  errorText: {
+    fontSize: 14,
+    color: GRAY.MEDIUM_100,
   },
 });
 

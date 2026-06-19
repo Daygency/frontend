@@ -15,11 +15,18 @@ export const RED = {
   DEFAULT: "#EC1313",
   DARK: "#BE0A0A",
 };
+/** D-day 태그: 마감 10일 이내 강조용 */
+export const PURPLE = {
+  DEFAULT: "#7C3AED",
+};
 export const BLUE = {
   LIGHT_1: "#A7B8E266",
   DEFAULT: "#0057D9",
 };
 export const MAIN = {
   DEFAULT: "#1F2A44",
+  // DEFAULT: "#5E8E78",
+  // DEFAULT: "black",
+  // DEFAULT: "#1a47a6",
   LIGHT: "#B0B7C9",
 };

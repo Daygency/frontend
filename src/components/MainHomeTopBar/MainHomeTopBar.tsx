@@ -29,7 +29,10 @@ const MainHomeTopBar = ({ logoName, initialTag }: MainHomeTopBarProps) => {
         <Pressable style={styles.iconButton} onPress={handleSearchPress}>
           <Feather name="search" size={23} color={MAIN.DEFAULT} />
         </Pressable>
-        <Pressable style={styles.iconButton}>
+        <Pressable
+          style={styles.iconButton}
+          onPress={() => navigation.navigate(RootRoutes.NOTIFICATIONS)}
+        >
           <MaterialCommunityIcons
             name="bell-outline"
             size={23}

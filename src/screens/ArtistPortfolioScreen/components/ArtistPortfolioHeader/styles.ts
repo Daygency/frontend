@@ -1,22 +1,26 @@
 import { StyleSheet } from "react-native";
 import { BLACK, WHITE } from "../../../../color";
-import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../../PortfolioScreen/styles";
 
 const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
-    height: MAIN_HOME_TOP_BAR_HEIGHT,
-    flexDirection: "row",
     paddingHorizontal: 8,
-    alignItems: "center",
-    paddingBottom: 15,
+    paddingBottom: 12,
     paddingTop: 10,
     backgroundColor: WHITE,
+  },
+  topRow: {
+    minHeight: 40,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   leftContainer: {
     flexDirection: "row",
     alignItems: "center",
     flex: 1,
+    minWidth: 0,
+    marginRight: 8,
   },
   backButton: {
     padding: 4,
@@ -27,6 +31,14 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: BLACK,
     flex: 1,
+  },
+  menuButton: {
+    padding: 6,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  menuPlaceholder: {
+    width: 38,
   },
 });
 

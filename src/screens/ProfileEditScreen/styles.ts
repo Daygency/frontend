@@ -1,5 +1,9 @@
 import { Platform, StyleSheet } from "react-native";
 import { BLUE, GRAY, MAIN, WHITE } from "../../color";
+import {
+  PORTFOLIO_BODY_BG,
+  PORTFOLIO_SECTION_GAP,
+} from "../PortfolioScreen/styles";
 
 const styles = StyleSheet.create({
   container: {
@@ -13,6 +17,13 @@ const styles = StyleSheet.create({
   profileImageSection: {
     alignItems: "center",
     paddingVertical: 24,
+    backgroundColor: WHITE,
+  },
+  profileImageChangeText: {
+    marginTop: 10,
+    fontSize: 13,
+    fontWeight: "500",
+    color: GRAY.DARK,
   },
   profileImageWrapper: {
     width: 120,
@@ -46,10 +57,16 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   tabBarContainer: {
-    flexDirection: "row",
+    width: "100%",
     paddingHorizontal: 20,
+    paddingTop: 4,
     paddingBottom: 16,
-    gap: 12,
+    backgroundColor: WHITE,
+  },
+  tabBarRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
   },
   tabButton: {
     flex: 1,
@@ -57,6 +74,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     alignItems: "center",
     justifyContent: "center",
+  },
+  tabButtonLeft: {
+    marginRight: 6,
+  },
+  tabButtonRight: {
+    marginLeft: 6,
   },
   tabButtonActive: {
     backgroundColor: MAIN.DEFAULT,
@@ -76,16 +99,31 @@ const styles = StyleSheet.create({
   },
   tabView: {
     flex: 1,
+    backgroundColor: PORTFOLIO_BODY_BG,
+  },
+  scrollContentContainer: {
+    paddingBottom: 140,
+    backgroundColor: PORTFOLIO_BODY_BG,
   },
   tabContent: {
     flex: 1,
   },
   tabContentContainer: {
-    paddingHorizontal: 20,
-    paddingBottom: 24,
+    paddingTop: PORTFOLIO_SECTION_GAP,
+    paddingBottom: 120,
+    backgroundColor: PORTFOLIO_BODY_BG,
+  },
+  contentSheet: {
+    backgroundColor: WHITE,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    marginBottom: PORTFOLIO_SECTION_GAP,
   },
   field: {
-    marginBottom: 20,
+    marginBottom: 16,
+  },
+  fieldLast: {
+    marginBottom: 0,
   },
   label: {
     fontSize: 14,
@@ -152,29 +190,13 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  buttonRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 12,
-  },
   button: {
-    flex: 2,
+    width: "100%",
     backgroundColor: MAIN.DEFAULT,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
-  },
-  previewButton: {
-    flex: 1,
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: "center",
-    justifyContent: "center",
-    borderWidth: 1,
-    borderColor: MAIN.DEFAULT,
-    backgroundColor: WHITE,
   },
   buttonText: {
     fontSize: 16,
@@ -182,31 +204,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: WHITE,
   },
-  previewButtonText: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    color: MAIN.DEFAULT,
-  },
 
-  // ── 섹션 카드 & 헤더 ──
+  // ── 섹션 & 헤더 ──
+  section: {
+    marginBottom: 0,
+  },
   sectionCard: {
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
-    borderRadius: 16,
-    backgroundColor: WHITE,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    marginBottom: 0,
   },
   sectionHeader: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   sectionTitle: {
-    fontSize: 14,
-    fontWeight: "600",
+    fontSize: 16,
+    fontWeight: "700",
     color: GRAY.DARK_100,
   },
   sectionSubtitle: {
@@ -250,15 +264,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
   },
 
-  // ── 항목 카드 ──
+  // ── 항목 (플랫 리스트) ──
+  entryDivider: {
+    height: 1,
+    backgroundColor: GRAY.MEDIUM,
+  },
   entryCard: {
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
-    backgroundColor: GRAY.DEFAULT_1,
-    position: "relative",
+    paddingVertical: 16,
+    gap: 12,
   },
   deleteButton: {
     position: "absolute",
@@ -273,7 +286,72 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
 
-  // ── 날짜 선택 버튼 ──
+  // ── 날짜 드롭다운 (LinkedIn 스타일) ──
+  periodFields: {
+    gap: 4,
+  },
+  dateFieldGroup: {
+    marginTop: 4,
+    gap: 6,
+  },
+  dateFieldLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: GRAY.DARK_100,
+  },
+  dateDropdownRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  dateDropdownWrap: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM,
+    borderRadius: 8,
+    backgroundColor: WHITE,
+    overflow: "hidden",
+  },
+  dateDropdownDisabled: {
+    opacity: 0.45,
+  },
+  dateDropdown: {
+    height: 44,
+    paddingHorizontal: 12,
+  },
+  dateDropdownPlaceholder: {
+    fontSize: 14,
+    color: GRAY.DARK_2,
+  },
+  dateDropdownText: {
+    fontSize: 14,
+    color: GRAY.DARK_100,
+  },
+  dateDropdownItemText: {
+    fontSize: 14,
+    color: GRAY.DARK_100,
+  },
+  dateDropdownContainer: {
+    borderRadius: 8,
+    borderColor: GRAY.MEDIUM,
+    backgroundColor: WHITE,
+  },
+  dateDropdownIcon: {
+    width: 18,
+    height: 18,
+  },
+  currentToggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 4,
+    paddingVertical: 4,
+  },
+  currentToggleText: {
+    fontSize: 14,
+    color: GRAY.DARK_100,
+  },
+
+  // ── (legacy) 날짜 선택 버튼 ──
   ymRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -334,23 +412,20 @@ const styles = StyleSheet.create({
   entryButtonRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "flex-end",
     gap: 8,
-    marginTop: 12,
+    marginTop: 4,
   },
   entryCancelButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
-    backgroundColor: WHITE,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
     alignItems: "center",
     justifyContent: "center",
   },
   entryCompleteButton: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
     backgroundColor: MAIN.DEFAULT,
     alignItems: "center",
     justifyContent: "center",
@@ -368,13 +443,7 @@ const styles = StyleSheet.create({
 
   // ── 항목 접힌(요약) 뷰 ──
   entryCompactCard: {
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 10,
-    backgroundColor: WHITE,
+    paddingVertical: 14,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
@@ -402,8 +471,6 @@ const styles = StyleSheet.create({
   entryCompactIconButton: {
     width: 28,
     height: 28,
-    borderRadius: 8,
-    backgroundColor: GRAY.DEFAULT_1,
     justifyContent: "center",
     alignItems: "center",
   },

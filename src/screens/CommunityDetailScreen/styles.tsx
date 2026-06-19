@@ -6,10 +6,17 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: WHITE,
   },
+  /** KeyboardAvoidingView 안: 스크롤 + 하단 댓글 (채팅과 동일한 flex 구조) */
+  detailInner: {
+    flex: 1,
+  },
+  detailScroll: {
+    flex: 1,
+  },
   scrollContent: {
     paddingHorizontal: 20,
     paddingTop: 16,
-    paddingBottom: 96,
+    paddingBottom: 24,
   },
   header: {
     marginBottom: 16,
@@ -43,6 +50,15 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 22,
     color: BLACK,
+  },
+  imageGallery: {
+    marginTop: 16,
+  },
+  contentImage: {
+    width: "100%",
+    height: 220,
+    borderRadius: 12,
+    marginBottom: 10,
   },
   actionRow: {
     height: 54,
@@ -205,11 +221,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   commentInputContainer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     backgroundColor: WHITE,
+    borderTopWidth: 1,
+    borderTopColor: GRAY.DEFAULT,
   },
   replyActionText: {
     fontSize: 12,

@@ -1,7 +1,7 @@
 import { Text, View, ViewStyle } from "react-native";
 import styles from "./styles";
 
-type TagVariant = "type" | "status" | "countdown" | "reaction";
+type TagVariant = "type" | "status" | "reaction";
 
 interface TagProps {
   text: string;
@@ -29,9 +29,6 @@ const Tag = ({
         break;
       case "status":
         baseStyle.push(styles.statusTag as ViewStyle);
-        break;
-      case "countdown":
-        baseStyle.push(styles.countdownTag as ViewStyle);
         break;
       case "reaction":
         baseStyle.push(styles.reactionTag as ViewStyle);
@@ -64,9 +61,6 @@ const Tag = ({
         break;
       case "status":
         textStyle.push(styles.statusTagText);
-        break;
-      case "countdown":
-        textStyle.push(styles.countdownTagText);
         break;
       case "reaction":
         textStyle.push(styles.reactionTagText);

@@ -22,6 +22,10 @@ interface Styles {
 interface SectionProps {
   title: string;
   onPressMore?: () => void;
+  /** 기본값: "더 보기" */
+  moreLabel?: string;
+  /** 기본값: navigate-next */
+  moreIconName?: React.ComponentProps<typeof MaterialIcons>["name"];
   children: ReactNode;
   styles?: Styles;
 }
@@ -29,6 +33,8 @@ interface SectionProps {
 export default function Section({
   title,
   onPressMore,
+  moreLabel = "더 보기",
+  moreIconName = "navigate-next",
   children,
   styles,
 }: SectionProps) {
@@ -45,10 +51,10 @@ export default function Section({
         {onPressMore && (
           <TouchableOpacity onPress={onPressMore}>
             <View style={defaultStyles.moreContainer}>
-              <Text style={[defaultStyles.more, styles?.more]}>더 보기</Text>
+              <Text style={[defaultStyles.more, styles?.more]}>{moreLabel}</Text>
               <MaterialIcons
                 styles={defaultStyles.moreIcon}
-                name="navigate-next"
+                name={moreIconName}
                 size={24}
                 color="black"
               />

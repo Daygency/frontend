@@ -47,29 +47,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
   },
-  sortTab: {
-    backgroundColor: WHITE,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: MAIN.DEFAULT,
-    paddingHorizontal: 12,
-    height: 36,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  sortTabActive: {
-    borderColor: MAIN.DEFAULT,
-    backgroundColor: MAIN.DEFAULT,
-  },
-  sortTabText: {
-    color: MAIN.DEFAULT,
-    fontSize: 14,
-    fontWeight: "400",
-  },
-  sortTabTextActive: {
-    color: WHITE,
-    fontWeight: "500",
-  },
   scrollContentWrapper: {
     flex: 1,
   },

@@ -1,31 +1,32 @@
-import { View, Text, Pressable, ScrollView, Image, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  ScrollView,
+  Image,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useKakaoLogin } from "./useKakaoLogin";
+import { useNaverLogin } from "./useNaverLogin";
 import { styles } from "./styles";
 
 const SocialLoginScreen = () => {
   const { top, bottom } = useSafeAreaInsets();
-  const { login, enterBrowse } = useAuth();
+  const { enterBrowse } = useAuth();
   const { handleKakaoLogin, isLoading: isKakaoLoading } = useKakaoLogin();
+  const { handleNaverLogin, isLoading: isNaverLoading } = useNaverLogin();
 
-  const handleNaverLogin = async () => {
-    await login("naver_dummy_token", {
-      socialId: "",
-      nickname: "",
-      email: "",
-      profileImgUrl: "",
-    });
-  };
+  const authBusy = isKakaoLoading || isNaverLoading;
 
-  const handleGoogleLogin = async () => {
-    await login("google_dummy_token", {
-      socialId: "",
-      nickname: "",
-      email: "",
-      profileImgUrl: "",
-    });
+  const handleGoogleLogin = () => {
+    Alert.alert(
+      "준비 중",
+      "구글 로그인은 현재 준비 중입니다. 카카오 또는 네이버로 로그인해 주세요.",
+    );
   };
 
   return (
@@ -57,7 +58,7 @@ const SocialLoginScreen = () => {
             pressed && styles.buttonPressed,
           ]}
           onPress={handleKakaoLogin}
-          disabled={isKakaoLoading}
+          disabled={authBusy}
         >
           {isKakaoLoading ? (
             <ActivityIndicator size="small" color="#000" />
@@ -76,10 +77,15 @@ const SocialLoginScreen = () => {
             pressed && styles.buttonPressed,
           ]}
           onPress={handleNaverLogin}
+          disabled={authBusy}
         >
-          <Text style={styles.naverLogo}>N</Text>
+          {isNaverLoading ? (
+            <ActivityIndicator size="small" color="#fff" />
+          ) : (
+            <Text style={styles.naverLogo}>N</Text>
+          )}
           <Text style={[styles.buttonText, styles.naverButtonText]}>
-            네이버로 시작하기
+            {isNaverLoading ? "로그인 중..." : "네이버로 시작하기"}
           </Text>
         </Pressable>
 
@@ -88,8 +94,10 @@ const SocialLoginScreen = () => {
             styles.socialButton,
             styles.googleButton,
             pressed && styles.buttonPressed,
+            styles.googleButtonDisabled,
           ]}
           onPress={handleGoogleLogin}
+          disabled={authBusy}
         >
           <View style={styles.googleIconContainer}>
             <Text style={styles.googleG}>G</Text>
@@ -102,7 +110,10 @@ const SocialLoginScreen = () => {
         <View style={styles.divider} />
 
         <Pressable
-          style={({ pressed }) => [styles.browseButton, pressed && styles.buttonPressed]}
+          style={({ pressed }) => [
+            styles.browseButton,
+            pressed && styles.buttonPressed,
+          ]}
           onPress={enterBrowse}
         >
           <Text style={styles.browseButtonText}>둘러보기</Text>

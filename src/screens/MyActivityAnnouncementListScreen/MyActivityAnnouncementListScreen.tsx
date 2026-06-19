@@ -15,6 +15,7 @@ type RootStackParamList = {
     type: string;
     status: string;
     daysLeft: number;
+    viewCount?: number;
   };
 };
 
@@ -39,7 +40,9 @@ const MyActivityAnnouncementListScreen = () => {
           type: item.category ?? "기타",
           status: normalizeStatus(item.status, item.deadlineAt),
           daysLeft,
+          deadlineAt: item.deadlineAt,
           postId: item.postId,
+          viewCount: item.viewCount,
         };
       }),
     [items],
@@ -57,6 +60,8 @@ const MyActivityAnnouncementListScreen = () => {
               type={item.type}
               status={item.status}
               daysLeft={item.daysLeft}
+              deadlineAt={item.deadlineAt}
+              viewCount={item.viewCount}
               onPress={() =>
                 navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                   postId: item.postId,
@@ -64,6 +69,7 @@ const MyActivityAnnouncementListScreen = () => {
                   type: item.type,
                   status: item.status,
                   daysLeft: item.daysLeft,
+                  viewCount: item.viewCount,
                 })
               }
             />

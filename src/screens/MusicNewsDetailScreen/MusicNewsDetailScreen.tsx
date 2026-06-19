@@ -1,5 +1,9 @@
-import { useCallback, useEffect, useState } from "react";
-import { RouteProp, useRoute } from "@react-navigation/native";
+import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import {
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import {
   ActivityIndicator,
   Image,
@@ -9,21 +13,28 @@ import {
   Pressable,
   Dimensions,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import navigationHeaderStyles from "../../navigations/styles";
 import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
 import { Ionicons } from "@expo/vector-icons";
 import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
-import { getNewsDetail } from "../../lib/apis/news/newsApi";
+import { getNewsDetail, deleteNews } from "../../lib/apis/news/newsApi";
 import type { NewsDetailResponse } from "../../lib/apis/news/types";
-import { API_BASE } from "../../lib/apis/api";
 import styles from "./styles";
 import {
   createComment,
+  deleteComment,
   getComments,
+  updateComment,
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
+import PostDetailOptionsMenu from "../../components/PostDetailOptionsMenu/PostDetailOptionsMenu";
+import { RootRoutes } from "../../navigations/routes";
+import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
 import {
   createLike,
   deleteLikeByTarget,
@@ -35,6 +46,17 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
+import ReportCategoryModal from "../../components/ReportCategoryModal/ReportCategoryModal";
+import ReportDotsDropdownMenu from "../../components/ReportDotsDropdownMenu/ReportDotsDropdownMenu";
+import { createReport } from "../../lib/apis/report/reportApi";
+import type { ReportCategory, ReportTargetType } from "../../lib/apis/report/types";
+import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";
+import { confirmReportSubmission } from "../../lib/report/confirmReportSubmission";
+import { pickReportedUserIdFromUnknown } from "../../lib/report/pickReportedUserId";
+import {
+  mapAttachmentsToImageUrls,
+  pickUrlFromFileLike,
+} from "../../lib/media/attachmentImageUrl";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -46,7 +68,10 @@ export type MusicNewsDetailItem = {
   authorId?: string;
   uploadedAt: string;
   description: string;
+  /** @deprecated 첫 이미지 — `imageUrls[0]`과 동일 */
   imageUrl?: string;
+  /** README `attachments` / `file` 에서 수집한 이미지 URL */
+  imageUrls?: string[];
   likes: number;
   comments: number;
   commentsData?: unknown[];
@@ -72,6 +97,7 @@ type CommentItem = {
   replyCount: number;
   isLiked?: boolean;
   isMine?: boolean;
+  authorUserId?: string;
   replies?: Array<{
     id: string;
     author: string;
@@ -79,15 +105,10 @@ type CommentItem = {
     content: string;
     likeCount?: number;
     isLiked?: boolean;
+    isMine?: boolean;
+    authorUserId?: string;
   }>;
 };
-
-function resolveFileUrl(file?: { url?: string } | null): string | undefined {
-  const url = file?.url;
-  if (!url) return undefined;
-  if (url.startsWith("/")) return `${API_BASE}${url}`;
-  return url;
-}
 
 function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
   const d = new Date(res.startedAt);
@@ -102,6 +123,17 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     ? res.createdAt
     : `${createdD.getFullYear()}.${String(createdD.getMonth() + 1).padStart(2, "0")}.${String(createdD.getDate()).padStart(2, "0")}`;
 
+  const fromAttachments = mapAttachmentsToImageUrls(res.attachments);
+  const fromFile = pickUrlFromFileLike(
+    res.file ? (res.file as Record<string, unknown>) : null,
+  );
+  const imageUrls =
+    fromAttachments.length > 0
+      ? fromAttachments
+      : fromFile
+        ? [fromFile]
+        : [];
+
   return {
     id: res.newsId,
     title: res.title,
@@ -112,7 +144,8 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     authorId: res.user?.nickname ?? res.user?.userId,
     uploadedAt: uploadedStr,
     description: res.content,
-    imageUrl: resolveFileUrl(res.file),
+    imageUrl: imageUrls[0],
+    imageUrls,
     likes: 0,
     comments: 0,
     commentsData: (res as any)?.comments,
@@ -133,7 +166,9 @@ function formatTimeAgo(value?: string): string {
   return `${Math.floor(diffMonths / 12)}년`;
 }
 
-function mapCommentToUi(comment: ApiCommentItem): CommentItem {
+function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem {
+  const uid = String(comment.user?.userId ?? "").trim();
+  const isMine = Boolean(myUserId && uid && uid === myUserId);
   return {
     id: String(comment.id),
     author: String(comment.user?.nickname ?? "익명"),
@@ -142,17 +177,18 @@ function mapCommentToUi(comment: ApiCommentItem): CommentItem {
     likeCount: Number((comment as any)?.likeCount ?? 0),
     replyCount: 0,
     isLiked: Boolean((comment as any)?.isLiked),
-    isMine: Boolean((comment as any)?.isMine),
+    isMine,
+    ...(uid ? { authorUserId: uid } : {}),
     replies: [],
   };
 }
 
-function buildCommentTree(raw: ApiCommentItem[]): CommentItem[] {
+function buildCommentTree(raw: ApiCommentItem[], myUserId?: string): CommentItem[] {
   const roots: CommentItem[] = [];
   const childrenByParent = new Map<string, CommentItem[]>();
 
   raw.forEach((comment) => {
-    const ui = mapCommentToUi(comment);
+    const ui = mapCommentToUi(comment, myUserId);
     const parentId = comment.parentId ? String(comment.parentId) : null;
     if (!parentId) {
       roots.push(ui);
@@ -202,8 +238,9 @@ function updateCommentLikeState(
 }
 
 const MusicNewsDetailScreen = () => {
+  const navigation = useNavigation();
   const route = useRoute<MusicNewsDetailRouteProp>();
-  const { user } = useAuth();
+  const { user, isLoggedIn } = useAuth();
   const { bottom } = useSafeAreaInsets();
   const newsId = route.params?.newsId;
   const newsFromParams = route.params?.news;
@@ -213,12 +250,26 @@ const MusicNewsDetailScreen = () => {
   );
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
+  const [editingComment, setEditingComment] = useState<{
+    commentId: string;
+    initialContent: string;
+  } | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [scraped, setScraped] = useState(false);
   const [scrapCount, setScrapCount] = useState(0);
   const [loading, setLoading] = useState(!!newsId);
   const [error, setError] = useState<string | null>(null);
+  const [newsAuthorUserId, setNewsAuthorUserId] = useState<string | null>(null);
+  /** API `isMine` — 작성자 id가 비어 있어도 본인 글 판별 */
+  const [isMineFromApi, setIsMineFromApi] = useState(false);
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportSubmitting, setReportSubmitting] = useState(false);
+  const [reportPending, setReportPending] = useState<{
+    reportedUserId: string;
+    targetType: ReportTargetType;
+    targetId: string;
+  } | null>(null);
 
   const fetchDetail = useCallback(async () => {
     if (!newsId) return;
@@ -228,8 +279,12 @@ const MusicNewsDetailScreen = () => {
     setLoading(false);
     if (res) {
       setNews(mapApiToItem(res));
+      setNewsAuthorUserId(pickReportedUserIdFromUnknown(res.user) ?? null);
+      setIsMineFromApi(Boolean(res.isMine));
     } else {
       setError("공연소식을 불러오지 못했습니다.");
+      setNewsAuthorUserId(null);
+      setIsMineFromApi(false);
     }
   }, [newsId]);
 
@@ -242,6 +297,7 @@ const MusicNewsDetailScreen = () => {
   const { width } = Dimensions.get("window");
   const displayedComments = comments;
   const targetNewsId = newsId ?? news?.id;
+  const myUserId = user?.socialId?.trim() ?? "";
   const commentCount = Number(
     (news as any)?.commentCount ?? news?.comments ?? comments.length,
   );
@@ -253,9 +309,18 @@ const MusicNewsDetailScreen = () => {
         targetType: "NEWS",
         targetId: targetNewsId,
       });
-      if (res) setComments(buildCommentTree(res));
+      if (res) setComments(buildCommentTree(res, myUserId));
     })();
-  }, [targetNewsId]);
+  }, [targetNewsId, myUserId]);
+
+  const refreshComments = useCallback(async () => {
+    if (!targetNewsId) return;
+    const res = await getComments({
+      targetType: "NEWS",
+      targetId: targetNewsId,
+    });
+    if (res) setComments(buildCommentTree(res, myUserId));
+  }, [targetNewsId, myUserId]);
 
   useEffect(() => {
     if (!targetNewsId) return;
@@ -290,6 +355,171 @@ const MusicNewsDetailScreen = () => {
       );
     })();
   }, [targetNewsId, user?.socialId]);
+
+  const isNewsMine =
+    isMineFromApi ||
+    (Boolean(newsAuthorUserId && user?.socialId) &&
+      newsAuthorUserId === user?.socialId?.trim());
+
+  const openReportPost = useCallback(() => {
+    if (!isLoggedIn) {
+      Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
+      return;
+    }
+    if (isNewsMine) {
+      Alert.alert("알림", "본인이 작성한 글은 신고할 수 없습니다.");
+      return;
+    }
+    if (!newsAuthorUserId || !targetNewsId) {
+      Alert.alert("알림", "작성자 정보를 불러오지 못했습니다.");
+      return;
+    }
+    if (newsAuthorUserId === user?.socialId?.trim()) {
+      Alert.alert("알림", "본인을 신고할 수 없습니다.");
+      return;
+    }
+    setReportPending({
+      reportedUserId: newsAuthorUserId,
+      targetType: "NEWS",
+      targetId: targetNewsId,
+    });
+    setReportModalVisible(true);
+  }, [
+    isLoggedIn,
+    isNewsMine,
+    newsAuthorUserId,
+    targetNewsId,
+    user?.socialId,
+  ]);
+
+  const openReportComment = useCallback(
+    (targetId: string, reportedUserId: string | undefined) => {
+      if (!isLoggedIn) {
+        Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
+        return;
+      }
+      if (!reportedUserId) {
+        Alert.alert("알림", "신고할 수 없습니다.");
+        return;
+      }
+      if (reportedUserId === user?.socialId?.trim()) {
+        Alert.alert("알림", "본인을 신고할 수 없습니다.");
+        return;
+      }
+      setReportPending({
+        reportedUserId,
+        targetType: "COMMENT",
+        targetId,
+      });
+      setReportModalVisible(true);
+    },
+    [isLoggedIn, user?.socialId],
+  );
+
+  const canOpenPostReportMenu =
+    !loading &&
+    Boolean(news) &&
+    !isNewsMine &&
+    Boolean(targetNewsId);
+
+  const onEditNews = useCallback(() => {
+    if (!targetNewsId) return;
+    navigation.navigate(
+      RootRoutes.MUSIC_NEWS_REGISTRATION as never,
+      { newsId: targetNewsId } as never,
+    );
+  }, [navigation, targetNewsId]);
+
+  const onDeleteNews = useCallback(() => {
+    if (!targetNewsId) return;
+    Alert.alert("삭제", "이 공연소식을 삭제할까요?", [
+      { text: "취소", style: "cancel" },
+      {
+        text: "삭제",
+        style: "destructive",
+        onPress: async () => {
+          const res = await deleteNews(targetNewsId);
+          if (res.ok) {
+            navigation.goBack();
+          } else {
+            Alert.alert("알림", "삭제에 실패했습니다.");
+          }
+        },
+      },
+    ]);
+  }, [navigation, targetNewsId]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <View style={navigationHeaderStyles.rightItemsWrap}>
+          <Pressable hitSlop={10}>
+            <MaterialCommunityIcons
+              name="bookmark-outline"
+              size={21}
+              color="#000"
+            />
+          </Pressable>
+          <Pressable hitSlop={10}>
+            <MaterialCommunityIcons
+              name="share-variant"
+              size={21}
+              color="#000"
+            />
+          </Pressable>
+          {isNewsMine ? (
+            <PostDetailOptionsMenu
+              isMine
+              loading={loading}
+              onEdit={onEditNews}
+              onDelete={onDeleteNews}
+            />
+          ) : (
+            <ReportDotsDropdownMenu
+              enabled={canOpenPostReportMenu}
+              loading={loading}
+              onReport={openReportPost}
+              variant="header"
+            />
+          )}
+        </View>
+      ),
+    });
+  }, [
+    navigation,
+    loading,
+    canOpenPostReportMenu,
+    openReportPost,
+    isNewsMine,
+    onEditNews,
+    onDeleteNews,
+  ]);
+
+  const handlePickReportCategory = useCallback(
+    (category: ReportCategory) => {
+      if (!reportPending) return;
+      const payload = reportPending;
+      confirmReportSubmission(async () => {
+        setReportSubmitting(true);
+        try {
+          const res = await createReport({ ...payload, category });
+          if (res.ok) {
+            setReportModalVisible(false);
+            setReportPending(null);
+            Alert.alert("접수 완료", "신고가 접수되었습니다.");
+          } else {
+            Alert.alert(
+              "알림",
+              messageForReportHttpStatus(res.status, res.message),
+            );
+          }
+        } finally {
+          setReportSubmitting(false);
+        }
+      });
+    },
+    [reportPending],
+  );
 
   const handleToggleLike = async () => {
     if (!targetNewsId) return;
@@ -347,6 +577,16 @@ const MusicNewsDetailScreen = () => {
 
   const handleCreateComment = async (content: string) => {
     if (!targetNewsId) return;
+    if (editingComment) {
+      const updated = await updateComment(editingComment.commentId, { content });
+      if (!updated) {
+        Alert.alert("알림", "댓글 수정에 실패했습니다.");
+        return;
+      }
+      setEditingComment(null);
+      await refreshComments();
+      return;
+    }
     const created = await createComment({
       content,
       targetType: "NEWS",
@@ -357,13 +597,49 @@ const MusicNewsDetailScreen = () => {
       Alert.alert("알림", "댓글 작성에 실패했습니다.");
       return;
     }
-    const res = await getComments({
-      targetType: "NEWS",
-      targetId: targetNewsId,
-    });
-    if (res) setComments(buildCommentTree(res));
+    await refreshComments();
     setReplyTarget(null);
   };
+
+  const handleDeleteComment = useCallback(
+    (commentId: string) => {
+      Alert.alert("삭제", "댓글을 삭제할까요?", [
+        { text: "취소", style: "cancel" },
+        {
+          text: "삭제",
+          style: "destructive",
+          onPress: async () => {
+            const res = await deleteComment(commentId);
+            if (!res.ok) {
+              Alert.alert("알림", "댓글 삭제에 실패했습니다.");
+              return;
+            }
+            if (editingComment?.commentId === commentId) {
+              setEditingComment(null);
+            }
+            await refreshComments();
+          },
+        },
+      ]);
+    },
+    [editingComment, refreshComments],
+  );
+
+  const openOwnCommentActions = useCallback(
+    (comment: Pick<CommentItem, "id" | "content">) => {
+      promptOwnCommentActions({
+        onEdit: () => {
+          setReplyTarget(null);
+          setEditingComment({
+            commentId: comment.id,
+            initialContent: comment.content,
+          });
+        },
+        onDelete: () => handleDeleteComment(comment.id),
+      });
+    },
+    [handleDeleteComment],
+  );
 
   const handleToggleCommentLike = async (targetId: string, currentLiked: boolean) => {
     if (currentLiked) {
@@ -427,23 +703,38 @@ const MusicNewsDetailScreen = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        bounces={false}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.posterWrapper}>
-          <Image
-            source={{
-              uri:
-                news.imageUrl ||
-                "https://via.placeholder.com/400x240?text=CLASSIC+ARTIST+CONCERT",
-            }}
-            style={[styles.posterImage, { width, height: width * 0.6 }]}
-            resizeMode="cover"
-          />
-        </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={0}
+    >
+      <View style={styles.detailInner}>
+        <ScrollView
+          style={styles.detailScroll}
+          contentContainerStyle={styles.scrollContent}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+        {news.imageUrls && news.imageUrls.length > 0 ? (
+          <View style={styles.posterWrapper}>
+            {news.imageUrls.map((uri, idx) => (
+              <Image
+                key={`${uri}-${idx}`}
+                source={{ uri }}
+                style={[
+                  styles.posterImage,
+                  {
+                    width,
+                    height: width * 0.56,
+                    marginBottom: idx < news.imageUrls!.length - 1 ? 8 : 0,
+                  },
+                ]}
+                resizeMode="cover"
+              />
+            ))}
+          </View>
+        ) : null}
 
         <View style={styles.contentSection}>
           <View style={styles.titleRow}>
@@ -583,11 +874,26 @@ const MusicNewsDetailScreen = () => {
                       </Text>
                     </View>
                   </View>
-                  <Ionicons
-                    name="ellipsis-vertical"
-                    size={18}
-                    color={MAIN.DEFAULT}
-                  />
+                  {!comment.isMine && comment.authorUserId ? (
+                    <ReportDotsDropdownMenu
+                      enabled
+                      onReport={() =>
+                        openReportComment(comment.id, comment.authorUserId)
+                      }
+                      variant="comment"
+                      disabledMessage="신고할 수 없습니다."
+                    />
+                  ) : comment.isMine ? (
+                    <Pressable hitSlop={8} onPress={() => openOwnCommentActions(comment)}>
+                      <MaterialCommunityIcons
+                        name="dots-vertical"
+                        size={18}
+                        color={GRAY.DARK_2}
+                      />
+                    </Pressable>
+                  ) : (
+                    <View style={{ width: 18 }} />
+                  )}
                 </View>
 
                 <View style={styles.commentStats}>
@@ -649,15 +955,53 @@ const MusicNewsDetailScreen = () => {
                           />
                         </View>
                         <View style={styles.replyBody}>
-                          <View style={styles.replyMetaRow}>
-                            <Text style={styles.replyAuthor}>
-                              {reply.author}
-                            </Text>
-                            {!!reply.createdAt && (
-                              <Text style={styles.replyDate}>
-                                {formatTimeAgo(reply.createdAt)}
+                          <View
+                            style={[
+                              styles.replyMetaRow,
+                              { justifyContent: "space-between", flexWrap: "nowrap" },
+                            ]}
+                          >
+                            <View
+                              style={{
+                                flexDirection: "row",
+                                alignItems: "center",
+                                gap: 8,
+                                flex: 1,
+                              }}
+                            >
+                              <Text style={styles.replyAuthor}>
+                                {reply.author}
                               </Text>
-                            )}
+                              {!!reply.createdAt && (
+                                <Text style={styles.replyDate}>
+                                  {formatTimeAgo(reply.createdAt)}
+                                </Text>
+                              )}
+                            </View>
+                            {!reply.isMine && reply.authorUserId ? (
+                              <ReportDotsDropdownMenu
+                                enabled
+                                onReport={() =>
+                                  openReportComment(
+                                    reply.id,
+                                    reply.authorUserId,
+                                  )
+                                }
+                                variant="reply"
+                                disabledMessage="신고할 수 없습니다."
+                              />
+                            ) : reply.isMine ? (
+                              <Pressable
+                                hitSlop={8}
+                                onPress={() => openOwnCommentActions(reply)}
+                              >
+                                <MaterialCommunityIcons
+                                  name="dots-vertical"
+                                  size={16}
+                                  color={GRAY.DARK_2}
+                                />
+                              </Pressable>
+                            ) : null}
                           </View>
                           <Text style={styles.replyContent}>
                             {reply.content}
@@ -691,44 +1035,55 @@ const MusicNewsDetailScreen = () => {
             ))}
           </View>
         </View>
-      </ScrollView>
+        </ScrollView>
 
-      <View
-        style={[
-          styles.commentInputWrapper,
-          { paddingBottom: bottom || 16 },
-        ]}
-      >
-        {!!replyTarget && (
-          <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-              paddingHorizontal: 20,
-              paddingTop: 10,
-            }}
-          >
-            <Text style={{ fontSize: 12, color: GRAY.DARK_100 }}>
-              {replyTarget.author}님에게 답글 작성 중
-            </Text>
-            <Pressable hitSlop={8} onPress={() => setReplyTarget(null)}>
-              <Text style={{ fontSize: 12, color: MAIN.DEFAULT, fontWeight: "600" }}>
-                취소
+        <View
+          style={[
+            styles.commentInputWrapper,
+            { paddingBottom: bottom || 16 },
+          ]}
+        >
+          {!!replyTarget && (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                paddingHorizontal: 20,
+                paddingTop: 10,
+              }}
+            >
+              <Text style={{ fontSize: 12, color: GRAY.DARK_100 }}>
+                {replyTarget.author}님에게 답글 작성 중
               </Text>
-            </Pressable>
-          </View>
-        )}
-        <CommentInputBar
-          placeholder={
-            replyTarget
-              ? `${replyTarget.author}님에게 답글을 입력하세요`
-              : "댓글을 입력하세요"
-          }
-          onSubmit={handleCreateComment}
-        />
+              <Pressable hitSlop={8} onPress={() => setReplyTarget(null)}>
+                <Text style={{ fontSize: 12, color: MAIN.DEFAULT, fontWeight: "600" }}>
+                  취소
+                </Text>
+              </Pressable>
+            </View>
+          )}
+          <CommentInputBar
+            placeholder={
+              editingComment
+                ? "댓글을 수정하세요"
+                : replyTarget
+                  ? `${replyTarget.author}님에게 답글을 입력하세요`
+                  : "댓글을 입력하세요"
+            }
+            editMode={editingComment}
+            onCancelEdit={() => setEditingComment(null)}
+            onSubmit={handleCreateComment}
+          />
+        </View>
       </View>
-    </View>
+      <ReportCategoryModal
+        visible={reportModalVisible}
+        onClose={() => !reportSubmitting && setReportModalVisible(false)}
+        onSelect={handlePickReportCategory}
+        submitting={reportSubmitting}
+      />
+    </KeyboardAvoidingView>
   );
 };
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { TextInput, TextInputProps } from "react-native";
+import { Keyboard, TextInput, TextInputProps } from "react-native";
 import styles from "./styles";
 
 type Props = TextInputProps & {
@@ -16,6 +16,12 @@ const OneLineTextInput: React.FC<Props> = ({ style, ...rest }) => {
       style={[styles.input, style]}
       multiline={false}
       numberOfLines={1}
+      returnKeyType={rest.returnKeyType ?? "done"}
+      blurOnSubmit={rest.blurOnSubmit ?? true}
+      onSubmitEditing={(e) => {
+        rest.onSubmitEditing?.(e);
+        Keyboard.dismiss();
+      }}
     />
   );
 };

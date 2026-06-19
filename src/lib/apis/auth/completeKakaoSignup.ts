@@ -3,8 +3,8 @@ import { API_BASE } from "../api";
 export type CompleteKakaoSignupRequest = {
   accessToken: string;
   role: string;
-  nickname: string;
-  activityName: string;
+  nickname?: string;
+  activityName?: string;
 };
 
 export type CompleteKakaoSignupResponse = {

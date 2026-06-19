@@ -14,13 +14,15 @@ import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
 import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
 import AnnouncementCard from "../../../../components/AnnouncementCard/AnnouncementCard";
 import styles from "../styles";
-import EventNewsCard, {
-  DEFAULT_NEWS_IMAGE_URI,
-} from "../../../../components/EventNewsCard/EventNewsCard";
+import EventNewsCard from "../../../../components/EventNewsCard/EventNewsCard";
+import { normalizeListThumbnailUrl } from "../../../../lib/media/listThumbnailUrl";
 import {
   getMyScrappedAnnouncements,
   getMyScrappedHighlights,
 } from "../../../../lib/apis/scrap/scrapApi";
+import { getMajors } from "../../../../lib/apis/announcement/majorApi";
+import { parseAnnouncementDaysLeft } from "../../../../lib/announcement/parseAnnouncementDaysLeft";
+import { resolveRecruitmentMajorDisplayNames } from "../../../../lib/announcement/recruitmentMajors";
 import type {
   MyScrappedAnnouncementItem,
   MyScrappedCommunityItem,
@@ -40,6 +42,7 @@ type RootStackParamList = {
     type: string;
     status: string;
     daysLeft: number;
+    viewCount?: number;
   };
 };
 
@@ -55,6 +58,23 @@ const ScrapScene = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [majorsCatalog, setMajorsCatalog] = useState<
+    { name: string; majorId: string }[]
+  >([]);
+
+  useEffect(() => {
+    getMajors().then((list) => {
+      setMajorsCatalog(
+        list.map((m) => ({
+          name: m.name,
+          majorId:
+            (m as { majorId?: string }).majorId ??
+            (m as { id?: string }).id ??
+            "",
+        })),
+      );
+    });
+  }, []);
 
   const handlePressScrapCommunity = () => {
     navigation.navigate(RootRoutes.MY_ACTIVITY_LIST, {
@@ -138,6 +158,7 @@ const ScrapScene = () => {
               likes: Number(latestCommunity.likeCount ?? 0),
               comments: Number(latestCommunity.commentCount ?? 0),
               views: Number(latestCommunity.viewCount ?? 0),
+              thumbnailUrl: normalizeListThumbnailUrl(latestCommunity.thumbnailUrl),
             },
           ].map((item) => (
             <CommunityCard
@@ -149,6 +170,7 @@ const ScrapScene = () => {
               likes={item.likes}
               comments={item.comments}
               views={item.views}
+              thumbnailUrl={item.thumbnailUrl}
               onPress={() =>
                 navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
                   communityId: item.id,
@@ -179,7 +201,7 @@ const ScrapScene = () => {
                   title={item.title}
                   place={item.place ?? ""}
                   dateRange={formatDate(item.createdAt)}
-                  imageUrl={DEFAULT_NEWS_IMAGE_URI}
+                  imageUrl={normalizeListThumbnailUrl(item.thumbnailUrl)}
                   width={138}
                   height={138}
                   onPress={() =>
@@ -211,14 +233,22 @@ const ScrapScene = () => {
               title={item.title}
               type={item.type}
               status={item.isRecruiting ? "모집중" : "모집마감"}
-              daysLeft={parseDDay(item.dDay)}
+              daysLeft={parseAnnouncementDaysLeft(item.dDay)}
+              deadlineAt={item.deadlineAt}
+              viewCount={item.viewCount}
+              address={item.address}
+              recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
+                item,
+                majorsCatalog,
+              )}
               onPress={() => {
                 navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                   postId: item.postId,
                   title: item.title,
                   type: item.type,
                   status: item.isRecruiting ? "모집중" : "모집마감",
-                  daysLeft: parseDDay(item.dDay),
+                  daysLeft: parseAnnouncementDaysLeft(item.dDay),
+                  viewCount: item.viewCount,
                 });
               }}
             />
@@ -325,19 +355,13 @@ const localStyles = StyleSheet.create({
     alignItems: "center",
   },
   newsRow: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 20,
     gap: 14,
   },
   newsCard: {
     width: 138,
   },
 });
-
-function parseDDay(value?: string): number {
-  if (!value) return 0;
-  const num = parseInt(value.replace(/\D/g, ""), 10);
-  return Number.isFinite(num) ? num : 0;
-}
 
 function formatDate(value?: string): string {
   if (!value) return "";

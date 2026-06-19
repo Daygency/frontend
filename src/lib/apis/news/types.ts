@@ -2,9 +2,10 @@
 export type NewsListParams = {
   cursor?: string;
   limit?: number;
+  q?: string;
 };
 
-/** 공연소식 목록 항목 (GET /news) */
+/** 공연소식 목록 항목 (GET /news) — README: `thumbnailUrl` 우선 */
 export type NewsListItem = {
   newsId: string;
   title: string;
@@ -13,7 +14,13 @@ export type NewsListItem = {
   viewCount?: number;
   likeCount?: number;
   commentCount?: number;
-  imageUrl?: string;
+  /** README 목록 썸네일 (order 최소 1장) */
+  thumbnailUrl?: string | null;
+  /** 레거시·호환 */
+  imageUrl?: string | null;
+  /** 목록에 내려올 수 있는 첨부/대표 file (썸네일 폴백) */
+  attachments?: unknown;
+  file?: Record<string, unknown> | null;
 };
 
 /** 공연소식 목록 응답 */
@@ -27,7 +34,15 @@ export type NewsListResponse = {
 export type NewsFileInfo = {
   fileId?: string;
   url?: string;
+  imgUrl?: string;
   [key: string]: unknown;
+};
+
+/** README 응답 `attachments` */
+export type NewsAttachmentItem = {
+  fileId: string;
+  imgUrl: string;
+  sortOrder: number;
 };
 
 export type NewsUserInfo = {
@@ -48,7 +63,9 @@ export type NewsDetailResponse = {
   contact: string;
   createdAt: string;
   user?: NewsUserInfo;
-  file?: NewsFileInfo;
+  file?: NewsFileInfo | null;
+  /** README: 업로드 이미지 배열 */
+  attachments?: NewsAttachmentItem[];
   isMine?: boolean;
 };
 
@@ -71,3 +88,5 @@ export type CreateNewsResponse = {
   place: string;
   startedAt: string;
 };
+
+export type UpdateNewsDto = Partial<CreateNewsDto>;

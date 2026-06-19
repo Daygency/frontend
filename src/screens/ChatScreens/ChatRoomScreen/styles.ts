@@ -35,6 +35,12 @@ const styles = StyleSheet.create({
     backgroundColor: GRAY.MEDIUM,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden",
+  },
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
   },
   avatarText: {
     fontSize: 18,
@@ -74,6 +80,52 @@ const styles = StyleSheet.create({
   },
   headerButton: {
     padding: 4,
+  },
+  headerSearchWrap: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    height: 40,
+    backgroundColor: GRAY.DEFAULT_1,
+    borderRadius: 10,
+    paddingHorizontal: 12,
+  },
+  headerSearchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: GRAY.DARK_100,
+    paddingVertical: 0,
+  },
+  searchMatchNav: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: GRAY.MEDIUM,
+    backgroundColor: WHITE,
+  },
+  searchMatchCount: {
+    fontSize: 13,
+    color: GRAY.DARK,
+  },
+  searchMatchButtons: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  searchMatchButton: {
+    padding: 6,
+  },
+  messageRowActiveMatch: {
+    backgroundColor: "rgba(255, 235, 59, 0.18)",
+    borderRadius: 8,
+  },
+  messageHighlight: {
+    backgroundColor: "#FFEB3B",
+    fontWeight: "600",
   },
   messageArea: {
     flex: 1,
@@ -146,6 +198,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginRight: 8,
+    overflow: "hidden",
+  },
+  otherAvatarImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
   otherAvatarText: {
     fontSize: 14,

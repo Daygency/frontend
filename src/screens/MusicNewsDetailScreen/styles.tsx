@@ -6,8 +6,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: WHITE,
   },
+  detailInner: {
+    flex: 1,
+  },
+  detailScroll: {
+    flex: 1,
+  },
   scrollContent: {
-    paddingBottom: 96,
+    paddingBottom: 24,
   },
   posterWrapper: {
     width: "100%",
@@ -233,11 +239,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   commentInputWrapper: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
     backgroundColor: WHITE,
+    borderTopWidth: 1,
+    borderTopColor: GRAY.DEFAULT,
   },
   replyActionText: {
     fontSize: 12,

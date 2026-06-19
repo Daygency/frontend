@@ -1,35 +1,17 @@
 import { StyleSheet } from "react-native";
-import { BLACK, BLUE, GRAY, MAIN, WHITE } from "../../../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../../../color";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: WHITE,
-    marginTop: 12,
+  },
+  embeddedContainer: {
+    backgroundColor: "transparent",
+    marginTop: 0,
   },
   contentContainer: {
     paddingHorizontal: 12,
     paddingVertical: 16,
-  },
-  activityContiner: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 12,
-    alignItems: "center",
-    paddingHorizontal: 12,
-  },
-  activityCountItem: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    backgroundColor: BLUE.LIGHT_1,
-    borderRadius: 10,
-  },
-  activityTempoItem: {
-    flex: 1,
-    backgroundColor: BLUE.LIGHT_1,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 10,
   },
   activityItem: {
     backgroundColor: GRAY.DEFAULT_1,

@@ -6,6 +6,7 @@ export type MyCommunityPostItem = {
   likeCount?: number;
   viewCount?: number;
   commentCount?: number;
+  thumbnailUrl?: string | null;
 };
 
 export type MyNewsPostItem = {
@@ -16,6 +17,7 @@ export type MyNewsPostItem = {
   likeCount?: number;
   viewCount?: number;
   commentCount?: number;
+  thumbnailUrl?: string | null;
 };
 
 export type MyAnnouncementPostItem = {
@@ -40,4 +42,13 @@ export type MyPostHighlightsResponse = {
   latestCommunity: MyCommunityPostItem | null;
   recentNews: MyNewsPostItem[];
   latestAnnouncement: MyAnnouncementPostItem | null;
+};
+
+export type MyCommentPostItem = {
+  commentId: string;
+  content: string;
+  createdAt: string;
+  targetType: "NEWS" | "COMMUNITY";
+  targetId: string;
+  postTitle?: string | null;
 };

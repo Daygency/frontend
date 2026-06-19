@@ -7,14 +7,11 @@ import {
   View,
   ViewStyle,
   Text,
+  type DimensionValue,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import styles from "../ImageScrollView/styles";
 import { GRAY } from "../../color";
-
-/** 메인 화면 공연소식 섹션과 동일한 기본 이미지 */
-export const DEFAULT_NEWS_IMAGE_URI =
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
 
 interface EventNewsCardProps {
   title: string;
@@ -51,19 +48,39 @@ const EventNewsCard = ({
 }: EventNewsCardProps) => {
   const showCounts =
     likeCount != null || commentCount != null || viewCount != null;
+  const hasImage = Boolean(imageUrl?.trim());
+  const logoSize = Math.round(Math.min(56, Math.max(32, height * 0.26)));
 
   return (
     <Pressable
-      style={[{ width }, containerStyle]}
+      style={[{ width: width as DimensionValue }, containerStyle]}
       onPress={onPress}
       disabled={!onPress}
     >
-      <Image
-        source={{ uri: imageUrl || DEFAULT_NEWS_IMAGE_URI }}
-        style={[styles.image, { height }]}
-        resizeMode="cover"
-      />
-      <Text style={styles.imageTitle} numberOfLines={2} ellipsizeMode="tail">
+      {hasImage ? (
+        <Image
+          source={{ uri: imageUrl! }}
+          style={[styles.image, { height }]}
+          resizeMode="cover"
+        />
+      ) : (
+        <View
+          style={[styles.image, localStyles.noImagePlaceholder, { height }]}
+          accessibilityRole="image"
+          accessibilityLabel="이미지 없음"
+        >
+          <Image
+            source={require("../../../assets/logo.png")}
+            style={{ width: logoSize, height: logoSize }}
+            resizeMode="contain"
+          />
+        </View>
+      )}
+      <Text
+        style={styles.imageTitle}
+        numberOfLines={2}
+        ellipsizeMode="tail"
+      >
         {title}
       </Text>
       {showPlace ? (
@@ -100,6 +117,12 @@ const EventNewsCard = ({
 };
 
 const localStyles = StyleSheet.create({
+  noImagePlaceholder: {
+    backgroundColor: GRAY.MEDIUM,
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden",
+  },
   statsRow: {
     flexDirection: "row",
     alignItems: "center",

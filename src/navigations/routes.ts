@@ -12,6 +12,8 @@ export const ContentRoutes = {
 
 export const RootRoutes = {
   LOGIN: "Login",
+  /** 탈퇴 유예 기간 내 재로그인 — 복구 동의 화면 */
+  ACCOUNT_REACTIVATION: "AccountReactivation",
   ROLE_SELECTION: "RoleSelection",
   SIGNUP: "Signup",
   CONTENT_TAB: "ContentTab",
@@ -29,6 +31,8 @@ export const RootRoutes = {
   MY_ACTIVITY_ANNOUNCEMENT_LIST: "MyActivityAnnouncementList",
   CHANGE_NAME: "ChangeName",
   NOTIFICATION_SETTINGS: "NotificationSettings",
+  /** 인박스 (GET /notifications) */
+  NOTIFICATIONS: "Notifications",
   MY_DATA_ARCHIVE: "MyDataArchive",
   CUSTOMER_SERVICE: "CustomerService",
   INQUIRY: "Inquiry",
@@ -38,8 +42,13 @@ export const RootRoutes = {
   CHAT_ROOM: "ChatRoom",
   CHAT_ROOM_OPTIONS: "ChatRoomOptions",
   MY_POSTED_CHAT_ROOMS: "MyPostedChatRooms",
+  ANNOUNCEMENT_APPLICANTS: "AnnouncementApplicants",
+  /** README: POST /announcement/:postId/reviews */
+  ACTIVITY_REVIEW: "ActivityReview",
+  RECEIVED_APPLICATION_DETAIL: "ReceivedApplicationDetail",
   PROFILE_EDIT: "ProfileEdit",
   ARTIST_PORTFOLIO: "ArtistPortfolio",
+  PORTFOLIO_PHOTO_GALLERY: "PortfolioPhotoGallery",
   SEARCH: "Search",
   SEARCH_RESULTS: "SearchResults",
   MUSIC_NEWS_DETAIL: "MusicNewsDetail",

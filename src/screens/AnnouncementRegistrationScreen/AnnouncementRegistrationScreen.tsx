@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
+  Image,
   Pressable,
   ScrollView,
   Switch,
@@ -26,13 +27,26 @@ import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import {
   createAnnouncement,
+  createAnnouncementWithFiles,
   getAnnouncementDetail,
   updateAnnouncement,
 } from "../../lib/apis/announcement/announcementApi";
-import type { ApplicationConfig } from "../../lib/apis/announcement/types";
+import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
+import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
+import type {
+  AnnouncementPriceType,
+  ApplicationConfig,
+} from "../../lib/apis/announcement/types";
+import {
+  PRICE_TYPE_DROPDOWN_ITEMS,
+  normalizeAnnouncementPriceType,
+  parseAnnouncementPrice,
+} from "../../lib/announcement/announcementPrice";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
-import { uploadFile } from "../../lib/apis/fileApi";
+import { buildMajorIdsForSubmit } from "../../lib/announcement/recruitmentMajors";
+import { API_BASE } from "../../lib/apis/api";
+import { getFileId, uploadFile, type LocalImageAsset } from "../../lib/apis/fileApi";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
 
 const FALLBACK_CATEGORY_OPTIONS = [
@@ -238,6 +252,8 @@ const AnnouncementRegistrationScreen = () => {
   );
   const [recruitmentMajors, setRecruitmentMajors] = useState<string[]>([]);
   const [content, setContent] = useState("");
+  const [priceType, setPriceType] = useState<AnnouncementPriceType>("PENDING");
+  const [priceInput, setPriceInput] = useState("");
 
   // 지원서 양식 구성
   const [formFields, setFormFields] = useState<
@@ -262,6 +278,11 @@ const AnnouncementRegistrationScreen = () => {
   const [majorOptions, setMajorOptions] = useState(FALLBACK_MAJOR_OPTIONS);
   const [fileId, setFileId] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
+  /** 신규 등록: README `POST /announcement` multipart (`payload` + `files`) */
+  const [createPostImages, setCreatePostImages] = useState<LocalImageAsset[]>(
+    [],
+  );
+  const MAX_POST_FILES = MAX_MULTIPART_FILES;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -299,9 +320,24 @@ const AnnouncementRegistrationScreen = () => {
   useEffect(() => {
     if (!postId) return;
     setLoadingEdit(true);
-    getAnnouncementDetail(postId)
-      .then((res) => {
-        if (!res || typeof res !== "object") return;
+    let cancelled = false;
+    (async () => {
+      const appsRes = await getApplicationsForPost(postId);
+      if (cancelled) return;
+      if (appsRes?.ok && appsRes.data.length > 0) {
+        setLoadingEdit(false);
+        Alert.alert("알림", "지원자가 있는 공고는 수정할 수 없습니다.", [
+          { text: "확인", onPress: () => navigation.goBack() },
+        ]);
+        return;
+      }
+      const res = await getAnnouncementDetail(postId);
+      if (cancelled) return;
+      try {
+        if (!res || typeof res !== "object") {
+          setLoadingEdit(false);
+          return;
+        }
         const d = res as Record<string, unknown>;
         const get = (k: string, alt?: string) =>
           (d[k] ?? d[k.replace(/([A-Z])/g, "_$1").toLowerCase() ?? ""] ?? alt) as
@@ -319,9 +355,28 @@ const AnnouncementRegistrationScreen = () => {
         if (get("content")) setContent(String(get("content") ?? ""));
         if (get("address")) setLocation(String(get("address") ?? ""));
         if (get("categoryId")) setAnnouncementType(String(get("categoryId") ?? ""));
-        const majors = getArr("majorIds");
-        if (majors.length > 0) {
-          setRecruitmentMajors(majors.map((id) => String(id)));
+        const majorIdsRaw = getArr("majorIds");
+        if (majorIdsRaw.length > 0) {
+          setRecruitmentMajors(majorIdsRaw.map((id) => String(id)));
+        } else {
+          const majorsNested = getArr("majors");
+          if (majorsNested.length > 0) {
+            const ids = majorsNested
+              .map((m) => {
+                if (typeof m === "string" || typeof m === "number") {
+                  return String(m);
+                }
+                if (m && typeof m === "object") {
+                  const o = m as Record<string, unknown>;
+                  return String(
+                    o.majorId ?? o.major_id ?? o.id ?? "",
+                  ).trim();
+                }
+                return "";
+              })
+              .filter(Boolean);
+            if (ids.length > 0) setRecruitmentMajors(ids);
+          }
         }
         const sched = get("scheduledAt");
         if (sched) {
@@ -335,6 +390,17 @@ const AnnouncementRegistrationScreen = () => {
         if (dl) {
           const dt = new Date(dl);
           if (!isNaN(dt.getTime())) setDeadline(dt);
+        }
+        const pt = get("priceType") ?? get("price_type");
+        if (pt != null && String(pt).trim()) {
+          setPriceType(normalizeAnnouncementPriceType(pt));
+        }
+        const pr = d.price;
+        if (typeof pr === "number" && Number.isFinite(pr)) {
+          setPriceInput(pr > 0 ? String(pr) : "");
+        } else if (pr != null && String(pr).trim() !== "") {
+          const n = parseAnnouncementPrice(pr);
+          setPriceInput(n > 0 ? String(n) : "");
         }
         const fid = get("fileId");
         if (fid) {
@@ -359,19 +425,17 @@ const AnnouncementRegistrationScreen = () => {
             return next;
           });
         }
-      })
-      .catch((e) => {
+      } catch (e) {
         console.warn("[loadEditData]", e);
         Alert.alert("알림", "공고 정보를 불러오지 못했습니다.");
-      })
-      .finally(() => setLoadingEdit(false));
-  }, [postId]);
-
-  useEffect(() => {
-    navigation.setOptions({
-      headerTitle: isEditMode ? "모집 공고 수정" : "모집 공고 등록",
-    });
-  }, [navigation, isEditMode]);
+      } finally {
+        setLoadingEdit(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [postId, navigation]);
 
   const pickFileFromDocument = async () => {
     try {
@@ -384,12 +448,27 @@ const AnnouncementRegistrationScreen = () => {
       const uri = asset.uri;
       const name = asset.name ?? "file.jpg";
       const mimeType = asset.mimeType ?? "image/jpeg";
-      setFileName(name);
-      const fid = await uploadFile(uri, { name, type: mimeType });
-      setFileId(fid);
+      if (isEditMode) {
+        setFileName(name);
+        const up = await uploadFile(uri, { name, type: mimeType });
+        setFileId(getFileId(up));
+        if (!getFileId(up)) {
+          Alert.alert("알림", "파일 업로드에 실패했습니다.");
+        }
+      } else {
+        if (createPostImages.length >= MAX_POST_FILES) {
+          Alert.alert("알림", `첨부는 최대 ${MAX_POST_FILES}개까지입니다.`);
+          return;
+        }
+        setCreatePostImages((prev) => {
+          const next = [...prev, { uri, name, type: mimeType }];
+          setFileName(`${next.length}개 파일 선택됨`);
+          return next;
+        });
+      }
     } catch (e) {
       console.warn("[pickFileFromDocument]", e);
-      Alert.alert("알림", "파일 업로드에 실패했습니다.");
+      Alert.alert("알림", "파일 선택에 실패했습니다.");
     }
   };
 
@@ -404,18 +483,43 @@ const AnnouncementRegistrationScreen = () => {
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
         allowsEditing: false,
+        allowsMultipleSelection: !isEditMode,
+        selectionLimit: isEditMode ? 1 : MAX_POST_FILES,
       });
       if (result.canceled) return;
-      const asset = result.assets[0];
-      setFileName(asset.fileName ?? "image.jpg");
-      const fid = await uploadFile(asset.uri, {
+
+      if (isEditMode) {
+        const asset = result.assets[0];
+        setFileName(asset.fileName ?? "image.jpg");
+        const up = await uploadFile(asset.uri, {
+          name: asset.fileName ?? "image.jpg",
+          type: asset.mimeType ?? "image/jpeg",
+        });
+        setFileId(getFileId(up));
+        if (!getFileId(up)) {
+          Alert.alert("알림", "이미지 업로드에 실패했습니다.");
+        }
+        return;
+      }
+
+      const remaining = MAX_POST_FILES - createPostImages.length;
+      if (remaining <= 0) {
+        Alert.alert("알림", `첨부는 최대 ${MAX_POST_FILES}개까지입니다.`);
+        return;
+      }
+      const toAdd = result.assets.slice(0, remaining).map((asset) => ({
+        uri: asset.uri,
         name: asset.fileName ?? "image.jpg",
         type: asset.mimeType ?? "image/jpeg",
+      }));
+      setCreatePostImages((prev) => {
+        const next = [...prev, ...toAdd];
+        setFileName(`${next.length}개 이미지 선택됨`);
+        return next;
       });
-      setFileId(fid);
     } catch (e) {
       console.warn("[pickImageFromAlbum]", e);
-      Alert.alert("알림", "이미지 업로드에 실패했습니다.");
+      Alert.alert("알림", "이미지 선택에 실패했습니다.");
     }
   };
 
@@ -478,7 +582,40 @@ const AnnouncementRegistrationScreen = () => {
       );
       return;
     }
+
+    let resolvedPrice = 0;
+    if (priceType === "EXPENSE" || priceType === "INCOME") {
+      const trimmed = priceInput.trim().replace(/,/g, "");
+      if (!trimmed) {
+        Alert.alert("입력 확인", "참가비·수입 유형일 때는 금액(원)을 입력해주세요.");
+        return;
+      }
+      const n = parseInt(trimmed, 10);
+      if (!Number.isFinite(n) || n < 0) {
+        Alert.alert("입력 확인", "금액을 0 이상의 숫자로 입력해주세요.");
+        return;
+      }
+      resolvedPrice = n;
+    }
+
     if (isSubmitting) return;
+
+    const majorIdsPayload = buildMajorIdsForSubmit(
+      recruitmentMajors,
+      majorOptions,
+    );
+    if (recruitmentMajors.length > 0 && majorIdsPayload.length === 0) {
+      console.warn(
+        "[모집 전공] 서버에서 전공 ID 목록을 받지 못했습니다. EXPO_PUBLIC_API_BASE(백엔드가 /api 쓰면 …/api까지), EXPO_PUBLIC_MAJOR_PATH, 현재 API_BASE:",
+        API_BASE,
+      );
+      Alert.alert(
+        "모집 전공",
+        "전공 정보를 불러오지 못해 저장할 수 없습니다. 네트워크와 서버 설정을 확인한 뒤 다시 시도해 주세요.",
+      );
+      return;
+    }
+
     setIsSubmitting(true);
 
     const dto = {
@@ -490,35 +627,30 @@ const AnnouncementRegistrationScreen = () => {
       categoryId: announcementType,
       status: "OPEN" as const,
       applicationConfig: buildApplicationConfig(),
+      priceType,
+      price: resolvedPrice,
       ...(fileId ? { fileId } : {}),
-      ...(recruitmentMajors.length > 0
-        ? {
-            majorIds: recruitmentMajors
-              .map((r) => {
-                const o = majorOptions.find(
-                  (m) => (m.value || m.label) === r,
-                );
-                return o?.value;
-              })
-              .filter((v): v is string => !!v),
-          }
-        : {}),
+      ...(majorIdsPayload.length > 0 ? { majorIds: majorIdsPayload } : {}),
     };
 
     try {
       if (isEditMode && postId) {
         const res = await updateAnnouncement(postId, dto);
         setIsSubmitting(false);
-        if (res) {
+        if (res.ok) {
           navigation.goBack();
         } else {
-          Alert.alert(
-            "수정 실패",
-            "모집공고 수정에 실패했습니다. 다시 시도해주세요.",
-          );
+          const fallback =
+            res.status === 403
+              ? "지원자가 있는 공고는 수정할 수 없습니다."
+              : "모집공고 수정에 실패했습니다. 다시 시도해주세요.";
+          Alert.alert("수정 실패", res.message?.trim() || fallback);
         }
       } else {
-        const res = await createAnnouncement(dto);
+        const res =
+          createPostImages.length > 0
+            ? await createAnnouncementWithFiles(dto, createPostImages)
+            : await createAnnouncement(dto);
         setIsSubmitting(false);
         if (res) {
           (navigation as { dispatch?: (action: object) => void }).dispatch?.(
@@ -595,42 +727,8 @@ const AnnouncementRegistrationScreen = () => {
     );
   }
 
-  if (loadingEdit) {
-    return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#666" />
-      </View>
-    );
-  }
-
-  if (loadingEdit) {
-    return (
-      <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color={MAIN.DEFAULT} />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
-      {loadingEdit && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(255,255,255,0.8)",
-            justifyContent: "center",
-            alignItems: "center",
-            zIndex: 10,
-          }}
-        >
-          <ActivityIndicator size="large" color={MAIN.DEFAULT} />
-        </View>
-      )}
-      {/* 탭 스위처 */}
       <View style={styles.tabContainer}>
         <Pressable
           style={[styles.tab, activeTab === "announcement" && styles.tabActive]}
@@ -875,6 +973,29 @@ const AnnouncementRegistrationScreen = () => {
                 </View>
 
                 <View style={styles.formField}>
+                  <Form title="금액 유형 · 금액" isRequired={false}>
+                    <FormDropdownInput
+                      placeholder="금액 유형을 선택하세요"
+                      data={PRICE_TYPE_DROPDOWN_ITEMS}
+                      value={priceType}
+                      onChange={(item) =>
+                        setPriceType(item.value as AnnouncementPriceType)
+                      }
+                    />
+                    {(priceType === "EXPENSE" || priceType === "INCOME") ? (
+                      <View style={{ marginTop: 12 }}>
+                        <FormTextInput
+                          placeholder="금액(원)을 입력하세요"
+                          value={priceInput}
+                          onChangeText={setPriceInput}
+                          keyboardType="number-pad"
+                        />
+                      </View>
+                    ) : null}
+                  </Form>
+                </View>
+
+                <View style={styles.formField}>
                   <Form title="내용" isRequired hasError={err.content}>
                     <View style={[styles.contentInputWrapper, err.content && styles.inputErrorBorder]}>
                       <TextInput
@@ -931,9 +1052,78 @@ const AnnouncementRegistrationScreen = () => {
                         />
                       </Pressable>
                     </View>
-                    {fileName ? (
-                      <Text style={styles.contentNote}>선택됨: {fileName}</Text>
-                    ) : null}
+                    {isEditMode ? (
+                      fileName ? (
+                        <Text style={styles.fileHelperNote}>
+                          선택됨: {fileName}
+                        </Text>
+                      ) : null
+                    ) : (
+                      <>
+                        {fileName ? (
+                          <Text style={styles.fileHelperNote}>{fileName}</Text>
+                        ) : null}
+                        {createPostImages.length > 0 ? (
+                          <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={{ marginTop: 8 }}
+                          >
+                            {createPostImages.map((img, idx) => (
+                              <View
+                                key={`${img.uri}-${idx}`}
+                                style={{
+                                  marginRight: 8,
+                                  position: "relative",
+                                }}
+                              >
+                                <Image
+                                  source={{ uri: img.uri }}
+                                  style={{
+                                    width: 72,
+                                    height: 72,
+                                    borderRadius: 8,
+                                    backgroundColor: GRAY.MEDIUM,
+                                  }}
+                                  resizeMode="cover"
+                                />
+                                <Pressable
+                                  onPress={() =>
+                                    setCreatePostImages((prev) => {
+                                      const next = prev.filter((_, i) => i !== idx);
+                                      setFileName(
+                                        next.length > 0
+                                          ? `${next.length}개 첨부`
+                                          : "",
+                                      );
+                                      return next;
+                                    })
+                                  }
+                                  style={{
+                                    position: "absolute",
+                                    top: -6,
+                                    right: -6,
+                                    backgroundColor: "#fff",
+                                    borderRadius: 12,
+                                  }}
+                                  hitSlop={8}
+                                >
+                                  <MaterialCommunityIcons
+                                    name="close-circle"
+                                    size={22}
+                                    color={MAIN.DEFAULT}
+                                  />
+                                </Pressable>
+                              </View>
+                            ))}
+                          </ScrollView>
+                        ) : null}
+                        <Text style={styles.fileHelperNote}>
+                          등록 시 게시글이 저장된 뒤 이미지가 순서대로 업로드됩니다. (최대{" "}
+                          {MAX_POST_FILES}장)
+                        </Text>
+                      </>
+                    )}
                   </Form>
                 </View>
               </View>
@@ -1010,25 +1200,7 @@ const AnnouncementRegistrationScreen = () => {
         </Animated.View>
       </ScrollView>
 
-      <View
-        style={[
-          styles.footer,
-          {
-            paddingBottom: (bottom || 0) + 16,
-            ...Platform.select({
-              ios: {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -4 },
-                shadowOpacity: 0.12,
-                shadowRadius: 16,
-              },
-              android: {
-                elevation: 8,
-              },
-            }),
-          },
-        ]}
-      >
+      <View style={[styles.footer, { paddingBottom: (bottom || 0) + 16 }]}>
         <Pressable
           style={[
             styles.registerButton,

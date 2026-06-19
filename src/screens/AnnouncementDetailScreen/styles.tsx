@@ -1,22 +1,36 @@
-import { StyleSheet, Platform } from "react-native";
+import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+
+/** 본문 스크롤 영역 배경 — 흰색 시트 사이 마진으로 이 색이 “띠”로 보임 */
+export const ANNOUNCEMENT_BODY_BG = "#F2F2F2";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: WHITE,
   },
-  divider: {
-    height: 1,
-    backgroundColor: "#F2F2F2",
+  /** 스크롤 뷰 자체 배경 = 본문 회색 (끝까지 스크롤해도 이어짐) */
+  scroll: {
+    flex: 1,
+    backgroundColor: ANNOUNCEMENT_BODY_BG,
   },
-  dividerThick: {
-    height: 8,
-    backgroundColor: "#F2F2F2",
+  scrollContent: {
+    flexGrow: 1,
+    backgroundColor: ANNOUNCEMENT_BODY_BG,
+    paddingTop: 8,
   },
-  section: {
+  /**
+   * 흰색 콘텐츠 시트. 아래 margin으로 회색 배경이 드러남 (디바이더 대신).
+   */
+  contentSheet: {
+    backgroundColor: WHITE,
     paddingHorizontal: 20,
     paddingVertical: 20,
+    marginBottom: 8,
+  },
+  /** 상단 공고 카드(AnnouncementCard)와 본문 사이 회색 띠 */
+  contentSheetFlush: {
+    marginBottom: 8,
   },
   producerInfo: {
     flexDirection: "row",
@@ -25,14 +39,13 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   producerName: {
-    fontSize: 15,
-    lineHeight: 20,
+    fontSize: 16,
+    lineHeight: 22,
     fontWeight: "400",
     letterSpacing: 0.3,
     color: BLACK,
   },
   infoContainer: {
-    marginTop: 10,
     gap: 10,
   },
   infoRow: {
@@ -41,18 +54,48 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   infoLabel: {
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 20,
     letterSpacing: 0.28,
     fontWeight: "500",
     color: GRAY.DARK_100,
   },
   infoValue: {
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 20,
     letterSpacing: 0.28,
     fontWeight: "400",
     color: BLACK,
+  },
+  majorsBlock: {
+    gap: 10,
+    marginTop: 6,
+  },
+  majorsLabel: {
+    fontSize: 14,
+    lineHeight: 20,
+    letterSpacing: 0.28,
+    fontWeight: "600",
+    color: GRAY.DARK_100,
+  },
+  majorsChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  majorChip: {
+    backgroundColor: GRAY.DEFAULT,
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+  },
+  majorChipText: {
+    fontSize: 15,
+    lineHeight: 20,
+    color: BLACK,
+    fontWeight: "500",
   },
   statusBadge: {
     width: 16,
@@ -63,15 +106,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   statusText: {
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: 14,
+    lineHeight: 20,
     letterSpacing: 0.28,
     fontWeight: "600",
     color: MAIN.DEFAULT,
   },
   descriptionText: {
-    fontSize: 14,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 24,
     fontWeight: "400",
     letterSpacing: 0.3,
     color: BLACK,
@@ -82,7 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   attachmentTitle: {
-    fontSize: 15,
+    fontSize: 16,
     lineHeight: 24,
     fontWeight: "600",
     letterSpacing: -0.32,
@@ -103,36 +146,24 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   attachmentFileName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "500",
     color: BLACK,
     marginBottom: 4,
   },
   attachmentFileSize: {
-    fontSize: 12,
+    fontSize: 13,
     color: GRAY.DARK_2,
     fontWeight: "400",
   },
-  applyContainer: {
+  /** 하단 플로팅 버튼만 — 배경·그림자 없음 */
+  floatingBottomBar: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
     paddingHorizontal: 16,
-    paddingVertical: 16,
-    backgroundColor: WHITE,
-    ...Platform.select({
-      ios: {
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.08,
-        shadowRadius: 20,
-      },
-      android: {
-        elevation: 2,
-        backgroundColor: "#fff",
-      },
-    }),
+    paddingTop: 4,
   },
   btnApply: {
     backgroundColor: MAIN.DEFAULT,
@@ -143,8 +174,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   btnApplyText: {
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 17,
+    lineHeight: 26,
     letterSpacing: 0.3,
     fontWeight: "600",
     color: WHITE,

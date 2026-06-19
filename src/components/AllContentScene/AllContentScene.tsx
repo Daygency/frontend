@@ -1,4 +1,5 @@
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { WHITE } from "../../color";
 
 const NEWS_CARD_WIDTH = 138;
 const NEWS_CARD_IMAGE_HEIGHT = 193;
@@ -13,15 +14,12 @@ import GrayCard from "../GrayCard/GrayCard";
 import ImageCarousel from "../ImageCarousel/ImageCarousel";
 import { ContentRoutes } from "../../navigations/routes";
 import { RootRoutes } from "../../navigations/routes";
-import { getAnnouncementList } from "../../lib/apis/announcement/announcementApi";
-import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
-import { getNewsList } from "../../lib/apis/news/newsApi";
-import type { NewsListItem } from "../../lib/apis/news/types";
-import {
-  getCommunityCategories,
-  getCommunityList,
-} from "../../lib/apis/community/communityApi";
-import type { CommunityCategory, CommunityListItem } from "../../lib/apis/community/types";
+import { getHome } from "../../lib/apis/home/homeApi";
+import type { HomeAnnouncementItem, HomeNewsItem } from "../../lib/apis/home/types";
+import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
+import { getMajors } from "../../lib/apis/announcement/majorApi";
+import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
+import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
 
 type ContentTabParamList = {
   [ContentRoutes.HOME]: undefined;
@@ -32,11 +30,6 @@ type ContentTabParamList = {
 };
 
 type NavigationProp = BottomTabNavigationProp<ContentTabParamList>;
-
-function parseDaysLeft(dDay: string): number {
-  const m = dDay.match(/D-?(\d+)/);
-  return m ? Number(m[1]) : 0;
-}
 
 function formatStartedAt(iso: string): string {
   try {
@@ -53,89 +46,68 @@ function formatStartedAt(iso: string): string {
   }
 }
 
-const DEFAULT_NEWS_IMAGE_URL =
-  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXJXvihqHAz65lWUqZ0IOV45CSYVL41PufXA&s";
-
-type HomeCommunityBoardConfig = {
-  boardName: string;
-  categoryName: string;
-};
-
-const HOME_COMMUNITY_BOARDS: HomeCommunityBoardConfig[] = [
-  { boardName: "자유게시판", categoryName: "자유게시판" },
-  { boardName: "강사·대타구인", categoryName: "구인" },
-  { boardName: "입시 정보", categoryName: "입시정보" },
-  { boardName: "유학 정보", categoryName: "유학정보" },
-  { boardName: "학원 운영", categoryName: "학원운용" },
-  { boardName: "학원·연습실", categoryName: "학원/연습실 매매" },
-];
+const HOME_ANNOUNCEMENT_PREVIEW_LIMIT = 3;
 
 const AllContentScene = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [announcements, setAnnouncements] = useState<AnnouncementListItem[]>([]);
-  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
-  const [newsItems, setNewsItems] = useState<NewsListItem[]>([]);
-  const [newsLoading, setNewsLoading] = useState(true);
+  const [announcements, setAnnouncements] = useState<HomeAnnouncementItem[]>([]);
+  const [newsItems, setNewsItems] = useState<HomeNewsItem[]>([]);
   const [communityBoards, setCommunityBoards] = useState<
     { boardName: string; latestPost: string; hasNew?: boolean }[]
   >([]);
-  const [communityLoading, setCommunityLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [majorsCatalog, setMajorsCatalog] = useState<
+    { name: string; majorId: string }[]
+  >([]);
 
   useEffect(() => {
-    getAnnouncementList({ limit: 5 }).then((res) => {
-      setAnnouncementsLoading(false);
-      if (res?.items) setAnnouncements(res.items);
-    });
-  }, []);
-
-  useEffect(() => {
-    getNewsList({ limit: 5 }).then((res) => {
-      setNewsLoading(false);
-      if (res?.items) setNewsItems(res.items);
+    getMajors().then((list) => {
+      setMajorsCatalog(
+        list.map((m) => ({
+          name: m.name,
+          majorId:
+            (m as { majorId?: string }).majorId ??
+            (m as { id?: string }).id ??
+            "",
+        })),
+      );
     });
   }, []);
 
   useEffect(() => {
     (async () => {
-      setCommunityLoading(true);
+      setLoading(true);
       try {
-        const categories = (await getCommunityCategories()) ?? [];
-        const categoryIdByName = new Map<string, string>(
-          categories.map((c: CommunityCategory) => [c.name, c.categoryId])
+        const home = await getHome();
+        if (!home) return;
+        setAnnouncements(home.latestAnnouncements ?? []);
+        setNewsItems(home.recentNews ?? []);
+        setCommunityBoards(
+          (home.latestCommunityByCategory ?? []).map((item) => ({
+            boardName: item.categoryName,
+            latestPost: item.latestPost?.title?.trim() || "글이 없습니다.",
+          }))
         );
-
-        const results = await Promise.all(
-          HOME_COMMUNITY_BOARDS.map(async (cfg) => {
-            const categoryId = categoryIdByName.get(cfg.categoryName);
-            if (!categoryId) {
-              return { boardName: cfg.boardName, latestPost: "글이 없습니다." };
-            }
-
-            const list = await getCommunityList({ categoryId });
-            const safeList: CommunityListItem[] = Array.isArray(list) ? list : [];
-            if (safeList.length === 0) {
-              return { boardName: cfg.boardName, latestPost: "글이 없습니다." };
-            }
-
-            const latest = [...safeList].sort((a, b) => {
-              const at = new Date(a.createdAt).getTime();
-              const bt = new Date(b.createdAt).getTime();
-              return (isNaN(bt) ? 0 : bt) - (isNaN(at) ? 0 : at);
-            })[0];
-
-            return {
-              boardName: cfg.boardName,
-              latestPost: latest?.title ? String(latest.title) : "글이 없습니다.",
-            };
-          })
-        );
-
-        setCommunityBoards(results);
       } finally {
-        setCommunityLoading(false);
+        setLoading(false);
       }
     })();
   }, []);
+
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: WHITE,
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="small" color="#666" />
+      </View>
+    );
+  }
 
   const handleAnnouncementMore = () => {
     (navigation as { navigate: (a: string, b?: object) => void }).navigate(
@@ -155,27 +127,33 @@ const AllContentScene = () => {
     <ScrollView>
       <ImageCarousel width={339} height={183} gap={5} />
       <Section title="모집공고" onPressMore={handleAnnouncementMore}>
-        {announcementsLoading ? (
-          <View style={{ paddingVertical: 24, alignItems: "center" }}>
-            <ActivityIndicator size="small" color="#666" />
-          </View>
-        ) : announcements.length === 0 ? (
+        {announcements.length === 0 ? (
           <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24 }}>모집공고가 없습니다</Text>
         ) : (
-          announcements.slice(0, 5).map((item) => (
+          announcements.slice(0, HOME_ANNOUNCEMENT_PREVIEW_LIMIT).map((item) => (
             <AnnouncementCard
               key={item.postId}
               title={item.title}
               type={item.type}
               status={item.isRecruiting ? "모집중" : "모집마감"}
-              daysLeft={parseDaysLeft(item.dDay)}
+              daysLeft={parseAnnouncementDaysLeft(item.dDay)}
+              deadlineAt={item.deadlineAt}
+              viewCount={item.viewCount}
+              priceType={item.priceType}
+              price={item.price}
+              address={item.address}
+              recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
+                item,
+                majorsCatalog,
+              )}
               onPress={() => {
                 (navigation as { navigate: (a: string, b?: object) => void }).navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                   title: item.title,
                   type: item.type,
                   status: item.isRecruiting ? "모집중" : "모집마감",
-                  daysLeft: parseDaysLeft(item.dDay),
+                  daysLeft: parseAnnouncementDaysLeft(item.dDay),
                   postId: item.postId,
+                  viewCount: item.viewCount,
                 });
               }}
             />
@@ -183,20 +161,15 @@ const AllContentScene = () => {
         )}
       </Section>
       <Section title="공연소식" onPressMore={handleNewsMore} styles={{ content: { paddingHorizontal: 0 } }}>
-        {newsLoading ? (
-          <View style={{ paddingVertical: 24, alignItems: "center" }}>
-            <ActivityIndicator size="small" color="#666" />
-          </View>
-        ) : newsItems.length === 0 ? (
-          <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24, paddingHorizontal: 12 }}>공연소식이 없습니다</Text>
+        {newsItems.length === 0 ? (
+          <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24, paddingHorizontal: 20 }}>공연소식이 없습니다</Text>
         ) : (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{
               gap: NEWS_CARD_GAP,
-              paddingHorizontal: 12,
-              paddingRight: 12,
+              paddingHorizontal: 20,
             }}
             style={{ marginTop: 5 }}
           >
@@ -208,7 +181,7 @@ const AllContentScene = () => {
                 title={item.title}
                 place={item.place}
                 dateRange={formatStartedAt(item.startedAt)}
-                imageUrl={item.imageUrl || DEFAULT_NEWS_IMAGE_URL}
+                imageUrl={normalizeListThumbnailUrl(item.thumbnailUrl) ?? undefined}
                 onPress={() => {
                   (navigation as { navigate: (a: string, b?: object) => void }).navigate(
                     RootRoutes.MUSIC_NEWS_DETAIL,
@@ -227,21 +200,10 @@ const AllContentScene = () => {
           (navigation as any).navigate(ContentRoutes.CHAT, { initialTab: "커뮤니티" });
         }}
       >
-        {communityLoading ? (
-          <View style={{ paddingVertical: 24, alignItems: "center" }}>
-            <ActivityIndicator size="small" color="#666" />
-          </View>
+        {communityBoards.length === 0 ? (
+          <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24 }}>커뮤니티 글이 없습니다</Text>
         ) : (
-          <GrayCard
-            items={
-              communityBoards.length > 0
-                ? communityBoards
-                : HOME_COMMUNITY_BOARDS.map((b) => ({
-                    boardName: b.boardName,
-                    latestPost: "글이 없습니다.",
-                  }))
-            }
-          />
+          <GrayCard items={communityBoards} />
         )}
       </Section>
     </ScrollView>

@@ -29,3 +29,7 @@ export type CreateCommentDto = {
   targetId: string;
   parentId?: string;
 };
+
+export type UpdateCommentDto = {
+  content: string;
+};

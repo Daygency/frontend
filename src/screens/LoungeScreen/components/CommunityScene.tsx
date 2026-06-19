@@ -1,12 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View, Text } from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
 import SelectableTag from "../../../components/SelectableTag/SelectableTag";
 import { RootRoutes } from "../../../navigations/routes";
 import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
 import type { CommunityCategory, CommunityListItem } from "../../../lib/apis/community/types";
+import { pickCommunityListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
 
 type TagOption =
   | "전체"
@@ -77,7 +78,7 @@ const CommunityScene = () => {
     return category?.categoryId;
   };
 
-  const loadCommunities = async (opts?: { append?: boolean }) => {
+  const loadCommunities = useCallback(async () => {
     try {
       setError(null);
       setLoading(true);
@@ -97,7 +98,7 @@ const CommunityScene = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [categories, selectedTag]);
 
   useEffect(() => {
     (async () => {
@@ -106,13 +107,9 @@ const CommunityScene = () => {
     })();
   }, []);
 
-  // 포커스되거나 선택된 태그가 바뀔 때마다 목록 다시 불러오기
-  useFocusEffect(
-    useCallback(() => {
-      loadCommunities({ append: false });
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedTag])
-  );
+  useEffect(() => {
+    void loadCommunities();
+  }, [loadCommunities]);
 
   const renderItem = ({ item }: { item: CommunityListItem }) => {
     const rawCategory = (item as any).category;
@@ -131,6 +128,7 @@ const CommunityScene = () => {
         likes={item.likeCount ?? 0}
         comments={item.commentCount ?? 0}
         views={item.viewCount ?? 0}
+        thumbnailUrl={pickCommunityListThumbnailUrl(item)}
         onPress={() =>
           navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
             communityId: item.communityId,
@@ -219,6 +217,7 @@ const localStyles = StyleSheet.create({
     flexShrink: 0,
   },
   listContent: {
+    paddingTop: 8,
     paddingBottom: 24,
   },
   loaderContainer: {

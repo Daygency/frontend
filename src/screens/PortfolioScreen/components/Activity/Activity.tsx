@@ -1,57 +1,97 @@
-import { View, Text, ScrollView } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import styles from "./styles";
-import { GRAY, BLACK, MAIN } from "../../../../color";
-import { Ionicons } from "@expo/vector-icons";
+import portfolioStyles from "../../styles";
+import { GRAY } from "../../../../color";
 import Section from "../../../../components/Section/Section";
-import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
 import ReviewCard from "../../../../components/ReviewCard/ReviewCard";
+import {
+  getReceivedActivityReviewList,
+  getUserReceivedActivityReviewList,
+} from "../../../../lib/apis/announcement/activityReviewApi";
+import type { ActivityReviewListItem } from "../../../../lib/apis/announcement/activityReviewTypes";
 
-const Activity = () => {
-  return (
-    <ScrollView>
-      <View style={styles.container}>
-        <View style={styles.activityContiner}>
-          <View style={styles.activityCountItem}>
-            <Text>활동 횟수</Text>
-            <Text>15회</Text>
+type ActivityProps = {
+  embedded?: boolean;
+  /** 타인 포트폴리오 — 해당 유저가 받은 후기 */
+  userId?: string;
+};
+
+const Activity = ({ embedded = false, userId }: ActivityProps) => {
+  const [reviews, setReviews] = useState<ActivityReviewListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadReceivedReviews = useCallback(async () => {
+    setLoading(true);
+    const trimmedUserId = userId?.trim();
+    const res = trimmedUserId
+      ? await getUserReceivedActivityReviewList(trimmedUserId, { limit: 20 })
+      : await getReceivedActivityReviewList({ limit: 20 });
+    if (!res) {
+      setReviews([]);
+      setLoading(false);
+      return;
+    }
+    setReviews(res.items);
+    setLoading(false);
+  }, [userId]);
+
+  useEffect(() => {
+    void loadReceivedReviews();
+  }, [loadReceivedReviews]);
+
+  const formatDate = (iso?: string | null) => {
+    if (!iso?.trim()) return "";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  };
+
+  const reactionLabel = (rating: ActivityReviewListItem["rating"]) => {
+    if (rating === "DISAPPOINTING") return "아쉬웠어요";
+    if (rating === "GOOD") return "좋았어요";
+    return "감동했어요";
+  };
+
+  const inner = (
+    <View style={embedded ? styles.embeddedContainer : styles.container}>
+      <Section
+        title="받은 후기"
+        onPressMore={() => {}}
+        styles={embedded ? portfolioStyles.sectionStyles : undefined}
+      >
+        {loading ? (
+          <View style={{ paddingVertical: 24, alignItems: "center" }}>
+            <ActivityIndicator size="small" color={GRAY.DARK} />
           </View>
-          <View style={styles.activityTempoItem}>
-            <Text>예술 템포</Text>
-            <Text>84점</Text>
+        ) : reviews.length === 0 ? (
+          <View style={{ paddingVertical: 20 }}>
+            <Text style={{ fontSize: 14, color: GRAY.DARK_100 }}>
+              받은 후기가 없습니다.
+            </Text>
           </View>
-        </View>
-        <Section
-          title="받은 후기"
-          onPressMore={() => {}}
-          styles={{ title: { marginTop: 12 } }}
-        >
-          <ReviewCard
-            title="2025년도 봄 정기 연주회"
-            content="저는 봄 정기 연주회에 참가했습니다. 좋은 경험이었습니다."
-            tags={[
-              { text: "봄 정기 연주회", variant: "type" },
-              { text: "좋은 경험", variant: "status" },
-            ]}
-          />
-          <ReviewCard
-            title="2025년도 봄 정기 연주회"
-            content="저는 봄 정기 연주회에 참가했습니다. 좋은 경험이었습니다."
-            tags={[
-              { text: "봄 정기 연주회", variant: "type" },
-              { text: "좋은 경험", variant: "status" },
-            ]}
-          />
-          <ReviewCard
-            title="2025년도 봄 정기 연주회"
-            tags={[
-              { text: "봄 정기 연주회", variant: "type" },
-              { text: "좋은 경험", variant: "status" },
-            ]}
-          />
-        </Section>
-      </View>
-    </ScrollView>
+        ) : (
+          reviews.map((item) => (
+            <ReviewCard
+              key={item.id}
+              author={
+                item.reviewer?.activityName || item.reviewer?.nickname || "작성자"
+              }
+              date={formatDate(item.createdAt)}
+              title={item.announcement?.title || item.postId}
+              reactionTag={reactionLabel(item.rating)}
+            />
+          ))
+        )}
+      </Section>
+    </View>
   );
+
+  if (embedded) {
+    return inner;
+  }
+
+  return <ScrollView>{inner}</ScrollView>;
 };
 
 export default Activity;

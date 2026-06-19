@@ -3,11 +3,13 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 import ContentTab from "./ContentTab";
 import SocialLoginScreen from "../screens/OnboardingScreens/SocialLoginScreen/SocialLoginScreen";
+import AccountReactivationScreen from "../screens/AccountReactivationScreen/AccountReactivationScreen";
 import SignupFlowScreen from "../screens/OnboardingScreens/SignupFlowScreen/SignupFlowScreen";
 import SplashScreenView from "../screens/OnboardingScreens/SplashScreen/SplashScreen";
 import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
 import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
 import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
+import type { FollowListParams } from "../screens/FollowListScreen/types";
 import CommunityDetailScreen from "../screens/CommunityDetailScreen";
 import CommunityRegistrationScreen from "../screens/CommunityRegistrationScreen";
 import AnnouncementRegistrationScreen from "../screens/AnnouncementRegistrationScreen";
@@ -19,6 +21,7 @@ import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActi
 import MyActivityAnnouncementListScreen from "../screens/MyActivityAnnouncementListScreen/MyActivityAnnouncementListScreen";
 import ChangeNameScreen from "../screens/ChangeNameScreen/ChangeNameScreen";
 import NotificationSettingsScreen from "../screens/SettingsScreens/NotificationSettingsScreen/NotificationSettingsScreen";
+import NotificationsScreen from "../screens/NotificationsScreen/NotificationsScreen";
 import MyDataArchiveScreen from "../screens/SettingsScreens/MyDataArchiveScreen/MyDataArchiveScreen";
 import CustomerServiceScreen from "../screens/SettingsScreens/CustomerServiceScreen/CustomerServiceScreen";
 import InquiryScreen from "../screens/InquiryScreen/InquiryScreen";
@@ -28,8 +31,12 @@ import WithdrawConfirmScreen from "../screens/WithdrawConfirmScreen/WithdrawConf
 import ChatRoomScreen from "../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
 import ChatRoomOptionsScreen from "../screens/ChatScreens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
 import MyPostedChatRoomsScreen from "../screens/ChatScreens/MyPostedChatRoomsScreen/MyPostedChatRoomsScreen";
+import AnnouncementApplicantsScreen from "../screens/AnnouncementApplicantsScreen/AnnouncementApplicantsScreen";
+import ActivityReviewScreen from "../screens/ActivityReviewScreen/ActivityReviewScreen";
+import ReceivedApplicationDetailScreen from "../screens/ReceivedApplicationDetailScreen/ReceivedApplicationDetailScreen";
 import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
 import ArtistPortfolioScreen from "../screens/ArtistPortfolioScreen/ArtistPortfolioScreen";
+import PortfolioPhotoGalleryScreen from "../screens/PortfolioPhotoGalleryScreen/PortfolioPhotoGalleryScreen";
 import SearchScreen from "../screens/SearchScreen/SearchScreen";
 import MusicNewsDetailScreen from "../screens/MusicNewsDetailScreen/MusicNewsDetailScreen";
 import MusicNewsRegistrationScreen from "../screens/MusicNewsRegistrationScreen";
@@ -66,6 +73,37 @@ const Navigation = () => {
           }}
         >
           <Stack.Screen name={RootRoutes.LOGIN} component={SocialLoginScreen} />
+          <Stack.Screen
+            name={RootRoutes.ACCOUNT_REACTIVATION}
+            component={AccountReactivationScreen}
+            options={({ navigation }) => ({
+              headerTitle: () => (
+                <View style={styles.titleWrap}>
+                  <Text style={styles.title}>계정 복구</Text>
+                </View>
+              ),
+              headerShadowVisible: false,
+              headerShown: true,
+              headerTitleAlign: "left",
+              headerLeft: () => (
+                <Pressable
+                  onPress={() => {
+                    if (navigation.canGoBack()) {
+                      navigation.goBack();
+                    }
+                  }}
+                  hitSlop={10}
+                  style={styles.leftIcon}
+                >
+                  <MaterialCommunityIcons
+                    name="chevron-left"
+                    size={30}
+                    color="#000"
+                  />
+                </Pressable>
+              ),
+            })}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     );
@@ -170,10 +208,14 @@ const Navigation = () => {
         <Stack.Screen
           name={RootRoutes.FOLLOW_LIST}
           component={FollowListScreen}
-          options={({ navigation }) => ({
+          options={({ navigation, route }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={styles.title}>팔로잉 / 팔로워</Text>
+                <Text style={styles.title} numberOfLines={1}>
+                  {(route.params as FollowListParams | undefined)?.titleName
+                    ? `${(route.params as FollowListParams).titleName} · 팔로우`
+                    : "팔로잉 / 팔로워"}
+                </Text>
               </View>
             ),
             headerShadowVisible: false,
@@ -203,9 +245,37 @@ const Navigation = () => {
           component={ArtistPortfolioScreen}
         />
         <Stack.Screen
-          name={RootRoutes.SEARCH}
-          component={SearchScreen}
+          name={RootRoutes.PORTFOLIO_PHOTO_GALLERY}
+          component={PortfolioPhotoGalleryScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>사진</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
         />
+        <Stack.Screen name={RootRoutes.SEARCH} component={SearchScreen} />
         <Stack.Screen
           name={RootRoutes.ANNOUNCEMENT_REGISTRATION}
           component={AnnouncementRegistrationScreen}
@@ -449,6 +519,37 @@ const Navigation = () => {
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>알림 설정</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.NOTIFICATIONS}
+          component={NotificationsScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>알림</Text>
               </View>
             ),
             headerShadowVisible: false,
@@ -856,12 +957,75 @@ const Navigation = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen
+          name={RootRoutes.ACTIVITY_REVIEW}
+          component={ActivityReviewScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
           name={RootRoutes.MY_POSTED_CHAT_ROOMS}
           component={MyPostedChatRoomsScreen}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>내가 올린 공고</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) navigation.goBack();
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.ANNOUNCEMENT_APPLICANTS}
+          component={AnnouncementApplicantsScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>지원 현황</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) navigation.goBack();
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.RECEIVED_APPLICATION_DETAIL}
+          component={ReceivedApplicationDetailScreen}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>지원서 확인</Text>
               </View>
             ),
             headerShadowVisible: false,

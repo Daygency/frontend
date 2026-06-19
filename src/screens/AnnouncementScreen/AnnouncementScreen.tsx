@@ -1,12 +1,13 @@
 import {
   ActivityIndicator,
   Pressable,
+  RefreshControl,
   ScrollView,
   Text,
   View,
 } from "react-native";
-import { useCallback, useEffect, useState } from "react";
-import { useNavigation, useFocusEffect } from "@react-navigation/native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
@@ -17,10 +18,21 @@ import { RootRoutes } from "../../navigations/routes";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import styles from "./styles";
 import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
-import { getAnnouncementList } from "../../lib/apis/announcement/announcementApi";
+import {
+  getAnnouncementList,
+  getMyAnnouncementList,
+} from "../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
+import { useAuth } from "../../contexts/AuthContext";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
+import {
+  ANNOUNCEMENT_PRICE_FILTER_LABELS,
+  selectedPriceLabelsToApiParam,
+} from "../../lib/announcement/announcementPrice";
+import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
+import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
+import { MAIN } from "../../color";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -37,11 +49,15 @@ interface AnnouncementScreenProps {
 const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => {
   const navigation = useNavigation<NavigationProp>();
   const { top } = useSafeAreaInsets();
+  const { isLoggedIn } = useAuth();
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
+  const [selectedPriceTypes, setSelectedPriceTypes] = useState<string[]>([]);
   const [isTagModalVisible, setIsTagModalVisible] = useState(false);
-  const [sortBy, setSortBy] = useState<string>("최신순");
+  const [activeTab, setActiveTab] = useState<
+    "최신순" | "스크랩수순" | "내 공고"
+  >("최신순");
 
   const recruitmentStatusOptions = ["모집중", "모집마감"];
   const announcementTypeOptions = [
@@ -69,14 +85,16 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     "뮤지컬·크로스오버",
     "기타",
   ];
-  const sortOptions = ["최신순", "스크랩수순"];
+  const listTabs = ["최신순", "스크랩수순", "내 공고"] as const;
 
   const [items, setItems] = useState<AnnouncementListItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [categories, setCategories] = useState<{ name: string; categoryId: string }[]>([]);
   const [majors, setMajors] = useState<{ name: string; majorId: string }[]>([]);
+  const loadListSeqRef = useRef(0);
 
   const buildListParams = useCallback(() => {
     const status =
@@ -99,21 +117,43 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             .filter(Boolean)
             .join(",")
         : undefined;
-    return { status, categoryId, majorIds };
-  }, [selectedStatus, selectedTypes, selectedMajors, categories, majors]);
+    const priceType = selectedPriceLabelsToApiParam(selectedPriceTypes);
+    return { status, categoryId, majorIds, priceType };
+  }, [
+    selectedStatus,
+    selectedTypes,
+    selectedMajors,
+    selectedPriceTypes,
+    categories,
+    majors,
+  ]);
 
   const loadData = useCallback(
     async (cursor?: string) => {
+      if (activeTab === "내 공고" && !isLoggedIn) {
+        setItems([]);
+        setNextCursor(null);
+        setHasMore(false);
+        setLoading(false);
+        return;
+      }
+      const seq = ++loadListSeqRef.current;
       setLoading(true);
       try {
-        const { status, categoryId, majorIds } = buildListParams();
-        const res = await getAnnouncementList({
+        const { status, categoryId, majorIds, priceType } = buildListParams();
+        const params = {
           cursor,
           limit: 20,
           status,
           categoryId,
           majorIds: majorIds || undefined,
-        });
+          priceType,
+        };
+        const res =
+          activeTab === "내 공고"
+            ? await getMyAnnouncementList(params)
+            : await getAnnouncementList(params);
+        if (seq !== loadListSeqRef.current) return;
         if (!res) {
           setItems([]);
           setNextCursor(null);
@@ -128,11 +168,16 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         setNextCursor(res.nextCursor);
         setHasMore(res.hasMore ?? false);
       } finally {
-        setLoading(false);
+        if (seq === loadListSeqRef.current) {
+          setLoading(false);
+        }
       }
     },
-    [buildListParams],
+    [buildListParams, activeTab, isLoggedIn],
   );
+
+  const loadDataRef = useRef(loadData);
+  loadDataRef.current = loadData;
 
   useEffect(() => {
     getAnnouncementCategories().then((list) => {
@@ -153,29 +198,36 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     });
   }, []);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
-
-  // 삭제/수정 후 돌아왔을 때 목록 최신화
+  /** 탭·로그인 변경 + 화면 포커스 시에만 자동 조회. 태그 필터는 모달「선택 완료」에서만 loadData 호출 */
   useFocusEffect(
     useCallback(() => {
-      loadData();
-    }, [loadData])
+      loadDataRef.current();
+    }, [activeTab, isLoggedIn]),
   );
 
   const loadMore = () => {
-    if (loading || !hasMore || !nextCursor) return;
+    if (loading || refreshing || !hasMore || !nextCursor) return;
     loadData(nextCursor);
   };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await loadData(undefined);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [loadData]);
 
   const typeOptions = categories.length > 0 ? categories.map((c) => c.name) : announcementTypeOptions;
   const majorOptionsForModal = majors.length > 0 ? majors.map((m) => m.name) : recruitmentMajorOptions;
 
-  const parseDaysLeft = (dDay: string): number => {
-    const m = dDay.match(/D-?(\d+)/);
-    return m ? Number(m[1]) : 0;
-  };
+  const emptyMessage =
+    activeTab === "내 공고" && !isLoggedIn
+      ? "로그인이 필요합니다"
+      : activeTab === "내 공고"
+        ? "작성한 공고가 없습니다"
+        : "모집공고가 없습니다";
 
   return (
     <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
@@ -188,19 +240,20 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
               ...selectedStatus,
               ...selectedTypes,
               ...selectedMajors,
+              ...selectedPriceTypes,
             ]}
             onPress={() => setIsTagModalVisible(true)}
           />
-          {sortOptions.map((option) => (
+          {listTabs.map((option) => (
             <Pressable
               key={option}
-              style={[styles.sortTab, sortBy === option && styles.sortTabActive]}
-              onPress={() => setSortBy(option)}
+              style={[styles.sortTab, activeTab === option && styles.sortTabActive]}
+              onPress={() => setActiveTab(option)}
             >
               <Text
                 style={[
                   styles.sortTabText,
-                  sortBy === option && styles.sortTabTextActive,
+                  activeTab === option && styles.sortTabTextActive,
                 ]}
               >
                 {option}
@@ -240,54 +293,91 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                 prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
               ),
           },
+          {
+            title: "금액 유형",
+            options: [...ANNOUNCEMENT_PRICE_FILTER_LABELS],
+            selectedValues: selectedPriceTypes,
+            onToggle: (value) =>
+              setSelectedPriceTypes((prev) =>
+                prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
+              ),
+          },
         ]}
         onComplete={() => {
           setIsTagModalVisible(false);
-          loadData();
+          loadDataRef.current();
         }}
       />
       <View style={styles.scrollContentWrapper}>
-        {loading && items.length === 0 ? (
-          <View style={styles.scrollContent}>
-            <ActivityIndicator size="large" color="#666" />
-          </View>
-        ) : items.length === 0 ? (
-          <View style={[styles.scrollContent, styles.emptyState]}>
-            <Text style={styles.emptyStateText}>모집공고가 없습니다</Text>
-          </View>
-        ) : (
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            onScroll={({ nativeEvent }) => {
-              const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-              const pad = 100;
-              if (layoutMeasurement.height + contentOffset.y >= contentSize.height - pad && hasMore && nextCursor && !loading) {
-                loadMore();
-              }
-            }}
-            scrollEventThrottle={200}
-          >
-            {items.map((item) => (
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={[
+            styles.scrollContent,
+            items.length === 0 && { flexGrow: 1 },
+          ]}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={MAIN.DEFAULT}
+              colors={[MAIN.DEFAULT]}
+            />
+          }
+          onScroll={({ nativeEvent }) => {
+            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
+            const pad = 100;
+            if (
+              layoutMeasurement.height + contentOffset.y >= contentSize.height - pad &&
+              hasMore &&
+              nextCursor &&
+              !loading &&
+              !refreshing
+            ) {
+              loadMore();
+            }
+          }}
+          scrollEventThrottle={200}
+        >
+          {loading && items.length === 0 ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator size="large" color="#666" />
+            </View>
+          ) : items.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>{emptyMessage}</Text>
+            </View>
+          ) : (
+            items.map((item) => (
               <View key={item.postId} style={styles.cardWrapper}>
                 <AnnouncementCard
                   title={item.title}
                   type={item.type}
                   status={item.isRecruiting ? "모집중" : "모집마감"}
-                  daysLeft={parseDaysLeft(item.dDay)}
+                  daysLeft={parseAnnouncementDaysLeft(item.dDay)}
+                  deadlineAt={item.deadlineAt}
+                  viewCount={item.viewCount}
+                  priceType={item.priceType}
+                  price={item.price}
+                  address={item.address}
+                  recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
+                    item,
+                    majors,
+                  )}
                   onPress={() => {
                     navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                       title: item.title,
                       type: item.type,
                       status: item.isRecruiting ? "모집중" : "모집마감",
-                      daysLeft: parseDaysLeft(item.dDay),
+                      daysLeft: parseAnnouncementDaysLeft(item.dDay),
                       postId: item.postId,
+                      viewCount: item.viewCount,
                     });
                   }}
                 />
               </View>
-            ))}
-          </ScrollView>
-        )}
+            ))
+          )}
+        </ScrollView>
       </View>
       {!hideTopBar && (
         <FabButton

@@ -1,25 +1,45 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, Pressable } from "react-native";
+import React, { useRef, useState } from "react";
+import { View, Text, TextInput, Pressable, findNodeHandle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
-import type { AwardEntry } from "../../../lib/apis/portfolio/profileApi";
+import type { AwardEntry } from "../../../lib/apis/portfolio/types";
 import DatePickerField from "./DatePickerField";
+import { formatYearMonth } from "./profileEntryUtils";
 import styles from "../styles";
 
 type Props = {
   entry: AwardEntry;
   onChange: (updates: Partial<AwardEntry>) => void;
   onDelete: () => void;
+  onEditingFocusChange?: (
+    focused: boolean,
+    inputNode?: number | null,
+    actionRowNode?: number | null,
+  ) => void;
 };
 
-const AwardItem = ({ entry, onChange, onDelete }: Props) => {
+const AwardItem = ({
+  entry,
+  onChange,
+  onDelete,
+  onEditingFocusChange,
+}: Props) => {
   const [isEditing, setIsEditing] = useState(!entry.description);
   const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<TextInput>(null);
+  const actionRowRef = useRef<View>(null);
 
-  const date =
-    entry.year && entry.month
-      ? `${entry.year}.${entry.month.padStart(2, "0")}`
-      : entry.year || "";
+  const date = formatYearMonth(entry.year, entry.month);
+  const isDraftEntry =
+    !entry.description.trim() && !entry.year && !entry.month;
+
+  const handleCancel = () => {
+    if (isDraftEntry) {
+      onDelete();
+      return;
+    }
+    setIsEditing(false);
+  };
 
   if (!isEditing) {
     return (
@@ -38,7 +58,7 @@ const AwardItem = ({ entry, onChange, onDelete }: Props) => {
           >
             <MaterialCommunityIcons
               name="pencil-outline"
-              size={16}
+              size={18}
               color={GRAY.DARK}
             />
           </Pressable>
@@ -49,7 +69,7 @@ const AwardItem = ({ entry, onChange, onDelete }: Props) => {
           >
             <MaterialCommunityIcons
               name="close"
-              size={16}
+              size={18}
               color={GRAY.DARK_2}
             />
           </Pressable>
@@ -65,7 +85,6 @@ const AwardItem = ({ entry, onChange, onDelete }: Props) => {
           styles.input,
           styles.multilineInput,
           isFocused && styles.inputFocused,
-          { marginRight: 28 },
         ]}
         value={entry.description}
         onChangeText={(v) => onChange({ description: v })}
@@ -73,21 +92,29 @@ const AwardItem = ({ entry, onChange, onDelete }: Props) => {
         placeholderTextColor={GRAY.DARK_2}
         multiline
         numberOfLines={2}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        autoFocus={isEditing && !entry.description.trim()}
+        onFocus={() => {
+          setIsFocused(true);
+          onEditingFocusChange?.(
+            true,
+            findNodeHandle(inputRef.current),
+            findNodeHandle(actionRowRef.current),
+          );
+        }}
+        onBlur={() => {
+          setIsFocused(false);
+          onEditingFocusChange?.(false);
+        }}
+        ref={inputRef}
       />
       <DatePickerField
-        label="수상시점"
+        label="수상 시기"
         year={entry.year}
         month={entry.month}
-        pickerTitle="수상 년월"
         onConfirm={(y, m) => onChange({ year: y, month: m })}
       />
-      <View style={styles.entryButtonRow}>
-        <Pressable
-          style={styles.entryCancelButton}
-          onPress={() => setIsEditing(false)}
-        >
+      <View style={styles.entryButtonRow} ref={actionRowRef}>
+        <Pressable style={styles.entryCancelButton} onPress={handleCancel}>
           <Text style={styles.entryCancelButtonText}>취소</Text>
         </Pressable>
         <Pressable
