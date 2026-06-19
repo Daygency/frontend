@@ -50,7 +50,9 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: MAIN.DEFAULT,
+    borderWidth: 1.5,
+    borderColor: MAIN.DEFAULT,
+    backgroundColor: WHITE,
     marginTop: 6,
   },
   timelineLine: {
