@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { View, ScrollView } from "react-native";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Profile from "../Profile/Profile";
 import ProfileDetail from "../ProfileDetail/ProfileDetail";
@@ -19,6 +19,9 @@ type Props = {
 
 const PortfolioScrollTabsLayout = ({ header }: Props) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const route = useRoute();
+  const routeParams = (route.params ?? {}) as { userId?: string };
+  const viewingUserId = routeParams.userId?.trim() ?? "";
   const hasPhotos = PORTFOLIO_PHOTOS.length > 0;
   const hasMorePhotos = PORTFOLIO_PHOTOS.length > PHOTO_PREVIEW_LIMIT;
 
@@ -49,7 +52,7 @@ const PortfolioScrollTabsLayout = ({ header }: Props) => {
           </View>
         ) : null}
         <View style={portfolioStyles.contentSheet}>
-          <Activity embedded />
+          <Activity embedded userId={viewingUserId || undefined} />
         </View>
       </ScrollView>
     </View>

@@ -29,6 +29,7 @@ export type AwardEntry = {
 
 export type CertificateEntry = {
   id: string;
+  certificateId?: string;
   description: string;
   year: string;
   month: string;
@@ -38,6 +39,7 @@ export type CertificateEntry = {
 
 export type ProfileResponseDto = {
   profileImgUrl: string;
+  coverImgUrl?: string;
   nickname: string;
   activityName?: string;
   role: UserRole;
@@ -66,6 +68,7 @@ export type ProfileResponseDto = {
 export type PublicProfileResponseDto = {
   userId: string;
   profileImgUrl: string;
+  coverImgUrl?: string;
   nickname: string;
   activityName: string;
   role: string;

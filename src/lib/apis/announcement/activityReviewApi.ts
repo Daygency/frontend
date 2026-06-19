@@ -269,6 +269,27 @@ export async function getReceivedActivityReviewList(params?: {
   }
 }
 
+/** 특정 유저가 받은 활동 후기 — GET /users/:userId/reviews/received */
+export async function getUserReceivedActivityReviewList(
+  userId: string,
+  params?: { cursor?: string | null; limit?: number },
+): Promise<ActivityReviewCursorListResponse | null> {
+  if (!userId?.trim()) return null;
+  try {
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const qs = q.toString();
+    const url = `${API_BASE}/users/${encodeURIComponent(userId)}/reviews/received${qs ? `?${qs}` : ""}`;
+    const res = await fetch(url);
+    if (!res.ok) return null;
+    const raw = (await res.json()) as Record<string, unknown>;
+    return parseCursorList(raw);
+  } catch {
+    return null;
+  }
+}
+
 export type UpdateActivityReviewBody = {
   rating?: ActivityReviewRating;
   disappointmentReasonCodes?: string[] | null;

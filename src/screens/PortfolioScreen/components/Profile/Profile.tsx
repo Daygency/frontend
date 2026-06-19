@@ -19,6 +19,7 @@ import {
   getMyProfile,
   getUserPublicProfile,
 } from "../../../../lib/apis/portfolio/profileApi";
+import { updateProfile } from "../../../../lib/apis/portfolio/profileUpdate";
 import type {
   ProfileResponseDto,
   PublicProfileResponseDto,
@@ -36,6 +37,7 @@ import {
 import { createCoffeeRoom } from "../../../../lib/apis/chat/chatApi";
 import { chatRoomItemToParams } from "../../../../lib/chat/chatRoomNavigation";
 import { resolveProfileImageUrlForDisplay } from "../../../../lib/chat/resolveProfileImageUrl";
+import * as ImagePicker from "expo-image-picker";
 import type { ChatRoomParams } from "../../../ChatScreens/ChatRoomScreen/ChatRoomScreen";
 
 const ROLE_LABEL: Record<string, string> = {
@@ -86,6 +88,8 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isEnabled, setIsEnabled] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [coverImageError, setCoverImageError] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
   const [following, setFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
@@ -98,6 +102,13 @@ const Profile = () => {
   const displayProfileImgUrl =
     isValidImageSource(rawProfileImgUrl) && !imageError
       ? toDisplayImageUri(rawProfileImgUrl)
+      : null;
+
+  const rawCoverImgUrl = (profile as ProfileResponseDto | PublicProfileResponseDto | null)
+    ?.coverImgUrl;
+  const displayCoverImgUrl =
+    isValidImageSource(rawCoverImgUrl) && !coverImageError
+      ? toDisplayImageUri(rawCoverImgUrl)
       : null;
 
   const followerCount = safeFollowCount(
@@ -279,6 +290,47 @@ const Profile = () => {
     }
   };
 
+  const pickCoverImage = async () => {
+    if (isOtherProfile || coverUploading) return;
+    try {
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: true,
+        aspect: [16, 9],
+        quality: 0.85,
+      });
+      if (result.canceled || !result.assets[0]?.uri) return;
+
+      setCoverUploading(true);
+      const updated = await updateProfile({}, {
+        coverImageUri: result.assets[0].uri,
+        coverImageName: "cover.jpg",
+        coverImageType: "image/jpeg",
+      });
+      if (!updated) {
+        Alert.alert("알림", "배경 사진 변경에 실패했습니다.");
+        return;
+      }
+      const fresh = await getMyProfile();
+      if (fresh) {
+        setProfile(fresh);
+        await saveProfileCache(fresh);
+      }
+      setCoverImageError(false);
+    } catch (e) {
+      console.warn("[pickCoverImage]", e);
+      Alert.alert("알림", "배경 사진 변경에 실패했습니다.");
+    } finally {
+      setCoverUploading(false);
+    }
+  };
+
   /** 같은 화면에서 재포커스 시 전체 스피너 없이 새로고침 (팔로우 버튼이 안 바뀐 것처럼 보이는 문제 방지) */
   const profileFocusRef = useRef<{ scope: string; n: number }>({
     scope: "",
@@ -293,6 +345,7 @@ const Profile = () => {
       setIsLoading(true);
     }
     setImageError(false);
+    setCoverImageError(false);
 
     if (isInvalidOtherRoute) {
       setProfile(null);
@@ -499,7 +552,32 @@ const Profile = () => {
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
-        <View style={[styles.banner, { height: bannerHeight }]} />
+        <Pressable
+          style={[styles.banner, { height: bannerHeight }]}
+          onPress={!isOtherProfile ? () => void pickCoverImage() : undefined}
+          disabled={isOtherProfile || coverUploading}
+        >
+          {displayCoverImgUrl ? (
+            <Image
+              source={{ uri: displayCoverImgUrl }}
+              style={styles.bannerImage}
+              resizeMode="cover"
+              onError={() => setCoverImageError(true)}
+            />
+          ) : null}
+          {!isOtherProfile ? (
+            <View style={styles.bannerEditBtn}>
+              {coverUploading ? (
+                <ActivityIndicator size="small" color={WHITE} />
+              ) : (
+                <>
+                  <Ionicons name="image-outline" size={14} color={WHITE} />
+                  <Text style={styles.bannerEditText}>배경 변경</Text>
+                </>
+              )}
+            </View>
+          ) : null}
+        </Pressable>
         <View style={styles.profileBody}>
           <View style={styles.avatarWrapper}>
             <View style={styles.profileImageContainer}>

@@ -5,20 +5,28 @@ import portfolioStyles from "../../styles";
 import { GRAY } from "../../../../color";
 import Section from "../../../../components/Section/Section";
 import ReviewCard from "../../../../components/ReviewCard/ReviewCard";
-import { getReceivedActivityReviewList } from "../../../../lib/apis/announcement/activityReviewApi";
+import {
+  getReceivedActivityReviewList,
+  getUserReceivedActivityReviewList,
+} from "../../../../lib/apis/announcement/activityReviewApi";
 import type { ActivityReviewListItem } from "../../../../lib/apis/announcement/activityReviewTypes";
 
 type ActivityProps = {
   embedded?: boolean;
+  /** 타인 포트폴리오 — 해당 유저가 받은 후기 */
+  userId?: string;
 };
 
-const Activity = ({ embedded = false }: ActivityProps) => {
+const Activity = ({ embedded = false, userId }: ActivityProps) => {
   const [reviews, setReviews] = useState<ActivityReviewListItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadReceivedReviews = useCallback(async () => {
     setLoading(true);
-    const res = await getReceivedActivityReviewList({ limit: 20 });
+    const trimmedUserId = userId?.trim();
+    const res = trimmedUserId
+      ? await getUserReceivedActivityReviewList(trimmedUserId, { limit: 20 })
+      : await getReceivedActivityReviewList({ limit: 20 });
     if (!res) {
       setReviews([]);
       setLoading(false);
@@ -26,7 +34,7 @@ const Activity = ({ embedded = false }: ActivityProps) => {
     }
     setReviews(res.items);
     setLoading(false);
-  }, []);
+  }, [userId]);
 
   useEffect(() => {
     void loadReceivedReviews();

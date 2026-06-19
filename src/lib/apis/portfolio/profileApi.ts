@@ -181,6 +181,13 @@ export async function getUserPublicProfile(
             ? data.profile_img_url
             : undefined,
       ) as string,
+      coverImgUrl: attachRelativeProfileUrl(
+        typeof data.coverImgUrl === "string"
+          ? data.coverImgUrl
+          : typeof data.cover_img_url === "string"
+            ? data.cover_img_url
+            : undefined,
+      ),
       nickname: String(data.nickname ?? ""),
       activityName: String(
         data.activityName ?? data.activity_name ?? "",
@@ -251,6 +258,9 @@ export async function getMyProfile(): Promise<ProfileResponseDto | null> {
   // 상대 경로인 경우 API base URL 붙이기 (예: /uploads/profile/xxx.jpg)
   if (profile.profileImgUrl?.startsWith("/")) {
     profile.profileImgUrl = `${API_BASE}${profile.profileImgUrl}`;
+  }
+  if (profile.coverImgUrl?.startsWith("/")) {
+    profile.coverImgUrl = `${API_BASE}${profile.coverImgUrl}`;
   }
   return profile;
 }

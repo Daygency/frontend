@@ -6,9 +6,14 @@ export type UpdateProfileOptions = {
   profileImageUri?: string;
   profileImageName?: string;
   profileImageType?: string;
+  coverImageUri?: string;
+  coverImageName?: string;
+  coverImageType?: string;
 };
 
-async function parseUpdateProfileResponse(response: Response): Promise<Record<string, unknown> | null> {
+async function parseUpdateProfileResponse(
+  response: Response,
+): Promise<Record<string, unknown> | null> {
   if (!response.ok) {
     const errorText = await response.text().catch(() => "");
     console.log(
@@ -40,21 +45,33 @@ export async function updateProfile(
   profile: ProfileUpdateRequestDto,
   options?: UpdateProfileOptions,
 ): Promise<Record<string, unknown> | null> {
-  const imageUri = options?.profileImageUri?.trim();
+  const profileImageUri = options?.profileImageUri?.trim();
+  const coverImageUri = options?.coverImageUri?.trim();
+  const hasMultipart = Boolean(profileImageUri || coverImageUri);
+
   console.log(
     "[updateProfile] 요청 payload:",
     JSON.stringify(profile, null, 2),
   );
 
   try {
-    if (imageUri) {
+    if (hasMultipart) {
       const formData = new FormData();
       formData.append("payload", JSON.stringify(profile));
-      formData.append("profileImage", {
-        uri: imageUri,
-        name: options?.profileImageName ?? "profile.jpg",
-        type: options?.profileImageType ?? "image/jpeg",
-      } as unknown as Blob);
+      if (profileImageUri) {
+        formData.append("profileImage", {
+          uri: profileImageUri,
+          name: options?.profileImageName ?? "profile.jpg",
+          type: options?.profileImageType ?? "image/jpeg",
+        } as unknown as Blob);
+      }
+      if (coverImageUri) {
+        formData.append("coverImage", {
+          uri: coverImageUri,
+          name: options?.coverImageName ?? "cover.jpg",
+          type: options?.coverImageType ?? "image/jpeg",
+        } as unknown as Blob);
+      }
 
       const response = await fetchWithAuth(`${API_BASE}/users/profile/my`, {
         method: "PATCH",

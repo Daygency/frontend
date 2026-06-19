@@ -150,12 +150,20 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
     arr: any[] | null | undefined,
   ): ProfileEntryItem[] => {
     if (!Array.isArray(arr) || arr.length === 0) return [];
+    const toYmFromDate = (d: string | undefined) => {
+      if (!d?.trim()) return "";
+      const date = new Date(d);
+      if (Number.isNaN(date.getTime())) return "";
+      return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}`;
+    };
     const toYm = (y: string, m: string) =>
       y && m ? `${y}.${String(m).padStart(2, "0")}` : "";
     return arr
       .map((item: any) => {
         const description = (item?.description ?? "").trim();
-        const date = toYm(item?.year ?? "", item?.month ?? "");
+        const date =
+          toYmFromDate(item?.obtainedAt) ||
+          toYm(item?.year ?? "", item?.month ?? "");
         const period = date ? `취득 ${date}` : null;
         if (!description && !period) return null;
         return {

@@ -237,8 +237,25 @@ const ProfileEditScreen = () => {
         };
       }),
     );
-    setCertificateList(p.certificateEntries ?? []);
+    setCertificateList(mapCertificatesFromApi(p));
   };
+
+  function mapCertificatesFromApi(
+    p: NonNullable<Awaited<ReturnType<typeof getMyProfile>>>,
+  ): CertificateEntry[] {
+    const raw = (p as any).certificates ?? p.certificateEntries ?? [];
+    if (!Array.isArray(raw)) return [];
+    return raw.map((c: any) => {
+      const d = parseApiDateToYearMonth(c.obtainedAt);
+      return {
+        id: c.certificateId ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        certificateId: c.certificateId,
+        description: c.description ?? "",
+        year: c.year ?? d.year,
+        month: c.month ?? d.month,
+      };
+    });
+  }
 
   const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
   const displayProfileImgUrl = pickedProfileImageUri
@@ -456,6 +473,7 @@ const ProfileEditScreen = () => {
       majorId: majorId ?? null,
       majorDetail,
       certificates: certificateList.map((c) => ({
+        ...(c.certificateId ? { certificateId: c.certificateId } : {}),
         description: c.description,
         obtainedAt: toDate(c.year, c.month),
       })),
@@ -542,13 +560,14 @@ const ProfileEditScreen = () => {
         "[ProfileEditScreen] update payload:",
         JSON.stringify(payload),
       );
-      const updated = await updateProfile(payload, pickedProfileImageUri
+      const imageOptions = pickedProfileImageUri
         ? {
             profileImageUri: pickedProfileImageUri,
             profileImageName: "profile.jpg",
             profileImageType: "image/jpeg",
           }
-        : undefined);
+        : undefined;
+      const updated = await updateProfile(payload, imageOptions);
       if (!updated) {
         await persistToCache();
         return;
