@@ -46,6 +46,7 @@ export default ({ config }) => ({
           ios: {
             useFrameworks: "static",
             forceStaticLinking: ["RNFBApp", "RNFBMessaging"],
+            buildReactNativeFromSource: false,
           },
           android: {
             extraMavenRepos: ["https://kakao.com"],

@@ -9,7 +9,7 @@
     "web": "expo start --web",
     "ios-device": "expo run:ios --device",
     "ios-build": "expo export:embed --platform ios --dev false --entry-file index.ts --bundle-output ./ios/main.jsbundle --assets-dest ./ios",
-    "build:local": "GOOGLE_SERVICES_PLIST=$(base64 -i ios/GoogleService-Info.plist) eas build --local --platform ios"
+    "build:local": "GOOGLE_SERVICES_PLIST=$(base64 -i GoogleService-Info.plist) eas build --local --platform ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
