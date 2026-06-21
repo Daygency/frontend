@@ -361,13 +361,6 @@ const CommunityDetailScreen = () => {
               color="#000"
             />
           </Pressable>
-          <Pressable hitSlop={10}>
-            <MaterialCommunityIcons
-              name="share-variant"
-              size={21}
-              color="#000"
-            />
-          </Pressable>
           {data?.isMine ? (
             <PostDetailOptionsMenu
               isMine

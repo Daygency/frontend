@@ -160,13 +160,6 @@ const Navigation = () => {
                 </Pressable>
                 <Pressable hitSlop={10}>
                   <MaterialCommunityIcons
-                    name="share-variant"
-                    size={21}
-                    color="#000"
-                  />
-                </Pressable>
-                <Pressable hitSlop={10}>
-                  <MaterialCommunityIcons
                     name="dots-vertical"
                     size={21}
                     color="#000"
@@ -504,13 +497,6 @@ const Navigation = () => {
                 </Pressable>
                 <Pressable hitSlop={10}>
                   <MaterialCommunityIcons
-                    name="share-variant"
-                    size={21}
-                    color="#000"
-                  />
-                </Pressable>
-                <Pressable hitSlop={10}>
-                  <MaterialCommunityIcons
                     name="dots-vertical"
                     size={21}
                     color="#000"
@@ -554,13 +540,6 @@ const Navigation = () => {
                 <Pressable hitSlop={10}>
                   <MaterialCommunityIcons
                     name="bookmark-outline"
-                    size={21}
-                    color="#000"
-                  />
-                </Pressable>
-                <Pressable hitSlop={10}>
-                  <MaterialCommunityIcons
-                    name="share-variant"
                     size={21}
                     color="#000"
                   />

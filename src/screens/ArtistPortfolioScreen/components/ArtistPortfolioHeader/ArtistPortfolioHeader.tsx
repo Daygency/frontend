@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import styles from "./styles";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { blockUser } from "../../../../lib/apis/block/blockApi";
+import { getUserPublicProfile } from "../../../../lib/apis/portfolio/profileApi";
 
 interface ArtistPortfolioHeaderProps {
   activityName: string;
@@ -20,7 +21,38 @@ const ArtistPortfolioHeader = ({
   const { user, isLoggedIn } = useAuth();
   const myUserId = user?.socialId?.trim() ?? "";
 
+  const [resolvedHandle, setResolvedHandle] = useState(
+    activityName.trim(),
+  );
   const [blockLoading, setBlockLoading] = useState(false);
+
+  useEffect(() => {
+    const fromRoute = activityName.trim();
+    if (fromRoute) {
+      setResolvedHandle(fromRoute);
+      return;
+    }
+
+    const uid = targetUserId?.trim();
+    if (!uid) {
+      setResolvedHandle("");
+      return;
+    }
+
+    let cancelled = false;
+    void getUserPublicProfile(uid).then((profile) => {
+      if (cancelled) return;
+      setResolvedHandle(
+        profile?.activityName?.trim() || profile?.nickname?.trim() || "",
+      );
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activityName, targetUserId]);
+
+  const handleLabel = resolvedHandle ? `@${resolvedHandle}` : null;
 
   const showMenu =
     !!targetUserId &&
@@ -96,9 +128,11 @@ const ArtistPortfolioHeader = ({
               color="#000"
             />
           </Pressable>
-          <Text style={styles.activityName} numberOfLines={1}>
-            @{activityName}
-          </Text>
+          {handleLabel ? (
+            <Text style={styles.activityName} numberOfLines={1}>
+              {handleLabel}
+            </Text>
+          ) : null}
         </View>
 
         {showMenu ? (

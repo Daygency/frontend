@@ -129,9 +129,6 @@ const AnnouncementDetailOptionsMenu = ({
           color={scraped ? "#FFC107" : "#000"}
         />
       </Pressable>
-      <Pressable hitSlop={10}>
-        <MaterialCommunityIcons name="share-variant" size={21} color="#000" />
-      </Pressable>
       <View ref={dotsRef} collapsable={false}>
         <Pressable hitSlop={10} onPress={toggleMenu} style={styles.dotsButton}>
           <MaterialCommunityIcons
