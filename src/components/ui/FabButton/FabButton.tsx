@@ -24,8 +24,8 @@ export type FabMenuItem = {
   onPress: () => void;
 };
 
-const MEGAPHONE_ICON = require("../../../assets/megaphone.png");
-const MUSIC_ICON = require("../../../assets/music.png");
+const MEGAPHONE_ICON = require("../../../../assets/megaphone.png");
+const MUSIC_ICON = require("../../../../assets/music.png");
 
 type FabButtonProps = {
   onPress?: () => void;

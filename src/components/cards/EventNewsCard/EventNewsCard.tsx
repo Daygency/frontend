@@ -76,7 +76,7 @@ const EventNewsCard = ({
           accessibilityLabel="이미지 없음"
         >
           <Image
-            source={require("../../../assets/logo.png")}
+            source={require("../../../../assets/logo.png")}
             style={{ width: logoSize, height: logoSize }}
             resizeMode="contain"
           />
