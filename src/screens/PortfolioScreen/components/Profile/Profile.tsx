@@ -98,8 +98,10 @@ const Profile = () => {
   const [followLoading, setFollowLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
 
-  const displayNickname =
-    profile?.nickname || (!isOtherProfile ? user?.nickname : "") || "이름 없음";
+  const displayName =
+    profile?.name?.trim() ||
+    (!isOtherProfile ? user?.name?.trim() : "") ||
+    "";
   const rawProfileImgUrl =
     profile?.profileImgUrl ||
     (!isOtherProfile ? user?.profileImgUrl : undefined);
@@ -249,7 +251,7 @@ const Profile = () => {
     navigation.navigate(RootRoutes.FOLLOW_LIST, {
       userId: uid,
       initialTab: tab,
-      titleName: displayNickname,
+      titleName: displayName || headline || undefined,
     });
   };
 
@@ -283,7 +285,7 @@ const Profile = () => {
         params = {
           chatRoomId: room.id,
           peerUserId: viewingUserId,
-          name: displayNickname,
+          name: displayName || activityNameForChat || viewingUserId.slice(0, 8),
           handle: activityNameForChat || viewingUserId.slice(0, 8),
           isOnline: false,
         };
@@ -703,14 +705,18 @@ const Profile = () => {
             ) : null}
           </Pressable>
 
+          {(displayName || roleLabel) ? (
           <View style={styles.profileNameRow}>
-            <Text style={styles.profileName}>{displayNickname}</Text>
+            {displayName ? (
+              <Text style={styles.profileName}>{displayName}</Text>
+            ) : null}
             {roleLabel ? (
               <View style={styles.profileTagContainer}>
                 <Text style={styles.profileTag}>{roleLabel}</Text>
               </View>
             ) : null}
           </View>
+          ) : null}
 
           {headline ? (
             <Text style={styles.profileHeadline}>{headline}</Text>

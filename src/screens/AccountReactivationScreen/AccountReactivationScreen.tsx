@@ -24,7 +24,7 @@ export type AccountReactivationParams = {
   oauthAccessToken: string;
   deletedAt?: string;
   reactivationDeadline?: string;
-  nickname?: string;
+  name?: string;
 };
 
 type RootStackParamList = {
@@ -56,7 +56,7 @@ const AccountReactivationScreen = () => {
     oauthAccessToken,
     deletedAt,
     reactivationDeadline,
-    nickname,
+    name,
   } = route.params ?? {};
 
   const safeProvider: SocialAuthProvider =
@@ -115,7 +115,7 @@ const AccountReactivationScreen = () => {
         accessToken,
         {
           socialId: String(u.userId ?? u.socialId ?? ""),
-          nickname: String(u.nickname ?? ""),
+          name: String(u.name ?? ""),
           email: String(u.email ?? ""),
           profileImgUrl: String(u.profileImgUrl ?? ""),
         },
@@ -142,7 +142,7 @@ const AccountReactivationScreen = () => {
       oauthAccessToken,
       {
         socialId: String(profile.socialId ?? ""),
-        nickname: String(profile.nickname ?? ""),
+        name: String(profile.name ?? ""),
         email: String(profile.email ?? ""),
         profileImgUrl: String(profile.profileImgUrl ?? ""),
       },
@@ -205,7 +205,7 @@ const AccountReactivationScreen = () => {
   const floatingBottomPad = insets.bottom + 4;
   const scrollBottomPad = insets.bottom + 160;
 
-  const displayName = nickname?.trim() || "이 계정";
+  const displayName = name?.trim() || "이 계정";
 
   if (!oauthAccessToken?.trim()) {
     return (

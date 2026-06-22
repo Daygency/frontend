@@ -62,18 +62,18 @@ export async function postSocialAuthExchange(
   return { ok: res.ok, status: res.status, data, rawText };
 }
 
-/** 서버가 내려준 profile / user 에서 표시용 닉네임 추출 */
-export function pickNicknameFromSocialAuthData(
+/** 서버가 내려준 profile / user 에서 표시용 이름 추출 */
+export function pickNameFromSocialAuthData(
   data: Record<string, unknown>,
 ): string | undefined {
   const p = data.profile;
   if (p && typeof p === "object" && p !== null) {
-    const n = (p as { nickname?: unknown }).nickname;
+    const n = (p as { name?: unknown }).name;
     if (typeof n === "string" && n.trim()) return n.trim();
   }
   const u = data.user;
   if (u && typeof u === "object" && u !== null) {
-    const n = (u as { nickname?: unknown }).nickname;
+    const n = (u as { name?: unknown }).name;
     if (typeof n === "string" && n.trim()) return n.trim();
   }
   return undefined;

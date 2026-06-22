@@ -75,7 +75,7 @@ const Activity = ({ embedded = false, userId }: ActivityProps) => {
             <ReviewCard
               key={item.id}
               author={
-                item.reviewer?.activityName || item.reviewer?.nickname || "작성자"
+                item.reviewer?.activityName || item.reviewer?.name || "작성자"
               }
               date={formatDate(item.createdAt)}
               title={item.announcement?.title || item.postId}

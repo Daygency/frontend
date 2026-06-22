@@ -7,7 +7,7 @@ export type UserMajorSummary = {
 
 export type UserListItem = {
   userId: string;
-  nickname: string;
+  name: string;
   activityName: string;
   profileImgUrl: string;
   aboutMe: string | null;

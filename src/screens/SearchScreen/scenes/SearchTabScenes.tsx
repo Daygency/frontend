@@ -75,7 +75,7 @@ function pickCommunityAuthor(item: CommunityListItem): string {
         ? r.activity_name
         : "";
   const nick =
-    typeof r.nickname === "string" ? r.nickname : "";
+    typeof r.name === "string" ? r.name : "";
   return activity.trim() || nick.trim() || "알수없음";
 }
 
@@ -493,7 +493,7 @@ export function SearchArtistScene({ query }: SceneProps) {
       renderItem={({ item }) => (
         <View style={styles.cardPad}>
           <ArtistCard
-            name={item.nickname || "이름 없음"}
+            name={item.name || "이름 없음"}
             category={item.major?.name ?? "전공 미설정"}
             avatarUrl={resolveProfileImageUrlForDisplay(item.profileImgUrl)}
             activityName={item.activityName}
@@ -682,7 +682,7 @@ export function SearchAllScene({ query }: SceneProps) {
           {artists.map((item) => (
             <View key={item.userId} style={styles.cardPad}>
               <ArtistCard
-                name={item.nickname || "이름 없음"}
+                name={item.name || "이름 없음"}
                 category={item.major?.name ?? "전공 미설정"}
                 avatarUrl={resolveProfileImageUrlForDisplay(item.profileImgUrl)}
                 activityName={item.activityName}

@@ -5,7 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useAuth } from "../../../contexts/AuthContext";
 import {
-  pickNicknameFromSocialAuthData,
+  pickNameFromSocialAuthData,
   postSocialAuthExchange,
 } from "../../../lib/apis/auth/socialAuthExchange";
 import { RootRoutes } from "../../../navigations/routes";
@@ -93,7 +93,7 @@ export const useKakaoLogin = () => {
             typeof data.reactivationDeadline === "string"
               ? data.reactivationDeadline
               : undefined,
-          nickname: pickNicknameFromSocialAuthData(data),
+          name: pickNameFromSocialAuthData(data),
         });
         return;
       }
@@ -105,7 +105,7 @@ export const useKakaoLogin = () => {
           accessTokenFromKakao,
           {
             socialId: String(profile.socialId ?? ""),
-            nickname: String(profile.nickname ?? ""),
+            name: String(profile.name ?? ""),
             email: String(profile.email ?? ""),
             profileImgUrl: String(profile.profileImgUrl ?? ""),
           },
@@ -124,7 +124,7 @@ export const useKakaoLogin = () => {
         accessToken,
         {
           socialId: String(u.userId ?? u.socialId ?? ""),
-          nickname: String(u.nickname ?? ""),
+          name: String(u.name ?? ""),
           email: String(u.email ?? ""),
           profileImgUrl: String(u.profileImgUrl ?? ""),
         },

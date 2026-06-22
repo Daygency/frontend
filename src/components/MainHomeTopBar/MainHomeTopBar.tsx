@@ -1,30 +1,54 @@
-import { Pressable, Text, View } from "react-native";
+import { Image, Pressable, View, type ImageSourcePropType } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Logo from "../Logo/Logo";
-import { WHITE, MAIN } from "../../color";
+import { MAIN } from "../../color";
 import styles from "./styles";
 import Feather from "@expo/vector-icons/Feather";
-import { useNavigation } from "@react-navigation/native";
+import { CompositeNavigationProp, useNavigation } from "@react-navigation/native";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../navigations/routes";
+import type { ContentTabParamList, RootStackParamList } from "../../navigations/types";
+
+type MainHomeTopBarNavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<ContentTabParamList>,
+  NativeStackNavigationProp<RootStackParamList>
+>;
 
 interface MainHomeTopBarProps {
-  logoName: string;
+  logoName?: string;
+  logoImage?: ImageSourcePropType;
   initialTag?: string | null;
 }
 
-const MainHomeTopBar = ({ logoName, initialTag }: MainHomeTopBarProps) => {
-  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+const MainHomeTopBar = ({ logoName, logoImage, initialTag }: MainHomeTopBarProps) => {
+  const navigation = useNavigation<MainHomeTopBarNavigationProp>();
 
   const handleSearchPress = () => {
-    navigation.getParent()?.navigate(RootRoutes.SEARCH as never, {
-      initialTag: initialTag ?? undefined,
-    } as never);
+    if (initialTag) {
+      navigation.navigate(RootRoutes.SEARCH, { initialTag });
+      return;
+    }
+    navigation.navigate(RootRoutes.SEARCH);
   };
 
   return (
     <View style={styles.container}>
-      <Logo size={24} logoName={logoName} />
+      {logoImage ? (
+        <Image
+          source={logoImage}
+          style={{
+            height: 24,
+            aspectRatio: 1396 / 179,
+            maxWidth: 120,
+            flexShrink: 1,
+          }}
+          resizeMode="contain"
+          accessibilityLabel="daygency"
+        />
+      ) : (
+        <Logo size={24} logoName={logoName ?? ""} />
+      )}
       <View style={styles.iconContainer}>
         <Pressable style={styles.iconButton} onPress={handleSearchPress}>
           <Feather name="search" size={23} color={MAIN.DEFAULT} />

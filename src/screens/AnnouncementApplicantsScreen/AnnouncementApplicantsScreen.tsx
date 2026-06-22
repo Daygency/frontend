@@ -123,7 +123,7 @@ export default function AnnouncementApplicantsScreen() {
 
   const displayName = (row: RowModel): string => {
     const peer = row.room?.peer;
-    const fromPeer = peer?.nickname ?? peer?.activityName ?? "";
+    const fromPeer = peer?.name ?? peer?.activityName ?? "";
     const fromApp = row.application.name?.trim() ?? "";
     return fromPeer || fromApp || "지원자";
   };

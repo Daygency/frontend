@@ -40,7 +40,7 @@ export type ActivityReviewEntity = {
 
 export type ActivityReviewUserSummary = {
   userId: string;
-  nickname: string;
+  name: string;
   activityName: string;
   profileImgUrl: string | null;
 };

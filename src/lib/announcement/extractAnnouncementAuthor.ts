@@ -3,7 +3,7 @@ import { pickReportedUserIdFromUnknown } from "../report/pickReportedUserId";
 
 export type AnnouncementAuthor = {
   userId: string;
-  nickname?: string;
+  name?: string;
   activityName?: string;
   profileImgUrl?: string;
 };
@@ -12,9 +12,9 @@ function asRecord(v: unknown): Record<string, unknown> {
   return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
 }
 
-function pickNicknameFromRecord(rec: Record<string, unknown>): string | undefined {
+function pickNameFromRecord(rec: Record<string, unknown>): string | undefined {
   const keys = [
-    "nickname",
+    "name",
     "nick_name",
     "displayName",
     "display_name",
@@ -27,7 +27,7 @@ function pickNicknameFromRecord(rec: Record<string, unknown>): string | undefine
   for (const nest of ["profile", "member", "social"]) {
     const child = rec[nest];
     if (child && typeof child === "object") {
-      const n = pickNicknameFromRecord(child as Record<string, unknown>);
+      const n = pickNameFromRecord(child as Record<string, unknown>);
       if (n) return n;
     }
   }
@@ -63,9 +63,9 @@ export function extractAnnouncementAuthorFromDetail(
         : typeof p.activity_name === "string"
           ? p.activity_name.trim() || undefined
           : undefined;
-    const nickname =
-      pickNicknameFromRecord(p) ??
-      (typeof p.nickname === "string" ? p.nickname.trim() || undefined : undefined);
+    const name =
+      pickNameFromRecord(p) ??
+      (typeof p.name === "string" ? p.name.trim() || undefined : undefined);
     const profileImgUrl =
       pickProfileImageUrlDeep(p) ??
       (typeof p.profileImgUrl === "string"
@@ -76,7 +76,7 @@ export function extractAnnouncementAuthorFromDetail(
 
     return {
       userId: uid,
-      nickname,
+      name,
       activityName,
       profileImgUrl: profileImgUrl?.trim() || undefined,
     };

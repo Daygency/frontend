@@ -68,7 +68,7 @@ const ProfileEditScreen = () => {
     useState<Awaited<ReturnType<typeof getMyProfile>>>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const [nickname, setNickname] = useState("");
+  const [name, setName] = useState("");
   const [activityName, setActivityName] = useState("");
   const [originalActivityName, setOriginalActivityName] = useState("");
   const [aboutMe, setAboutMe] = useState("");
@@ -168,7 +168,7 @@ const ProfileEditScreen = () => {
       "[ProfileEditScreen] populateForm activityName:",
       p.activityName,
     );
-    setNickname(p.nickname || user?.nickname || "");
+    setName(p.name || user?.name || "");
     const initialActivityName = p.activityName || "";
     setActivityName(initialActivityName);
     setOriginalActivityName(initialActivityName);
@@ -327,8 +327,8 @@ const ProfileEditScreen = () => {
     if (route.key === "top") {
       return (
         <TopIntroductionTab
-          nickname={nickname}
-          setNickname={setNickname}
+          name={name}
+          setName={setName}
           activityName={activityName}
           setActivityName={setActivityName}
           originalActivityName={originalActivityName}
@@ -368,7 +368,7 @@ const ProfileEditScreen = () => {
     if (!profile) return;
     await saveProfileCache({
       ...profile,
-      nickname,
+      name,
       activityName,
       aboutMe,
       selfIntroduction,
@@ -421,7 +421,7 @@ const ProfileEditScreen = () => {
     const current: any = profile;
 
     const basePayload: ProfileUpdateRequestDto = {
-      nickname: current.nickname,
+      name: current.name,
       activityName: current.activityName,
       aboutMe: current.aboutMe,
       selfIntroduction: (current as any).selfIntroduction,
@@ -450,7 +450,7 @@ const ProfileEditScreen = () => {
     };
 
     const fullPayload: ProfileUpdateRequestDto = {
-      nickname,
+      name,
       activityName,
       aboutMe,
       selfIntroduction,
@@ -580,7 +580,7 @@ const ProfileEditScreen = () => {
           ...(profile as any),
           ...(updated as any),
           ...patchCounts,
-          nickname,
+          name,
           activityName,
           aboutMe,
           selfIntroduction,

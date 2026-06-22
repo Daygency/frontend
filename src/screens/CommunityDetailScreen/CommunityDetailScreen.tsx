@@ -108,7 +108,7 @@ function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem
   const isMine = Boolean(myUserId && uid && uid === myUserId);
   return {
     id: String(comment.id),
-    author: String(comment.user?.nickname ?? "익명"),
+    author: String(comment.user?.name ?? "익명"),
     createdAt: String(comment.createdAt ?? ""),
     content: String(comment.content ?? ""),
     likeCount: Number((comment as any)?.likeCount ?? 0),
@@ -600,8 +600,8 @@ const CommunityDetailScreen = () => {
             {isContentNew(data.createdAt) ? <NewBadge /> : null}
           </View>
           <Text style={styles.meta}>
-            {data.user && (data.user as any).nickname
-              ? String((data.user as any).nickname)
+            {data.user && (data.user as any).name
+              ? String((data.user as any).name)
               : "알수없음"}{" "}
             · {new Date(data.createdAt).toLocaleDateString()}
           </Text>

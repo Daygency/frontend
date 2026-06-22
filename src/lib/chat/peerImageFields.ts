@@ -65,7 +65,7 @@ export function mergePeerFromRoomRow(r: Record<string, unknown>): ChatPeerSummar
   ].filter((x) => x != null && typeof x === "object");
 
   let userId = "";
-  let nickname: string | undefined;
+  let name: string | undefined;
   let activityName: string | undefined;
   let profileImageUrl: string | undefined;
 
@@ -73,8 +73,8 @@ export function mergePeerFromRoomRow(r: Record<string, unknown>): ChatPeerSummar
     const p = asRecord(src);
     const uid = String(p.userId ?? p.user_id ?? "").trim();
     if (uid && !userId) userId = uid;
-    if (!nickname && typeof p.nickname === "string" && p.nickname.trim())
-      nickname = p.nickname.trim();
+    if (!name && typeof p.name === "string" && p.name.trim())
+      name = p.name.trim();
     if (!activityName) {
       const an =
         typeof p.activityName === "string"
@@ -110,7 +110,7 @@ export function mergePeerFromRoomRow(r: Record<string, unknown>): ChatPeerSummar
 
   return {
     userId,
-    nickname,
+    name,
     activityName,
     profileImageUrl,
   };
@@ -135,9 +135,9 @@ export function peerFromMembers(
     const uid = String(rec.userId ?? rec.user_id ?? "").trim();
     if (!uid || uid === me) continue;
 
-    const nickname =
-      typeof rec.nickname === "string" && rec.nickname.trim()
-        ? rec.nickname.trim()
+    const name =
+      typeof rec.name === "string" && rec.name.trim()
+        ? rec.name.trim()
         : undefined;
     let activityName: string | undefined;
     const an =
@@ -152,7 +152,7 @@ export function peerFromMembers(
 
     return {
       userId: uid,
-      nickname,
+      name,
       activityName,
       profileImageUrl,
     };

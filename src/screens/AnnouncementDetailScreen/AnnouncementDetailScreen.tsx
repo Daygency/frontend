@@ -244,7 +244,7 @@ const AnnouncementDetailScreen = () => {
     console.log("[AnnouncementDetail] 인증 상태:", {
       isLoggedIn,
       userId: user?.socialId ?? "(없음)",
-      nickname: user?.nickname ?? "(없음)",
+      name: user?.name ?? "(없음)",
     });
     return getAnnouncementDetail(params.postId).then((res) => {
       console.log(
@@ -270,7 +270,7 @@ const AnnouncementDetailScreen = () => {
       ) {
         setAuthor({
           userId: user.socialId.trim(),
-          nickname: user.nickname?.trim() || undefined,
+          name: user.name?.trim() || undefined,
           profileImgUrl: user.profileImgUrl?.trim() || undefined,
         });
       } else {
@@ -706,7 +706,7 @@ const AnnouncementDetailScreen = () => {
                 peerUserId={author.userId}
                 peer={{
                   userId: author.userId,
-                  nickname: author.nickname,
+                  name: author.name,
                   activityName: author.activityName,
                   profileImageUrl: author.profileImgUrl,
                 }}
@@ -872,10 +872,10 @@ const AnnouncementDetailScreen = () => {
                 revieweeUserId: uid,
                 revieweeActivityName:
                   author?.activityName?.trim() ||
-                  author?.nickname?.trim() ||
+                  author?.name?.trim() ||
                   "모집자",
                 announcementTitle: displayTitle,
-                revieweeHandle: author?.nickname?.trim(),
+                revieweeHandle: author?.name?.trim(),
               });
             }}
           >

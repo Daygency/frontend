@@ -35,9 +35,9 @@ const SignupFlowScreen = () => {
   const slideX = useSharedValue(0);
 
   // Step 2 state
-  const [nickname, setNickname] = useState("");
+  const [name, setName] = useState("");
   const [activityName, setActivityName] = useState("");
-  const [isNicknameFocused, setIsNicknameFocused] = useState(false);
+  const [isNameFocused, setIsNameFocused] = useState(false);
   const [isActivityNameFocused, setIsActivityNameFocused] = useState(false);
   const [isCheckingActivityName, setIsCheckingActivityName] = useState(false);
   const [isActivityNameDuplicate, setIsActivityNameDuplicate] = useState<
@@ -118,7 +118,7 @@ const SignupFlowScreen = () => {
 
       await completeSignup({
         role: selectedRole,
-        nickname: nickname.trim() || undefined,
+        name: name.trim() || undefined,
         activityName: activityName.trim(),
       });
     } catch {
@@ -281,7 +281,7 @@ const SignupFlowScreen = () => {
                 <Text
                   style={[
                     styles.label,
-                    isNicknameFocused && styles.labelFocused,
+                    isNameFocused && styles.labelFocused,
                   ]}
                 >
                   이름 (선택)
@@ -289,14 +289,14 @@ const SignupFlowScreen = () => {
                 <TextInput
                   style={[
                     styles.input,
-                    isNicknameFocused && styles.inputFocused,
+                    isNameFocused && styles.inputFocused,
                   ]}
-                  value={nickname}
-                  onChangeText={setNickname}
+                  value={name}
+                  onChangeText={setName}
                   placeholder="미입력 시 자동 생성"
                   placeholderTextColor={GRAY.MEDIUM_100}
-                  onFocus={() => setIsNicknameFocused(true)}
-                  onBlur={() => setIsNicknameFocused(false)}
+                  onFocus={() => setIsNameFocused(true)}
+                  onBlur={() => setIsNameFocused(false)}
                 />
               </View>
 

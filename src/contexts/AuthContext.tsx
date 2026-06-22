@@ -25,7 +25,7 @@ export type SignupProvider = "kakao" | "naver";
 
 export type SocialUser = {
   socialId: string;
-  nickname: string;
+  name: string;
   email: string;
   profileImgUrl: string;
 };
@@ -34,7 +34,7 @@ export type UserRole = "artist" | "planner";
 
 export type SignupParams = {
   role: UserRole;
-  nickname?: string; // 미입력 시 소셜 프로필 값 사용
+  name?: string; // 미입력 시 null
   activityName?: string;
 };
 
@@ -163,7 +163,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const completeSignup = async (params: SignupParams) => {
-    const { role, nickname, activityName } = params;
+    const { role, name, activityName } = params;
     try {
       const accessToken = await AsyncStorage.getItem(
         PENDING_SIGNUP_OAUTH_TOKEN_KEY,
@@ -180,13 +180,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           ? await completeNaverSignup({
               accessToken,
               activityName: (activityName ?? "").trim(),
-              ...(nickname?.trim() ? { nickname: nickname.trim() } : {}),
+              ...(name?.trim() ? { name: name.trim() } : {}),
               role: role === "planner" ? "admin" : "user",
             })
           : await completeKakaoSignup({
               accessToken,
               role,
-              ...(nickname?.trim() ? { nickname: nickname.trim() } : {}),
+              ...(name?.trim() ? { name: name.trim() } : {}),
               ...(activityName?.trim() ? { activityName: activityName.trim() } : {}),
             });
 
@@ -201,7 +201,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const u = data.user;
         const userInfo: SocialUser = {
           socialId: String(u.userId ?? u.socialId ?? ""),
-          nickname: String(u.nickname ?? ""),
+          name: String(u.name ?? ""),
           email: String(u.email ?? ""),
           profileImgUrl: String(u.profileImgUrl ?? ""),
         };

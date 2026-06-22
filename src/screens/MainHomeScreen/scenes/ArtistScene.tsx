@@ -175,7 +175,7 @@ const ArtistScene = () => {
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
               <ArtistCard
-                name={item.nickname || "이름 없음"}
+                name={item.name || "이름 없음"}
                 category={item.major?.name ?? "전공 미설정"}
                 avatarUrl={resolveProfileImageUrlForDisplay(item.profileImgUrl)}
                 activityName={item.activityName}

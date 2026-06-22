@@ -51,7 +51,13 @@ function formatStartedAt(iso: string): string {
 
 const HOME_ANNOUNCEMENT_PREVIEW_LIMIT = 3;
 
-const AllContentScene = () => {
+type MainHomeContentTab = "홈" | "큐레이션";
+
+interface AllContentSceneProps {
+  tab?: MainHomeContentTab;
+}
+
+const AllContentScene = ({ tab = "홈" }: AllContentSceneProps) => {
   const navigation = useNavigation<NavigationProp>();
   const [announcements, setAnnouncements] = useState<HomeAnnouncementItem[]>([]);
   const [banners, setBanners] = useState<HomeBannerItem[]>([]);
@@ -146,12 +152,6 @@ const AllContentScene = () => {
     );
   };
 
-  const handleBannerMore = () => {
-    (navigation as { navigate: (a: string, b?: object) => void }).navigate(
-      RootRoutes.HOME_BANNER_LIST,
-    );
-  };
-
   const carouselBanners = banners
     .map((banner) => {
       const imageUrl = normalizeListThumbnailUrl(banner.imageUrl);
@@ -163,12 +163,40 @@ const AllContentScene = () => {
     })
     .filter((item): item is { bannerId: string; imageUrl: string } => item != null);
 
+  if (tab === "큐레이션") {
+    return (
+      <ScrollView>
+        {carouselBanners.length === 0 ? (
+          <Text
+            style={{
+              fontSize: 14,
+              color: "#999",
+              paddingVertical: 48,
+              textAlign: "center",
+            }}
+          >
+            큐레이션이 없습니다.
+          </Text>
+        ) : (
+          <ImageCarousel
+            gap={12}
+            banners={carouselBanners}
+            onPressBanner={(bannerId) => {
+              (navigation as { navigate: (a: string, b?: object) => void }).navigate(
+                RootRoutes.HOME_BANNER_DETAIL,
+                { bannerId },
+              );
+            }}
+          />
+        )}
+      </ScrollView>
+    );
+  }
+
   return (
     <ScrollView>
       <ImageCarousel
         gap={12}
-        headerTitle="큐레이션"
-        onPressMore={handleBannerMore}
         banners={carouselBanners}
         onPressBanner={(bannerId) => {
           (navigation as { navigate: (a: string, b?: object) => void }).navigate(

@@ -42,7 +42,7 @@ export type CertificateEntry = {
 export type ProfileResponseDto = {
   profileImgUrl: string;
   coverImgUrl?: string;
-  nickname: string;
+  name: string | null;
   activityName?: string;
   role: UserRole;
   aboutMe: string;
@@ -72,7 +72,7 @@ export type PublicProfileResponseDto = {
   userId: string;
   profileImgUrl: string;
   coverImgUrl?: string;
-  nickname: string;
+  name: string | null;
   activityName: string;
   role: string;
   aboutMe: string;

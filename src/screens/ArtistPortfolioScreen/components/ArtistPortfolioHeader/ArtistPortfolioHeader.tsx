@@ -43,7 +43,7 @@ const ArtistPortfolioHeader = ({
     void getUserPublicProfile(uid).then((profile) => {
       if (cancelled) return;
       setResolvedHandle(
-        profile?.activityName?.trim() || profile?.nickname?.trim() || "",
+        profile?.activityName?.trim() || profile?.name?.trim() || "",
       );
     });
 

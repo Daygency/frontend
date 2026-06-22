@@ -20,7 +20,7 @@ function normalizeUserItem(raw: unknown): UserListItem | null {
   if (!userId) return null;
   return {
     userId,
-    nickname: typeof r.nickname === "string" ? r.nickname : "",
+    name: typeof r.name === "string" ? r.name : "",
     activityName:
       typeof r.activityName === "string"
         ? r.activityName

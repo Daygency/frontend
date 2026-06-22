@@ -199,7 +199,7 @@ export async function getUserPublicProfile(
             ? data.cover_img_url
             : undefined,
       ),
-      nickname: String(data.nickname ?? ""),
+      name: String(data.name ?? ""),
       activityName: String(
         data.activityName ?? data.activity_name ?? "",
       ),

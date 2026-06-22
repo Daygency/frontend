@@ -200,7 +200,7 @@ function ChatRoomsFlatList({
         const displayName =
           item.kind === "ANNOUNCEMENT" && titleFromPost
             ? titleFromPost
-            : peer?.nickname ?? peer?.activityName ?? "채팅";
+            : peer?.name ?? peer?.activityName ?? "채팅";
         const last = item.lastMessage?.content ?? "";
         const ts = formatChatListTime(item.lastMessage?.createdAt);
         return (

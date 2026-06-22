@@ -57,7 +57,7 @@ export async function navigateFromInboxItem(
     }
     navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
       userId: actor.userId,
-      activityName: actor.activityName || actor.nickname || "",
+      activityName: actor.activityName || actor.name || "",
     });
     return;
   }

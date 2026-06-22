@@ -3,7 +3,7 @@ import { API_BASE } from "../api";
 export type CompleteNaverSignupRequest = {
   accessToken: string;
   activityName: string;
-  nickname?: string;
+  name?: string;
   role?: "user" | "admin";
 };
 
@@ -13,7 +13,7 @@ export type CompleteNaverSignupResponse = {
   user?: {
     userId?: string | number;
     socialId?: string;
-    nickname?: string;
+    name?: string;
     activityName?: string;
     email?: string;
     profileImgUrl?: string;

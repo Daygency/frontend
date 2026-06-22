@@ -5,7 +5,7 @@ export type RefreshResponse = {
   accessToken: string;
   user?: {
     userId?: string;
-    nickname?: string;
+    name?: string;
     email?: string;
     profileImgUrl?: string;
   };

@@ -3,7 +3,7 @@ import { API_BASE } from "../api";
 export type CompleteKakaoSignupRequest = {
   accessToken: string;
   role: string;
-  nickname?: string;
+  name?: string;
   activityName?: string;
 };
 
@@ -13,7 +13,7 @@ export type CompleteKakaoSignupResponse = {
   user?: {
     userId?: string | number;
     socialId?: string;
-    nickname?: string;
+    name?: string;
     activityName?: string;
     email?: string;
     profileImgUrl?: string;

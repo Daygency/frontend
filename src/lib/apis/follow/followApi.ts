@@ -85,7 +85,7 @@ function parseFollowListItem(raw: Record<string, unknown>): FollowListItemDto {
   ).trim();
   return {
     userId,
-    nickname: String(raw.nickname ?? ""),
+    name: String(raw.name ?? ""),
     activityName: String(
       raw.activityName ?? raw.activity_name ?? "",
     ),

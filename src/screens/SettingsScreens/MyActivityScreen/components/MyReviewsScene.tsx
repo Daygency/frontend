@@ -98,7 +98,7 @@ const MyReviewsScene = () => {
         renderItem={({ item }) => (
         <View style={localStyles.cardWrapper}>
           <ReviewCard
-            author={item.reviewee?.activityName || item.reviewee?.nickname || "상대"}
+            author={item.reviewee?.activityName || item.reviewee?.name || "상대"}
             date={formatDate(item.createdAt)}
             title={item.announcement?.title || item.postId}
             content={item.privateNoteToOps ?? undefined}

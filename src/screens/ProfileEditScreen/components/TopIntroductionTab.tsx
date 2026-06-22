@@ -9,8 +9,8 @@ import OneLineTextInput from "../../../components/OneLineTextInput/OneLineTextIn
 import MajorTagSelectModal from "../../../components/MajorTagSelectModal/MajorTagSelectModal";
 
 type Props = {
-  nickname: string;
-  setNickname: (v: string) => void;
+  name: string;
+  setName: (v: string) => void;
   activityName: string;
   setActivityName: (v: string) => void;
   originalActivityName: string;
@@ -29,8 +29,8 @@ type Props = {
 };
 
 const TopIntroductionTab = ({
-  nickname,
-  setNickname,
+  name,
+  setName,
   activityName,
   setActivityName,
   originalActivityName,
@@ -149,12 +149,12 @@ const TopIntroductionTab = ({
       <View style={styles.contentSheet}>
       <View style={styles.field}>
         <Text style={[styles.label, isNameFocused && styles.labelFocused]}>
-          닉네임 *
+          이름 (선택)
         </Text>
         <OneLineTextInput
-          placeholder="닉네임을 입력하세요"
-          value={nickname}
-          onChangeText={setNickname}
+          placeholder="이름을 입력하세요"
+          value={name}
+          onChangeText={setName}
           placeholderTextColor={GRAY.DARK_2}
           onFocus={() => setIsNameFocused(true)}
           onBlur={() => setIsNameFocused(false)}

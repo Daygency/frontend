@@ -98,7 +98,7 @@ function parseUserSummary(raw: unknown): ActivityReviewUserSummary | null {
   const profileImgRaw = o.profileImgUrl ?? o.profile_img_url;
   return {
     userId,
-    nickname: pickString(o, "nickname"),
+    name: pickString(o, "name"),
     activityName: pickString(o, "activityName", "activity_name"),
     profileImgUrl:
       profileImgRaw === null || typeof profileImgRaw === "string"

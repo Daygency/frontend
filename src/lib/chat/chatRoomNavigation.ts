@@ -10,10 +10,10 @@ export function chatRoomItemToParams(room: ChatRoomListItem): ChatRoomParams {
   const name =
     room.kind === "ANNOUNCEMENT" && titleFromPost
       ? titleFromPost
-      : (peer?.nickname ?? peer?.activityName ?? "채팅");
+      : (peer?.name ?? peer?.activityName ?? "채팅");
   const handle =
     peer?.activityName ??
-    peer?.nickname ??
+    peer?.name ??
     (peerUserId ? peerUserId.slice(0, 8) : "user");
   const peerAvatarUrl = resolveProfileImageUrlForDisplay(
     peer?.profileImageUrl ?? peer?.profileImgUrl,
@@ -43,10 +43,10 @@ export function chatRoomItemToParamsWithApplicantFallback(
   const name =
     room.kind === "ANNOUNCEMENT" && titleFromPost
       ? titleFromPost
-      : peer?.nickname ?? peer?.activityName ?? (hintName || base.name);
+      : peer?.name ?? peer?.activityName ?? (hintName || base.name);
   const handle =
     peer?.activityName ??
-    peer?.nickname ??
+    peer?.name ??
     (peerUserId ? peerUserId.slice(0, 8) : hintName.slice(0, 8) || "user");
 
   return {

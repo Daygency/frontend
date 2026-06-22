@@ -166,7 +166,7 @@ function parseInboxItem(raw: unknown): InboxRecipientItem | null {
       const pImg = a.profileImgUrl ?? a.profile_img_url;
       actor = {
         userId,
-        nickname: pickStr(a, "nickname", "nickname"),
+        name: pickStr(a, "name", "name"),
         activityName: pickStr(a, "activityName", "activity_name"),
         profileImgUrl:
           pImg === null || typeof pImg === "string" ? pImg : null,

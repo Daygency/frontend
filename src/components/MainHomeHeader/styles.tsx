@@ -1,22 +1,41 @@
 import { StyleSheet } from "react-native";
-import { RED } from "../../color";
+import { GRAY, MAIN } from "../../color";
+import { FILTER_ROW_PADDING_TOP } from "../MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   container: {
     width: "100%",
-    paddingHorizontal: 12,
+    paddingHorizontal: 17,
     flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 20,
+    paddingTop: FILTER_ROW_PADDING_TOP,
+    paddingBottom: 8,
+  },
+  tabButton: {
     alignItems: "center",
-    gap: 10,
+  },
+  tabLabel: {
+    fontSize: 17,
+    lineHeight: 22,
+    fontWeight: "500",
+    color: GRAY.DARK,
+    includeFontPadding: false,
+  },
+  tabLabelSelected: {
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
+  },
+  tabIndicator: {
+    height: 2,
+    marginTop: 6,
+    backgroundColor: MAIN.DEFAULT,
+    borderRadius: 1,
+  },
+  tabIndicatorPlaceholder: {
+    height: 2,
+    marginTop: 6,
   },
 });
 
 export default styles;
-
-
-
-
-
-
-
-

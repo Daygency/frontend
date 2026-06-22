@@ -28,7 +28,7 @@ export type Certificate = {
 };
 
 export type ProfileUpdateRequestDto = {
-  nickname?: string;
+  name?: string;
   activityName?: string;
   aboutMe?: string;
   selfIntroduction?: string;

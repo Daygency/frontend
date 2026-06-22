@@ -177,7 +177,7 @@ export default function MyPostedChatRoomsScreen() {
         renderItem={({ item }) => {
           const peer = item.peer;
           const displayName =
-            peer?.nickname ?? peer?.activityName ?? "지원자";
+            peer?.name ?? peer?.activityName ?? "지원자";
           const last = item.lastMessage?.content ?? "";
           const ts = formatChatListTime(item.lastMessage?.createdAt);
           return (

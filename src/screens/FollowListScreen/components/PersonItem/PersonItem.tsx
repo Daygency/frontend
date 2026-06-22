@@ -22,7 +22,7 @@ const PersonItem = ({ person }: PersonItemProps) => {
     setImgErr(false);
   }, [person.userId, person.profileImgUrl]);
 
-  const displayName = person.nickname?.trim() || "이름 없음";
+  const displayName = person.name?.trim() || "이름 없음";
   const sub = person.activityName?.trim();
 
   const onPress = () => {

@@ -145,7 +145,7 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     date: dateStr,
     time: timeStr || "00:00",
     contact: res.contact,
-    authorId: res.user?.nickname ?? res.user?.userId,
+    authorId: res.user?.name ?? res.user?.userId,
     uploadedAt: uploadedStr,
     description: res.content,
     imageUrl: imageUrls[0],
@@ -176,7 +176,7 @@ function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem
   const profileImgUrl = pickCommentUserProfileImgUrl(comment.user);
   return {
     id: String(comment.id),
-    author: String(comment.user?.nickname ?? "익명"),
+    author: String(comment.user?.name ?? "익명"),
     ...(profileImgUrl ? { profileImgUrl } : {}),
     createdAt: String(comment.createdAt ?? ""),
     content: String(comment.content ?? ""),

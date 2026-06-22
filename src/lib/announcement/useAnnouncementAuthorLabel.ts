@@ -3,13 +3,13 @@ import { getUserPublicProfile } from "../apis/portfolio/profileApi";
 import type { AnnouncementAuthor } from "./extractAnnouncementAuthor";
 
 /**
- * 활동명(@) 우선, 없으면 닉네임. 둘 다 없으면 공개 프로필로 보강 후에도 없을 때만 userId.
+ * 활동명(@) 우선, 없으면 이름. 둘 다 없으면 공개 프로필로 보강 후에도 없을 때만 userId.
  */
 export function useAnnouncementAuthorLabel(
   author: AnnouncementAuthor | null,
 ): string {
   const [fromProfile, setFromProfile] = useState<{
-    nickname?: string;
+    name?: string;
     activityName?: string;
   } | null>(null);
 
@@ -18,17 +18,17 @@ export function useAnnouncementAuthorLabel(
     if (!author?.userId?.trim()) return;
     const uid = author.userId.trim();
     const hasActivity = Boolean(author.activityName?.trim());
-    const hasNick = Boolean(author.nickname?.trim());
+    const hasNick = Boolean(author.name?.trim());
     if (hasActivity || hasNick) return;
 
     let cancelled = false;
     void getUserPublicProfile(uid).then((p) => {
       if (cancelled || !p) return;
-      const n = p.nickname?.trim();
+      const n = p.name?.trim();
       const act = p.activityName?.trim();
       if (n || act) {
         setFromProfile({
-          nickname: n || undefined,
+          name: n || undefined,
           activityName: act || undefined,
         });
       }
@@ -36,7 +36,7 @@ export function useAnnouncementAuthorLabel(
     return () => {
       cancelled = true;
     };
-  }, [author?.userId, author?.nickname, author?.activityName]);
+  }, [author?.userId, author?.name, author?.activityName]);
 
   return useMemo(() => {
     if (!author) return "";
@@ -45,8 +45,8 @@ export function useAnnouncementAuthorLabel(
       fromProfile?.activityName?.trim() ||
       "";
     const nick =
-      author.nickname?.trim() ||
-      fromProfile?.nickname?.trim() ||
+      author.name?.trim() ||
+      fromProfile?.name?.trim() ||
       "";
     if (activity) return `@${activity}`;
     if (nick) return nick;

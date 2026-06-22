@@ -58,7 +58,7 @@ const MyInfoScreen = () => {
     (profile: Awaited<ReturnType<typeof getMyProfile>>) => {
       if (!profile) return;
       setInfo({
-        name: profile.nickname?.trim() || "미등록",
+        name: profile.name?.trim() || "미등록",
         phone: formatPhoneNumber(profile.contact?.phoneNumber),
         email: maskEmail(profile.contact?.email),
       });

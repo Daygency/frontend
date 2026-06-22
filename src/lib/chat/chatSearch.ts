@@ -17,11 +17,11 @@ export function matchesChatRoom(
   const displayName =
     item.kind === "ANNOUNCEMENT" && titleFromPost
       ? titleFromPost
-      : peer?.nickname ?? peer?.activityName ?? "";
+      : peer?.name ?? peer?.activityName ?? "";
 
   const haystacks = [
     displayName,
-    peer?.nickname,
+    peer?.name,
     peer?.activityName,
     item.post?.title,
     item.lastMessage?.content,

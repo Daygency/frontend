@@ -40,7 +40,7 @@ type RowModel = {
 
 function displayName(row: RowModel): string {
   const peer = row.room?.peer;
-  const fromPeer = peer?.nickname ?? peer?.activityName ?? "";
+  const fromPeer = peer?.name ?? peer?.activityName ?? "";
   const fromApp = row.application.name?.trim() ?? "";
   return fromPeer || fromApp || "지원자";
 }
@@ -183,9 +183,9 @@ export default function AcceptedPerformersSection({
                         userId: uid,
                         activityName:
                           peer?.activityName?.trim() ||
-                          peer?.nickname?.trim() ||
+                          peer?.name?.trim() ||
                           displayName(row),
-                        handle: peer?.nickname?.trim(),
+                        handle: peer?.name?.trim(),
                       })
                     }
                   >
