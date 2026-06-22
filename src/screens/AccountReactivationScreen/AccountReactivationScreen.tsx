@@ -137,6 +137,69 @@ const AccountReactivationScreen = () => {
     else navigation.navigate(RootRoutes.LOGIN);
   };
 
+  const proceedToSignup = async (profile: Record<string, unknown>) => {
+    await authLogin(
+      oauthAccessToken,
+      {
+        socialId: String(profile.socialId ?? ""),
+        nickname: String(profile.nickname ?? ""),
+        email: String(profile.email ?? ""),
+        profileImgUrl: String(profile.profileImgUrl ?? ""),
+      },
+      { isNewUser: true, signupProvider: safeProvider },
+    );
+  };
+
+  const handleCreateNew = () => {
+    if (submitting || !oauthAccessToken) return;
+
+    Alert.alert(
+      "새 계정 만들기",
+      "이전 계정 데이터는 복구할 수 없게 됩니다. 새로 가입하시겠습니까?",
+      [
+        { text: "취소", style: "cancel" },
+        {
+          text: "새로 만들기",
+          style: "destructive",
+          onPress: async () => {
+            setSubmitting(true);
+            try {
+              const { ok, status, data } = await postSocialAuthExchange(
+                safeProvider,
+                oauthAccessToken,
+                { declineReactivation: true },
+              );
+
+              if (!ok) {
+                const msg =
+                  (typeof data.message === "string" && data.message) ||
+                  `새 계정 준비에 실패했습니다. (${status})`;
+                Alert.alert("안내", msg);
+                return;
+              }
+
+              if (data.needsSignup) {
+                const profile = (data.profile ?? {}) as Record<string, unknown>;
+                await proceedToSignup(profile);
+                return;
+              }
+
+              Alert.alert(
+                "안내",
+                "새 계정으로 진행할 수 없습니다. 잠시 후 다시 시도해 주세요.",
+              );
+            } catch (e) {
+              const msg = e instanceof Error ? e.message : String(e);
+              Alert.alert("안내", msg);
+            } finally {
+              setSubmitting(false);
+            }
+          },
+        },
+      ],
+    );
+  };
+
   const deletedLabel = formatIsoDate(deletedAt);
   const deadlineLabel = formatIsoDate(reactivationDeadline);
   const floatingBottomPad = insets.bottom + 4;
@@ -181,8 +244,8 @@ const AccountReactivationScreen = () => {
           </Text>
         ) : null}
         <Text style={[styles.meta, { marginTop: 16 }]}>
-          복구하지 않고 나가면 로그인이 완료되지 않습니다. 새로 가입하려면 유예
-          기간이 끝난 뒤 동일 소셜 계정으로 가입할 수 있습니다.
+          복구하지 않으면 로그인이 완료되지 않습니다. 새 계정으로 시작하려면
+          아래 「새로 만들기」를 선택하세요.
         </Text>
       </ScrollView>
 
@@ -203,8 +266,12 @@ const AccountReactivationScreen = () => {
             <Text style={styles.primaryButtonText}>계정 복구하기</Text>
           )}
         </Pressable>
-        <Pressable style={styles.secondaryButton} onPress={handleCancel}>
-          <Text style={styles.secondaryButtonText}>취소</Text>
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={submitting ? undefined : handleCreateNew}
+          disabled={submitting}
+        >
+          <Text style={styles.secondaryButtonText}>새로 만들기</Text>
         </Pressable>
       </View>
     </View>

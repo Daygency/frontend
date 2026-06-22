@@ -19,8 +19,7 @@ import SignupFlowProgress from "../../../components/SignupFlowProgress/SignupFlo
 import { useAuth } from "../../../contexts/AuthContext";
 import { MAIN, GRAY, WHITE } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
-import { styles } from "./styles";
-import { styles as roleSelectionStyles } from "../RoleSelectionScreen/styles";
+import { styles, roleSelectionStyles } from "./styles";
 
 export type UserRole = "artist" | "planner";
 
@@ -29,14 +28,14 @@ const ANIMATION_DURATION = 300;
 const SignupFlowScreen = () => {
   const { width } = useWindowDimensions();
   const { top, bottom } = useSafeAreaInsets();
-  const { completeSignup, logout, user } = useAuth();
+  const { completeSignup, logout } = useAuth();
 
   const [step, setStep] = useState<1 | 2>(1);
   const [selectedRole, setSelectedRole] = useState<UserRole>("artist");
   const slideX = useSharedValue(0);
 
   // Step 2 state
-  const [nickname, setNickname] = useState(user?.nickname ?? "");
+  const [nickname, setNickname] = useState("");
   const [activityName, setActivityName] = useState("");
   const [isNicknameFocused, setIsNicknameFocused] = useState(false);
   const [isActivityNameFocused, setIsActivityNameFocused] = useState(false);
@@ -56,7 +55,6 @@ const SignupFlowScreen = () => {
     ageChecked &&
     termsChecked &&
     privacyChecked &&
-    nickname.trim().length > 0 &&
     activityName.trim().length > 0 &&
     isActivityNameVerified &&
     isActivityNameDuplicate === false;
@@ -286,7 +284,7 @@ const SignupFlowScreen = () => {
                     isNicknameFocused && styles.labelFocused,
                   ]}
                 >
-                  닉네임
+                  이름 (선택)
                 </Text>
                 <TextInput
                   style={[
@@ -295,7 +293,7 @@ const SignupFlowScreen = () => {
                   ]}
                   value={nickname}
                   onChangeText={setNickname}
-                  placeholder="닉네임을 입력하세요"
+                  placeholder="미입력 시 자동 생성"
                   placeholderTextColor={GRAY.MEDIUM_100}
                   onFocus={() => setIsNicknameFocused(true)}
                   onBlur={() => setIsNicknameFocused(false)}

@@ -10,6 +10,7 @@ import { API_BASE } from "../api";
  * 백엔드 계약(제안):
  * - 1차 요청(확인 없음): 탈퇴 직후 계정이면 200 + `{ needsReactivation: true, deletedAt?, reactivationDeadline?, profile? }` (accessToken 없음)
  * - 2차 요청: body에 `confirmReactivation: true` → 정상 로그인과 동일하게 accessToken, refreshToken, user
+ * - 복구 거부 후 신규 가입: `declineReactivation: true` → 기존 탈퇴 계정 영구 삭제 후 needsSignup
  */
 export type SocialAuthProvider = "kakao" | "naver";
 
@@ -23,7 +24,10 @@ export type SocialAuthExchangeResult = {
 export async function postSocialAuthExchange(
   provider: SocialAuthProvider,
   oauthAccessToken: string,
-  options?: { confirmReactivation?: boolean },
+  options?: {
+    confirmReactivation?: boolean;
+    declineReactivation?: boolean;
+  },
 ): Promise<SocialAuthExchangeResult> {
   const path = provider === "kakao" ? "/auth/kakao" : "/auth/naver";
   const url = `${API_BASE}${path}`;
@@ -33,6 +37,9 @@ export async function postSocialAuthExchange(
   };
   if (options?.confirmReactivation) {
     body.confirmReactivation = true;
+  }
+  if (options?.declineReactivation) {
+    body.declineReactivation = true;
   }
 
   const res = await fetch(url, {

@@ -14,8 +14,6 @@ export const RootRoutes = {
   LOGIN: "Login",
   /** 탈퇴 유예 기간 내 재로그인 — 복구 동의 화면 */
   ACCOUNT_REACTIVATION: "AccountReactivation",
-  ROLE_SELECTION: "RoleSelection",
-  SIGNUP: "Signup",
   CONTENT_TAB: "ContentTab",
   ANNOUNCEMENT_DETAIL: "AnnouncementDetail",
   ANNOUNCEMENT_REGISTRATION: "AnnouncementRegistration",
@@ -50,7 +48,6 @@ export const RootRoutes = {
   ARTIST_PORTFOLIO: "ArtistPortfolio",
   PORTFOLIO_PHOTO_GALLERY: "PortfolioPhotoGallery",
   SEARCH: "Search",
-  SEARCH_RESULTS: "SearchResults",
   MUSIC_NEWS_DETAIL: "MusicNewsDetail",
   MUSIC_NEWS_REGISTRATION: "MusicNewsRegistration",
   HOME_BANNER_DETAIL: "HomeBannerDetail",
