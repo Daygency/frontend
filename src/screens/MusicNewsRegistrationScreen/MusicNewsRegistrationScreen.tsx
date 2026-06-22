@@ -20,8 +20,7 @@ import Form from "../../components/Form/Form";
 import FormTextInput from "../../components/FormTextInput/FormTextInput";
 import { GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
-import { createNews, createNewsWithFiles, getNewsDetail, updateNews } from "../../lib/apis/news/newsApi";
-import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
+import { createNews, createNewsWithFiles, getNewsDetail, updateNews, MAX_NEWS_IMAGE_FILES } from "../../lib/apis/news/newsApi";
 import type { LocalImageAsset } from "../../lib/apis/fileApi";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
 
@@ -66,7 +65,7 @@ const MusicNewsRegistrationScreen = () => {
   const [contact, setContact] = useState("");
   /** README: multipart 한 번에 `payload` + `files` */
   const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
-  const MAX_NEWS_IMAGES = MAX_MULTIPART_FILES;
+  const MAX_NEWS_IMAGES = MAX_NEWS_IMAGE_FILES;
 
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
@@ -221,63 +220,6 @@ const MusicNewsRegistrationScreen = () => {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.formSection}>
-          <View style={styles.formField}>
-            <Form title="이미지" isRequired={false}>
-              <Pressable style={styles.imageUploadBox} onPress={pickImage}>
-                <MaterialCommunityIcons name="image-plus" size={40} color={GRAY.DARK_2} />
-                <Text style={styles.imageUploadText}>
-                  이미지 추가 (선택, 최대 {MAX_NEWS_IMAGES}장) — 등록 후 업로드
-                </Text>
-              </Pressable>
-              {pendingImages.length > 0 ? (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={{ marginTop: 10 }}
-                >
-                  {pendingImages.map((img, idx) => (
-                    <View
-                      key={`${img.uri}-${idx}`}
-                      style={{ marginRight: 8, position: "relative" }}
-                    >
-                      <Image
-                        source={{ uri: img.uri }}
-                        style={{
-                          width: 80,
-                          height: 80,
-                          borderRadius: 8,
-                          backgroundColor: GRAY.MEDIUM,
-                        }}
-                        resizeMode="cover"
-                      />
-                      <Pressable
-                        onPress={() =>
-                          setPendingImages((prev) =>
-                            prev.filter((_, i) => i !== idx),
-                          )
-                        }
-                        style={{
-                          position: "absolute",
-                          top: -6,
-                          right: -6,
-                          backgroundColor: "#fff",
-                          borderRadius: 12,
-                        }}
-                        hitSlop={8}
-                      >
-                        <MaterialCommunityIcons
-                          name="close-circle"
-                          size={22}
-                          color={MAIN.DEFAULT}
-                        />
-                      </Pressable>
-                    </View>
-                  ))}
-                </ScrollView>
-              ) : null}
-            </Form>
-          </View>
-
           <View style={styles.formField}>
             <Form title="제목" isRequired hasError={err.title}>
               <FormTextInput
@@ -435,6 +377,57 @@ const MusicNewsRegistrationScreen = () => {
                 keyboardType="phone-pad"
                 hasError={err.contact}
               />
+            </Form>
+          </View>
+
+          <View style={styles.formField}>
+            <Form title="이미지" isRequired={false}>
+              <Pressable style={styles.imageAddRow} onPress={pickImage}>
+                <MaterialCommunityIcons
+                  name="image-plus"
+                  size={20}
+                  color={GRAY.DARK_2}
+                />
+                <Text style={styles.imageAddText}>
+                  이미지 추가 (선택, 최대 {MAX_NEWS_IMAGES}장)
+                </Text>
+              </Pressable>
+              <Text style={styles.imageAddHint}>등록 후 업로드됩니다</Text>
+              {pendingImages.length > 0 ? (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.imagePreviewRow}
+                >
+                  {pendingImages.map((img, idx) => (
+                    <View
+                      key={`${img.uri}-${idx}`}
+                      style={styles.imagePreviewItem}
+                    >
+                      <Image
+                        source={{ uri: img.uri }}
+                        style={styles.imagePreviewThumb}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        onPress={() =>
+                          setPendingImages((prev) =>
+                            prev.filter((_, i) => i !== idx),
+                          )
+                        }
+                        style={styles.imagePreviewRemove}
+                        hitSlop={8}
+                      >
+                        <MaterialCommunityIcons
+                          name="close-circle"
+                          size={20}
+                          color={MAIN.DEFAULT}
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
+                </ScrollView>
+              ) : null}
             </Form>
           </View>
         </View>

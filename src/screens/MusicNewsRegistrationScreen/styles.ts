@@ -75,19 +75,47 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: GRAY.DARK_2,
   },
-  imageUploadBox: {
-    borderRadius: 12,
+  imageAddRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM,
-    minHeight: 80,
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 16,
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 12,
+    backgroundColor: WHITE,
   },
-  imageUploadText: {
+  imageAddText: {
+    flex: 1,
     fontSize: 14,
     color: GRAY.DARK_2,
-    marginTop: 8,
+  },
+  imageAddHint: {
+    marginTop: 6,
+    marginLeft: 16,
+    fontSize: 12,
+    color: GRAY.DARK_2,
+  },
+  imagePreviewRow: {
+    marginTop: 10,
+  },
+  imagePreviewItem: {
+    marginRight: 8,
+    position: "relative",
+  },
+  imagePreviewThumb: {
+    width: 64,
+    height: 64,
+    borderRadius: 8,
+    backgroundColor: GRAY.MEDIUM,
+  },
+  imagePreviewRemove: {
+    position: "absolute",
+    top: -6,
+    right: -6,
+    backgroundColor: WHITE,
+    borderRadius: 12,
   },
   inputErrorBorder: {
     borderColor: "#E53935",

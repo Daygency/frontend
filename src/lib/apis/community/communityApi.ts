@@ -176,6 +176,17 @@ async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   };
 }
 
+function normalizeCommunityCategory(raw: unknown): CommunityCategory | null {
+  if (!raw || typeof raw !== "object") return null;
+  const row = raw as Record<string, unknown>;
+  const categoryId = String(
+    row.categoryId ?? row.id ?? row.category_id ?? "",
+  ).trim();
+  const name = String(row.name ?? "").trim();
+  if (!categoryId || !name) return null;
+  return { categoryId, name };
+}
+
 /** 커뮤니티 카테고리 목록 조회 (GET /community/categories) */
 export async function getCommunityCategories(): Promise<CommunityCategory[] | null> {
   try {
@@ -185,7 +196,12 @@ export async function getCommunityCategories(): Promise<CommunityCategory[] | nu
       console.warn("[getCommunityCategories] 실패:", res.status, errText);
       return null;
     }
-    return res.json() as Promise<CommunityCategory[]>;
+    const raw = await res.json();
+    if (!Array.isArray(raw)) return null;
+    const categories = raw
+      .map(normalizeCommunityCategory)
+      .filter((c): c is CommunityCategory => c != null);
+    return categories.length > 0 ? categories : null;
   } catch (e) {
     console.warn("[getCommunityCategories] 네트워크 에러:", e);
     return null;

@@ -17,6 +17,9 @@ import type {
   UpdateNewsDto,
 } from "./types";
 
+/** 공연소식 첨부 이미지 최대 장수 */
+export const MAX_NEWS_IMAGE_FILES = 5;
+
 function pickNumber(...vals: unknown[]): number | undefined {
   for (const v of vals) {
     if (v == null || v === "") continue;
@@ -271,12 +274,13 @@ export async function createNewsWithFiles(
   dto: CreateNewsDto,
   files: LocalImageAsset[],
 ): Promise<CreateNewsResponse | null> {
-  if (files.length === 0) return createNews(dto);
+  const capped = files.slice(0, MAX_NEWS_IMAGE_FILES);
+  if (capped.length === 0) return createNews(dto);
   try {
     const res = await postBoardMultipart(
       "/news",
       dto as unknown as Record<string, unknown>,
-      files,
+      capped,
     );
     if (!res.ok) {
       const errText = await res.text().catch(() => "");

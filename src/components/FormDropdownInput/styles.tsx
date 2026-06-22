@@ -1,23 +1,43 @@
 import { StyleSheet } from "react-native";
 import { GRAY, WHITE } from "../../color";
+import {
+  FORM_FIELD_FONT_SIZE,
+  FORM_FIELD_HEIGHT,
+} from "../FormField/constants";
 
 const styles = StyleSheet.create({
+  field: {
+    width: "100%",
+    height: FORM_FIELD_HEIGHT,
+    backgroundColor: WHITE,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: GRAY.MEDIUM,
+    paddingHorizontal: 15,
+    justifyContent: "center",
+    zIndex: 10,
+  },
+  fieldError: {
+    borderWidth: 2,
+    borderColor: "#EC1313",
+  },
   dropdown: {
-    height: 20,
+    width: "100%",
+    minHeight: FORM_FIELD_HEIGHT - 2,
     backgroundColor: "transparent",
   },
   placeholderStyle: {
-    fontSize: 14,
+    fontSize: FORM_FIELD_FONT_SIZE,
     color: GRAY.MEDIUM_100,
   },
   selectedTextStyle: {
-    fontSize: 14,
+    flex: 1,
+    fontSize: FORM_FIELD_FONT_SIZE,
     color: GRAY.DARK_100,
   },
   iconStyle: {
     width: 20,
     height: 20,
-    tintColor: GRAY.MEDIUM_100,
   },
   inputSearchStyle: {
     height: 40,
@@ -29,11 +49,17 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_100,
   },
   containerStyle: {
-    borderRadius: 10,
+    marginTop: 4,
+    borderRadius: 12,
+    borderWidth: 1,
     borderColor: GRAY.MEDIUM,
     backgroundColor: WHITE,
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  itemContainerStyle: {
+    borderBottomWidth: 0,
   },
 });
 
 export default styles;
-

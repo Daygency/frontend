@@ -192,14 +192,20 @@ const CommunityRegistrationScreen = () => {
           styles.scrollContent,
           { paddingBottom: (bottom || 0) + 100 },
         ]}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.formSection}>
           <Form title="카테고리" isRequired>
             <FormDropdownInput
-              placeholder="카테고리를 선택하세요"
+              placeholder={
+                categoryOptions.length > 0
+                  ? "카테고리를 선택하세요"
+                  : "카테고리를 불러오는 중..."
+              }
               data={categoryOptions}
-              value={categoryId ?? undefined}
+              value={categoryId}
               onChange={(item) => setCategoryId(item.value)}
             />
           </Form>

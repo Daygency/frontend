@@ -1,5 +1,5 @@
-import { Platform, TextInput, type TextInputProps } from "react-native";
-import ShadowCardButton from "../ShadowCardButton/ShadowCardButton";
+import { Platform, TextInput, View, type TextInputProps } from "react-native";
+import { GRAY } from "../../color";
 import styles from "./styles";
 
 type FormTextInputProps = {
@@ -18,24 +18,24 @@ const FormTextInput = ({
   keyboardType,
 }: FormTextInputProps) => {
   return (
-    <ShadowCardButton
-      styles={{
-        container: {
-          borderRadius: 12,
-          paddingVertical: Platform.OS === "ios" ? 15 : 1,
-          height: Platform.OS === "ios" ? 46 : 46,
-          ...(hasError && { borderWidth: 2, borderColor: "#EC1313" }),
-        },
-      }}
-    >
+    <View style={[styles.field, hasError && styles.fieldError]}>
       <TextInput
         placeholder={placeholder}
+        placeholderTextColor={GRAY.MEDIUM_100}
         style={styles.input}
         value={value}
         onChangeText={onChangeText}
         keyboardType={keyboardType}
+        multiline={false}
+        numberOfLines={1}
+        scrollEnabled={false}
+        textAlignVertical="center"
+        {...Platform.select({
+          android: { includeFontPadding: false },
+          web: { cursor: "text" },
+        })}
       />
-    </ShadowCardButton>
+    </View>
   );
 };
 
