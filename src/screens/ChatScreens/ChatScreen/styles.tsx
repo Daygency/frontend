@@ -1,6 +1,11 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
-import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../../components/MainHomeTopBar/styles";
+import {
+  FILTER_ROW_PADDING_TOP,
+  MAIN_HOME_TOP_BAR_HEIGHT,
+  MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+  MAIN_HOME_TOP_BAR_PADDING_TOP,
+} from "../../../components/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   container: {
@@ -14,8 +19,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 17,
     alignItems: "center",
     justifyContent: "space-between",
-    paddingBottom: 15,
-    paddingTop: 10,
+    paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+    paddingTop: MAIN_HOME_TOP_BAR_PADDING_TOP,
   },
   iconContainer: {
     flexDirection: "row",
@@ -52,7 +57,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingHorizontal: 12,
     gap: 8,
-    paddingTop: 13,
+    paddingTop: FILTER_ROW_PADDING_TOP,
     paddingBottom: 9,
   },
   topTab: {

@@ -1,8 +1,12 @@
 import { StyleSheet } from "react-native";
 import { MAIN, RED, WHITE } from "../../color";
 
-// MainHomeTopBar의 높이 상수 (Logo 24px + paddingBottom 15px + 여유공간)
-export const MAIN_HOME_TOP_BAR_HEIGHT = 55;
+export const MAIN_HOME_TOP_BAR_PADDING_TOP = 6;
+export const MAIN_HOME_TOP_BAR_PADDING_BOTTOM = 10;
+/** 상단 타이틀(Logo)과 필터·탭 칩 행 사이 간격 */
+export const FILTER_ROW_PADDING_TOP = 4;
+export const MAIN_HOME_TOP_BAR_HEIGHT =
+  MAIN_HOME_TOP_BAR_PADDING_TOP + 24 + MAIN_HOME_TOP_BAR_PADDING_BOTTOM;
 
 const styles = StyleSheet.create({
   container: {
@@ -12,8 +16,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 17,
     alignItems: "center",
     justifyContent: "space-between",
-    paddingBottom: 15,
-    paddingTop: 10,
+    paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+    paddingTop: MAIN_HOME_TOP_BAR_PADDING_TOP,
   },
   iconContainer: {
     flexDirection: "row",

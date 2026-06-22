@@ -1,6 +1,10 @@
 import { StyleSheet } from "react-native";
 import { MAIN, WHITE } from "../../../../color";
-import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../styles";
+import {
+  MAIN_HOME_TOP_BAR_HEIGHT,
+  MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+  MAIN_HOME_TOP_BAR_PADDING_TOP,
+} from "../../../../components/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   headerContainer: {
@@ -10,8 +14,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 17,
     alignItems: "center",
     justifyContent: "space-between",
-    paddingBottom: 15,
-    paddingTop: 10,
+    paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+    paddingTop: MAIN_HOME_TOP_BAR_PADDING_TOP,
   },
   leftContainer: {
     flexShrink: 1,
