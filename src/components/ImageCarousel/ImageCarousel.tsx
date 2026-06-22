@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dimensions,
   Image,
@@ -13,6 +13,7 @@ import Carousel, {
   Pagination,
 } from "react-native-reanimated-carousel";
 import styles from "./styles";
+import { GRAY } from "../../color";
 
 export type CarouselBannerItem = {
   bannerId: string;
@@ -25,9 +26,63 @@ interface ImageCarouselProps {
   banners?: CarouselBannerItem[];
   onPressBanner?: (bannerId: string) => void;
   onActiveIndexChange?: (index: number) => void;
+  slideBackgroundColor?: string;
   headerTitle?: string;
   onPressMore?: () => void;
 }
+
+type CarouselSlideProps = {
+  uri: string;
+  slideSize: number;
+  gap: number;
+  slideBackgroundColor: string;
+  onPress?: () => void;
+};
+
+const CarouselSlide = ({
+  uri,
+  slideSize,
+  gap,
+  slideBackgroundColor,
+  onPress,
+}: CarouselSlideProps) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  useEffect(() => {
+    setIsLoaded(false);
+  }, [uri]);
+
+  const slide = (
+    <View
+      style={[
+        styles.slide,
+        {
+          width: slideSize,
+          height: slideSize,
+          marginHorizontal: gap,
+          backgroundColor: slideBackgroundColor,
+        },
+      ]}
+    >
+      {!isLoaded ? (
+        <View style={[styles.slidePlaceholder, { backgroundColor: slideBackgroundColor }]} />
+      ) : null}
+      <Image
+        source={{ uri }}
+        style={styles.slideImage}
+        resizeMode="cover"
+        onLoad={() => setIsLoaded(true)}
+        onError={() => setIsLoaded(true)}
+      />
+    </View>
+  );
+
+  if (onPress) {
+    return <Pressable onPress={onPress}>{slide}</Pressable>;
+  }
+
+  return slide;
+};
 
 const ImageCarousel = ({
   gap = 12,
@@ -35,6 +90,7 @@ const ImageCarousel = ({
   banners,
   onPressBanner,
   onActiveIndexChange,
+  slideBackgroundColor,
   headerTitle,
   onPressMore,
 }: ImageCarouselProps) => {
@@ -63,6 +119,7 @@ const ImageCarousel = ({
   }
 
   const showPagination = data.length > 1;
+  const resolvedSlideBackgroundColor = slideBackgroundColor ?? GRAY.DEFAULT;
 
   return (
     <View style={styles.container}>
@@ -93,29 +150,20 @@ const ImageCarousel = ({
             : undefined;
 
           const slide = (
-            <View
-              style={[
-                styles.slide,
-                {
-                  width: slideSize,
-                  height: slideSize,
-                  marginHorizontal: gap,
-                },
-              ]}
-            >
-              <Image
-                source={{ uri }}
-                style={styles.slideImage}
-                resizeMode="cover"
-              />
-            </View>
+            <CarouselSlide
+              uri={uri}
+              slideSize={slideSize}
+              gap={gap}
+              slideBackgroundColor={resolvedSlideBackgroundColor}
+              onPress={
+                bannerId && onPressBanner
+                  ? () => onPressBanner(bannerId)
+                  : undefined
+              }
+            />
           );
 
-          return bannerId && onPressBanner ? (
-            <Pressable onPress={() => onPressBanner(bannerId)}>{slide}</Pressable>
-          ) : (
-            slide
-          );
+          return slide;
         }}
       />
       {showPagination ? (

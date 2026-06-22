@@ -27,8 +27,12 @@ const styles = StyleSheet.create({
     backgroundColor: GRAY.DEFAULT,
   },
   slideImage: {
+    ...StyleSheet.absoluteFillObject,
     width: "100%",
     height: "100%",
+  },
+  slidePlaceholder: {
+    ...StyleSheet.absoluteFillObject,
   },
   pagination: {
     gap: 6,
