@@ -1,10 +1,10 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../color";
 import {
+  FILTER_ROW_PADDING_TOP,
   INLINE_SEARCH_BAR_HEIGHT,
+  INLINE_SEARCH_HEADER_PADDING_VERTICAL,
   MAIN_HOME_TOP_BAR_HEIGHT,
-  MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
-  MAIN_HOME_TOP_BAR_PADDING_TOP,
 } from "../../components/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
@@ -15,10 +15,10 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: MAIN_HOME_TOP_BAR_HEIGHT,
+    height: MAIN_HOME_TOP_BAR_HEIGHT,
     paddingHorizontal: 12,
-    paddingTop: MAIN_HOME_TOP_BAR_PADDING_TOP,
-    paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+    paddingTop: INLINE_SEARCH_HEADER_PADDING_VERTICAL,
+    paddingBottom: INLINE_SEARCH_HEADER_PADDING_VERTICAL,
   },
   backButton: {
     padding: 4,
@@ -52,31 +52,30 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     flexShrink: 0,
-    paddingHorizontal: 12,
+    paddingHorizontal: 8,
     backgroundColor: MAIN.DEFAULT,
     marginRight: 4,
     paddingVertical: 6,
-    borderRadius: 10,
+    borderRadius: 8,
     alignSelf: "center",
   },
   searchTagChipText: {
-    fontSize: 14,
+    fontSize: 13,
     color: WHITE,
     fontWeight: "500",
   },
-  suggestedScroll: {
-    flexGrow: 0,
-  },
   suggestedSection: {
     flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "center",
     gap: 8,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
+    paddingHorizontal: 12,
+    paddingTop: FILTER_ROW_PADDING_TOP,
+    paddingBottom: 9,
   },
   suggestedTag: {
-    paddingHorizontal: 14,
-    paddingVertical: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
     backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 12,
     borderWidth: 1,
@@ -88,7 +87,7 @@ const styles = StyleSheet.create({
     borderColor: MAIN.DEFAULT,
   },
   suggestedTagText: {
-    fontSize: 14,
+    fontSize: 13,
     color: MAIN.DEFAULT,
     fontWeight: "500",
   },

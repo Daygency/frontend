@@ -3,7 +3,6 @@ import {
   Text,
   Pressable,
   TextInput,
-  ScrollView,
   useWindowDimensions,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -206,12 +205,7 @@ const SearchScreen = () => {
         )
       ) : (
         <>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.suggestedScroll}
-            contentContainerStyle={styles.suggestedSection}
-          >
+          <View style={styles.suggestedSection}>
             {SUGGESTED_SEARCH_TAGS.map((tag) => (
               <Pressable
                 key={tag}
@@ -231,7 +225,7 @@ const SearchScreen = () => {
                 </Text>
               </Pressable>
             ))}
-          </ScrollView>
+          </View>
           <View style={styles.content}>
             <View style={styles.recentHeader}>
               <Text style={styles.sectionTitle}>최근 검색어</Text>
