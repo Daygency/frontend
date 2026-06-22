@@ -138,6 +138,8 @@ const FabButton = ({
 
       closeTimerRef.current = setTimeout(() => {
         closeTimerRef.current = null;
+        rotateAnim.stopAnimation();
+        rotateAnim.setValue(0);
         onDone?.();
       }, CLOSE_ANIMATION_MS);
     },
@@ -213,15 +215,21 @@ const FabButton = ({
     }
   };
 
-  const renderFabIcon = (isOpen: boolean) => (
-    <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-      <MaterialCommunityIcons
-        name={icon}
-        size={size}
-        color={isOpen ? MAIN.DEFAULT : WHITE}
-      />
-    </Animated.View>
-  );
+  const renderFabIcon = (isOpen: boolean) => {
+    if (!isOpen) {
+      return (
+        <MaterialCommunityIcons name={icon} size={size} color={WHITE} />
+      );
+    }
+
+    return (
+      <Animated.View style={styles.fabIconRotate}>
+        <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+          <MaterialCommunityIcons name={icon} size={size} color={MAIN.DEFAULT} />
+        </Animated.View>
+      </Animated.View>
+    );
+  };
 
   return (
     <>

@@ -99,6 +99,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
   },
+  fabIconRotate: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });
 
 export default styles;
