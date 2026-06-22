@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MainHomeHeader, {
@@ -12,7 +13,7 @@ import {
   CURATION_LOADING_BACKGROUND,
   type CurationThemeState,
 } from "./curationTheme";
-import { useHomeTabBarTheme } from "./useHomeTabBarTheme";
+import { useCurationBackgroundTransition } from "./useCurationBackgroundTransition";
 import styles from "./styles";
 
 const MAIN_LOGO = require("../../../assets/daygency_logo_main.png");
@@ -29,12 +30,12 @@ const MainHomeScreen = () => {
   activeTabRef.current = activeTab;
 
   const isCuration = activeTab === "큐레이션";
-  const screenBackgroundColor = isCuration
-    ? curationTheme?.backgroundColor ?? CURATION_LOADING_BACKGROUND
-    : WHITE;
   const isCurationLoading = isCuration && (curationTheme?.loading ?? true);
 
-  useHomeTabBarTheme(isCuration, curationTheme);
+  const animatedBackgroundStyle = useCurationBackgroundTransition(
+    isCuration,
+    curationTheme,
+  );
 
   const handleTabChange = useCallback((tab: MainHomeTab) => {
     setActiveTab(tab);
@@ -54,7 +55,9 @@ const MainHomeScreen = () => {
   }, []);
 
   return (
-    <View style={[styles.container, { paddingTop: top, backgroundColor: screenBackgroundColor }]}>
+    <Animated.View
+      style={[styles.container, { paddingTop: top }, animatedBackgroundStyle]}
+    >
       {isCuration ? <StatusBar style="light" /> : null}
       <MainHomeTopBar
         logoImage={isCuration ? WHITE_LOGO : MAIN_LOGO}
@@ -79,7 +82,7 @@ const MainHomeScreen = () => {
           hideWhileCurationLoading={isCurationLoading}
         />
       </View>
-    </View>
+    </Animated.View>
   );
 };
 

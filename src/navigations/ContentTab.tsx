@@ -18,18 +18,22 @@ import {
 
 const Tab = createBottomTabNavigator();
 
+const TAB_BAR_STYLE = {
+  paddingTop: 8,
+  paddingBottom: 10,
+  height: 90,
+  backgroundColor: "#000000",
+  borderTopWidth: 0,
+} as const;
+
 const ContentTab = () => {
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: {
-          paddingTop: 8,
-          paddingBottom: 10,
-          height: 90,
-        },
-        tabBarActiveTintColor: "black",
-        tabBarInactiveTintColor: "gray",
+        tabBarStyle: TAB_BAR_STYLE,
+        tabBarActiveTintColor: "#ffffff",
+        tabBarInactiveTintColor: "rgba(255,255,255,0.45)",
       }}
     >
       <Tab.Screen

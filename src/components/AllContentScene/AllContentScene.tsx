@@ -1,7 +1,7 @@
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { WHITE } from "../../color";
 import Section from "../Section/Section";
 import AnnouncementCard from "../AnnouncementCard/AnnouncementCard";
@@ -83,6 +83,7 @@ const AllContentScene = ({
   const [majorsCatalog, setMajorsCatalog] = useState<
     { name: string; majorId: string }[]
   >([]);
+  const activeCurationBannerIndexRef = useRef(0);
 
   useEffect(() => {
     getMajors().then((list) => {
@@ -204,6 +205,41 @@ const AllContentScene = ({
     };
   }, [carouselBanners, loading, onCurationThemeChange, tab]);
 
+  const updateCurationBackgroundForBanner = useCallback(
+    async (index: number) => {
+      if (!onCurationThemeChange) return;
+
+      const banner = carouselBanners[index];
+      if (!banner) return;
+
+      activeCurationBannerIndexRef.current = index;
+
+      try {
+        const averageColor = await getImageAverageColor(banner.imageUrl);
+        onCurationThemeChange({
+          loading: false,
+          backgroundColor: averageColor,
+        });
+      } catch {
+        onCurationThemeChange({
+          loading: false,
+          backgroundColor: "#1a1a1a",
+        });
+      }
+    },
+    [carouselBanners, onCurationThemeChange],
+  );
+
+  const handleCurationBannerIndexChange = useCallback(
+    (index: number) => {
+      if (tab !== "큐레이션" || index === activeCurationBannerIndexRef.current) {
+        return;
+      }
+      void updateCurationBackgroundForBanner(index);
+    },
+    [tab, updateCurationBackgroundForBanner],
+  );
+
   if (loading && tab !== "큐레이션") {
     return (
       <View
@@ -255,6 +291,7 @@ const AllContentScene = ({
           <ImageCarousel
             gap={12}
             banners={carouselBanners}
+            onActiveIndexChange={handleCurationBannerIndexChange}
             onPressBanner={(bannerId) => {
               (navigation as { navigate: (a: string, b?: object) => void }).navigate(
                 RootRoutes.HOME_BANNER_DETAIL,

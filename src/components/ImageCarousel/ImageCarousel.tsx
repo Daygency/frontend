@@ -24,6 +24,7 @@ interface ImageCarouselProps {
   images?: string[];
   banners?: CarouselBannerItem[];
   onPressBanner?: (bannerId: string) => void;
+  onActiveIndexChange?: (index: number) => void;
   headerTitle?: string;
   onPressMore?: () => void;
 }
@@ -33,6 +34,7 @@ const ImageCarousel = ({
   images,
   banners,
   onPressBanner,
+  onActiveIndexChange,
   headerTitle,
   onPressMore,
 }: ImageCarouselProps) => {
@@ -75,10 +77,11 @@ const ImageCarousel = ({
         width={screenWidth}
         height={slideSize}
         scrollAnimationDuration={500}
+        onSnapToItem={(index) => onActiveIndexChange?.(index)}
         onProgressChange={(_offsetProgress, absoluteProgress) => {
           progress.value = absoluteProgress;
         }}
-        data={data}
+        data={data as string[]}
         renderItem={({ item }) => {
           const isBanner =
             typeof item === "object" && item !== null && "bannerId" in item;
@@ -118,7 +121,7 @@ const ImageCarousel = ({
       {showPagination ? (
         <Pagination.Basic
           progress={progress}
-          data={data}
+          data={data as string[]}
           dotStyle={styles.dot}
           activeDotStyle={styles.activeDot}
           containerStyle={styles.pagination}
