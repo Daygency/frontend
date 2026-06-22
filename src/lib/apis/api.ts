@@ -12,3 +12,6 @@ export const MAJOR_LIST_PATH =
 
 export const AUTH_TOKEN_KEY = "@daygency_auth_token";
 export const REFRESH_TOKEN_KEY = "@daygency_refresh_token";
+/** 가입 완료 전 소셜 OAuth access token (앱 JWT와 분리) */
+export const PENDING_SIGNUP_OAUTH_TOKEN_KEY =
+  "@daygency_pending_signup_oauth_token";

@@ -7,20 +7,20 @@ import { syncFcmTokenToServer } from "../lib/fcmServerSync";
  * 로그인 상태·토큰 갱신 시 서버에 FCM 등록 토큰 동기화.
  */
 export function FcmTokenSyncBridge() {
-  const { isLoggedIn, isLoading } = useAuth();
+  const { isLoggedIn, isLoading, needsRoleSelection } = useAuth();
 
   useEffect(() => {
-    if (isLoading || !isLoggedIn) return;
+    if (isLoading || !isLoggedIn || needsRoleSelection) return;
     void syncFcmTokenToServer();
-  }, [isLoggedIn, isLoading]);
+  }, [isLoggedIn, isLoading, needsRoleSelection]);
 
   useEffect(() => {
-    if (!isLoggedIn) return;
+    if (!isLoggedIn || needsRoleSelection) return;
     const unsub = messaging().onTokenRefresh(() => {
       void syncFcmTokenToServer();
     });
     return unsub;
-  }, [isLoggedIn]);
+  }, [isLoggedIn, needsRoleSelection]);
 
   return null;
 }

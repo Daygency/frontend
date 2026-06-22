@@ -7,7 +7,11 @@ import {
 } from "react";
 import { Alert } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { API_BASE, AUTH_TOKEN_KEY, REFRESH_TOKEN_KEY } from "../lib/apis/api";
+import {
+  AUTH_TOKEN_KEY,
+  PENDING_SIGNUP_OAUTH_TOKEN_KEY,
+  REFRESH_TOKEN_KEY,
+} from "../lib/apis/api";
 import { clearProfileCache } from "../lib/profileCache";
 import { onAuthExpired } from "../lib/authEvents";
 import { completeKakaoSignup } from "../lib/apis/auth/completeKakaoSignup";
@@ -76,14 +80,32 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     const loadAuthState = async () => {
       try {
-        const [token, userJson, pendingSignup] = await Promise.all([
-          AsyncStorage.getItem(AUTH_TOKEN_KEY),
-          AsyncStorage.getItem(USER_INFO_KEY),
-          AsyncStorage.getItem(PENDING_SIGNUP_KEY),
-        ]);
-        setIsLoggedIn(!!token);
-        setUser(userJson ? (JSON.parse(userJson) as SocialUser) : null);
-        setNeedsRoleSelection(pendingSignup === "true");
+        const [token, userJson, pendingSignup, pendingOauth] =
+          await Promise.all([
+            AsyncStorage.getItem(AUTH_TOKEN_KEY),
+            AsyncStorage.getItem(USER_INFO_KEY),
+            AsyncStorage.getItem(PENDING_SIGNUP_KEY),
+            AsyncStorage.getItem(PENDING_SIGNUP_OAUTH_TOKEN_KEY),
+          ]);
+
+        const parsedUser = userJson
+          ? (JSON.parse(userJson) as SocialUser)
+          : null;
+
+        if (pendingSignup === "true") {
+          // 이전 버전: OAuth 토큰이 AUTH_TOKEN_KEY에 저장된 경우 마이그레이션
+          if (!pendingOauth && token) {
+            await AsyncStorage.setItem(PENDING_SIGNUP_OAUTH_TOKEN_KEY, token);
+            await AsyncStorage.removeItem(AUTH_TOKEN_KEY);
+          }
+          setUser(parsedUser);
+          setNeedsRoleSelection(true);
+          setIsLoggedIn(false);
+        } else {
+          setUser(parsedUser);
+          setNeedsRoleSelection(false);
+          setIsLoggedIn(!!token);
+        }
       } catch {
         setIsLoggedIn(false);
         setUser(null);
@@ -104,9 +126,30 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       signupProvider?: SignupProvider;
     },
   ) => {
+    if (options?.isNewUser) {
+      await Promise.all([
+        AsyncStorage.setItem(PENDING_SIGNUP_OAUTH_TOKEN_KEY, accessToken),
+        AsyncStorage.removeItem(AUTH_TOKEN_KEY),
+        AsyncStorage.removeItem(REFRESH_TOKEN_KEY),
+        AsyncStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo)),
+        AsyncStorage.setItem(PENDING_SIGNUP_KEY, "true"),
+        AsyncStorage.setItem(
+          PENDING_SIGNUP_PROVIDER_KEY,
+          options.signupProvider ?? "kakao",
+        ),
+      ]);
+      setUser(userInfo);
+      setNeedsRoleSelection(true);
+      setIsLoggedIn(false);
+      return;
+    }
+
     const toStore: Promise<void>[] = [
       AsyncStorage.setItem(AUTH_TOKEN_KEY, accessToken),
       AsyncStorage.setItem(USER_INFO_KEY, JSON.stringify(userInfo)),
+      AsyncStorage.removeItem(PENDING_SIGNUP_OAUTH_TOKEN_KEY),
+      AsyncStorage.removeItem(PENDING_SIGNUP_KEY),
+      AsyncStorage.removeItem(PENDING_SIGNUP_PROVIDER_KEY),
     ];
     if (options?.refreshToken) {
       toStore.push(
@@ -115,24 +158,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     await Promise.all(toStore);
     setUser(userInfo);
+    setNeedsRoleSelection(false);
     setIsLoggedIn(true);
-
-    if (options?.isNewUser) {
-      await AsyncStorage.setItem(PENDING_SIGNUP_KEY, "true");
-      await AsyncStorage.setItem(
-        PENDING_SIGNUP_PROVIDER_KEY,
-        options.signupProvider ?? "kakao",
-      );
-      setNeedsRoleSelection(true);
-    }
   };
 
   const completeSignup = async (params: SignupParams) => {
     const { role, nickname, activityName } = params;
     try {
-      const accessToken = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+      const accessToken = await AsyncStorage.getItem(
+        PENDING_SIGNUP_OAUTH_TOKEN_KEY,
+      );
       if (!accessToken) {
-        throw new Error("로그인 정보가 없습니다. 다시 로그인해 주세요.");
+        throw new Error("소셜 로그인 정보가 없습니다. 다시 로그인해 주세요.");
       }
 
       const signupProvider =
@@ -172,9 +209,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setUser(userInfo);
       }
 
-      await AsyncStorage.removeItem(PENDING_SIGNUP_KEY);
-      await AsyncStorage.removeItem(PENDING_SIGNUP_PROVIDER_KEY);
+      await Promise.all([
+        AsyncStorage.removeItem(PENDING_SIGNUP_KEY),
+        AsyncStorage.removeItem(PENDING_SIGNUP_PROVIDER_KEY),
+        AsyncStorage.removeItem(PENDING_SIGNUP_OAUTH_TOKEN_KEY),
+      ]);
       setNeedsRoleSelection(false);
+      setIsLoggedIn(true);
       void syncFcmTokenToServer();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -190,6 +231,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       AsyncStorage.removeItem(USER_INFO_KEY),
       AsyncStorage.removeItem(PENDING_SIGNUP_KEY),
       AsyncStorage.removeItem(PENDING_SIGNUP_PROVIDER_KEY),
+      AsyncStorage.removeItem(PENDING_SIGNUP_OAUTH_TOKEN_KEY),
       clearProfileCache(),
     ]);
     setUser(null);

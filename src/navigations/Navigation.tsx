@@ -57,7 +57,7 @@ const Navigation = () => {
     return <SplashScreenView />;
   }
 
-  if (isLoggedIn && needsRoleSelection) {
+  if (needsRoleSelection) {
     return (
       <NavigationContainer>
         <SignupFlowScreen />
