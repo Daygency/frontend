@@ -32,7 +32,7 @@ const ChatScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <View style={styles.header}>
+      <View style={[styles.header, isSearchOpen && styles.headerSearchMode]}>
         {isSearchOpen ? (
           <View style={styles.headerSearchWrap}>
             <Feather name="search" size={18} color={GRAY.DARK_2} />
@@ -54,7 +54,9 @@ const ChatScreen = () => {
             ) : null}
           </View>
         ) : (
-          <Logo size={24} logoName="채팅" />
+          <View style={styles.headerTitleWrap}>
+            <Logo size={24} logoName="채팅" />
+          </View>
         )}
         <View style={styles.iconContainer}>
           <Pressable

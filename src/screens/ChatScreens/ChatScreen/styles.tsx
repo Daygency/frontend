@@ -2,6 +2,8 @@ import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
 import {
   FILTER_ROW_PADDING_TOP,
+  INLINE_SEARCH_BAR_HEIGHT,
+  INLINE_SEARCH_HEADER_PADDING_VERTICAL,
   MAIN_HOME_TOP_BAR_HEIGHT,
   MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
   MAIN_HOME_TOP_BAR_PADDING_TOP,
@@ -22,6 +24,15 @@ const styles = StyleSheet.create({
     paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
     paddingTop: MAIN_HOME_TOP_BAR_PADDING_TOP,
   },
+  headerSearchMode: {
+    paddingTop: INLINE_SEARCH_HEADER_PADDING_VERTICAL,
+    paddingBottom: INLINE_SEARCH_HEADER_PADDING_VERTICAL,
+  },
+  headerTitleWrap: {
+    flex: 1,
+    justifyContent: "center",
+    marginRight: 12,
+  },
   iconContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -36,8 +47,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    height: 40,
-    marginRight: 12,
+    height: INLINE_SEARCH_BAR_HEIGHT,
     backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 10,
     paddingHorizontal: 12,

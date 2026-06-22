@@ -1,5 +1,11 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../color";
+import {
+  INLINE_SEARCH_BAR_HEIGHT,
+  MAIN_HOME_TOP_BAR_HEIGHT,
+  MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+  MAIN_HOME_TOP_BAR_PADDING_TOP,
+} from "../../components/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   container: {
@@ -9,46 +15,48 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
+    minHeight: MAIN_HOME_TOP_BAR_HEIGHT,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingTop: MAIN_HOME_TOP_BAR_PADDING_TOP,
+    paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
   },
   backButton: {
     padding: 4,
-    marginRight: 10,
+    marginRight: 8,
   },
   searchBar: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: GRAY.DEFAULT,
-    borderRadius: 12,
-    height: 44,
-    paddingLeft: 12,
-    paddingRight: 12,
+    backgroundColor: GRAY.DEFAULT_1,
+    borderRadius: 10,
+    height: INLINE_SEARCH_BAR_HEIGHT,
+    paddingHorizontal: 12,
+    minWidth: 0,
   },
   searchInput: {
     flex: 1,
-    paddingHorizontal: 16,
-    paddingRight: 12,
-    fontSize: 16,
+    paddingHorizontal: 8,
+    fontSize: 15,
     color: "#000",
+    paddingVertical: 0,
   },
   searchInputWithTag: {
-    paddingLeft: 8,
+    paddingLeft: 6,
   },
   clearButton: {
-    padding: 8,
-    marginRight: 6,
+    padding: 4,
+    marginLeft: 4,
   },
   searchTagChip: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 14,
+    flexShrink: 0,
+    paddingHorizontal: 12,
     backgroundColor: MAIN.DEFAULT,
-    marginVertical: 6,
     marginRight: 4,
-    paddingVertical: 8,
-    borderRadius: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
     alignSelf: "center",
   },
   searchTagChipText: {
@@ -56,9 +64,11 @@ const styles = StyleSheet.create({
     color: WHITE,
     fontWeight: "500",
   },
+  suggestedScroll: {
+    flexGrow: 0,
+  },
   suggestedSection: {
     flexDirection: "row",
-    flexWrap: "wrap",
     gap: 8,
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -71,6 +81,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM,
+    flexShrink: 0,
   },
   suggestedTagActive: {
     backgroundColor: MAIN.DEFAULT,
