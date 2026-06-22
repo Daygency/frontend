@@ -1,7 +1,7 @@
 import { Image, Pressable, View, type ImageSourcePropType } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Logo from "../Logo/Logo";
-import { MAIN } from "../../color";
+import { MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import Feather from "@expo/vector-icons/Feather";
 import { CompositeNavigationProp, useNavigation } from "@react-navigation/native";
@@ -18,11 +18,20 @@ type MainHomeTopBarNavigationProp = CompositeNavigationProp<
 interface MainHomeTopBarProps {
   logoName?: string;
   logoImage?: ImageSourcePropType;
+  logoAspectRatio?: number;
   initialTag?: string | null;
+  variant?: "light" | "dark";
 }
 
-const MainHomeTopBar = ({ logoName, logoImage, initialTag }: MainHomeTopBarProps) => {
+const MainHomeTopBar = ({
+  logoName,
+  logoImage,
+  logoAspectRatio = 1396 / 179,
+  initialTag,
+  variant = "light",
+}: MainHomeTopBarProps) => {
   const navigation = useNavigation<MainHomeTopBarNavigationProp>();
+  const iconColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
 
   const handleSearchPress = () => {
     if (initialTag) {
@@ -32,26 +41,36 @@ const MainHomeTopBar = ({ logoName, logoImage, initialTag }: MainHomeTopBarProps
     navigation.navigate(RootRoutes.SEARCH);
   };
 
+  const logoHeight = variant === "dark" ? 18 : 24;
+  const logoMaxWidth = variant === "dark" ? 22 : 120;
+  const logoWidth = Math.min(logoHeight * logoAspectRatio, logoMaxWidth);
+
   return (
     <View style={styles.container}>
       {logoImage ? (
-        <Image
-          source={logoImage}
+        <View
           style={{
-            height: 24,
-            aspectRatio: 1396 / 179,
-            maxWidth: 120,
+            width: logoWidth,
+            height: logoHeight,
             flexShrink: 1,
           }}
-          resizeMode="contain"
-          accessibilityLabel="daygency"
-        />
+        >
+          <Image
+            source={logoImage}
+            style={{
+              width: logoWidth,
+              height: logoHeight,
+            }}
+            resizeMode="contain"
+            accessibilityLabel="daygency"
+          />
+        </View>
       ) : (
         <Logo size={24} logoName={logoName ?? ""} />
       )}
       <View style={styles.iconContainer}>
         <Pressable style={styles.iconButton} onPress={handleSearchPress}>
-          <Feather name="search" size={23} color={MAIN.DEFAULT} />
+          <Feather name="search" size={23} color={iconColor} />
         </Pressable>
         <Pressable
           style={styles.iconButton}
@@ -60,7 +79,7 @@ const MainHomeTopBar = ({ logoName, logoImage, initialTag }: MainHomeTopBarProps
           <MaterialCommunityIcons
             name="bell-outline"
             size={23}
-            color={MAIN.DEFAULT}
+            color={iconColor}
           />
         </Pressable>
         <Pressable
@@ -70,7 +89,7 @@ const MainHomeTopBar = ({ logoName, logoImage, initialTag }: MainHomeTopBarProps
           <MaterialCommunityIcons
             name="cog-outline"
             size={23}
-            color={MAIN.DEFAULT}
+            color={iconColor}
           />
         </Pressable>
       </View>

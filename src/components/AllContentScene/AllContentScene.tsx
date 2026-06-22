@@ -1,14 +1,8 @@
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { WHITE } from "../../color";
-import { useFocusEffect } from "@react-navigation/native";
-import { useCallback } from "react";
-
-const NEWS_CARD_WIDTH = 138;
-const NEWS_CARD_IMAGE_HEIGHT = 193;
-const NEWS_CARD_GAP = 14;
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { WHITE } from "../../color";
 import Section from "../Section/Section";
 import AnnouncementCard from "../AnnouncementCard/AnnouncementCard";
 import EventNewsCard from "../EventNewsCard/EventNewsCard";
@@ -23,6 +17,15 @@ import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
 import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
+import { getImageAverageColor } from "../../lib/media/getImageAverageColor";
+import {
+  CURATION_LOADING_BACKGROUND,
+  type CurationThemeState,
+} from "../../screens/MainHomeScreen/curationTheme";
+
+const NEWS_CARD_WIDTH = 138;
+const NEWS_CARD_IMAGE_HEIGHT = 193;
+const NEWS_CARD_GAP = 14;
 
 type ContentTabParamList = {
   [ContentRoutes.HOME]: undefined;
@@ -55,9 +58,15 @@ type MainHomeContentTab = "홈" | "큐레이션";
 
 interface AllContentSceneProps {
   tab?: MainHomeContentTab;
+  onCurationThemeChange?: (theme: CurationThemeState | null) => void;
+  hideWhileCurationLoading?: boolean;
 }
 
-const AllContentScene = ({ tab = "홈" }: AllContentSceneProps) => {
+const AllContentScene = ({
+  tab = "홈",
+  onCurationThemeChange,
+  hideWhileCurationLoading = false,
+}: AllContentSceneProps) => {
   const navigation = useNavigation<NavigationProp>();
   const [announcements, setAnnouncements] = useState<HomeAnnouncementItem[]>([]);
   const [banners, setBanners] = useState<HomeBannerItem[]>([]);
@@ -123,7 +132,79 @@ const AllContentScene = ({ tab = "홈" }: AllContentSceneProps) => {
     }, [loadHome]),
   );
 
-  if (loading) {
+  const carouselBanners = useMemo(
+    () =>
+      banners
+        .map((banner) => {
+          const imageUrl = normalizeListThumbnailUrl(banner.imageUrl);
+          if (!imageUrl) return null;
+          return {
+            bannerId: banner.bannerId,
+            imageUrl,
+          };
+        })
+        .filter(
+          (item): item is { bannerId: string; imageUrl: string } => item != null,
+        ),
+    [banners],
+  );
+
+  useEffect(() => {
+    if (tab !== "큐레이션" || !onCurationThemeChange) return;
+
+    let cancelled = false;
+
+    const resolveCurationTheme = async () => {
+      if (loading) {
+        onCurationThemeChange({
+          loading: true,
+          backgroundColor: CURATION_LOADING_BACKGROUND,
+        });
+        return;
+      }
+
+      const firstBanner = carouselBanners[0];
+      if (!firstBanner) {
+        if (!cancelled) {
+          onCurationThemeChange({
+            loading: false,
+            backgroundColor: CURATION_LOADING_BACKGROUND,
+          });
+        }
+        return;
+      }
+
+      onCurationThemeChange({
+        loading: true,
+        backgroundColor: CURATION_LOADING_BACKGROUND,
+      });
+
+      try {
+        const averageColor = await getImageAverageColor(firstBanner.imageUrl);
+        if (!cancelled) {
+          onCurationThemeChange({
+            loading: false,
+            backgroundColor: averageColor,
+          });
+        }
+      } catch {
+        if (!cancelled) {
+          onCurationThemeChange({
+            loading: false,
+            backgroundColor: "#1a1a1a",
+          });
+        }
+      }
+    };
+
+    void resolveCurationTheme();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [carouselBanners, loading, onCurationThemeChange, tab]);
+
+  if (loading && tab !== "큐레이션") {
     return (
       <View
         style={{
@@ -152,25 +233,18 @@ const AllContentScene = ({ tab = "홈" }: AllContentSceneProps) => {
     );
   };
 
-  const carouselBanners = banners
-    .map((banner) => {
-      const imageUrl = normalizeListThumbnailUrl(banner.imageUrl);
-      if (!imageUrl) return null;
-      return {
-        bannerId: banner.bannerId,
-        imageUrl,
-      };
-    })
-    .filter((item): item is { bannerId: string; imageUrl: string } => item != null);
-
   if (tab === "큐레이션") {
+    if (hideWhileCurationLoading) {
+      return null;
+    }
+
     return (
-      <ScrollView>
+      <ScrollView style={{ flex: 1, backgroundColor: "transparent" }}>
         {carouselBanners.length === 0 ? (
           <Text
             style={{
               fontSize: 14,
-              color: "#999",
+              color: "rgba(255,255,255,0.6)",
               paddingVertical: 48,
               textAlign: "center",
             }}

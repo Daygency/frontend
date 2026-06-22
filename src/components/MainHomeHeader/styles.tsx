@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { GRAY, MAIN } from "../../color";
+import { GRAY, MAIN, WHITE } from "../../color";
 import { FILTER_ROW_PADDING_TOP } from "../MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
@@ -26,11 +26,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: MAIN.DEFAULT,
   },
+  tabLabelDark: {
+    color: "rgba(255,255,255,0.55)",
+  },
+  tabLabelSelectedDark: {
+    fontWeight: "600",
+    color: WHITE,
+  },
   tabIndicator: {
     height: 2,
     marginTop: 6,
     backgroundColor: MAIN.DEFAULT,
     borderRadius: 1,
+  },
+  tabIndicatorDark: {
+    backgroundColor: WHITE,
   },
   tabIndicatorPlaceholder: {
     height: 2,

@@ -9,6 +9,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  curationLoading: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
 });
 
 export default styles;

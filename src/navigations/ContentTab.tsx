@@ -36,8 +36,8 @@ const ContentTab = () => {
         name={ContentRoutes.HOME}
         component={MainHomeScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <Feather name="home" size={24} color={focused ? "black" : "gray"} />
+          tabBarIcon: ({ color }) => (
+            <Feather name="home" size={24} color={color} />
           ),
           title: "홈",
         }}
@@ -46,12 +46,8 @@ const ContentTab = () => {
         name={ContentRoutes.ACTIVITY}
         component={AnnouncementScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <Entypo
-              name="megaphone"
-              size={24}
-              color={focused ? "black" : "gray"}
-            />
+          tabBarIcon: ({ color }) => (
+            <Entypo name="megaphone" size={24} color={color} />
           ),
           title: "모집공고",
         }}
@@ -60,12 +56,8 @@ const ContentTab = () => {
         name={ContentRoutes.PAYMENT}
         component={ChatScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <Ionicons
-              name="chatbubble-outline"
-              size={24}
-              color={focused ? "black" : "gray"}
-            />
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="chatbubble-outline" size={24} color={color} />
           ),
           title: "채팅",
         }}
@@ -74,12 +66,8 @@ const ContentTab = () => {
         name={ContentRoutes.CHAT}
         component={LoungeScreen}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <Octicons
-              name="people"
-              size={24}
-              color={focused ? "black" : "gray"}
-            />
+          tabBarIcon: ({ color }) => (
+            <Octicons name="people" size={24} color={color} />
           ),
           title: "라운지",
         }}
@@ -96,8 +84,8 @@ const ContentTab = () => {
           },
         }}
         options={{
-          tabBarIcon: ({ focused }) => (
-            <MaterialIcons name="account-circle" size={24} color={focused ? "black" : "gray"} />
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="account-circle" size={24} color={color} />
           ),
           title: "포트폴리오",
         }}
