@@ -14,6 +14,7 @@ import {
   type CurationThemeState,
 } from "./curationTheme";
 import { useCurationBackgroundTransition } from "./useCurationBackgroundTransition";
+import CurationBottomGradient from "./CurationBottomGradient";
 import styles from "./styles";
 
 const MAIN_LOGO = require("../../../assets/daygency_logo_main.png");
@@ -82,6 +83,7 @@ const MainHomeScreen = () => {
           hideWhileCurationLoading={isCurationLoading}
         />
       </View>
+      {isCuration ? <CurationBottomGradient /> : null}
     </Animated.View>
   );
 };
