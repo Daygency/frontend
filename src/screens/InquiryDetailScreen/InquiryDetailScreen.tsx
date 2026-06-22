@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { ScrollView, Text, View, StyleSheet, Image, ActivityIndicator } from "react-native";
 import { RouteProp, useRoute } from "@react-navigation/native";
-import ShadowCardList from "../../components/ShadowCardList/ShadowCardList";
+import ShadowCardList from "../../components/lists/ShadowCardList";
 import { GRAY, MAIN } from "../../color";
 import type { InquiryItem } from "../SettingsScreens/CustomerServiceScreen/components/InquiryHistoryItem";
 import { getMyInquiry, mapInquiryToItem } from "../../lib/apis/inquiry/inquiryApi";

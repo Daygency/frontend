@@ -3,7 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
 import styles from "./styles";
 import { GRAY, BLACK, MAIN } from "../../../../color";
-import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
+import ShadowCardButton from "../../../../components/cards/ShadowCardButton";
 import {
   getMyProfile,
   getUserPublicProfile,

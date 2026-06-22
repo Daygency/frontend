@@ -9,7 +9,7 @@ import Photo, {
   PORTFOLIO_PHOTOS,
 } from "../Photo/Photo";
 import Activity from "../Activity/Activity";
-import Section from "../../../../components/Section/Section";
+import Section from "../../../../components/ui/Section";
 import portfolioStyles from "../../styles";
 import { RootRoutes } from "../../../../navigations/routes";
 

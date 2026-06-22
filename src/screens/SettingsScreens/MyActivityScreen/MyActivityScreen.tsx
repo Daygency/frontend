@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { View, useWindowDimensions } from "react-native";
 import { TabView } from "react-native-tab-view";
-import CategoryTabBar from "../../../components/CategoryTabBar/CategoryTabBar";
+import CategoryTabBar from "../../../components/layout/CategoryTabBar";
 import PostsCommentsScene from "./components/PostsCommentsScene";
 import ScrapScene from "./components/ScrapScene";
 import MyReviewsScene from "./components/MyReviewsScene";

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import ReviewCard from "../../../../components/ReviewCard/ReviewCard";
+import ReviewCard from "../../../../components/cards/ReviewCard";
 import styles from "../styles";
 import { getMyActivityReviewList } from "../../../../lib/apis/announcement/activityReviewApi";
 import type { ActivityReviewListItem } from "../../../../lib/apis/announcement/activityReviewTypes";

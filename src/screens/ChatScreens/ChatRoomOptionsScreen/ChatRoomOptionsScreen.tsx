@@ -19,7 +19,7 @@ import { createReport } from "../../../lib/apis/report/reportApi";
 import type { ReportCategory } from "../../../lib/apis/report/types";
 import { confirmReportSubmission } from "../../../lib/report/confirmReportSubmission";
 import { messageForReportHttpStatus } from "../../../lib/report/reportErrorMessage";
-import ReportCategoryModal from "../../../components/ReportCategoryModal/ReportCategoryModal";
+import ReportCategoryModal from "../../../components/modals/ReportCategoryModal";
 import { MAIN } from "../../../color";
 import styles from "./styles";
 

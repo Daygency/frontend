@@ -5,8 +5,8 @@ import { GRAY } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
 import styles from "../styles";
 import { MAJOR_OPTIONS } from "../../../constants/majors";
-import OneLineTextInput from "../../../components/OneLineTextInput/OneLineTextInput";
-import MajorTagSelectModal from "../../../components/MajorTagSelectModal/MajorTagSelectModal";
+import OneLineTextInput from "../../../components/forms/OneLineTextInput";
+import MajorTagSelectModal from "../../../components/modals/MajorTagSelectModal";
 
 type Props = {
   name: string;

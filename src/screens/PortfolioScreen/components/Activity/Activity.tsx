@@ -3,8 +3,8 @@ import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import styles from "./styles";
 import portfolioStyles from "../../styles";
 import { GRAY } from "../../../../color";
-import Section from "../../../../components/Section/Section";
-import ReviewCard from "../../../../components/ReviewCard/ReviewCard";
+import Section from "../../../../components/ui/Section";
+import ReviewCard from "../../../../components/cards/ReviewCard";
 import {
   getReceivedActivityReviewList,
   getUserReceivedActivityReviewList,

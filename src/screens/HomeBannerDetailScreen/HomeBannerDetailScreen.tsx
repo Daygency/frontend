@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MAIN, WHITE } from "../../color";
 import { getHomeBannerDetail } from "../../lib/apis/home/homeBannerApi";
 import { formatContentDate, isContentNew } from "../../lib/content/newBadge";
-import NewBadge from "../../components/NewBadge/NewBadge";
+import NewBadge from "../../components/ui/NewBadge";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 import { RootRoutes } from "../../navigations/routes";
 import styles from "./styles";

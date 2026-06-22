@@ -18,7 +18,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
-import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
+import CommentInputBar from "../../components/comments/CommentInputBar";
 import styles from "./styles";
 import { getCommunityDetail, deleteCommunity } from "../../lib/apis/community/communityApi";
 import type { CommunityDetailResponse } from "../../lib/apis/community/types";
@@ -30,9 +30,9 @@ import {
   updateComment,
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
-import PostDetailOptionsMenu from "../../components/PostDetailOptionsMenu/PostDetailOptionsMenu";
+import PostDetailOptionsMenu from "../../components/menus/PostDetailOptionsMenu";
 import { isContentNew } from "../../lib/content/newBadge";
-import NewBadge from "../../components/NewBadge/NewBadge";
+import NewBadge from "../../components/ui/NewBadge";
 import { RootRoutes } from "../../navigations/routes";
 import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
 import {
@@ -46,8 +46,8 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
-import ReportCategoryModal from "../../components/ReportCategoryModal/ReportCategoryModal";
-import ReportDotsDropdownMenu from "../../components/ReportDotsDropdownMenu/ReportDotsDropdownMenu";
+import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
+import ReportDotsDropdownMenu from "../../components/menus/ReportDotsDropdownMenu";
 import { createReport } from "../../lib/apis/report/reportApi";
 import type { ReportCategory, ReportTargetType } from "../../lib/apis/report/types";
 import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";

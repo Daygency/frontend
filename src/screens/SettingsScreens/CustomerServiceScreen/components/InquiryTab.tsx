@@ -5,7 +5,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../../navigations/routes";
 import ShadowCardList, {
   ShadowCardListFaqItem,
-} from "../../../../components/ShadowCardList/ShadowCardList";
+} from "../../../../components/lists/ShadowCardList";
 import styles from "../styles";
 
 const FAQ_LIST = [

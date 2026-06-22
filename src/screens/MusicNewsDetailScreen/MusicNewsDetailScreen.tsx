@@ -21,8 +21,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
 import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
 import { Ionicons } from "@expo/vector-icons";
-import CommentInputBar from "../../components/CommentInputBar/CommentInputBar";
-import CommentAuthorAvatar from "../../components/CommentAuthorAvatar/CommentAuthorAvatar";
+import CommentInputBar from "../../components/comments/CommentInputBar";
+import CommentAuthorAvatar from "../../components/comments/CommentAuthorAvatar";
 import { getNewsDetail, deleteNews } from "../../lib/apis/news/newsApi";
 import type { NewsDetailResponse } from "../../lib/apis/news/types";
 import styles from "./styles";
@@ -34,7 +34,7 @@ import {
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
 import { pickCommentUserProfileImgUrl } from "../../lib/apis/comment/commentUserProfile";
-import PostDetailOptionsMenu from "../../components/PostDetailOptionsMenu/PostDetailOptionsMenu";
+import PostDetailOptionsMenu from "../../components/menus/PostDetailOptionsMenu";
 import { RootRoutes } from "../../navigations/routes";
 import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
 import {
@@ -48,8 +48,8 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
-import ReportCategoryModal from "../../components/ReportCategoryModal/ReportCategoryModal";
-import ReportDotsDropdownMenu from "../../components/ReportDotsDropdownMenu/ReportDotsDropdownMenu";
+import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
+import ReportDotsDropdownMenu from "../../components/menus/ReportDotsDropdownMenu";
 import { createReport } from "../../lib/apis/report/reportApi";
 import type { ReportCategory, ReportTargetType } from "../../lib/apis/report/types";
 import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";

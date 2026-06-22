@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
 import { isContentNew } from "../../../lib/content/newBadge";
-import SelectableTag from "../../../components/SelectableTag/SelectableTag";
+import SelectableTag from "../../../components/ui/SelectableTag";
 import { RootRoutes } from "../../../navigations/routes";
 import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
 import type { CommunityCategory, CommunityListItem } from "../../../lib/apis/community/types";

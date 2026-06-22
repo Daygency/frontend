@@ -13,9 +13,9 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import Form from "../../components/Form/Form";
-import FormTextInput from "../../components/FormTextInput/FormTextInput";
-import FormDropdownInput from "../../components/FormDropdownInput/FormDropdownInput";
+import Form from "../../components/forms/Form";
+import FormTextInput from "../../components/forms/FormTextInput";
+import FormDropdownInput from "../../components/forms/FormDropdownInput";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import {

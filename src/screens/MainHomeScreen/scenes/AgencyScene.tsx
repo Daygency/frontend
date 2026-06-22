@@ -1,7 +1,7 @@
 import { ScrollView, View } from "react-native";
 import { useState } from "react";
-import AgencyCard from "../../../components/AgencyCard/AgencyCard";
-import FilterDropdown from "../../../components/FilterDropdown/FilterDropdown";
+import AgencyCard from "../../../components/cards/AgencyCard";
+import FilterDropdown from "../../../components/menus/FilterDropdown";
 import styles from "./agencyStyles";
 
 const AgencyScene = () => {

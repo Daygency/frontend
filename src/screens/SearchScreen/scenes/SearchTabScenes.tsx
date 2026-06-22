@@ -8,9 +8,9 @@ import {
   View,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import AnnouncementCard from "../../../components/AnnouncementCard/AnnouncementCard";
-import ArtistCard from "../../../components/ArtistCard/ArtistCard";
-import EventNewsCard from "../../../components/EventNewsCard/EventNewsCard";
+import AnnouncementCard from "../../../components/cards/AnnouncementCard";
+import ArtistCard from "../../../components/cards/ArtistCard";
+import EventNewsCard from "../../../components/cards/EventNewsCard";
 import CommunityCard from "../../LoungeScreen/components/CommunityCard";
 import { RootRoutes } from "../../../navigations/routes";
 import { getAnnouncementList } from "../../../lib/apis/announcement/announcementApi";

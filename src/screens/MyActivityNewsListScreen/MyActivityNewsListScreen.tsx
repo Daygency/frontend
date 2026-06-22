@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, FlatList, Text, View, useWindowDimensions } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import EventNewsCard from "../../components/EventNewsCard/EventNewsCard";
+import EventNewsCard from "../../components/cards/EventNewsCard";
 import styles from "./styles";
 import { getMyScrappedNews } from "../../lib/apis/scrap/scrapApi";
 import type { MyScrappedNewsItem } from "../../lib/apis/scrap/types";

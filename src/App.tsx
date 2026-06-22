@@ -7,7 +7,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { initializeKakaoSDK } from "@react-native-kakao/core";
 import NaverLogin from "@react-native-seoul/naver-login";
 import { NAVER_APP_NAME, NAVER_URL_SCHEME } from "./lib/naver/naverConfig";
-import { FcmTokenSyncBridge } from "./components/FcmTokenSyncBridge";
+import { FcmTokenSyncBridge } from "./components/internal/FcmTokenSyncBridge";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navigation from "./navigations/Navigation";
 import SplashScreenView from "./screens/OnboardingScreens/SplashScreen/SplashScreen";

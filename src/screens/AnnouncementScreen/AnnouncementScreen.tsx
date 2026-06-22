@@ -10,14 +10,14 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
-import FabButton from "../../components/FabButton/FabButton";
-import MajorTagFilter from "../../components/MajorTagFilter/MajorTagFilter";
-import SectorTagSelectModal from "../../components/SectorTagSelectModal/SectorTagSelectModal";
+import AnnouncementCard from "../../components/cards/AnnouncementCard";
+import FabButton from "../../components/ui/FabButton";
+import MajorTagFilter from "../../components/modals/MajorTagFilter";
+import SectorTagSelectModal from "../../components/modals/SectorTagSelectModal";
 import { RootRoutes } from "../../navigations/routes";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import styles from "./styles";
-import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
+import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
 import {
   getAnnouncementList,
   getMyAnnouncementList,

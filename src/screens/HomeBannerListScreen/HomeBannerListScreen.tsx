@@ -15,7 +15,7 @@ import { GRAY, MAIN, WHITE } from "../../color";
 import { getHomeBanners } from "../../lib/apis/home/homeBannerApi";
 import type { HomeBannerListItem } from "../../lib/apis/home/homeBannerApi";
 import { isContentNew } from "../../lib/content/newBadge";
-import NewBadge from "../../components/NewBadge/NewBadge";
+import NewBadge from "../../components/ui/NewBadge";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 import { RootRoutes } from "../../navigations/routes";
 import styles from "./styles";

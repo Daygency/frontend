@@ -21,7 +21,7 @@ import { getMyApplicationForPost } from "../../lib/apis/application/applicationA
 import type { ApplicationEntity } from "../../lib/apis/application/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
+import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
 import AcceptedPerformersSection from "./AcceptedPerformersSection";
 import { GRAY, MAIN, WHITE } from "../../color";
@@ -61,7 +61,7 @@ import {
   parseApplicationConfig,
 } from "../../lib/application/parseApplicationConfig";
 import { useAuth } from "../../contexts/AuthContext";
-import ReportCategoryModal from "../../components/ReportCategoryModal/ReportCategoryModal";
+import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
 import { createReport } from "../../lib/apis/report/reportApi";
 import type { ReportCategory } from "../../lib/apis/report/types";
 import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";

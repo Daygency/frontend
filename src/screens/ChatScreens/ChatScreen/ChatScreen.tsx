@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Logo from "../../../components/Logo/Logo";
+import Logo from "../../../components/ui/Logo";
 import { GRAY, MAIN } from "../../../color";
 import styles from "./styles";
 import ChatList, { getUnreadCountByTopTabMock } from "./components/ChatList/ChatList";

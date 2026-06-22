@@ -9,7 +9,10 @@
     "web": "expo start --web",
     "ios-device": "expo run:ios --device",
     "ios-build": "expo export:embed --platform ios --dev false --entry-file index.ts --bundle-output ./ios/main.jsbundle --assets-dest ./ios",
-    "build:local": "GOOGLE_SERVICES_PLIST=$(base64 -i GoogleService-Info.plist) eas build --local --platform ios"
+    "build:local": "GOOGLE_SERVICES_PLIST=$(base64 -i GoogleService-Info.plist) eas build --local --platform ios",
+    "storybook": "cross-env STORYBOOK_ENABLED=true expo start",
+    "storybook:ios": "cross-env STORYBOOK_ENABLED=true expo start --ios",
+    "storybook:android": "cross-env STORYBOOK_ENABLED=true expo start --android"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -56,6 +59,14 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@gorhom/bottom-sheet": "^5.2.14",
+    "@react-native-community/slider": "^5.2.0",
+    "@storybook/addon-ondevice-actions": "^10.4.7",
+    "@storybook/addon-ondevice-controls": "^10.4.7",
+    "@storybook/react-native": "^10.4.7",
+    "@storybook/react-native-ui-lite": "^10.4.7",
+    "cross-env": "^10.1.0",
+    "storybook": "^10.4.6",
     "@types/jpeg-js": "^0.3.0",
     "@types/react": "~19.1.0",
     "eslint": "^9.39.1",

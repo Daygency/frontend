@@ -8,13 +8,13 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import Section from "../../../../components/Section/Section";
+import Section from "../../../../components/ui/Section";
 import { RootRoutes } from "../../../../navigations/routes";
 import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
-import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
-import AnnouncementCard from "../../../../components/AnnouncementCard/AnnouncementCard";
+import SelectableTag from "../../../../components/ui/SelectableTag";
+import AnnouncementCard from "../../../../components/cards/AnnouncementCard";
 import styles from "../styles";
-import EventNewsCard from "../../../../components/EventNewsCard/EventNewsCard";
+import EventNewsCard from "../../../../components/cards/EventNewsCard";
 import { normalizeListThumbnailUrl } from "../../../../lib/media/listThumbnailUrl";
 import {
   getMyScrappedAnnouncements,

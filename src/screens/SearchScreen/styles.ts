@@ -5,7 +5,7 @@ import {
   INLINE_SEARCH_BAR_HEIGHT,
   INLINE_SEARCH_HEADER_PADDING_VERTICAL,
   MAIN_HOME_TOP_BAR_HEIGHT,
-} from "../../components/MainHomeTopBar/styles";
+} from "../../components/layout/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   container: {

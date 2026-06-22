@@ -15,8 +15,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as LegacyFileSystem from "expo-file-system/legacy";
 import { GRAY } from "../../../color";
-import ShadowCardButton from "../../../components/ShadowCardButton/ShadowCardButton";
-import FabButton from "../../../components/FabButton/FabButton";
+import ShadowCardButton from "../../../components/cards/ShadowCardButton";
+import FabButton from "../../../components/ui/FabButton";
 import {
   deleteMyDocument,
   getMyDocuments,

@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
-import EventNewsCard from "../../../components/EventNewsCard/EventNewsCard";
+import EventNewsCard from "../../../components/cards/EventNewsCard";
 import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";

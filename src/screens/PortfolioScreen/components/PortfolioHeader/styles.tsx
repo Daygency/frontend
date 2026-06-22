@@ -4,7 +4,7 @@ import {
   MAIN_HOME_TOP_BAR_HEIGHT,
   MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
   MAIN_HOME_TOP_BAR_PADDING_TOP,
-} from "../../../../components/MainHomeTopBar/styles";
+} from "../../../../components/layout/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   headerContainer: {

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { FlatList, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
+import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import { RootRoutes } from "../../navigations/routes";
 import { getMyAnnouncements } from "../../lib/apis/userPosts/myPostsApi";
 import type { MyAnnouncementPostItem } from "../../lib/apis/userPosts/types";

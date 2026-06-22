@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, Pressable } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import ShadowCardButton from "../../../../components/ShadowCardButton/ShadowCardButton";
+import ShadowCardButton from "../../../../components/cards/ShadowCardButton";
 import styles from "./styles";
 import { BLACK, GRAY } from "../../../../color";
 

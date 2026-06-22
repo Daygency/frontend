@@ -15,12 +15,12 @@ import {
 } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AnnouncementCard from "../../components/AnnouncementCard/AnnouncementCard";
+import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import { RootRoutes } from "../../navigations/routes";
-import Form from "../../components/Form/Form";
-import FormTextInput from "../../components/FormTextInput/FormTextInput";
-import FormDropdownInput from "../../components/FormDropdownInput/FormDropdownInput";
+import Form from "../../components/forms/Form";
+import FormTextInput from "../../components/forms/FormTextInput";
+import FormDropdownInput from "../../components/forms/FormDropdownInput";
 import { MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import { getMyProfile } from "../../lib/apis/portfolio/profileApi";

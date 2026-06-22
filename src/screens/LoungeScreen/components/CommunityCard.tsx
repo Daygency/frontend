@@ -1,7 +1,7 @@
 import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BLACK, GRAY, RED } from "../../../color";
-import NewBadge from "../../../components/NewBadge/NewBadge";
+import NewBadge from "../../../components/ui/NewBadge";
 
 type CommunityCardProps = {
   tag?: string;

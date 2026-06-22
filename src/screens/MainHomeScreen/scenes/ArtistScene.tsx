@@ -7,9 +7,9 @@ import {
 } from "react-native";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import ArtistCard from "../../../components/ArtistCard/ArtistCard";
-import MajorTagFilter from "../../../components/MajorTagFilter/MajorTagFilter";
-import MajorTagSelectModal from "../../../components/MajorTagSelectModal/MajorTagSelectModal";
+import ArtistCard from "../../../components/cards/ArtistCard";
+import MajorTagFilter from "../../../components/modals/MajorTagFilter";
+import MajorTagSelectModal from "../../../components/modals/MajorTagSelectModal";
 import styles from "./artistStyles";
 import { RootRoutes } from "../../../navigations/routes";
 import { getMajors, type Major } from "../../../lib/apis/announcement/majorApi";

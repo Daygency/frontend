@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from "react";
 import { ScrollView, Text, View, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import SelectableTag from "../../../../components/SelectableTag/SelectableTag";
+import SelectableTag from "../../../../components/ui/SelectableTag";
 import InquiryHistoryItem from "./InquiryHistoryItem";
 import { getMyInquiries, mapInquiryToItem } from "../../../../lib/apis/inquiry/inquiryApi";
 import { MAIN } from "../../../../color";

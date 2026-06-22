@@ -15,7 +15,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import SignupFlowProgress from "../../../components/SignupFlowProgress/SignupFlowProgress";
+import SignupFlowProgress from "../../../components/layout/SignupFlowProgress";
 import { useAuth } from "../../../contexts/AuthContext";
 import { MAIN, GRAY, WHITE } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";

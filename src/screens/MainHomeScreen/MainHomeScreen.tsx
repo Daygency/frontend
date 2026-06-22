@@ -5,9 +5,9 @@ import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import MainHomeHeader, {
   type MainHomeTab,
-} from "../../components/MainHomeHeader/MainHomeHeader";
-import MainHomeTopBar from "../../components/MainHomeTopBar/MainHomeTopBar";
-import AllContentScene from "../../components/AllContentScene/AllContentScene";
+} from "../../components/layout/MainHomeHeader";
+import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
+import AllContentScene from "../../components/layout/AllContentScene";
 import { WHITE } from "../../color";
 import {
   CURATION_LOADING_BACKGROUND,

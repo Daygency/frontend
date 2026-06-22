@@ -1,7 +1,7 @@
 import { View, Text, useWindowDimensions } from "react-native";
 import { TabView } from "react-native-tab-view";
 import List from "./components/List/List";
-import CategoryTabBar from "../../components/CategoryTabBar/CategoryTabBar";
+import CategoryTabBar from "../../components/layout/CategoryTabBar";
 import { useCallback, useState } from "react";
 import { useFocusEffect, useRoute, RouteProp } from "@react-navigation/native";
 import { useAuth } from "../../contexts/AuthContext";

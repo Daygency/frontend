@@ -1,8 +1,8 @@
 import { Pressable, ScrollView, Text, View } from "react-native";
 import { useState } from "react";
-import VenueCard from "../../../components/VenueCard/VenueCard";
-import RentalNewsCard from "../../../components/RentalNewsCard/RentalNewsCard";
-import FilterDropdown from "../../../components/FilterDropdown/FilterDropdown";
+import VenueCard from "../../../components/cards/VenueCard";
+import RentalNewsCard from "../../../components/cards/RentalNewsCard";
+import FilterDropdown from "../../../components/menus/FilterDropdown";
 import styles from "./venueStyles";
 
 type TabType = "info" | "news";

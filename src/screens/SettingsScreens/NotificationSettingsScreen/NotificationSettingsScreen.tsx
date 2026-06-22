@@ -5,7 +5,7 @@ import { unregisterPushDevice } from "../../../lib/apis/notifications/notificati
 import { syncFcmTokenToServer } from "../../../lib/fcmServerSync";
 import ShadowCardList, {
   ShadowCardListToggleItem,
-} from "../../../components/ShadowCardList/ShadowCardList";
+} from "../../../components/lists/ShadowCardList";
 import {
   getOsPushPermission,
   getPushReceivePreference,

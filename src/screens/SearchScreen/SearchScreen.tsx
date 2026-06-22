@@ -17,7 +17,7 @@ import {
   removeRecentSearch,
   clearRecentSearches,
 } from "../../lib/recentSearchStorage";
-import CategoryTabBar from "../../components/CategoryTabBar/CategoryTabBar";
+import CategoryTabBar from "../../components/layout/CategoryTabBar";
 import {
   CategoryList,
   SUGGESTED_SEARCH_TAGS,

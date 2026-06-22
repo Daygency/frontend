@@ -29,7 +29,7 @@ import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfi
 import { findMessageMatchIndices } from "../../../lib/chat/chatSearch";
 import { createChatSocket } from "../../../lib/chat/createChatSocket";
 import { usePeerAvatarUrl } from "../../../lib/chat/usePeerAvatarUrl";
-import HighlightText from "../../../components/HighlightText/HighlightText";
+import HighlightText from "../../../components/ui/HighlightText";
 import type { Socket } from "socket.io-client";
 
 export type ChatRoomParams = {

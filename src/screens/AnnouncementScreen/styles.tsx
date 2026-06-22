@@ -1,6 +1,6 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../color";
-import { FILTER_ROW_PADDING_TOP } from "../../components/MainHomeTopBar/styles";
+import { FILTER_ROW_PADDING_TOP } from "../../components/layout/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   container: {

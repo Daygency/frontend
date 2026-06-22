@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { View, useWindowDimensions } from "react-native";
 import { TabView } from "react-native-tab-view";
-import CategoryTabBar from "../../../components/CategoryTabBar/CategoryTabBar";
+import CategoryTabBar from "../../../components/layout/CategoryTabBar";
 import InquiryTab from "./components/InquiryTab";
 import InquiryHistoryTab from "./components/InquiryHistoryTab";
 import styles from "./styles";

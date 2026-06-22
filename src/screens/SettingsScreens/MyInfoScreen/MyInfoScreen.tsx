@@ -3,7 +3,7 @@ import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import ShadowCardList, {
   ShadowCardListItem,
-} from "../../../components/ShadowCardList/ShadowCardList";
+} from "../../../components/lists/ShadowCardList";
 import { GRAY } from "../../../color";
 import { getMyProfile } from "../../../lib/apis/portfolio/profileApi";
 import { getProfileCache } from "../../../lib/profileCache";
