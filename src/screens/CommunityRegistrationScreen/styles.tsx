@@ -39,6 +39,7 @@ const styles = StyleSheet.create({
   guidelinesSection: {
     marginTop: 24,
     gap: 8,
+    paddingTop: 4,
   },
   guidelineItem: {
     flexDirection: "row",
@@ -64,7 +65,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 12,
     backgroundColor: WHITE,
   },
   registerButton: {

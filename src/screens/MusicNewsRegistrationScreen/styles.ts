@@ -79,7 +79,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM,
-    borderStyle: "dashed",
     minHeight: 80,
     alignItems: "center",
     justifyContent: "center",
@@ -127,7 +126,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
-    paddingTop: 16,
+    paddingTop: 12,
     backgroundColor: WHITE,
   },
   registerButton: {

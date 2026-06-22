@@ -9,7 +9,6 @@ import {
   Text,
   TextInput,
   View,
-  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -316,17 +315,6 @@ const CommunityRegistrationScreen = () => {
           styles.footer,
           {
             paddingBottom: (bottom || 0) + 16,
-            ...Platform.select({
-              ios: {
-                shadowColor: "#000",
-                shadowOffset: { width: 0, height: -2 },
-                shadowOpacity: 0.08,
-                shadowRadius: 12,
-              },
-              android: {
-                elevation: 4,
-              },
-            }),
           },
         ]}
       >
