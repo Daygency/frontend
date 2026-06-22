@@ -66,11 +66,23 @@ const LoungeScreen = () => {
         style={styles.tabView}
       />
       <FabButton
-        onPress={() =>
-          navigation.navigate(
-            index === 0 ? RootRoutes.MUSIC_NEWS_REGISTRATION : RootRoutes.COMMUNITY_REGISTRATION
-          )
-        }
+        menuItems={[
+          {
+            label: "모집공고",
+            onPress: () =>
+              navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION),
+          },
+          {
+            label: "음악계 소식",
+            onPress: () =>
+              navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION),
+          },
+          {
+            label: "커뮤니티",
+            onPress: () =>
+              navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION),
+          },
+        ]}
       />
     </View>
   );

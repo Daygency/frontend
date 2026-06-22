@@ -383,7 +383,23 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       </View>
       {!hideTopBar && (
         <FabButton
-          onPress={() => navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION)}
+          menuItems={[
+            {
+              label: "모집공고",
+              onPress: () =>
+                navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION),
+            },
+            {
+              label: "음악계 소식",
+              onPress: () =>
+                navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION),
+            },
+            {
+              label: "커뮤니티",
+              onPress: () =>
+                navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION),
+            },
+          ]}
         />
       )}
     </View>

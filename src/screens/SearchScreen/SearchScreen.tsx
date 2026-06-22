@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TabView } from "react-native-tab-view";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -42,6 +42,7 @@ const SearchScreen = () => {
   const [submittedQuery, setSubmittedQuery] = useState("");
   const [isShowingResults, setIsShowingResults] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
+  const searchInputRef = useRef<TextInput>(null);
 
   const loadRecent = useCallback(async () => {
     const list = await getRecentSearches();
@@ -54,6 +55,8 @@ const SearchScreen = () => {
       if (initialTag != null && TAG_TO_SEARCH_CATEGORY[initialTag]) {
         setSelectedTag(initialTag);
       }
+      const timer = setTimeout(() => searchInputRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
     }, [loadRecent, initialTag]),
   );
 
@@ -97,6 +100,7 @@ const SearchScreen = () => {
   const handleResetSearch = () => {
     setIsShowingResults(false);
     setSubmittedQuery("");
+    setTimeout(() => searchInputRef.current?.focus(), 50);
   };
 
   const taggedRoutes = useMemo(() => {
@@ -148,6 +152,7 @@ const SearchScreen = () => {
             </Pressable>
           )}
           <TextInput
+            ref={searchInputRef}
             style={[
               styles.searchInput,
               selectedTag && styles.searchInputWithTag,
@@ -160,6 +165,7 @@ const SearchScreen = () => {
             onChangeText={setInputText}
             returnKeyType="search"
             onSubmitEditing={handleSubmitSearch}
+            autoFocus
           />
         </View>
         {isShowingResults && (
