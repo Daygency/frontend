@@ -21,7 +21,6 @@ import Section from "../../ui/Section";
 import portfolioStyles, { portfolioSectionStyles } from "../styles";
 import { PORTFOLIO_IMMERSIVE_BG } from "../../../constants/portfolio";
 import { RootRoutes } from "../../../navigations/routes";
-import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../layout/MainHomeTopBar/styles";
 
 type Props = {
   header: ReactNode;
@@ -45,7 +44,7 @@ const PortfolioScrollLayout = ({ header, immersiveCover = false }: Props) => {
   const viewingUserId = routeParams.userId?.trim() ?? "";
   const hasPhotos = PORTFOLIO_PHOTOS.length > 0;
   const hasMorePhotos = PORTFOLIO_PHOTOS.length > PHOTO_PREVIEW_LIMIT;
-  const coverExtendTop = immersiveCover ? top + MAIN_HOME_TOP_BAR_HEIGHT : 0;
+  const coverExtendTop = immersiveCover ? top + 44 : 0;
   const bannerVisibleHeight = Math.round(windowHeight * PROFILE_BANNER_RATIO);
   const fadeStart = coverExtendTop + bannerVisibleHeight * 0.1;
   const fadeEnd = fadeStart + HEADER_FADE_RANGE;

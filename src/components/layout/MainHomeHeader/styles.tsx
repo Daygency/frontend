@@ -1,6 +1,5 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
-import { FILTER_ROW_PADDING_TOP } from "../../layout/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   container: {
@@ -9,7 +8,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 20,
-    paddingTop: FILTER_ROW_PADDING_TOP,
+    paddingTop: 4,
     paddingBottom: 8,
   },
   tabButton: {

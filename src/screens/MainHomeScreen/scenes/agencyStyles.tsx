@@ -1,6 +1,5 @@
 import { StyleSheet } from "react-native";
 import { GRAY, WHITE } from "../../../color";
-import { FILTER_ROW_PADDING_TOP } from "../../../components/layout/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   container: {
@@ -11,7 +10,7 @@ const styles = StyleSheet.create({
   filterContainer: {
     flexDirection: "row",
     paddingHorizontal: 12,
-    paddingTop: FILTER_ROW_PADDING_TOP,
+    paddingTop: 4,
     paddingBottom: 9,
     gap: 8,
   },

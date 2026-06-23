@@ -1,11 +1,5 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../color";
-import {
-  FILTER_ROW_PADDING_TOP,
-  INLINE_SEARCH_BAR_HEIGHT,
-  INLINE_SEARCH_HEADER_PADDING_VERTICAL,
-  MAIN_HOME_TOP_BAR_HEIGHT,
-} from "../../components/layout/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   container: {
@@ -15,10 +9,10 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    height: MAIN_HOME_TOP_BAR_HEIGHT,
+    height: 44,
     paddingHorizontal: 12,
-    paddingTop: INLINE_SEARCH_HEADER_PADDING_VERTICAL,
-    paddingBottom: INLINE_SEARCH_HEADER_PADDING_VERTICAL,
+    paddingTop: 4,
+    paddingBottom: 4,
   },
   backButton: {
     padding: 4,
@@ -30,7 +24,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 10,
-    height: INLINE_SEARCH_BAR_HEIGHT,
+    height: 36,
     paddingHorizontal: 12,
     minWidth: 0,
   },
@@ -70,7 +64,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: 8,
     paddingHorizontal: 12,
-    paddingTop: FILTER_ROW_PADDING_TOP,
+    paddingTop: 4,
     paddingBottom: 9,
   },
   suggestedTag: {

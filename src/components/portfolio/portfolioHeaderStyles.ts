@@ -19,7 +19,7 @@ export const portfolioHeaderStyles = StyleSheet.create({
     borderBottomColor: "rgba(0, 0, 0, 0.08)",
   },
   topRow: {
-    minHeight: 48,
+    minHeight: 44,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

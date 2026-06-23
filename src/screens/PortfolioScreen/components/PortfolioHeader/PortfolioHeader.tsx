@@ -12,11 +12,6 @@ import { RootRoutes } from "../../../../navigations/routes";
 import { useHeaderScrollFade } from "../../../../hooks/useHeaderScrollFade";
 import FadeDualLayer from "../../../../components/portfolio/FadeDualLayer";
 import { portfolioHeaderStyles } from "../../../../components/portfolio/portfolioHeaderStyles";
-import {
-  MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
-  MAIN_HOME_TOP_BAR_PADDING_TOP,
-  MAIN_HOME_TOP_BAR_HORIZONTAL_PADDING,
-} from "../../../../components/layout/MainHomeTopBar/styles";
 
 type PortfolioHeaderProps = {
   overlay?: boolean;
@@ -82,9 +77,9 @@ const PortfolioHeader = ({
       style={[
         portfolioHeaderStyles.headerContainer,
         {
-          paddingTop: top + MAIN_HOME_TOP_BAR_PADDING_TOP,
-          paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
-          paddingHorizontal: MAIN_HOME_TOP_BAR_HORIZONTAL_PADDING,
+          paddingTop: top + 6,
+          paddingBottom: 10,
+          paddingHorizontal: 17,
         },
         !useScrollFade &&
           (overlay
@@ -152,8 +147,8 @@ const PortfolioHeader = ({
 
 const styles = StyleSheet.create({
   settingsButton: {
-    minWidth: 48,
-    minHeight: 48,
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
     flexShrink: 0,

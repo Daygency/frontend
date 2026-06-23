@@ -1,12 +1,5 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
-import {
-  FILTER_ROW_PADDING_TOP,
-  INLINE_SEARCH_BAR_HEIGHT,
-  INLINE_SEARCH_HEADER_PADDING_VERTICAL,
-  MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
-  MAIN_HOME_TOP_BAR_PADDING_TOP,
-} from "../../../components/layout/MainHomeTopBar/styles";
 
 const styles = StyleSheet.create({
   container: {
@@ -19,12 +12,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 17,
     alignItems: "center",
     justifyContent: "space-between",
-    paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
-    paddingTop: MAIN_HOME_TOP_BAR_PADDING_TOP,
+    paddingBottom: 10,
+    paddingTop: 6,
   },
   headerSearchMode: {
-    paddingTop: INLINE_SEARCH_HEADER_PADDING_VERTICAL,
-    paddingBottom: INLINE_SEARCH_HEADER_PADDING_VERTICAL,
+    paddingTop: 4,
+    paddingBottom: 4,
   },
   headerTitleWrap: {
     flex: 1,
@@ -34,18 +27,22 @@ const styles = StyleSheet.create({
   iconContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 20,
+    gap: 0,
   },
   iconButton: {
     position: "relative",
     flexShrink: 0,
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
   },
   headerSearchWrap: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    height: INLINE_SEARCH_BAR_HEIGHT,
+    height: 36,
     backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 10,
     paddingHorizontal: 12,
@@ -65,7 +62,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     paddingHorizontal: 12,
     gap: 8,
-    paddingTop: FILTER_ROW_PADDING_TOP,
+    paddingTop: 4,
     paddingBottom: 9,
   },
   topTab: {

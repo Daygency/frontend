@@ -10,10 +10,6 @@ import { getUserPublicProfile } from "../../../../lib/apis/portfolio/profileApi"
 import { useHeaderScrollFade } from "../../../../hooks/useHeaderScrollFade";
 import FadeDualLayer from "../../../../components/portfolio/FadeDualLayer";
 import { portfolioHeaderStyles } from "../../../../components/portfolio/portfolioHeaderStyles";
-import {
-  MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
-  MAIN_HOME_TOP_BAR_PADDING_TOP,
-} from "../../../../components/layout/MainHomeTopBar/styles";
 
 type ArtistPortfolioHeaderProps = {
   activityName: string;
@@ -124,9 +120,9 @@ const ArtistPortfolioHeader = ({
       style={[
         portfolioHeaderStyles.headerContainer,
         {
-          paddingTop: top + MAIN_HOME_TOP_BAR_PADDING_TOP,
-          paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
-          paddingHorizontal: 8,
+          paddingTop: top + 6,
+          paddingBottom: 10,
+          paddingHorizontal: 17,
         },
       ]}
     >
@@ -140,7 +136,7 @@ const ArtistPortfolioHeader = ({
           ]}
         />
       ) : null}
-      <View style={styles.topRow}>
+      <View style={portfolioHeaderStyles.topRow}>
         <View style={styles.leftContainer}>
           <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={styles.backButton}>
             <FadeDualLayer
@@ -211,12 +207,6 @@ const ArtistPortfolioHeader = ({
 };
 
 const styles = StyleSheet.create({
-  topRow: {
-    height: 28,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
   leftContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -225,17 +215,15 @@ const styles = StyleSheet.create({
     marginRight: 8,
   },
   backButton: {
-    minWidth: 40,
-    minHeight: 40,
-    padding: 4,
+    width: 44,
+    height: 44,
     marginRight: 4,
     alignItems: "center",
     justifyContent: "center",
   },
   menuButton: {
-    minWidth: 44,
-    minHeight: 44,
-    padding: 6,
+    width: 44,
+    height: 44,
     justifyContent: "center",
     alignItems: "center",
   },
