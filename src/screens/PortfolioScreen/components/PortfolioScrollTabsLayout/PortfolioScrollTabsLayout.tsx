@@ -27,7 +27,6 @@ import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../../../components/layout/MainHome
 
 type Props = {
   header: ReactNode;
-  /** 내 포트폴리오 — 커버 이미지가 화면 최상단까지 확장 */
   immersiveCover?: boolean;
 };
 

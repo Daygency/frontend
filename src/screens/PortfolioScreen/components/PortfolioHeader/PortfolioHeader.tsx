@@ -120,45 +120,47 @@ const PortfolioHeader = ({
           ]}
         />
       ) : null}
-      <View style={styles.leftContainer}>
-        {handleLabel ? (
-          <View style={styles.titleStack}>
-            <Animated.Text
-              style={[
-                styles.handleText,
-                styles.handleTextOverlay,
-                { color: WHITE, opacity: overlayOpacity },
-              ]}
-              numberOfLines={1}
-            >
-              {handleLabel}
-            </Animated.Text>
-            <Animated.Text
-              style={[
-                styles.handleText,
-                styles.titleSolid,
-                { color: MAIN.DEFAULT, opacity: solidOpacity },
-              ]}
-              numberOfLines={1}
-            >
-              {handleLabel}
-            </Animated.Text>
-          </View>
-        ) : null}
-      </View>
-      <View style={styles.iconContainer}>
-        <Pressable
-          style={styles.iconButton}
-          hitSlop={{ top: 10, bottom: 6, left: 10, right: 10 }}
-          onPress={() => navigation.navigate(RootRoutes.SETTINGS)}
-        >
-          <Animated.View style={{ opacity: overlayOpacity }}>
-            <MaterialCommunityIcons name="cog-outline" size={23} color={WHITE} />
-          </Animated.View>
-          <Animated.View style={[styles.iconSolid, { opacity: solidOpacity }]}>
-            <MaterialCommunityIcons name="cog-outline" size={23} color={MAIN.DEFAULT} />
-          </Animated.View>
-        </Pressable>
+      <View style={styles.topRow}>
+        <View style={styles.leftContainer}>
+          {handleLabel ? (
+            <View style={styles.titleStack}>
+              <Animated.Text
+                style={[
+                  styles.handleText,
+                  styles.handleTextOverlay,
+                  { color: WHITE, opacity: overlayOpacity },
+                ]}
+                numberOfLines={1}
+              >
+                {handleLabel}
+              </Animated.Text>
+              <Animated.Text
+                style={[
+                  styles.handleText,
+                  styles.titleSolid,
+                  { color: MAIN.DEFAULT, opacity: solidOpacity },
+                ]}
+                numberOfLines={1}
+              >
+                {handleLabel}
+              </Animated.Text>
+            </View>
+          ) : null}
+        </View>
+        <View style={styles.iconContainer}>
+          <Pressable
+            style={styles.iconButton}
+            hitSlop={{ top: 10, bottom: 6, left: 10, right: 10 }}
+            onPress={() => navigation.navigate(RootRoutes.SETTINGS)}
+          >
+            <Animated.View style={{ opacity: overlayOpacity }}>
+              <MaterialCommunityIcons name="cog-outline" size={23} color={WHITE} />
+            </Animated.View>
+            <Animated.View style={[styles.iconSolid, { opacity: solidOpacity }]}>
+              <MaterialCommunityIcons name="cog-outline" size={23} color={MAIN.DEFAULT} />
+            </Animated.View>
+          </Pressable>
+        </View>
       </View>
     </View>
   );

@@ -1,29 +1,59 @@
 import { useEffect, useState } from "react";
-import { View, Text, Pressable, ActivityIndicator, Alert } from "react-native";
+import {
+  Animated,
+  StyleSheet,
+  View,
+  Pressable,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import styles from "./styles";
+import { MAIN, WHITE } from "../../../../color";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { blockUser } from "../../../../lib/apis/block/blockApi";
 import { getUserPublicProfile } from "../../../../lib/apis/portfolio/profileApi";
 
 interface ArtistPortfolioHeaderProps {
   activityName: string;
-  /** 다른 유저 포트폴리오일 때만 전달 */
   targetUserId?: string;
+  scrollY?: Animated.Value;
+  fadeStart?: number;
+  fadeEnd?: number;
 }
 
 const ArtistPortfolioHeader = ({
   activityName,
   targetUserId,
+  scrollY,
+  fadeStart = 0,
+  fadeEnd = 1,
 }: ArtistPortfolioHeaderProps) => {
   const navigation = useNavigation<any>();
+  const { top } = useSafeAreaInsets();
   const { user, isLoggedIn } = useAuth();
   const myUserId = user?.socialId?.trim() ?? "";
+  const useScrollFade = scrollY != null;
 
-  const [resolvedHandle, setResolvedHandle] = useState(
-    activityName.trim(),
-  );
+  const solidOpacity = useScrollFade
+    ? scrollY.interpolate({
+        inputRange: [fadeStart, fadeEnd],
+        outputRange: [0, 1],
+        extrapolate: "clamp",
+      })
+    : 1;
+
+  const overlayOpacity = useScrollFade
+    ? scrollY.interpolate({
+        inputRange: [fadeStart, fadeEnd],
+        outputRange: [1, 0],
+        extrapolate: "clamp",
+      })
+    : 0;
+
+  const [resolvedHandle, setResolvedHandle] = useState(activityName.trim());
   const [blockLoading, setBlockLoading] = useState(false);
 
   useEffect(() => {
@@ -114,7 +144,22 @@ const ArtistPortfolioHeader = ({
   };
 
   return (
-    <View style={styles.headerContainer}>
+    <View
+      style={[
+        styles.headerContainer,
+        { paddingTop: top + 6, paddingBottom: 10 },
+      ]}
+    >
+      {useScrollFade ? (
+        <Animated.View
+          pointerEvents="none"
+          style={[
+            StyleSheet.absoluteFillObject,
+            styles.headerContainerSolid,
+            { opacity: solidOpacity },
+          ]}
+        />
+      ) : null}
       <View style={styles.topRow}>
         <View style={styles.leftContainer}>
           <Pressable
@@ -122,16 +167,44 @@ const ArtistPortfolioHeader = ({
             hitSlop={10}
             style={styles.backButton}
           >
-            <MaterialCommunityIcons
-              name="chevron-left"
-              size={28}
-              color="#000"
-            />
+            <Animated.View style={{ opacity: overlayOpacity }}>
+              <MaterialCommunityIcons
+                name="chevron-left"
+                size={28}
+                color={WHITE}
+              />
+            </Animated.View>
+            <Animated.View style={[styles.iconSolid, { opacity: solidOpacity }]}>
+              <MaterialCommunityIcons
+                name="chevron-left"
+                size={28}
+                color={MAIN.DEFAULT}
+              />
+            </Animated.View>
           </Pressable>
           {handleLabel ? (
-            <Text style={styles.activityName} numberOfLines={1}>
-              {handleLabel}
-            </Text>
+            <View style={styles.titleStack}>
+              <Animated.Text
+                style={[
+                  styles.activityName,
+                  styles.handleTextOverlay,
+                  { color: WHITE, opacity: overlayOpacity },
+                ]}
+                numberOfLines={1}
+              >
+                {handleLabel}
+              </Animated.Text>
+              <Animated.Text
+                style={[
+                  styles.activityName,
+                  styles.titleSolid,
+                  { color: MAIN.DEFAULT, opacity: solidOpacity },
+                ]}
+                numberOfLines={1}
+              >
+                {handleLabel}
+              </Animated.Text>
+            </View>
           ) : null}
         </View>
 
@@ -143,13 +216,24 @@ const ArtistPortfolioHeader = ({
             disabled={blockLoading}
           >
             {blockLoading ? (
-              <ActivityIndicator size="small" color="#1F2A44" />
+              <ActivityIndicator size="small" color={MAIN.DEFAULT} />
             ) : (
-              <MaterialCommunityIcons
-                name="dots-vertical"
-                size={26}
-                color="#000"
-              />
+              <>
+                <Animated.View style={{ opacity: overlayOpacity }}>
+                  <MaterialCommunityIcons
+                    name="dots-vertical"
+                    size={26}
+                    color={WHITE}
+                  />
+                </Animated.View>
+                <Animated.View style={[styles.iconSolid, { opacity: solidOpacity }]}>
+                  <MaterialCommunityIcons
+                    name="dots-vertical"
+                    size={26}
+                    color={MAIN.DEFAULT}
+                  />
+                </Animated.View>
+              </>
             )}
           </Pressable>
         ) : (

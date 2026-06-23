@@ -8,10 +8,7 @@ import {
 const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
-    flexDirection: "row",
     paddingHorizontal: 17,
-    alignItems: "center",
-    justifyContent: "space-between",
     overflow: "hidden",
   },
   headerContainerOverlay: {
@@ -22,17 +19,27 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: "rgba(0, 0, 0, 0.08)",
   },
+  topRow: {
+    minHeight: 48,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   leftContainer: {
-    flexShrink: 1,
     flex: 1,
+    minWidth: 0,
     marginRight: 12,
   },
   titleStack: {
-    position: "relative",
+    height: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
     justifyContent: "center",
   },
   titleSolid: {
-    ...StyleSheet.absoluteFillObject,
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    height: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
   },
   handleText: {
     fontSize: MAIN_HOME_TOP_BAR_TITLE_SIZE,

@@ -1,16 +1,23 @@
 import { StyleSheet } from "react-native";
-import { BLACK, WHITE } from "../../../../color";
+import {
+  MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
+  MAIN_HOME_TOP_BAR_TITLE_SIZE,
+} from "../../../../components/layout/MainHomeTopBar/styles";
+import { WHITE } from "../../../../color";
 
 const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
     paddingHorizontal: 8,
-    paddingBottom: 12,
-    paddingTop: 10,
+    overflow: "hidden",
+  },
+  headerContainerSolid: {
     backgroundColor: WHITE,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: "rgba(0, 0, 0, 0.08)",
   },
   topRow: {
-    minHeight: 40,
+    height: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -22,23 +29,51 @@ const styles = StyleSheet.create({
     minWidth: 0,
     marginRight: 8,
   },
+  titleStack: {
+    flex: 1,
+    height: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
+    justifyContent: "center",
+  },
+  titleSolid: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: 0,
+    height: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
+  },
   backButton: {
+    minWidth: 40,
+    minHeight: 40,
     padding: 4,
     marginRight: 4,
+    alignItems: "center",
+    justifyContent: "center",
   },
   activityName: {
-    fontSize: 22,
+    fontSize: MAIN_HOME_TOP_BAR_TITLE_SIZE,
+    lineHeight: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
     fontWeight: "700",
-    color: BLACK,
-    flex: 1,
+    includeFontPadding: false,
+  },
+  handleTextOverlay: {
+    textShadowColor: "rgba(0, 0, 0, 0.45)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   menuButton: {
+    minWidth: 44,
+    minHeight: 44,
     padding: 6,
     justifyContent: "center",
     alignItems: "center",
   },
+  iconSolid: {
+    ...StyleSheet.absoluteFillObject,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   menuPlaceholder: {
-    width: 38,
+    width: 44,
   },
 });
 
