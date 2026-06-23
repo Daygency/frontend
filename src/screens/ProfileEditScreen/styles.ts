@@ -3,7 +3,7 @@ import { BLUE, GRAY, MAIN, WHITE } from "../../color";
 import {
   PORTFOLIO_BODY_BG,
   PORTFOLIO_SECTION_GAP,
-} from "../PortfolioScreen/styles";
+} from "../../constants/portfolio";
 
 const styles = StyleSheet.create({
   container: {

@@ -1,5 +1,5 @@
 import { ScrollView, View } from "react-native";
-import Photo from "../PortfolioScreen/components/Photo/Photo";
+import Photo from "../../components/portfolio/Photo/Photo";
 import styles from "./styles";
 
 const PortfolioPhotoGalleryScreen = () => {

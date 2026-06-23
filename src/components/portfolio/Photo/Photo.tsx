@@ -1,6 +1,6 @@
 import { View, Text, ScrollView } from "react-native";
 import styles from "./styles";
-import { GRAY } from "../../../../color";
+import { GRAY } from "../../../color";
 
 export const PHOTO_PREVIEW_LIMIT = 4;
 

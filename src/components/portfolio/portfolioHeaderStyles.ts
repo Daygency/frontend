@@ -1,14 +1,13 @@
 import { StyleSheet } from "react-native";
-import { MAIN, WHITE } from "../../../../color";
+import { MAIN, WHITE } from "../../color";
 import {
   MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
   MAIN_HOME_TOP_BAR_TITLE_SIZE,
-} from "../../../../components/layout/MainHomeTopBar/styles";
+} from "../layout/MainHomeTopBar/styles";
 
-const styles = StyleSheet.create({
+export const portfolioHeaderStyles = StyleSheet.create({
   headerContainer: {
     width: "100%",
-    paddingHorizontal: 17,
     overflow: "hidden",
   },
   headerContainerOverlay: {
@@ -31,6 +30,7 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   titleStack: {
+    flex: 1,
     height: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
     justifyContent: "center",
   },
@@ -53,36 +53,9 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
-  iconContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 20,
-  },
-  iconButton: {
-    minWidth: 48,
-    minHeight: 48,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
   iconSolid: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
     justifyContent: "center",
   },
-  iconTextContainer: {
-    height: 21,
-    width: 47,
-    backgroundColor: MAIN.DEFAULT,
-    borderRadius: 5,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  iconText: {
-    fontSize: 11,
-    color: WHITE,
-    fontWeight: "600",
-  },
 });
-
-export default styles;

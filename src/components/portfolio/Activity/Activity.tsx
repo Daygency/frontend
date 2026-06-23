@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import styles from "./styles";
-import portfolioStyles from "../../styles";
-import { GRAY } from "../../../../color";
-import Section from "../../../../components/ui/Section";
-import ReviewCard from "../../../../components/cards/ReviewCard";
+import portfolioStyles, { portfolioSectionStyles } from "../styles";
+import { GRAY } from "../../../color";
+import Section from "../../../components/ui/Section";
+import ReviewCard from "../../../components/cards/ReviewCard";
 import {
   getReceivedActivityReviewList,
   getUserReceivedActivityReviewList,
-} from "../../../../lib/apis/announcement/activityReviewApi";
-import type { ActivityReviewListItem } from "../../../../lib/apis/announcement/activityReviewTypes";
+} from "../../../lib/apis/announcement/activityReviewApi";
+import type { ActivityReviewListItem } from "../../../lib/apis/announcement/activityReviewTypes";
 
 type ActivityProps = {
   embedded?: boolean;
@@ -58,7 +58,7 @@ const Activity = ({ embedded = false, userId }: ActivityProps) => {
       <Section
         title="받은 후기"
         onPressMore={() => {}}
-        styles={embedded ? portfolioStyles.sectionStyles : undefined}
+        styles={embedded ? portfolioSectionStyles : undefined}
       >
         {loading ? (
           <View style={{ paddingVertical: 24, alignItems: "center" }}>

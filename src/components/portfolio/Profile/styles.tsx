@@ -1,6 +1,10 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../../color";
-import { PORTFOLIO_BODY_BG, PORTFOLIO_SECTION_GAP } from "../../styles";
+import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import {
+  PORTFOLIO_BODY_BG,
+  PORTFOLIO_IMMERSIVE_BG,
+  PORTFOLIO_SECTION_GAP,
+} from "../../../constants/portfolio";
 
 export const PROFILE_AVATAR_SIZE = 100;
 export const PROFILE_BANNER_RATIO = 0.24;
@@ -16,7 +20,7 @@ const styles = StyleSheet.create({
   },
   banner: {
     width: "100%",
-    backgroundColor: "#C8D8E8",
+    backgroundColor: PORTFOLIO_IMMERSIVE_BG,
   },
   bannerImage: {
     width: "100%",

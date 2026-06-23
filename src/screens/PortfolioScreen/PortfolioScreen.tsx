@@ -1,18 +1,12 @@
 import { View } from "react-native";
-import styles from "./styles";
-
 import PortfolioHeader from "./components/PortfolioHeader/PortfolioHeader";
-import PortfolioScrollTabsLayout from "./components/PortfolioScrollTabsLayout/PortfolioScrollTabsLayout";
+import PortfolioScrollLayout from "../../components/portfolio/PortfolioScrollLayout/PortfolioScrollLayout";
+import portfolioStyles from "../../components/portfolio/styles";
 
-const PortfolioScreen = () => {
-  return (
-    <View style={[styles.container, styles.containerImmersive]}>
-      <PortfolioScrollTabsLayout
-        immersiveCover
-        header={<PortfolioHeader />}
-      />
-    </View>
-  );
-};
+const PortfolioScreen = () => (
+  <View style={[portfolioStyles.container, portfolioStyles.containerImmersive]}>
+    <PortfolioScrollLayout immersiveCover header={<PortfolioHeader />} />
+  </View>
+);
 
 export default PortfolioScreen;

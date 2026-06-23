@@ -10,19 +10,25 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import styles from "./styles";
 import { MAIN, WHITE } from "../../../../color";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { blockUser } from "../../../../lib/apis/block/blockApi";
 import { getUserPublicProfile } from "../../../../lib/apis/portfolio/profileApi";
+import { useHeaderScrollFade } from "../../../../hooks/useHeaderScrollFade";
+import FadeDualLayer from "../../../../components/portfolio/FadeDualLayer";
+import { portfolioHeaderStyles } from "../../../../components/portfolio/portfolioHeaderStyles";
+import {
+  MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+  MAIN_HOME_TOP_BAR_PADDING_TOP,
+} from "../../../../components/layout/MainHomeTopBar/styles";
 
-interface ArtistPortfolioHeaderProps {
+type ArtistPortfolioHeaderProps = {
   activityName: string;
   targetUserId?: string;
   scrollY?: Animated.Value;
   fadeStart?: number;
   fadeEnd?: number;
-}
+};
 
 const ArtistPortfolioHeader = ({
   activityName,
@@ -35,23 +41,11 @@ const ArtistPortfolioHeader = ({
   const { top } = useSafeAreaInsets();
   const { user, isLoggedIn } = useAuth();
   const myUserId = user?.socialId?.trim() ?? "";
-  const useScrollFade = scrollY != null;
-
-  const solidOpacity = useScrollFade
-    ? scrollY.interpolate({
-        inputRange: [fadeStart, fadeEnd],
-        outputRange: [0, 1],
-        extrapolate: "clamp",
-      })
-    : 1;
-
-  const overlayOpacity = useScrollFade
-    ? scrollY.interpolate({
-        inputRange: [fadeStart, fadeEnd],
-        outputRange: [1, 0],
-        extrapolate: "clamp",
-      })
-    : 0;
+  const { useScrollFade, solidOpacity, overlayOpacity } = useHeaderScrollFade({
+    scrollY,
+    fadeStart,
+    fadeEnd,
+  });
 
   const [resolvedHandle, setResolvedHandle] = useState(activityName.trim());
   const [blockLoading, setBlockLoading] = useState(false);
@@ -83,12 +77,8 @@ const ArtistPortfolioHeader = ({
   }, [activityName, targetUserId]);
 
   const handleLabel = resolvedHandle ? `@${resolvedHandle}` : null;
-
   const showMenu =
-    !!targetUserId &&
-    isLoggedIn &&
-    !!myUserId &&
-    targetUserId !== myUserId;
+    !!targetUserId && isLoggedIn && !!myUserId && targetUserId !== myUserId;
 
   const onPressBlock = () => {
     if (!targetUserId || blockLoading) return;
@@ -120,24 +110,17 @@ const ArtistPortfolioHeader = ({
     );
   };
 
-  const onPressReport = () => {
-    Alert.alert(
-      "신고",
-      "신고 접수 기능은 준비 중입니다. 고객센터로 문의해 주세요.",
-    );
-  };
-
   const openOverflowMenu = () => {
     if (blockLoading) return;
     Alert.alert("더보기", undefined, [
-      {
-        text: "차단",
-        style: "destructive",
-        onPress: onPressBlock,
-      },
+      { text: "차단", style: "destructive", onPress: onPressBlock },
       {
         text: "신고",
-        onPress: onPressReport,
+        onPress: () =>
+          Alert.alert(
+            "신고",
+            "신고 접수 기능은 준비 중입니다. 고객센터로 문의해 주세요.",
+          ),
       },
       { text: "취소", style: "cancel" },
     ]);
@@ -146,8 +129,12 @@ const ArtistPortfolioHeader = ({
   return (
     <View
       style={[
-        styles.headerContainer,
-        { paddingTop: top + 6, paddingBottom: 10 },
+        portfolioHeaderStyles.headerContainer,
+        {
+          paddingTop: top + MAIN_HOME_TOP_BAR_PADDING_TOP,
+          paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+          paddingHorizontal: 8,
+        },
       ]}
     >
       {useScrollFade ? (
@@ -155,39 +142,31 @@ const ArtistPortfolioHeader = ({
           pointerEvents="none"
           style={[
             StyleSheet.absoluteFillObject,
-            styles.headerContainerSolid,
+            portfolioHeaderStyles.headerContainerSolid,
             { opacity: solidOpacity },
           ]}
         />
       ) : null}
       <View style={styles.topRow}>
         <View style={styles.leftContainer}>
-          <Pressable
-            onPress={() => navigation.goBack()}
-            hitSlop={10}
-            style={styles.backButton}
-          >
-            <Animated.View style={{ opacity: overlayOpacity }}>
-              <MaterialCommunityIcons
-                name="chevron-left"
-                size={28}
-                color={WHITE}
-              />
-            </Animated.View>
-            <Animated.View style={[styles.iconSolid, { opacity: solidOpacity }]}>
-              <MaterialCommunityIcons
-                name="chevron-left"
-                size={28}
-                color={MAIN.DEFAULT}
-              />
-            </Animated.View>
+          <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={styles.backButton}>
+            <FadeDualLayer
+              overlayOpacity={overlayOpacity}
+              solidOpacity={solidOpacity}
+              overlay={
+                <MaterialCommunityIcons name="chevron-left" size={28} color={WHITE} />
+              }
+              solid={
+                <MaterialCommunityIcons name="chevron-left" size={28} color={MAIN.DEFAULT} />
+              }
+            />
           </Pressable>
           {handleLabel ? (
-            <View style={styles.titleStack}>
+            <View style={portfolioHeaderStyles.titleStack}>
               <Animated.Text
                 style={[
-                  styles.activityName,
-                  styles.handleTextOverlay,
+                  portfolioHeaderStyles.handleText,
+                  portfolioHeaderStyles.handleTextOverlay,
                   { color: WHITE, opacity: overlayOpacity },
                 ]}
                 numberOfLines={1}
@@ -196,8 +175,8 @@ const ArtistPortfolioHeader = ({
               </Animated.Text>
               <Animated.Text
                 style={[
-                  styles.activityName,
-                  styles.titleSolid,
+                  portfolioHeaderStyles.handleText,
+                  portfolioHeaderStyles.titleSolid,
                   { color: MAIN.DEFAULT, opacity: solidOpacity },
                 ]}
                 numberOfLines={1}
@@ -218,22 +197,16 @@ const ArtistPortfolioHeader = ({
             {blockLoading ? (
               <ActivityIndicator size="small" color={MAIN.DEFAULT} />
             ) : (
-              <>
-                <Animated.View style={{ opacity: overlayOpacity }}>
-                  <MaterialCommunityIcons
-                    name="dots-vertical"
-                    size={26}
-                    color={WHITE}
-                  />
-                </Animated.View>
-                <Animated.View style={[styles.iconSolid, { opacity: solidOpacity }]}>
-                  <MaterialCommunityIcons
-                    name="dots-vertical"
-                    size={26}
-                    color={MAIN.DEFAULT}
-                  />
-                </Animated.View>
-              </>
+              <FadeDualLayer
+                overlayOpacity={overlayOpacity}
+                solidOpacity={solidOpacity}
+                overlay={
+                  <MaterialCommunityIcons name="dots-vertical" size={26} color={WHITE} />
+                }
+                solid={
+                  <MaterialCommunityIcons name="dots-vertical" size={26} color={MAIN.DEFAULT} />
+                }
+              />
             )}
           </Pressable>
         ) : (
@@ -243,5 +216,39 @@ const ArtistPortfolioHeader = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  topRow: {
+    height: 28,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  leftContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+    minWidth: 0,
+    marginRight: 8,
+  },
+  backButton: {
+    minWidth: 40,
+    minHeight: 40,
+    padding: 4,
+    marginRight: 4,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  menuButton: {
+    minWidth: 44,
+    minHeight: 44,
+    padding: 6,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  menuPlaceholder: {
+    width: 44,
+  },
+});
 
 export default ArtistPortfolioHeader;

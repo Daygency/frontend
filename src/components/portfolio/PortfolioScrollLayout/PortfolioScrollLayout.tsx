@@ -15,24 +15,28 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Profile from "../Profile/Profile";
 import { PROFILE_BANNER_RATIO } from "../Profile/styles";
 import ProfileDetail from "../ProfileDetail/ProfileDetail";
-import Photo, {
-  PHOTO_PREVIEW_LIMIT,
-  PORTFOLIO_PHOTOS,
-} from "../Photo/Photo";
+import Photo, { PHOTO_PREVIEW_LIMIT, PORTFOLIO_PHOTOS } from "../Photo/Photo";
 import Activity from "../Activity/Activity";
-import Section from "../../../../components/ui/Section";
-import portfolioStyles from "../../styles";
-import { RootRoutes } from "../../../../navigations/routes";
-import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../../../components/layout/MainHomeTopBar/styles";
+import Section from "../../ui/Section";
+import portfolioStyles, { portfolioSectionStyles } from "../styles";
+import { PORTFOLIO_IMMERSIVE_BG } from "../../../constants/portfolio";
+import { RootRoutes } from "../../../navigations/routes";
+import { MAIN_HOME_TOP_BAR_HEIGHT } from "../../layout/MainHomeTopBar/styles";
 
 type Props = {
   header: ReactNode;
   immersiveCover?: boolean;
 };
 
+export type PortfolioHeaderScrollProps = {
+  scrollY?: Animated.Value;
+  fadeStart?: number;
+  fadeEnd?: number;
+};
+
 const HEADER_FADE_RANGE = 60;
 
-const PortfolioScrollTabsLayout = ({ header, immersiveCover = false }: Props) => {
+const PortfolioScrollLayout = ({ header, immersiveCover = false }: Props) => {
   const { top } = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
@@ -116,7 +120,7 @@ const PortfolioScrollTabsLayout = ({ header, immersiveCover = false }: Props) =>
                   ? () => navigation.navigate(RootRoutes.PORTFOLIO_PHOTO_GALLERY)
                   : undefined
               }
-              styles={portfolioStyles.sectionStyles}
+              styles={portfolioSectionStyles}
             >
               <Photo embedded limit={PHOTO_PREVIEW_LIMIT} />
             </Section>
@@ -135,21 +139,15 @@ const PortfolioScrollTabsLayout = ({ header, immersiveCover = false }: Props) =>
   );
 };
 
-type PortfolioHeaderScrollProps = {
-  scrollY?: Animated.Value;
-  fadeStart?: number;
-  fadeEnd?: number;
-};
-
 const layoutStyles = StyleSheet.create({
   root: {
     flex: 1,
   },
   rootImmersive: {
-    backgroundColor: "#C8D8E8",
+    backgroundColor: PORTFOLIO_IMMERSIVE_BG,
   },
   scrollImmersive: {
-    backgroundColor: "#C8D8E8",
+    backgroundColor: PORTFOLIO_IMMERSIVE_BG,
   },
   headerOverlay: {
     position: "absolute",
@@ -160,4 +158,4 @@ const layoutStyles = StyleSheet.create({
   },
 });
 
-export default PortfolioScrollTabsLayout;
+export default PortfolioScrollLayout;

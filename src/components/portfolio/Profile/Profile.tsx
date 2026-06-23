@@ -10,36 +10,36 @@ import {
 } from "react-native";
 import styles, { PROFILE_BANNER_RATIO } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
-import { GRAY, MAIN, WHITE } from "../../../../color";
+import { GRAY, MAIN, WHITE } from "../../../color";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigation, useFocusEffect, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { RootRoutes } from "../../../../navigations/routes";
+import { RootRoutes } from "../../../navigations/routes";
 import {
   getMyProfile,
   getUserPublicProfile,
   PortfolioPrivateError,
-} from "../../../../lib/apis/portfolio/profileApi";
-import { updateProfile } from "../../../../lib/apis/portfolio/profileUpdate";
+} from "../../../lib/apis/portfolio/profileApi";
+import { updateProfile } from "../../../lib/apis/portfolio/profileUpdate";
 import type {
   ProfileResponseDto,
   PublicProfileResponseDto,
-} from "../../../../lib/apis/portfolio/types";
+} from "../../../lib/apis/portfolio/types";
 import {
   getProfileCache,
   saveProfileCache,
-} from "../../../../lib/profileCache";
-import { useAuth } from "../../../../contexts/AuthContext";
+} from "../../../lib/profileCache";
+import { useAuth } from "../../../contexts/AuthContext";
 import {
   followUser,
   unfollowUser,
   checkIsUserInMyFollowingList,
-} from "../../../../lib/apis/follow/followApi";
-import { createCoffeeRoom } from "../../../../lib/apis/chat/chatApi";
-import { chatRoomItemToParams } from "../../../../lib/chat/chatRoomNavigation";
-import { resolveProfileImageUrlForDisplay } from "../../../../lib/chat/resolveProfileImageUrl";
+} from "../../../lib/apis/follow/followApi";
+import { createCoffeeRoom } from "../../../lib/apis/chat/chatApi";
+import { chatRoomItemToParams } from "../../../lib/chat/chatRoomNavigation";
+import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
 import * as ImagePicker from "expo-image-picker";
-import type { ChatRoomParams } from "../../../ChatScreens/ChatRoomScreen/ChatRoomScreen";
+import type { ChatRoomParams } from "../../../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
 
 const ROLE_LABEL: Record<string, string> = {
   artist: "예술가",
@@ -692,7 +692,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
                 />
               ) : (
                 <Image
-                  source={require("../../../../../assets/logo.png")}
+                  source={require("../../../../assets/logo.png")}
                   style={styles.profileImage}
                   resizeMode="contain"
                 />

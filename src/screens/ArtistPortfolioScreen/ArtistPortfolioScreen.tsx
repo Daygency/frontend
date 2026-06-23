@@ -1,19 +1,17 @@
 import { View } from "react-native";
 import { useRoute } from "@react-navigation/native";
 import ArtistPortfolioHeader from "./components/ArtistPortfolioHeader/ArtistPortfolioHeader";
-import PortfolioScrollTabsLayout from "../PortfolioScreen/components/PortfolioScrollTabsLayout/PortfolioScrollTabsLayout";
-import styles from "../PortfolioScreen/styles";
+import PortfolioScrollLayout from "../../components/portfolio/PortfolioScrollLayout/PortfolioScrollLayout";
+import portfolioStyles from "../../components/portfolio/styles";
 
 const ArtistPortfolioScreen = () => {
-  const route = useRoute<{
-    params?: { activityName?: string; userId?: string };
-  }>();
-  const activityName = route.params?.activityName ?? "";
-  const targetUserId = route.params?.userId?.trim() ?? "";
+  const route = useRoute();
+  const activityName = (route.params as { activityName?: string } | undefined)?.activityName ?? "";
+  const targetUserId = (route.params as { userId?: string } | undefined)?.userId?.trim() ?? "";
 
   return (
-    <View style={[styles.container, styles.containerImmersive]}>
-      <PortfolioScrollTabsLayout
+    <View style={[portfolioStyles.container, portfolioStyles.containerImmersive]}>
+      <PortfolioScrollLayout
         immersiveCover
         header={
           <ArtistPortfolioHeader

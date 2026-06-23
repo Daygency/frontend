@@ -1,9 +1,6 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../../color";
-import {
-  PORTFOLIO_BODY_BG,
-  PORTFOLIO_SECTION_GAP,
-} from "../../styles";
+import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { PORTFOLIO_BODY_BG, PORTFOLIO_SECTION_GAP } from "../../../constants/portfolio";
 
 const styles = StyleSheet.create({
   container: {

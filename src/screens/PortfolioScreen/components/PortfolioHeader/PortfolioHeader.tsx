@@ -1,20 +1,22 @@
-import React, { useCallback, useEffect, useState } from "react";
-import {
-  Animated,
-  StyleSheet,
-  View,
-  Pressable,
-} from "react-native";
+import { useCallback, useState } from "react";
+import { Animated, StyleSheet, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import styles from "./styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MAIN, WHITE } from "../../../../color";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
 import { getProfileCache, saveProfileCache } from "../../../../lib/profileCache";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { RootRoutes } from "../../../../navigations/routes";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useHeaderScrollFade } from "../../../../hooks/useHeaderScrollFade";
+import FadeDualLayer from "../../../../components/portfolio/FadeDualLayer";
+import { portfolioHeaderStyles } from "../../../../components/portfolio/portfolioHeaderStyles";
+import {
+  MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+  MAIN_HOME_TOP_BAR_PADDING_TOP,
+  MAIN_HOME_TOP_BAR_HORIZONTAL_PADDING,
+} from "../../../../components/layout/MainHomeTopBar/styles";
 
 type PortfolioHeaderProps = {
   overlay?: boolean;
@@ -32,28 +34,13 @@ const PortfolioHeader = ({
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { top } = useSafeAreaInsets();
   const { user } = useAuth();
-  const [activityName, setActivityName] = useState<string>("");
-  const useScrollFade = scrollY != null;
-
-  const solidOpacity = useScrollFade
-    ? scrollY.interpolate({
-        inputRange: [fadeStart, fadeEnd],
-        outputRange: [0, 1],
-        extrapolate: "clamp",
-      })
-    : overlay
-      ? 0
-      : 1;
-
-  const overlayOpacity = useScrollFade
-    ? scrollY.interpolate({
-        inputRange: [fadeStart, fadeEnd],
-        outputRange: [1, 0],
-        extrapolate: "clamp",
-      })
-    : overlay
-      ? 1
-      : 0;
+  const [activityName, setActivityName] = useState("");
+  const { useScrollFade, solidOpacity, overlayOpacity } = useHeaderScrollFade({
+    scrollY,
+    fadeStart,
+    fadeEnd,
+    overlay,
+  });
 
   const loadActivityName = useCallback(() => {
     let cancelled = false;
@@ -86,28 +73,23 @@ const PortfolioHeader = ({
     };
   }, [user]);
 
-  useEffect(() => {
-    const cleanup = loadActivityName();
-    return cleanup;
-  }, [loadActivityName]);
-
-  useFocusEffect(
-    useCallback(() => {
-      const cleanup = loadActivityName();
-      return () => {
-        cleanup();
-      };
-    }, [loadActivityName]),
-  );
+  useFocusEffect(loadActivityName);
 
   const handleLabel = activityName ? `@${activityName}` : "";
 
   return (
     <View
       style={[
-        styles.headerContainer,
-        { paddingTop: top + 6, paddingBottom: 10 },
-        !useScrollFade && (overlay ? styles.headerContainerOverlay : styles.headerContainerSolid),
+        portfolioHeaderStyles.headerContainer,
+        {
+          paddingTop: top + MAIN_HOME_TOP_BAR_PADDING_TOP,
+          paddingBottom: MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
+          paddingHorizontal: MAIN_HOME_TOP_BAR_HORIZONTAL_PADDING,
+        },
+        !useScrollFade &&
+          (overlay
+            ? portfolioHeaderStyles.headerContainerOverlay
+            : portfolioHeaderStyles.headerContainerSolid),
       ]}
     >
       {useScrollFade ? (
@@ -115,19 +97,19 @@ const PortfolioHeader = ({
           pointerEvents="none"
           style={[
             StyleSheet.absoluteFillObject,
-            styles.headerContainerSolid,
+            portfolioHeaderStyles.headerContainerSolid,
             { opacity: solidOpacity },
           ]}
         />
       ) : null}
-      <View style={styles.topRow}>
-        <View style={styles.leftContainer}>
+      <View style={portfolioHeaderStyles.topRow}>
+        <View style={portfolioHeaderStyles.leftContainer}>
           {handleLabel ? (
-            <View style={styles.titleStack}>
+            <View style={portfolioHeaderStyles.titleStack}>
               <Animated.Text
                 style={[
-                  styles.handleText,
-                  styles.handleTextOverlay,
+                  portfolioHeaderStyles.handleText,
+                  portfolioHeaderStyles.handleTextOverlay,
                   { color: WHITE, opacity: overlayOpacity },
                 ]}
                 numberOfLines={1}
@@ -136,8 +118,8 @@ const PortfolioHeader = ({
               </Animated.Text>
               <Animated.Text
                 style={[
-                  styles.handleText,
-                  styles.titleSolid,
+                  portfolioHeaderStyles.handleText,
+                  portfolioHeaderStyles.titleSolid,
                   { color: MAIN.DEFAULT, opacity: solidOpacity },
                 ]}
                 numberOfLines={1}
@@ -147,23 +129,35 @@ const PortfolioHeader = ({
             </View>
           ) : null}
         </View>
-        <View style={styles.iconContainer}>
-          <Pressable
-            style={styles.iconButton}
-            hitSlop={{ top: 10, bottom: 6, left: 10, right: 10 }}
-            onPress={() => navigation.navigate(RootRoutes.SETTINGS)}
-          >
-            <Animated.View style={{ opacity: overlayOpacity }}>
+        <Pressable
+          style={styles.settingsButton}
+          hitSlop={{ top: 10, bottom: 6, left: 10, right: 10 }}
+          onPress={() => navigation.navigate(RootRoutes.SETTINGS)}
+        >
+          <FadeDualLayer
+            overlayOpacity={overlayOpacity}
+            solidOpacity={solidOpacity}
+            overlay={
               <MaterialCommunityIcons name="cog-outline" size={23} color={WHITE} />
-            </Animated.View>
-            <Animated.View style={[styles.iconSolid, { opacity: solidOpacity }]}>
+            }
+            solid={
               <MaterialCommunityIcons name="cog-outline" size={23} color={MAIN.DEFAULT} />
-            </Animated.View>
-          </Pressable>
-        </View>
+            }
+          />
+        </Pressable>
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  settingsButton: {
+    minWidth: 48,
+    minHeight: 48,
+    alignItems: "center",
+    justifyContent: "center",
+    flexShrink: 0,
+  },
+});
 
 export default PortfolioHeader;

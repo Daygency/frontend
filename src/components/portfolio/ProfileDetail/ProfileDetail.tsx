@@ -2,21 +2,21 @@ import { View, Text, ScrollView, ActivityIndicator } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
 import styles from "./styles";
-import { GRAY, BLACK, MAIN } from "../../../../color";
-import ShadowCardButton from "../../../../components/cards/ShadowCardButton";
+import { GRAY, BLACK, MAIN } from "../../../color";
+import ShadowCardButton from "../../../components/cards/ShadowCardButton";
 import {
   getMyProfile,
   getUserPublicProfile,
   PortfolioPrivateError,
-} from "../../../../lib/apis/portfolio/profileApi";
+} from "../../../lib/apis/portfolio/profileApi";
 import type {
   ProfileResponseDto,
   PublicProfileResponseDto,
-} from "../../../../lib/apis/portfolio/types";
+} from "../../../lib/apis/portfolio/types";
 import {
   getProfileCache,
   saveProfileCache,
-} from "../../../../lib/profileCache";
+} from "../../../lib/profileCache";
 import {
   formatPeriodFromApiItem,
   formatYearMonth,
@@ -25,8 +25,8 @@ import {
   getCertificateEntrySortKey,
   getPeriodEntrySortKey,
   sortByRecentDesc,
-} from "../../../../lib/profile/profileEntryDates";
-import { RootRoutes } from "../../../../navigations/routes";
+} from "../../../lib/profile/profileEntryDates";
+import { RootRoutes } from "../../../navigations/routes";
 
 type LoadedProfile = ProfileResponseDto | PublicProfileResponseDto | null;
 
