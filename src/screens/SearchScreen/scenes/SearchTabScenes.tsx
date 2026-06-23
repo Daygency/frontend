@@ -12,6 +12,10 @@ import AnnouncementCard from "../../../components/cards/AnnouncementCard";
 import ArtistCard from "../../../components/cards/ArtistCard";
 import EventNewsCard from "../../../components/cards/EventNewsCard";
 import CommunityCard from "../../LoungeScreen/components/CommunityCard";
+import {
+  pickCommunityAuthor,
+  pickCommunityProfileImgUrl,
+} from "../../../lib/community/communityAuthor";
 import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerformanceOpenLabel";
 import { RootRoutes } from "../../../navigations/routes";
 import { getAnnouncementList } from "../../../lib/apis/announcement/announcementApi";
@@ -57,27 +61,6 @@ function formatCommunityDate(iso?: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-}
-
-function pickCommunityCategoryName(item: CommunityListItem): string {
-  const cat = item.category;
-  if (typeof cat === "string") return cat;
-  return cat?.name?.trim() ?? "";
-}
-
-function pickCommunityAuthor(item: CommunityListItem): string {
-  const u = item.user;
-  if (!u || typeof u !== "object") return "알수없음";
-  const r = u as Record<string, unknown>;
-  const activity =
-    typeof r.activityName === "string"
-      ? r.activityName
-      : typeof r.activity_name === "string"
-        ? r.activity_name
-        : "";
-  const nick =
-    typeof r.name === "string" ? r.name : "";
-  return activity.trim() || nick.trim() || "알수없음";
 }
 
 export function SearchAnnouncementScene({ query }: SceneProps) {
@@ -382,14 +365,13 @@ export function SearchCommunityScene({ query }: SceneProps) {
       renderItem={({ item }) => (
         <View style={styles.cardPad}>
           <CommunityCard
-            tag={pickCommunityCategoryName(item)}
             title={item.title}
             contentPreview={item.content}
             author={pickCommunityAuthor(item)}
+            profileImageUrl={pickCommunityProfileImgUrl(item)}
             date={formatCommunityDate(item.createdAt)}
             likes={item.likeCount ?? 0}
             comments={item.commentCount ?? 0}
-            views={item.viewCount}
             thumbnailUrl={pickCommunityListThumbnailUrl(item)}
             onPress={() =>
               navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
@@ -657,14 +639,13 @@ export function SearchAllScene({ query }: SceneProps) {
           {community.map((item) => (
             <View key={item.communityId} style={styles.cardPad}>
               <CommunityCard
-                tag={pickCommunityCategoryName(item)}
                 title={item.title}
                 contentPreview={item.content}
                 author={pickCommunityAuthor(item)}
+                profileImageUrl={pickCommunityProfileImgUrl(item)}
                 date={formatCommunityDate(item.createdAt)}
                 likes={item.likeCount ?? 0}
                 comments={item.commentCount ?? 0}
-                views={item.viewCount}
                 thumbnailUrl={pickCommunityListThumbnailUrl(item)}
                 onPress={() =>
                   navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {

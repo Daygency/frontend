@@ -3,12 +3,15 @@ import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View, Text } from 
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
-import { isContentNew } from "../../../lib/content/newBadge";
-import SelectableTag from "../../../components/ui/SelectableTag";
 import { RootRoutes } from "../../../navigations/routes";
 import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
 import type { CommunityCategory, CommunityListItem } from "../../../lib/apis/community/types";
 import { pickCommunityListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
+import {
+  pickCommunityAuthor,
+  pickCommunityProfileImgUrl,
+} from "../../../lib/community/communityAuthor";
+import SelectableTag from "../../../components/ui/SelectableTag";
 
 type TagOption =
   | "전체"
@@ -113,24 +116,18 @@ const CommunityScene = () => {
   }, [loadCommunities]);
 
   const renderItem = ({ item }: { item: CommunityListItem }) => {
-    const rawCategory = (item as any).category;
-    const categoryName =
-      typeof rawCategory === "string" ? rawCategory : rawCategory?.name;
     const relativeDate = formatRelativeTime(item.createdAt);
 
     return (
       <CommunityCard
-        tag={selectedTag === "전체" ? categoryName : undefined}
         title={item.title}
-          contentPreview={item.content ?? ""}
-          contentPreviewLines={1}
-        author={undefined}
+        contentPreview={item.content ?? ""}
+        author={pickCommunityAuthor(item)}
+        profileImageUrl={pickCommunityProfileImgUrl(item)}
         date={relativeDate}
         likes={item.likeCount ?? 0}
         comments={item.commentCount ?? 0}
-        views={item.viewCount ?? 0}
         thumbnailUrl={pickCommunityListThumbnailUrl(item)}
-        showNew={isContentNew(item.createdAt)}
         onPress={() =>
           navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
             communityId: item.communityId,
@@ -199,18 +196,18 @@ function formatRelativeTime(createdAt?: string): string {
 
   if (diffMs < dayMs) {
     const hours = Math.max(1, Math.floor(diffMs / hourMs));
-    return `${hours}시간 전`;
+    return `${hours}시간`;
   }
   if (diffMs < monthMs) {
     const days = Math.floor(diffMs / dayMs);
-    return `${days}일 전`;
+    return `${days}일`;
   }
   if (diffMs < yearMs) {
     const months = Math.floor(diffMs / monthMs);
-    return `${months}달 전`;
+    return `${months}달`;
   }
   const years = Math.floor(diffMs / yearMs);
-  return `${years}년 전`;
+  return `${years}년`;
 }
 
 const localStyles = StyleSheet.create({

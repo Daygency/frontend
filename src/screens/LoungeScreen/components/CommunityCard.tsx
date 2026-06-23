@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { View, Text, StyleSheet, Pressable, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { BLACK, GRAY, RED } from "../../../color";
-import NewBadge from "../../../components/ui/NewBadge";
+import { BLACK, GRAY } from "../../../color";
+import CommentAuthorAvatar from "../../../components/comments/CommentAuthorAvatar/CommentAuthorAvatar";
 
 type CommunityCardProps = {
   tag?: string;
@@ -14,85 +15,107 @@ type CommunityCardProps = {
   comments: number;
   scraps?: number;
   views?: number;
-  /** README 목록 썸네일 — 없으면 회색 플레이스홀더 없음 */
+  profileImageUrl?: string;
   thumbnailUrl?: string;
   showNew?: boolean;
   onPress?: () => void;
 };
 
 const CommunityCard = ({
-  tag,
   title,
   contentPreview,
-  contentPreviewLines = 2,
+  contentPreviewLines = 0,
   author = "알수없음",
   date,
   likes,
   comments,
-  scraps = 0,
-  views,
+  profileImageUrl,
   thumbnailUrl,
-  showNew = false,
   onPress,
 }: CommunityCardProps) => {
-  const showThumb = Boolean(thumbnailUrl?.trim());
+  const titleText = title.trim();
+  const contentText = contentPreview.trim();
+  const showTitle = titleText.length > 0;
+  const showContent =
+    contentText.length > 0 && contentText !== titleText;
+  const showMedia = Boolean(thumbnailUrl?.trim());
+  const [textBlockHeight, setTextBlockHeight] = useState(0);
+  const thumbSize = textBlockHeight > 0 ? textBlockHeight : 0;
 
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.row}>
-        <View
-          style={[
-            styles.textContainer,
-            showThumb ? styles.textContainerWithThumb : styles.textContainerFull,
-          ]}
-        >
-          {!!tag && (
-            <View style={styles.tagBadge}>
-              <Text style={styles.tagText} numberOfLines={1}>
-                {tag}
-              </Text>
-            </View>
-          )}
-          <View style={styles.titleRow}>
-            <Text style={styles.title} numberOfLines={1}>
-              {title}
-            </Text>
-            {showNew ? <NewBadge /> : null}
-          </View>
-          <Text style={styles.content} numberOfLines={contentPreviewLines}>
-            {contentPreview}
-          </Text>
-          <Text style={styles.metaText} numberOfLines={1}>
-            ({author})  {date}
-          </Text>
-        </View>
-        {showThumb ? (
-          <View style={styles.thumbnailWrap}>
-            <Image
-              source={{ uri: thumbnailUrl! }}
-              style={styles.thumbnail}
-              resizeMode="cover"
-            />
-          </View>
-        ) : null}
-      </View>
+        <CommentAuthorAvatar
+          profileImgUrl={profileImageUrl}
+          size={40}
+          style={styles.avatar}
+        />
 
-      <View style={styles.footer}>
-        <View style={styles.footerItem}>
-          <Ionicons name="heart" size={16} color={RED.DEFAULT} />
-          <Text style={styles.footerText}>{likes}</Text>
-        </View>
-        <View style={styles.footerItem}>
-          <Ionicons name="chatbubble-ellipses-outline" size={16} color={GRAY.DARK_100} />
-          <Text style={styles.footerText}>{comments}</Text>
-        </View>
-        <View style={styles.footerItem}>
-          <Ionicons
-            name={views != null ? "eye-outline" : "bookmark-outline"}
-            size={16}
-            color={GRAY.DARK_100}
-          />
-          <Text style={styles.footerText}>{views ?? scraps}</Text>
+        <View style={[styles.body, showMedia && styles.bodyWithThumb]}>
+          <View
+            style={styles.textColumn}
+            onLayout={(e) => {
+              const next = Math.round(e.nativeEvent.layout.height);
+              setTextBlockHeight((prev) => (prev === next ? prev : next));
+            }}
+          >
+            <View style={styles.headerRow}>
+              <Text style={styles.username} numberOfLines={1}>
+                {author}
+              </Text>
+              {!!date && (
+                <Text style={styles.timestamp} numberOfLines={1}>
+                  {date}
+                </Text>
+              )}
+            </View>
+
+            {showTitle ? (
+              <Text
+                style={[styles.title, !showContent && styles.titleOnly]}
+                numberOfLines={1}
+              >
+                {titleText}
+              </Text>
+            ) : null}
+
+            {showContent ? (
+              <Text
+                style={styles.content}
+                numberOfLines={
+                  contentPreviewLines > 0 ? contentPreviewLines : 3
+                }
+              >
+                {contentText}
+              </Text>
+            ) : null}
+
+            <View style={styles.footer}>
+              <View style={styles.footerItem}>
+                <Ionicons name="heart-outline" size={20} color={BLACK} />
+                <Text style={styles.footerText}>{likes}</Text>
+              </View>
+              <View style={styles.footerItem}>
+                <Ionicons name="chatbubble-outline" size={20} color={BLACK} />
+                <Text style={styles.footerText}>{comments}</Text>
+              </View>
+            </View>
+          </View>
+
+          {showMedia && thumbSize > 0 ? (
+            <View
+              style={[
+                styles.thumbnailWrap,
+                { width: thumbSize, height: thumbSize },
+              ]}
+            >
+              <Image
+                source={{ uri: thumbnailUrl! }}
+                style={styles.thumbnail}
+                resizeMode="cover"
+              />
+            </View>
+          ) : null}
         </View>
       </View>
     </Pressable>
@@ -103,91 +126,92 @@ const styles = StyleSheet.create({
   container: {
     width: "100%",
     paddingHorizontal: 16,
-    paddingTop: 14,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: GRAY.MEDIUM,
     backgroundColor: "transparent",
   },
   row: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
   },
-  textContainer: {
+  avatar: {
+    marginRight: 12,
+    flexShrink: 0,
+  },
+  body: {
     flex: 1,
     minWidth: 0,
   },
-  textContainerWithThumb: {
-    marginRight: 8,
+  bodyWithThumb: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 10,
   },
-  textContainerFull: {
-    marginRight: 0,
+  textColumn: {
+    flex: 1,
+    minWidth: 0,
   },
-  tagBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    backgroundColor: GRAY.MEDIUM,
-    marginBottom: 6,
+  headerRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 4,
+    gap: 8,
   },
-  tagText: {
-    fontSize: 11,
+  username: {
+    flexShrink: 1,
+    fontSize: 15,
+    fontWeight: "700",
     color: BLACK,
-    fontWeight: "500",
+  },
+  timestamp: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: GRAY.DARK_2,
   },
   title: {
-    flex: 1,
     fontSize: 15,
     fontWeight: "600",
     color: BLACK,
+    lineHeight: 21,
+    marginBottom: 2,
   },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 4,
+  titleOnly: {
+    marginBottom: 8,
   },
   content: {
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: "400",
-    color: GRAY.DARK_100,
-    marginBottom: 4,
-  },
-  metaText: {
-    fontSize: 11,
-    color: GRAY.DARK_2,
-  },
-  thumbnail: {
-    width: 64,
-    height: 64,
-    flexShrink: 0,
-    borderRadius: 8,
-    backgroundColor: GRAY.MEDIUM,
+    color: BLACK,
+    lineHeight: 21,
+    marginBottom: 8,
   },
   thumbnailWrap: {
-    width: 64,
-    height: 64,
     flexShrink: 0,
-    borderRadius: 8,
+    borderRadius: 10,
     overflow: "hidden",
+    backgroundColor: GRAY.MEDIUM,
+  },
+  thumbnail: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: GRAY.MEDIUM,
   },
   footer: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 10,
+    gap: 20,
   },
   footerItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginRight: 16,
+    gap: 6,
   },
   footerText: {
-    fontSize: 12,
-    color: GRAY.DARK_100,
-    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: "500",
+    color: BLACK,
   },
 });
 
 export default CommunityCard;
-
