@@ -93,6 +93,7 @@ function coalesceCommunityDetailUser(
     if (id) {
       return { ...(v as object), userId: id };
     }
+    return v as Record<string, unknown>;
   }
   const topId = pickFirstNonEmptyString(
     r.userId,

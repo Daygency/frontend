@@ -39,6 +39,11 @@ import {
   deleteLikeByTarget,
   getLikes,
 } from "../../lib/apis/like/likeApi";
+import {
+  createScrap,
+  deleteScrapByTarget,
+  getScraps,
+} from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRequireLogin } from "../../hooks/useRequireLogin";
 import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
@@ -207,6 +212,9 @@ const CommunityDetailScreen = () => {
   } | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [scraped, setScraped] = useState(false);
+  const [scrapCount, setScrapCount] = useState(0);
+  const [isMineFromApi, setIsMineFromApi] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [reportModalVisible, setReportModalVisible] = useState(false);
@@ -238,12 +246,19 @@ const CommunityDetailScreen = () => {
   const postAuthor = data ? pickAuthorFromUser(data.user) : "";
   const postProfileImg = data ? pickProfileImgFromUser(data.user) : undefined;
   const categoryName = data?.category?.name?.trim() ?? "";
+  const authorUserId =
+    pickReportedUserIdFromUnknown(data?.user)?.trim() ?? "";
+  const isMinePost = Boolean(
+    isMineFromApi ||
+      (myUserId && authorUserId && myUserId.toLowerCase() === authorUserId.toLowerCase()),
+  );
 
   useEffect(() => {
     (async () => {
       setLoading(true);
       const res = await getCommunityDetail(communityId);
       setData(res);
+      setIsMineFromApi(Boolean(res?.isMine));
       setLoading(false);
     })();
   }, [communityId]);
@@ -282,9 +297,25 @@ const CommunityDetailScreen = () => {
     })();
   }, [communityId, user?.socialId]);
 
+  useEffect(() => {
+    (async () => {
+      const res = await getScraps({
+        targetType: "COMMUNITY",
+        targetId: communityId,
+      });
+      if (!res) return;
+      setScrapCount(res.count);
+      const myId = user?.socialId;
+      setScraped(
+        !!myId &&
+          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+      );
+    })();
+  }, [communityId, user?.socialId]);
+
   const openReportPost = useCallback(() => {
     if (!ensureLoggedIn()) return;
-    if (data?.isMine) {
+    if (isMinePost) {
       Alert.alert("알림", "본인이 작성한 글은 신고할 수 없습니다.");
       return;
     }
@@ -303,7 +334,7 @@ const CommunityDetailScreen = () => {
       targetId: communityId,
     });
     setReportModalVisible(true);
-  }, [isLoggedIn, data?.isMine, data?.user, user?.socialId, communityId]);
+  }, [ensureLoggedIn, isMinePost, data?.user, user?.socialId, communityId]);
 
   const openReportComment = useCallback(
     (targetId: string, reportedUserId: string | undefined) => {
@@ -327,7 +358,7 @@ const CommunityDetailScreen = () => {
   );
 
   const canOpenPostReportMenu =
-    !loading && Boolean(data) && !data?.isMine;
+    !loading && Boolean(data) && !isMinePost;
 
   const onEditCommunity = useCallback(() => {
     navigation.navigate(
@@ -368,7 +399,7 @@ const CommunityDetailScreen = () => {
       ),
       headerRight: () => (
         <View style={navigationHeaderStyles.rightItemsWrap}>
-          {data?.isMine ? (
+          {isMinePost ? (
             <PostDetailOptionsMenu
               isMine
               loading={loading}
@@ -391,7 +422,7 @@ const CommunityDetailScreen = () => {
     loading,
     canOpenPostReportMenu,
     openReportPost,
-    data?.isMine,
+    isMinePost,
     onEditCommunity,
     onDeleteCommunity,
     viewCount,
@@ -448,6 +479,33 @@ const CommunityDetailScreen = () => {
     }
     setLiked(true);
     setLikeCount((prev) => prev + 1);
+  };
+
+  const handleToggleScrap = async () => {
+    if (!ensureLoggedIn()) return;
+    if (scraped) {
+      const res = await deleteScrapByTarget({
+        targetType: "COMMUNITY",
+        targetId: communityId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "스크랩 취소에 실패했습니다.");
+        return;
+      }
+      setScraped(false);
+      setScrapCount((prev) => Math.max(0, prev - 1));
+      return;
+    }
+    const created = await createScrap({
+      targetType: "COMMUNITY",
+      targetId: communityId,
+    });
+    if (!created) {
+      Alert.alert("알림", "스크랩에 실패했습니다.");
+      return;
+    }
+    setScraped(true);
+    setScrapCount((prev) => prev + 1);
   };
 
   const handleCreateComment = async (content: string) => {
@@ -638,6 +696,16 @@ const CommunityDetailScreen = () => {
                 color={BLACK}
               />
               <Text style={styles.actionCount}>{commentCount}</Text>
+            </View>
+            <View style={styles.actionItem}>
+              <Pressable onPress={handleToggleScrap} hitSlop={8}>
+                <Ionicons
+                  name={scraped ? "bookmark" : "bookmark-outline"}
+                  size={22}
+                  color={scraped ? BLACK : BLACK}
+                />
+              </Pressable>
+              <Text style={styles.actionCount}>{scrapCount}</Text>
             </View>
           </View>
         </View>
