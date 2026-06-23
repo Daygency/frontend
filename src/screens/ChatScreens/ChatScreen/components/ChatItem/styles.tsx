@@ -5,7 +5,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     paddingHorizontal: 20,
-    paddingVertical: 18,
+    paddingVertical: 12,
     backgroundColor: WHITE,
     // borderBottomWidth: 1,
     // borderBottomColor: GRAY.DEFAULT,
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 6,
+    marginBottom: 4,
   },
   nameRow: {
     flexDirection: "row",
