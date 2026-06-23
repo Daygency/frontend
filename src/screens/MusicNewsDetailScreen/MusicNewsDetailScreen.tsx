@@ -6,12 +6,10 @@ import {
 } from "@react-navigation/native";
 import {
   ActivityIndicator,
-  Image,
   ScrollView,
   Text,
   View,
   Pressable,
-  Dimensions,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -60,7 +58,8 @@ import {
   pickUrlFromFileLike,
 } from "../../lib/media/attachmentImageUrl";
 import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
-import { hasMapCoords, parseCoord } from "../../lib/kakao/location";
+import ImageCarousel from "../../components/media/ImageCarousel";
+import { parseCoord } from "../../lib/kakao/location";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -294,7 +293,7 @@ const MusicNewsDetailScreen = () => {
       setNewsAuthorUserId(pickReportedUserIdFromUnknown(res.user) ?? null);
       setIsMineFromApi(Boolean(res.isMine));
     } else {
-      setError("공연소식을 불러오지 못했습니다.");
+      setError("음악계 소식을 불러오지 못했습니다.");
       setNewsAuthorUserId(null);
       setIsMineFromApi(false);
     }
@@ -306,7 +305,6 @@ const MusicNewsDetailScreen = () => {
     }
   }, [newsId, fetchDetail]);
 
-  const { width } = Dimensions.get("window");
   const displayedComments = comments;
   const targetNewsId = newsId ?? news?.id;
   const myUserId = user?.socialId?.trim() ?? "";
@@ -444,7 +442,7 @@ const MusicNewsDetailScreen = () => {
 
   const onDeleteNews = useCallback(() => {
     if (!targetNewsId) return;
-    Alert.alert("삭제", "이 공연소식을 삭제할까요?", [
+    Alert.alert("삭제", "이 음악계 소식을 삭제할까요?", [
       { text: "취소", style: "cancel" },
       {
         text: "삭제",
@@ -681,7 +679,7 @@ const MusicNewsDetailScreen = () => {
       >
         <ActivityIndicator size="large" color={GRAY.DARK} />
         <Text style={{ marginTop: 12, fontSize: 14, color: GRAY.DARK_2 }}>
-          공연소식을 불러오는 중...
+          음악계 소식을 불러오는 중...
         </Text>
       </View>
     );
@@ -721,138 +719,131 @@ const MusicNewsDetailScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-        {news.imageUrls && news.imageUrls.length > 0 ? (
-          <View style={styles.posterWrapper}>
-            {news.imageUrls.map((uri, idx) => (
-              <Image
-                key={`${uri}-${idx}`}
-                source={{ uri }}
-                style={[
-                  styles.posterImage,
-                  {
-                    width,
-                    height: width * 0.56,
-                    marginBottom: idx < news.imageUrls!.length - 1 ? 8 : 0,
-                  },
-                ]}
-                resizeMode="cover"
+          {news.imageUrls && news.imageUrls.length > 0 ? (
+            <View style={styles.carouselWrapper}>
+              <ImageCarousel
+                gap={12}
+                images={news.imageUrls}
+                slideBackgroundColor={GRAY.MEDIUM}
               />
-            ))}
-          </View>
-        ) : null}
+            </View>
+          ) : null}
 
-        <View style={styles.contentSection}>
-          <View style={styles.titleRow}>
-            <Text style={styles.title}>{news.title}</Text>
-            <Text style={styles.uploadedAt}>{news.uploadedAt}</Text>
-          </View>
+          <View style={styles.contentSection}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>{news.title}</Text>
+              <Text style={styles.uploadedAt}>{news.uploadedAt}</Text>
+            </View>
 
-          <View style={styles.infoCard}>
-            {news.authorId && (
-              <View style={styles.infoRow}>
-                <MaterialCommunityIcons
-                  name="account-outline"
-                  size={18}
-                  color={GRAY.DARK}
-                />
-                <Text style={styles.infoText}>{news.authorId}</Text>
-              </View>
-            )}
-            <View style={styles.infoRow}>
-              <MaterialCommunityIcons
-                name="calendar-outline"
-                size={18}
-                color={GRAY.DARK}
-              />
-              <Text style={styles.infoText}>예정일 : {news.date}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <MaterialCommunityIcons
-                name="clock-outline"
-                size={18}
-                color={GRAY.DARK}
-              />
-              <Text style={styles.infoText}>예정 시간 : {news.time}</Text>
-            </View>
-            <View style={styles.infoRow}>
-              <MaterialCommunityIcons
-                name="map-marker-outline"
-                size={18}
-                color={GRAY.DARK}
-              />
-              <Text style={styles.infoText}>장소: {news.place}</Text>
-            </View>
-            {hasMapCoords(news) ? (
-              <View style={styles.mapSection}>
-                <KakaoMapView
-                  latitude={news.latitude}
-                  longitude={news.longitude}
-                  height={200}
-                />
-              </View>
+            {news.authorId ? (
+              <>
+                <View style={styles.infoBlock}>
+                  <Text style={styles.infoLabel}>작성자</Text>
+                  <Text style={styles.infoValue}>{news.authorId}</Text>
+                </View>
+                <View style={styles.divider} />
+              </>
             ) : null}
-            <View style={styles.infoRow}>
-              <MaterialCommunityIcons
-                name="phone-outline"
-                size={18}
-                color={GRAY.DARK}
-              />
-              <Text style={styles.infoText}>문의: {news.contact}</Text>
+
+            <View style={styles.infoBlock}>
+              <Text style={styles.infoLabel}>예정일</Text>
+              <Text style={styles.infoValue}>{news.date}</Text>
             </View>
-          </View>
 
-          <Text style={styles.description}>{news.description}</Text>
+            <View style={styles.divider} />
 
-          {news.attachments && news.attachments.length > 0 && (
-            <View style={styles.attachmentsCard}>
-              <Text style={styles.attachmentsTitle}>첨부파일</Text>
-              {news.attachments.map((file, index) => (
-                <Pressable key={index} style={styles.fileRow}>
-                  <MaterialCommunityIcons
-                    name="paperclip"
-                    size={18}
-                    color={GRAY.DARK}
+            <View style={styles.infoBlock}>
+              <Text style={styles.infoLabel}>예정 시간</Text>
+              <Text style={styles.infoValue}>{news.time}</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <View style={styles.infoBlock}>
+              <Text style={styles.infoLabel}>장소</Text>
+              <Text style={styles.infoValue}>{news.place}</Text>
+            </View>
+
+            {news.place?.trim() ? (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.mapSection}>
+                  <KakaoMapView
+                    latitude={news.latitude}
+                    longitude={news.longitude}
+                    place={news.place}
+                    height={200}
                   />
-                  <Text style={styles.fileName} numberOfLines={1}>
-                    {file.name}
-                  </Text>
-                  <Text style={styles.fileSize}>{file.size}</Text>
-                  <MaterialCommunityIcons
-                    name="download"
-                    size={20}
-                    color={GRAY.DARK}
+                </View>
+              </>
+            ) : null}
+
+            <View style={styles.divider} />
+
+            <View style={styles.infoBlock}>
+              <Text style={styles.infoLabel}>문의</Text>
+              <Text style={styles.infoValue}>{news.contact}</Text>
+            </View>
+
+            <View style={styles.divider} />
+
+            <Text style={styles.description}>{news.description}</Text>
+
+            {news.attachments && news.attachments.length > 0 && (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.attachmentsCard}>
+                  <Text style={styles.attachmentsTitle}>첨부파일</Text>
+                  {news.attachments.map((file, index) => (
+                    <Pressable key={index} style={styles.fileRow}>
+                      <MaterialCommunityIcons
+                        name="paperclip"
+                        size={18}
+                        color={GRAY.DARK}
+                      />
+                      <Text style={styles.fileName} numberOfLines={1}>
+                        {file.name}
+                      </Text>
+                      <Text style={styles.fileSize}>{file.size}</Text>
+                      <MaterialCommunityIcons
+                        name="download"
+                        size={20}
+                        color={GRAY.DARK}
+                      />
+                    </Pressable>
+                  ))}
+                </View>
+              </>
+            )}
+
+            <View style={styles.divider} />
+
+            <View style={styles.actionRow}>
+              <View style={styles.actionItem}>
+                <Pressable onPress={handleToggleLike} hitSlop={8}>
+                  <Ionicons
+                    name={liked ? "heart" : "heart-outline"}
+                    size={21}
+                    color={RED.DEFAULT}
                   />
                 </Pressable>
-              ))}
+                <Text style={styles.actionCount}>{likeCount}</Text>
+              </View>
+              <View style={styles.actionItem}>
+                <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
+                <Text style={styles.actionCount}>{commentCount}</Text>
+              </View>
+              <View style={styles.actionItem}>
+                <Pressable onPress={handleToggleScrap} hitSlop={8}>
+                  <Ionicons
+                    name={scraped ? "bookmark" : "bookmark-outline"}
+                    size={20}
+                    color="#FFC107"
+                  />
+                </Pressable>
+                <Text style={styles.actionCount}>{scrapCount}</Text>
+              </View>
             </View>
-          )}
-
-          <View style={styles.actionRow}>
-            <View style={styles.actionItem}>
-              <Pressable onPress={handleToggleLike} hitSlop={8}>
-                <Ionicons
-                  name={liked ? "heart" : "heart-outline"}
-                  size={21}
-                  color={RED.DEFAULT}
-                />
-              </Pressable>
-              <Text style={styles.actionCount}>{likeCount}</Text>
-            </View>
-            <View style={styles.actionItem}>
-              <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
-              <Text style={styles.actionCount}>{commentCount}</Text>
-            </View>
-            <View style={styles.actionItem}>
-              <Pressable onPress={handleToggleScrap} hitSlop={8}>
-                <Ionicons
-                  name={scraped ? "bookmark" : "bookmark-outline"}
-                  size={20}
-                  color="#FFC107"
-                />
-              </Pressable>
-              <Text style={styles.actionCount}>{scrapCount}</Text>
-            </View>
-          </View>
 
           <View style={styles.commentList}>
             {displayedComments.map((comment) => (

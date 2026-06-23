@@ -29,3 +29,43 @@ export function hasMapCoords(
 export function getKakaoMapLink(latitude: number, longitude: number): string {
   return `https://map.kakao.com/link/map/${latitude},${longitude}`;
 }
+
+export function getNativeMapOpenLabel(platform: "ios" | "android" | "web" = "ios"): string {
+  return platform === "ios" ? "Apple 지도에서 보기" : "Google 지도에서 보기";
+}
+
+export function getNativeMapLink(options: {
+  latitude?: number | null;
+  longitude?: number | null;
+  place?: string;
+  platform?: "ios" | "android" | "web";
+}): string | null {
+  const label = options.place?.trim() ?? "";
+  const platform = options.platform ?? "ios";
+  const hasCoords = hasMapCoords({
+    latitude: options.latitude ?? null,
+    longitude: options.longitude ?? null,
+  });
+
+  if (platform === "ios") {
+    if (hasCoords) {
+      const base = `http://maps.apple.com/?ll=${options.latitude},${options.longitude}`;
+      return label ? `${base}&q=${encodeURIComponent(label)}` : base;
+    }
+    if (label) {
+      return `http://maps.apple.com/?q=${encodeURIComponent(label)}`;
+    }
+    return null;
+  }
+
+  if (hasCoords) {
+    if (label) {
+      return `geo:${options.latitude},${options.longitude}?q=${encodeURIComponent(label)}`;
+    }
+    return `https://www.google.com/maps/search/?api=1&query=${options.latitude},${options.longitude}`;
+  }
+  if (label) {
+    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(label)}`;
+  }
+  return null;
+}

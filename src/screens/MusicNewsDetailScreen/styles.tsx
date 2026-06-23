@@ -15,11 +15,9 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 24,
   },
-  posterWrapper: {
+  carouselWrapper: {
     width: "100%",
-  },
-  posterImage: {
-    backgroundColor: GRAY.MEDIUM,
+    marginBottom: 4,
   },
   contentSection: {
     paddingHorizontal: 20,
@@ -29,57 +27,58 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 16,
+    marginBottom: 20,
   },
   title: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 22,
+    fontWeight: "800",
     color: BLACK,
+    lineHeight: 30,
     marginRight: 12,
   },
   uploadedAt: {
     fontSize: 12,
     color: GRAY.DARK_2,
+    marginTop: 4,
   },
-  infoCard: {
-    backgroundColor: GRAY.DEFAULT_1,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
+  divider: {
+    height: 1,
+    backgroundColor: GRAY.MEDIUM_2,
+    marginVertical: 14,
   },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-    gap: 8,
+  infoBlock: {
+    gap: 6,
+  },
+  infoLabel: {
+    fontSize: 13,
+    color: GRAY.DARK,
+    fontWeight: "500",
+  },
+  infoValue: {
+    fontSize: 16,
+    color: BLACK,
+    fontWeight: "700",
+    lineHeight: 24,
   },
   mapSection: {
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 13,
-    color: BLACK,
+    borderRadius: 12,
+    overflow: "hidden",
   },
   description: {
     fontSize: 14,
     lineHeight: 22,
     color: BLACK,
-    marginBottom: 18,
+    marginBottom: 4,
   },
   attachmentsCard: {
-    backgroundColor: GRAY.DEFAULT_1,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
+    gap: 8,
   },
   attachmentsTitle: {
     fontSize: 14,
     fontWeight: "600",
     color: BLACK,
-    marginBottom: 12,
+    marginBottom: 4,
   },
   fileRow: {
     flexDirection: "row",
@@ -112,15 +111,6 @@ const styles = StyleSheet.create({
     color: BLACK,
     fontWeight: "600",
   },
-  firstCommentPlaceholder: {
-    marginTop: 26,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  firstCommentText: {
-    fontSize: 13,
-    color: GRAY.DARK_2,
-  },
   commentList: {
     marginTop: 10,
     gap: 14,
@@ -142,14 +132,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
-  },
-  avatarCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#102042",
-    alignItems: "center",
-    justifyContent: "center",
   },
   commentHeaderText: {
     flex: 1,
@@ -246,28 +228,6 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
     borderTopWidth: 1,
     borderTopColor: GRAY.DEFAULT,
-  },
-  replyActionText: {
-    fontSize: 12,
-    color: GRAY.DARK_2,
-    fontWeight: "600",
-    marginLeft: 2,
-  },
-  replyComposerInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 10,
-  },
-  replyComposerText: {
-    fontSize: 12,
-    color: GRAY.DARK_100,
-  },
-  replyComposerCancel: {
-    fontSize: 12,
-    color: MAIN.DEFAULT,
-    fontWeight: "600",
   },
 });
 

@@ -24,6 +24,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
   },
+  addressOnly: {
+    minHeight: 120,
+    padding: 16,
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  addressText: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: MAIN.DEFAULT,
+    fontWeight: "600",
+  },
+  openBadgeInline: {
+    alignSelf: "flex-start",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: MAIN.DEFAULT,
+  },
 });
 
 export default styles;
