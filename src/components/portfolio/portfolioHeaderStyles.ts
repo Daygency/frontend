@@ -32,14 +32,14 @@ export const portfolioHeaderStyles = StyleSheet.create({
   titleStack: {
     flex: 1,
     height: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
-    justifyContent: "center",
   },
-  titleSolid: {
+  titleLayer: {
     position: "absolute",
     left: 0,
     right: 0,
     top: 0,
-    height: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
+    bottom: 0,
+    justifyContent: "center",
   },
   handleText: {
     fontSize: MAIN_HOME_TOP_BAR_TITLE_SIZE,

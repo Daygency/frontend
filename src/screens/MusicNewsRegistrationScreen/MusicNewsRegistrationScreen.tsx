@@ -22,8 +22,12 @@ import KakaoLocationField from "../../components/kakao/KakaoLocationField/KakaoL
 import { parseCoord } from "../../lib/kakao/location";
 import { GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
-import { createNews, createNewsWithFiles, getNewsDetail, updateNews, MAX_NEWS_IMAGE_FILES } from "../../lib/apis/news/newsApi";
+import { createNewsWithFiles, getNewsDetail, updateNews, MAX_NEWS_IMAGE_FILES } from "../../lib/apis/news/newsApi";
 import type { LocalImageAsset } from "../../lib/apis/fileApi";
+import {
+  mapAttachmentsToImageUrls,
+  pickUrlFromFileLike,
+} from "../../lib/media/attachmentImageUrl";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
 
 function formatDateDisplay(d: Date): string {
@@ -71,6 +75,7 @@ const MusicNewsRegistrationScreen = () => {
   const [contact, setContact] = useState("");
   /** README: multipart 한 번에 `payload` + `files` */
   const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
+  const [hasExistingImages, setHasExistingImages] = useState(false);
   const MAX_NEWS_IMAGES = MAX_NEWS_IMAGE_FILES;
 
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -112,6 +117,11 @@ const MusicNewsRegistrationScreen = () => {
           setUseEndDate(true);
         }
       }
+      const existingUrls = mapAttachmentsToImageUrls(detail.attachments);
+      const fromFile = pickUrlFromFileLike(
+        detail.file ? (detail.file as Record<string, unknown>) : null,
+      );
+      setHasExistingImages(existingUrls.length > 0 || Boolean(fromFile));
       setLoadingEdit(false);
     })();
   }, [editNewsId, navigation]);
@@ -150,12 +160,23 @@ const MusicNewsRegistrationScreen = () => {
   const handleRegister = async () => {
     setSubmitAttempted(true);
 
-    if (!title.trim() || !content.trim() || !placeValue.address.trim() || !contact.trim()) {
+    const hasRequiredImages = isEditMode
+      ? hasExistingImages || pendingImages.length > 0
+      : pendingImages.length > 0;
+
+    if (
+      !title.trim() ||
+      !content.trim() ||
+      !placeValue.address.trim() ||
+      !contact.trim() ||
+      !hasRequiredImages
+    ) {
       const missing: string[] = [];
       if (!title.trim()) missing.push("제목");
       if (!content.trim()) missing.push("내용");
       if (!placeValue.address.trim()) missing.push("장소");
       if (!contact.trim()) missing.push("문의처");
+      if (!hasRequiredImages) missing.push("이미지 (최소 1장)");
       Alert.alert("입력 확인", `다음 항목을 확인해주세요:\n\n${missing.join("\n")}`);
       return;
     }
@@ -191,10 +212,7 @@ const MusicNewsRegistrationScreen = () => {
         return;
       }
 
-      const res =
-        pendingImages.length > 0
-          ? await createNewsWithFiles(dto, pendingImages)
-          : await createNews(dto);
+      const res = await createNewsWithFiles(dto, pendingImages);
       setIsSubmitting(false);
       if (res) {
         navigation.dispatch?.(
@@ -212,18 +230,24 @@ const MusicNewsRegistrationScreen = () => {
     }
   };
 
+  const hasRequiredImages = isEditMode
+    ? hasExistingImages || pendingImages.length > 0
+    : pendingImages.length > 0;
+
   const err = {
     title: submitAttempted && !title.trim(),
     content: submitAttempted && !content.trim(),
     place: submitAttempted && !placeValue.address.trim(),
     contact: submitAttempted && !contact.trim(),
+    images: submitAttempted && !hasRequiredImages,
   };
 
   const isValid =
     !!title.trim() &&
     !!content.trim() &&
     !!placeValue.address.trim() &&
-    !!contact.trim();
+    !!contact.trim() &&
+    hasRequiredImages;
 
   if (loadingEdit) {
     return (
@@ -400,18 +424,25 @@ const MusicNewsRegistrationScreen = () => {
           </View>
 
           <View style={styles.formField}>
-            <Form title="이미지" isRequired={false}>
-              <Pressable style={styles.imageAddRow} onPress={pickImage}>
+            <Form title="이미지" isRequired hasError={err.images}>
+              <Pressable
+                style={[styles.imageAddRow, err.images && styles.inputErrorBorder]}
+                onPress={pickImage}
+              >
                 <MaterialCommunityIcons
                   name="image-plus"
                   size={20}
                   color={GRAY.DARK_2}
                 />
                 <Text style={styles.imageAddText}>
-                  이미지 추가 (선택, 최대 {MAX_NEWS_IMAGES}장)
+                  이미지 추가 (필수, 최소 1장 · 최대 {MAX_NEWS_IMAGES}장)
                 </Text>
               </Pressable>
-              <Text style={styles.imageAddHint}>등록 후 업로드됩니다</Text>
+              <Text style={styles.imageAddHint}>
+                {isEditMode && hasExistingImages && pendingImages.length === 0
+                  ? "기존 이미지가 있습니다. 새 이미지를 추가하지 않아도 됩니다."
+                  : "등록 후 업로드됩니다"}
+              </Text>
               {pendingImages.length > 0 ? (
                 <ScrollView
                   horizontal

@@ -101,26 +101,32 @@ const PortfolioHeader = ({
         <View style={portfolioHeaderStyles.leftContainer}>
           {handleLabel ? (
             <View style={portfolioHeaderStyles.titleStack}>
-              <Animated.Text
-                style={[
-                  portfolioHeaderStyles.handleText,
-                  portfolioHeaderStyles.handleTextOverlay,
-                  { color: WHITE, opacity: overlayOpacity },
-                ]}
-                numberOfLines={1}
+              <Animated.View
+                style={[portfolioHeaderStyles.titleLayer, { opacity: overlayOpacity }]}
+                pointerEvents="none"
               >
-                {handleLabel}
-              </Animated.Text>
-              <Animated.Text
-                style={[
-                  portfolioHeaderStyles.handleText,
-                  portfolioHeaderStyles.titleSolid,
-                  { color: MAIN.DEFAULT, opacity: solidOpacity },
-                ]}
-                numberOfLines={1}
+                <Animated.Text
+                  style={[
+                    portfolioHeaderStyles.handleText,
+                    portfolioHeaderStyles.handleTextOverlay,
+                    { color: WHITE },
+                  ]}
+                  numberOfLines={1}
+                >
+                  {handleLabel}
+                </Animated.Text>
+              </Animated.View>
+              <Animated.View
+                style={[portfolioHeaderStyles.titleLayer, { opacity: solidOpacity }]}
+                pointerEvents="none"
               >
-                {handleLabel}
-              </Animated.Text>
+                <Animated.Text
+                  style={[portfolioHeaderStyles.handleText, { color: MAIN.DEFAULT }]}
+                  numberOfLines={1}
+                >
+                  {handleLabel}
+                </Animated.Text>
+              </Animated.View>
             </View>
           ) : null}
         </View>

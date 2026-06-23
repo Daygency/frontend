@@ -70,8 +70,11 @@ export default function KakaoLocationField({
   const handleSelect = useCallback(
     (item: KakaoPlaceItem) => {
       setResults([]);
+      const detailAddress = item.address.trim();
       onChange({
-        address: item.placeName,
+        address: detailAddress
+          ? `${item.placeName} ${detailAddress}`
+          : item.placeName,
         latitude: item.latitude,
         longitude: item.longitude,
       });
