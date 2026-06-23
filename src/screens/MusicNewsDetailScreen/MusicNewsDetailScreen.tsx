@@ -59,11 +59,15 @@ import {
   mapAttachmentsToImageUrls,
   pickUrlFromFileLike,
 } from "../../lib/media/attachmentImageUrl";
+import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
+import { hasMapCoords, parseCoord } from "../../lib/kakao/location";
 
 export type MusicNewsDetailItem = {
   id: string;
   title: string;
   place: string;
+  latitude?: number | null;
+  longitude?: number | null;
   date: string;
   time: string;
   contact: string;
@@ -142,6 +146,8 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     id: res.newsId,
     title: res.title,
     place: res.place,
+    latitude: parseCoord(res.latitude),
+    longitude: parseCoord(res.longitude),
     date: dateStr,
     time: timeStr || "00:00",
     contact: res.contact,
@@ -776,6 +782,15 @@ const MusicNewsDetailScreen = () => {
               />
               <Text style={styles.infoText}>장소: {news.place}</Text>
             </View>
+            {hasMapCoords(news) ? (
+              <View style={styles.mapSection}>
+                <KakaoMapView
+                  latitude={news.latitude}
+                  longitude={news.longitude}
+                  height={200}
+                />
+              </View>
+            ) : null}
             <View style={styles.infoRow}>
               <MaterialCommunityIcons
                 name="phone-outline"

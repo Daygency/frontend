@@ -18,6 +18,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/forms/Form";
 import FormTextInput from "../../components/forms/FormTextInput";
+import KakaoLocationField from "../../components/kakao/KakaoLocationField/KakaoLocationField";
+import { parseCoord } from "../../lib/kakao/location";
 import { GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import { createNews, createNewsWithFiles, getNewsDetail, updateNews, MAX_NEWS_IMAGE_FILES } from "../../lib/apis/news/newsApi";
@@ -57,7 +59,11 @@ const MusicNewsRegistrationScreen = () => {
 
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [place, setPlace] = useState("");
+  const [placeValue, setPlaceValue] = useState({
+    address: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
+  });
   const [ticketPrice, setTicketPrice] = useState("");
   const [startedAt, setStartedAt] = useState<Date>(defaultStart);
   const [endedAt, setEndedAt] = useState<Date | null>(null);
@@ -86,7 +92,11 @@ const MusicNewsRegistrationScreen = () => {
       }
       setTitle(detail.title ?? "");
       setContent(detail.content ?? "");
-      setPlace(detail.place ?? "");
+      setPlaceValue({
+        address: detail.place ?? "",
+        latitude: parseCoord(detail.latitude),
+        longitude: parseCoord(detail.longitude),
+      });
       setContact(detail.contact ?? "");
       if (detail.ticketPrice != null) {
         setTicketPrice(String(detail.ticketPrice));
@@ -140,11 +150,11 @@ const MusicNewsRegistrationScreen = () => {
   const handleRegister = async () => {
     setSubmitAttempted(true);
 
-    if (!title.trim() || !content.trim() || !place.trim() || !contact.trim()) {
+    if (!title.trim() || !content.trim() || !placeValue.address.trim() || !contact.trim()) {
       const missing: string[] = [];
       if (!title.trim()) missing.push("제목");
       if (!content.trim()) missing.push("내용");
-      if (!place.trim()) missing.push("장소");
+      if (!placeValue.address.trim()) missing.push("장소");
       if (!contact.trim()) missing.push("문의처");
       Alert.alert("입력 확인", `다음 항목을 확인해주세요:\n\n${missing.join("\n")}`);
       return;
@@ -156,7 +166,13 @@ const MusicNewsRegistrationScreen = () => {
     const dto = {
       title: title.trim(),
       content: content.trim().slice(0, 255),
-      place: place.trim().slice(0, 100),
+      place: placeValue.address.trim().slice(0, 100),
+      ...(placeValue.latitude != null && placeValue.longitude != null
+        ? {
+            latitude: placeValue.latitude,
+            longitude: placeValue.longitude,
+          }
+        : {}),
       startedAt: dateToISO(startedAt),
       contact: contact.trim().slice(0, 30),
       ...(ticketPrice.trim() ? { ticketPrice: parseInt(ticketPrice, 10) || undefined } : {}),
@@ -199,11 +215,15 @@ const MusicNewsRegistrationScreen = () => {
   const err = {
     title: submitAttempted && !title.trim(),
     content: submitAttempted && !content.trim(),
-    place: submitAttempted && !place.trim(),
+    place: submitAttempted && !placeValue.address.trim(),
     contact: submitAttempted && !contact.trim(),
   };
 
-  const isValid = !!title.trim() && !!content.trim() && !!place.trim() && !!contact.trim();
+  const isValid =
+    !!title.trim() &&
+    !!content.trim() &&
+    !!placeValue.address.trim() &&
+    !!contact.trim();
 
   if (loadingEdit) {
     return (
@@ -252,11 +272,10 @@ const MusicNewsRegistrationScreen = () => {
 
           <View style={styles.formField}>
             <Form title="장소" isRequired hasError={err.place}>
-              <FormTextInput
+              <KakaoLocationField
                 placeholder="공연 장소를 입력하세요"
-                value={place}
-                onChangeText={setPlace}
-                maxLength={100}
+                value={placeValue}
+                onChange={setPlaceValue}
                 hasError={err.place}
               />
             </Form>

@@ -119,6 +119,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     color: BLACK,
   },
+  mapSectionLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
+    marginBottom: 10,
+  },
   contentImage: {
     width: "100%",
     marginTop: 16,

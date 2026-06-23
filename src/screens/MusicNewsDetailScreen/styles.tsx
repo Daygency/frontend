@@ -54,6 +54,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     gap: 8,
   },
+  mapSection: {
+    marginTop: 4,
+    marginBottom: 8,
+  },
   infoText: {
     flex: 1,
     fontSize: 13,

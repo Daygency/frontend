@@ -16,6 +16,7 @@ import type {
   NewsFileInfo,
   UpdateNewsDto,
 } from "./types";
+import { parseCoord } from "../../kakao/location";
 
 /** 공연소식 첨부 이미지 최대 장수 */
 export const MAX_NEWS_IMAGE_FILES = 5;
@@ -136,6 +137,8 @@ function normalizeNewsDetail(raw: unknown): NewsDetailResponse {
     title: String(r.title ?? ""),
     content: String(r.content ?? ""),
     place: String(r.place ?? ""),
+    latitude: parseCoord(r.latitude),
+    longitude: parseCoord(r.longitude),
     ticketPrice,
     startedAt: String(r.startedAt ?? r.started_at ?? ""),
     endedAt:

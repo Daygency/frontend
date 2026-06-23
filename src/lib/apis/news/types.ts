@@ -58,6 +58,8 @@ export type NewsDetailResponse = {
   title: string;
   content: string;
   place: string;
+  latitude?: number | null;
+  longitude?: number | null;
   ticketPrice: number | null;
   startedAt: string;
   endedAt: string | null;
@@ -75,6 +77,8 @@ export type CreateNewsDto = {
   title: string;
   content: string;
   place: string;
+  latitude?: number | null;
+  longitude?: number | null;
   ticketPrice?: number | null;
   startedAt: string;
   endedAt?: string | null;

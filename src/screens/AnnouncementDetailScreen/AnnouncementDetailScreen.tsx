@@ -30,6 +30,8 @@ import {
   mapAttachmentsToImageUrls,
   pickUrlFromFileLike,
 } from "../../lib/media/attachmentImageUrl";
+import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
+import { hasMapCoords, parseCoord } from "../../lib/kakao/location";
 import { extractAnnouncementAuthorFromDetail } from "../../lib/announcement/extractAnnouncementAuthor";
 import type { AnnouncementAuthor } from "../../lib/announcement/extractAnnouncementAuthor";
 import { useAnnouncementAuthorLabel } from "../../lib/announcement/useAnnouncementAuthorLabel";
@@ -158,6 +160,8 @@ const AnnouncementDetailScreen = () => {
     applicationConfig: ApplicationConfig | null;
     content?: string;
     address?: string;
+    latitude?: number | null;
+    longitude?: number | null;
     deadlineAt?: string;
     scheduledAt?: string;
     imageUrls?: string[];
@@ -363,6 +367,8 @@ const AnnouncementDetailScreen = () => {
         ...(typeof rawAddress === "string" && rawAddress.trim()
           ? { address: rawAddress }
           : {}),
+        latitude: parseCoord(d.latitude),
+        longitude: parseCoord(d.longitude),
         ...(deadlineAt ? { deadlineAt } : {}),
         ...(scheduledAt ? { scheduledAt } : {}),
         ...(imageUrls.length > 0 ? { imageUrls } : {}),
@@ -797,6 +803,16 @@ const AnnouncementDetailScreen = () => {
             </View>
           </View>
         </View>
+        {detailData && hasMapCoords(detailData) ? (
+          <View style={styles.contentSheet}>
+            <Text style={styles.mapSectionLabel}>공연 위치</Text>
+            <KakaoMapView
+              latitude={detailData.latitude}
+              longitude={detailData.longitude}
+              height={200}
+            />
+          </View>
+        ) : null}
         <View style={styles.contentSheet}>
           {descriptionText ? (
             <Text style={styles.descriptionText}>{descriptionText}</Text>

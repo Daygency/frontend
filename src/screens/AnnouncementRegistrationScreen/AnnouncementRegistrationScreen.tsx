@@ -22,6 +22,8 @@ import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/forms/Form";
 import FormTextInput from "../../components/forms/FormTextInput";
 import FormDropdownInput from "../../components/forms/FormDropdownInput";
+import KakaoLocationField from "../../components/kakao/KakaoLocationField/KakaoLocationField";
+import { parseCoord } from "../../lib/kakao/location";
 import SelectableTag from "../../components/ui/SelectableTag";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
@@ -246,7 +248,11 @@ const AnnouncementRegistrationScreen = () => {
   const [showScheduledDatePicker, setShowScheduledDatePicker] = useState(false);
   const [showScheduledTimePicker, setShowScheduledTimePicker] = useState(false);
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
-  const [location, setLocation] = useState("");
+  const [locationValue, setLocationValue] = useState({
+    address: "",
+    latitude: null as number | null,
+    longitude: null as number | null,
+  });
   const [announcementType, setAnnouncementType] = useState(
     FALLBACK_CATEGORY_OPTIONS[0]?.value ?? "",
   );
@@ -353,7 +359,14 @@ const AnnouncementRegistrationScreen = () => {
         };
         if (get("title")) setTitle(String(get("title") ?? ""));
         if (get("content")) setContent(String(get("content") ?? ""));
-        if (get("address")) setLocation(String(get("address") ?? ""));
+        if (get("address")) {
+          const dRecord = d;
+          setLocationValue({
+            address: String(get("address") ?? ""),
+            latitude: parseCoord(dRecord.latitude),
+            longitude: parseCoord(dRecord.longitude),
+          });
+        }
         if (get("categoryId")) setAnnouncementType(String(get("categoryId") ?? ""));
         const majorIdsRaw = getArr("majorIds");
         if (majorIdsRaw.length > 0) {
@@ -623,7 +636,13 @@ const AnnouncementRegistrationScreen = () => {
       content: content.trim(),
       deadlineAt: resolvedDeadline,
       scheduledAt: resolvedSched,
-      address: location.trim() || "",
+      address: locationValue.address.trim() || "",
+      ...(locationValue.latitude != null && locationValue.longitude != null
+        ? {
+            latitude: locationValue.latitude,
+            longitude: locationValue.longitude,
+          }
+        : {}),
       categoryId: announcementType,
       status: "OPEN" as const,
       applicationConfig: buildApplicationConfig(),
@@ -922,10 +941,10 @@ const AnnouncementRegistrationScreen = () => {
                       </View>
                       <View style={styles.scheduleField}>
                         <Form title="장소" isRequired={false}>
-                          <FormTextInput
+                          <KakaoLocationField
                             placeholder="장소를 입력하세요"
-                            value={location}
-                            onChangeText={setLocation}
+                            value={locationValue}
+                            onChange={setLocationValue}
                           />
                         </Form>
                       </View>
