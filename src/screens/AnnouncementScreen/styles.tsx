@@ -8,11 +8,43 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
   },
   filterWrapper: {
-    paddingHorizontal: 12,
     paddingTop: 4,
   },
-  filterRow: {
+  filterChipRow: {
+    paddingBottom: 8,
+  },
+  filterChipRowContent: {
     flexDirection: "row",
+    gap: 8,
+    paddingHorizontal: 12,
+  },
+  filterChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: WHITE,
+    borderRadius: 100,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    paddingHorizontal: 12,
+    height: 36,
+    gap: 4,
+  },
+  filterChipActive: {
+    borderColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.DEFAULT,
+  },
+  filterChipText: {
+    color: MAIN.DEFAULT,
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  filterChipTextActive: {
+    color: WHITE,
+  },
+  sortTabRow: {
+    flexDirection: "row",
+    paddingHorizontal: 12,
     paddingBottom: 9,
     gap: 8,
     alignItems: "center",

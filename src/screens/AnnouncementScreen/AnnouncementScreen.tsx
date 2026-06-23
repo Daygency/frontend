@@ -6,14 +6,18 @@ import {
   Text,
   View,
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import FabButton from "../../components/ui/FabButton";
-import MajorTagFilter from "../../components/modals/MajorTagFilter";
-import SectorTagSelectModal from "../../components/modals/SectorTagSelectModal";
+import AnnouncementFilterSheet from "./components/AnnouncementFilterSheet";
+import {
+  getFilterChipLabel,
+  type AnnouncementFilterSheetType,
+} from "./components/announcementFilterOptions";
 import { RootRoutes } from "../../navigations/routes";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import styles from "./styles";
@@ -34,7 +38,7 @@ import {
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
 import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
 import { isContentNew } from "../../lib/content/newBadge";
-import { MAIN } from "../../color";
+import { MAIN, WHITE } from "../../color";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -53,11 +57,13 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const { top } = useSafeAreaInsets();
   const { isLoggedIn } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
-  const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
   const [selectedPriceTypes, setSelectedPriceTypes] = useState<string[]>([]);
-  const [isTagModalVisible, setIsTagModalVisible] = useState(false);
+  const [filterSheet, setFilterSheet] = useState<AnnouncementFilterSheetType | null>(
+    null,
+  );
   const [activeTab, setActiveTab] = useState<
     "최신순" | "스크랩수순" | "내 공고"
   >("최신순");
@@ -101,13 +107,11 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
 
   const buildListParams = useCallback(() => {
     const status =
-      selectedStatus.length === 1
-        ? selectedStatus[0] === "모집중"
-          ? ("OPEN" as const)
-          : selectedStatus[0] === "모집마감"
-            ? ("CLOSED" as const)
-            : undefined
-        : undefined;
+      selectedStatus === "모집중"
+        ? ("OPEN" as const)
+        : selectedStatus === "모집마감"
+          ? ("CLOSED" as const)
+          : undefined;
     const categoryId =
       selectedTypes.length > 0
         ? categories.find((c) => c.name === selectedTypes[0])?.categoryId
@@ -201,7 +205,11 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     });
   }, []);
 
-  /** 탭·로그인 변경 + 화면 포커스 시에만 자동 조회. 태그 필터는 모달「선택 완료」에서만 loadData 호출 */
+  useEffect(() => {
+    setFilterSheet(null);
+  }, [activeTab]);
+
+  /** 탭·로그인 변경 + 화면 포커스 시에만 자동 조회. 태그 필터는 시트 닫을 때 loadData 호출 */
   useFocusEffect(
     useCallback(() => {
       loadDataRef.current();
@@ -225,6 +233,58 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const typeOptions = categories.length > 0 ? categories.map((c) => c.name) : announcementTypeOptions;
   const majorOptionsForModal = majors.length > 0 ? majors.map((m) => m.name) : recruitmentMajorOptions;
 
+  const filterSheetConfig: Record<
+    AnnouncementFilterSheetType,
+    { options: string[]; selectedValues: string[]; onToggle: (value: string) => void }
+  > = {
+    status: {
+      options: recruitmentStatusOptions,
+      selectedValues: selectedStatus ? [selectedStatus] : [],
+      onToggle: (value) =>
+        setSelectedStatus((prev) => (prev === value ? null : value)),
+    },
+    type: {
+      options: typeOptions,
+      selectedValues: selectedTypes,
+      onToggle: (value) =>
+        setSelectedTypes((prev) =>
+          prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+        ),
+    },
+    major: {
+      options: majorOptionsForModal,
+      selectedValues: selectedMajors,
+      onToggle: (value) =>
+        setSelectedMajors((prev) =>
+          prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+        ),
+    },
+    price: {
+      options: [...ANNOUNCEMENT_PRICE_FILTER_LABELS],
+      selectedValues: selectedPriceTypes,
+      onToggle: (value) =>
+        setSelectedPriceTypes((prev) =>
+          prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+        ),
+    },
+  };
+
+  const filterChips: {
+    type: AnnouncementFilterSheetType;
+    defaultLabel: string;
+    selectedValues: string[];
+  }[] = [
+    { type: "status", defaultLabel: "모집 상태", selectedValues: selectedStatus ? [selectedStatus] : [] },
+    { type: "type", defaultLabel: "공고 유형", selectedValues: selectedTypes },
+    { type: "major", defaultLabel: "모집 전공", selectedValues: selectedMajors },
+    { type: "price", defaultLabel: "금액 유형", selectedValues: selectedPriceTypes },
+  ];
+
+  const closeFilterSheet = () => {
+    setFilterSheet(null);
+    loadDataRef.current();
+  };
+
   const emptyMessage =
     activeTab === "내 공고" && !isLoggedIn
       ? "로그인이 필요합니다"
@@ -236,17 +296,38 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
       {!hideTopBar && <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />}
       <View style={styles.filterWrapper}>
-        <View style={styles.filterRow}>
-          <MajorTagFilter
-            label="태그"
-            selectedValues={[
-              ...selectedStatus,
-              ...selectedTypes,
-              ...selectedMajors,
-              ...selectedPriceTypes,
-            ]}
-            onPress={() => setIsTagModalVisible(true)}
-          />
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.filterChipRow}
+          contentContainerStyle={styles.filterChipRowContent}
+        >
+          {filterChips.map((chip) => {
+            const isActive = chip.selectedValues.length > 0;
+            return (
+              <Pressable
+                key={chip.type}
+                style={[styles.filterChip, isActive && styles.filterChipActive]}
+                onPress={() => setFilterSheet(chip.type)}
+              >
+                <Text
+                  style={[
+                    styles.filterChipText,
+                    isActive && styles.filterChipTextActive,
+                  ]}
+                >
+                  {getFilterChipLabel(chip.defaultLabel, chip.selectedValues)}
+                </Text>
+                <MaterialCommunityIcons
+                  name="chevron-down"
+                  size={16}
+                  color={isActive ? WHITE : MAIN.DEFAULT}
+                />
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+        <View style={styles.sortTabRow}>
           {listTabs.map((option) => (
             <Pressable
               key={option}
@@ -268,52 +349,15 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           ))}
         </View>
       </View>
-      <SectorTagSelectModal
-        visible={isTagModalVisible}
-        title="태그 선택"
-        sections={[
-          {
-            title: "모집 상태",
-            options: recruitmentStatusOptions,
-            selectedValues: selectedStatus,
-            onToggle: (value) =>
-              setSelectedStatus((prev) =>
-                prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-              ),
-          },
-          {
-            title: "공고 유형",
-            options: typeOptions,
-            selectedValues: selectedTypes,
-            onToggle: (value) =>
-              setSelectedTypes((prev) =>
-                prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-              ),
-          },
-          {
-            title: "모집 전공",
-            options: majorOptionsForModal,
-            selectedValues: selectedMajors,
-            onToggle: (value) =>
-              setSelectedMajors((prev) =>
-                prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-              ),
-          },
-          {
-            title: "금액 유형",
-            options: [...ANNOUNCEMENT_PRICE_FILTER_LABELS],
-            selectedValues: selectedPriceTypes,
-            onToggle: (value) =>
-              setSelectedPriceTypes((prev) =>
-                prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value]
-              ),
-          },
-        ]}
-        onComplete={() => {
-          setIsTagModalVisible(false);
-          loadDataRef.current();
-        }}
-      />
+      {filterSheet ? (
+        <AnnouncementFilterSheet
+          type={filterSheet}
+          options={filterSheetConfig[filterSheet].options}
+          selectedValues={filterSheetConfig[filterSheet].selectedValues}
+          onToggle={filterSheetConfig[filterSheet].onToggle}
+          onClose={closeFilterSheet}
+        />
+      ) : null}
       <View style={styles.scrollContentWrapper}>
         <ScrollView
           style={{ flex: 1 }}
