@@ -15,8 +15,10 @@ import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import FabButton from "../../components/ui/FabButton";
 import AnnouncementFilterSheet from "./components/AnnouncementFilterSheet";
 import {
+  ANNOUNCEMENT_SORT_OPTIONS,
   getFilterChipLabel,
   type AnnouncementFilterSheetType,
+  type AnnouncementSortOption,
 } from "./components/announcementFilterOptions";
 import { RootRoutes } from "../../navigations/routes";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
@@ -48,6 +50,14 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+type AnnouncementFeedView = "모집공고" | "내 공고";
+
+const FEED_VIEW_OPTIONS = ["모집공고", "내 공고"] as const;
+
+function sortTabToApiParam(tab: AnnouncementSortOption): "imminent" | "created" {
+  return tab === "임박순" ? "imminent" : "created";
+}
+
 interface AnnouncementScreenProps {
   hideTopBar?: boolean;
 }
@@ -64,9 +74,8 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [filterSheet, setFilterSheet] = useState<AnnouncementFilterSheetType | null>(
     null,
   );
-  const [activeTab, setActiveTab] = useState<
-    "최신순" | "스크랩수순" | "내 공고"
-  >("최신순");
+  const [feedView, setFeedView] = useState<AnnouncementFeedView>("모집공고");
+  const [sortTab, setSortTab] = useState<AnnouncementSortOption>("등록순");
 
   const recruitmentStatusOptions = ["모집중", "모집마감"];
   const announcementTypeOptions = [
@@ -94,8 +103,6 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     "뮤지컬·크로스오버",
     "기타",
   ];
-  const listTabs = ["최신순", "스크랩수순", "내 공고"] as const;
-
   const [items, setItems] = useState<AnnouncementListItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -125,7 +132,13 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             .join(",")
         : undefined;
     const priceType = selectedPriceLabelsToApiParam(selectedPriceTypes);
-    return { status, categoryId, majorIds, priceType };
+    return {
+      status,
+      categoryId,
+      majorIds,
+      priceType,
+      sort: sortTabToApiParam(sortTab),
+    };
   }, [
     selectedStatus,
     selectedTypes,
@@ -133,11 +146,12 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     selectedPriceTypes,
     categories,
     majors,
+    sortTab,
   ]);
 
   const loadData = useCallback(
     async (cursor?: string) => {
-      if (activeTab === "내 공고" && !isLoggedIn) {
+      if (feedView === "내 공고" && !isLoggedIn) {
         setItems([]);
         setNextCursor(null);
         setHasMore(false);
@@ -147,7 +161,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       const seq = ++loadListSeqRef.current;
       setLoading(true);
       try {
-        const { status, categoryId, majorIds, priceType } = buildListParams();
+        const { status, categoryId, majorIds, priceType, sort } = buildListParams();
         const params = {
           cursor,
           limit: 20,
@@ -155,9 +169,10 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           categoryId,
           majorIds: majorIds || undefined,
           priceType,
+          sort,
         };
         const res =
-          activeTab === "내 공고"
+          feedView === "내 공고"
             ? await getMyAnnouncementList(params)
             : await getAnnouncementList(params);
         if (seq !== loadListSeqRef.current) return;
@@ -180,7 +195,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         }
       }
     },
-    [buildListParams, activeTab, isLoggedIn],
+    [buildListParams, feedView, isLoggedIn],
   );
 
   const loadDataRef = useRef(loadData);
@@ -207,13 +222,13 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
 
   useEffect(() => {
     setFilterSheet(null);
-  }, [activeTab]);
+  }, [feedView, sortTab]);
 
   /** 탭·로그인 변경 + 화면 포커스 시에만 자동 조회. 태그 필터는 시트 닫을 때 loadData 호출 */
   useFocusEffect(
     useCallback(() => {
       loadDataRef.current();
-    }, [activeTab, isLoggedIn]),
+    }, [feedView, isLoggedIn, sortTab]),
   );
 
   const loadMore = () => {
@@ -237,6 +252,11 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     AnnouncementFilterSheetType,
     { options: string[]; selectedValues: string[]; onToggle: (value: string) => void }
   > = {
+    sort: {
+      options: [...ANNOUNCEMENT_SORT_OPTIONS],
+      selectedValues: [sortTab],
+      onToggle: (value) => setSortTab(value as AnnouncementSortOption),
+    },
     status: {
       options: recruitmentStatusOptions,
       selectedValues: selectedStatus ? [selectedStatus] : [],
@@ -274,6 +294,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     defaultLabel: string;
     selectedValues: string[];
   }[] = [
+    { type: "sort", defaultLabel: "정렬", selectedValues: [sortTab] },
     { type: "status", defaultLabel: "모집 상태", selectedValues: selectedStatus ? [selectedStatus] : [] },
     { type: "type", defaultLabel: "공고 유형", selectedValues: selectedTypes },
     { type: "major", defaultLabel: "모집 전공", selectedValues: selectedMajors },
@@ -286,15 +307,26 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   };
 
   const emptyMessage =
-    activeTab === "내 공고" && !isLoggedIn
+    feedView === "내 공고" && !isLoggedIn
       ? "로그인이 필요합니다"
-      : activeTab === "내 공고"
+      : feedView === "내 공고"
         ? "작성한 공고가 없습니다"
         : "모집공고가 없습니다";
 
   return (
     <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
-      {!hideTopBar && <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />}
+      {!hideTopBar && (
+        <MainHomeTopBar
+          logoName="모집공고"
+          initialTag={feedView}
+          titleMenuOptions={FEED_VIEW_OPTIONS}
+          selectedTitleMenuOption={feedView}
+          onTitleMenuOptionChange={(option) => {
+            if (option === "내 공고" && !ensureLoggedIn()) return;
+            setFeedView(option as AnnouncementFeedView);
+          }}
+        />
+      )}
       <View style={styles.filterWrapper}>
         <ScrollView
           horizontal
@@ -303,7 +335,8 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           contentContainerStyle={styles.filterChipRowContent}
         >
           {filterChips.map((chip) => {
-            const isActive = chip.selectedValues.length > 0;
+            const isActive =
+              chip.type === "sort" || chip.selectedValues.length > 0;
             return (
               <Pressable
                 key={chip.type}
@@ -327,27 +360,6 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             );
           })}
         </ScrollView>
-        <View style={styles.sortTabRow}>
-          {listTabs.map((option) => (
-            <Pressable
-              key={option}
-              style={[styles.sortTab, activeTab === option && styles.sortTabActive]}
-              onPress={() => {
-                if (option === "내 공고" && !ensureLoggedIn()) return;
-                setActiveTab(option);
-              }}
-            >
-              <Text
-                style={[
-                  styles.sortTabText,
-                  activeTab === option && styles.sortTabTextActive,
-                ]}
-              >
-                {option}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
       </View>
       {filterSheet ? (
         <AnnouncementFilterSheet

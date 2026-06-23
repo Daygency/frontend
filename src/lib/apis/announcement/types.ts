@@ -86,6 +86,8 @@ export type AnnouncementListParams = {
   priceType?: AnnouncementPriceType;
   /** 제목·본문·주소 키워드 검색 */
   q?: string;
+  /** created: 등록순, imminent: 임박순 */
+  sort?: "created" | "imminent";
 };
 
 /** README: 작성·수정 성공 응답 — majors·priceType·price 포함 */

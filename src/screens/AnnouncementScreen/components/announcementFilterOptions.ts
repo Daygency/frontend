@@ -1,9 +1,19 @@
-export type AnnouncementFilterSheetType = "status" | "type" | "major" | "price";
+export type AnnouncementFilterSheetType =
+  | "sort"
+  | "status"
+  | "type"
+  | "major"
+  | "price";
+
+export const ANNOUNCEMENT_SORT_OPTIONS = ["임박순", "등록순"] as const;
+export type AnnouncementSortOption =
+  (typeof ANNOUNCEMENT_SORT_OPTIONS)[number];
 
 export const ANNOUNCEMENT_FILTER_SHEET_TITLES: Record<
   AnnouncementFilterSheetType,
   string
 > = {
+  sort: "정렬",
   status: "모집 상태",
   type: "공고 유형",
   major: "모집 전공",

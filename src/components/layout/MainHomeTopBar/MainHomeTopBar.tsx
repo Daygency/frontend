@@ -1,8 +1,20 @@
-import { Image, Pressable, View, type ImageSourcePropType } from "react-native";
+import { useRef, useState } from "react";
+import {
+  Image,
+  Modal,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  type ImageSourcePropType,
+} from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Logo from "../../ui/Logo";
 import { MAIN, WHITE } from "../../../color";
-import styles, { MAIN_HOME_TOP_BAR_TITLE_SIZE } from "./styles";
+import styles, {
+  MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
+  MAIN_HOME_TOP_BAR_TITLE_SIZE,
+} from "./styles";
 import Feather from "@expo/vector-icons/Feather";
 import { CompositeNavigationProp, useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -22,6 +34,9 @@ interface MainHomeTopBarProps {
   logoAspectRatio?: number;
   initialTag?: string | null;
   variant?: "light" | "dark";
+  titleMenuOptions?: readonly string[];
+  selectedTitleMenuOption?: string;
+  onTitleMenuOptionChange?: (option: string) => void;
 }
 
 const MainHomeTopBar = ({
@@ -30,10 +45,26 @@ const MainHomeTopBar = ({
   logoAspectRatio = 1396 / 179,
   initialTag,
   variant = "light",
+  titleMenuOptions,
+  selectedTitleMenuOption,
+  onTitleMenuOptionChange,
 }: MainHomeTopBarProps) => {
   const navigation = useNavigation<MainHomeTopBarNavigationProp>();
   const { ensureLoggedIn } = useRequireLogin();
   const iconColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
+  const titleColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
+  const [titleMenuVisible, setTitleMenuVisible] = useState(false);
+  const [titleMenuPosition, setTitleMenuPosition] = useState({ x: 0, y: 0 });
+  const titleMenuRef = useRef<View>(null);
+
+  const hasTitleMenu =
+    titleMenuOptions != null &&
+    titleMenuOptions.length > 0 &&
+    selectedTitleMenuOption != null &&
+    onTitleMenuOptionChange != null;
+  const displayedTitle = hasTitleMenu
+    ? selectedTitleMenuOption
+    : (logoName ?? "");
 
   const handleSearchPress = () => {
     if (initialTag) {
@@ -48,9 +79,99 @@ const MainHomeTopBar = ({
   const logoMaxWidth = variant === "dark" ? 20 : 110;
   const logoWidth = Math.min(logoHeight * logoAspectRatio, logoMaxWidth);
 
-  return (
-    <View style={styles.container}>
-      {logoImage ? (
+  const openTitleMenu = () => {
+    titleMenuRef.current?.measureInWindow((x, y, _width, height) => {
+      setTitleMenuPosition({ x, y: y + height + 4 });
+      setTitleMenuVisible(true);
+    });
+  };
+
+  const renderTitle = () => {
+    if (hasTitleMenu) {
+      return (
+        <>
+          <View ref={titleMenuRef} collapsable={false}>
+            <Pressable
+              style={styles.titleMenuButton}
+              onPress={openTitleMenu}
+              accessibilityRole="button"
+              accessibilityLabel={`${displayedTitle} 보기 선택`}
+            >
+              <Text
+                style={[
+                  styles.titleMenuText,
+                  {
+                    fontSize: MAIN_HOME_TOP_BAR_TITLE_SIZE,
+                    lineHeight: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
+                    color: titleColor,
+                  },
+                ]}
+              >
+                {displayedTitle}
+              </Text>
+              <MaterialCommunityIcons
+                name="chevron-down"
+                size={22}
+                color={titleColor}
+              />
+            </Pressable>
+          </View>
+          <Modal
+            visible={titleMenuVisible}
+            transparent
+            animationType="fade"
+            onRequestClose={() => setTitleMenuVisible(false)}
+          >
+            <View style={styles.titleMenuModalRoot} pointerEvents="box-none">
+              <Pressable
+                style={StyleSheet.absoluteFill}
+                onPress={() => setTitleMenuVisible(false)}
+              />
+              <View
+                style={[
+                  styles.titleMenuDropdown,
+                  {
+                    top: titleMenuPosition.y,
+                    left: titleMenuPosition.x,
+                  },
+                ]}
+              >
+                {titleMenuOptions.map((option) => {
+                  const selected = option === selectedTitleMenuOption;
+                  return (
+                    <Pressable
+                      key={option}
+                      style={({ pressed }) => [
+                        styles.titleMenuItem,
+                        pressed && styles.titleMenuItemPressed,
+                      ]}
+                      onPress={() => {
+                        setTitleMenuVisible(false);
+                        if (option !== selectedTitleMenuOption) {
+                          onTitleMenuOptionChange(option);
+                        }
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.titleMenuItemText,
+                          selected && styles.titleMenuItemTextSelected,
+                        ]}
+                      >
+                        {option}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+          </Modal>
+        </>
+      );
+    }
+
+    if (logoImage) {
+      return (
         <View
           style={{
             width: logoWidth,
@@ -68,9 +189,15 @@ const MainHomeTopBar = ({
             accessibilityLabel="daygency"
           />
         </View>
-      ) : (
-        <Logo logoName={logoName ?? ""} />
-      )}
+      );
+    }
+
+    return <Logo logoName={logoName ?? ""} />;
+  };
+
+  return (
+    <View style={styles.container}>
+      {renderTitle()}
       <View style={styles.iconContainer}>
         <Pressable style={styles.iconButton} onPress={handleSearchPress}>
           <Feather name="search" size={23} color={iconColor} />
