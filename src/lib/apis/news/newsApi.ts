@@ -61,6 +61,12 @@ function normalizeNewsListItem(raw: unknown): NewsListItem {
     attachments: r.attachments,
     file,
     createdAt: String(r.createdAt ?? r.created_at ?? ""),
+    ticketPrice: (() => {
+      const tp = r.ticketPrice ?? r.ticket_price;
+      if (tp === null || tp === undefined || tp === "") return null;
+      const n = typeof tp === "number" ? tp : Number(tp);
+      return Number.isFinite(n) ? n : null;
+    })(),
   };
 }
 

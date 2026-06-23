@@ -138,6 +138,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: BLACK,
   },
+  freeTicketField: {
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: GRAY.MEDIUM_2,
+  },
+  freeTicketText: {
+    fontSize: 14,
+    color: GRAY.DARK_1,
+  },
   charCount: {
     position: "absolute",
     bottom: 12,

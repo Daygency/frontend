@@ -22,6 +22,7 @@ export type NewsListItem = {
   attachments?: unknown;
   file?: Record<string, unknown> | null;
   createdAt?: string;
+  ticketPrice?: number | null;
 };
 
 /** 공연소식 목록 응답 */

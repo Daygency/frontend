@@ -69,6 +69,7 @@ const MusicNewsRegistrationScreen = () => {
     longitude: null as number | null,
   });
   const [ticketPrice, setTicketPrice] = useState("");
+  const [isFreeTicket, setIsFreeTicket] = useState(false);
   const [startedAt, setStartedAt] = useState<Date>(defaultStart);
   const [endedAt, setEndedAt] = useState<Date | null>(null);
   const [useEndDate, setUseEndDate] = useState(false);
@@ -103,7 +104,11 @@ const MusicNewsRegistrationScreen = () => {
         longitude: parseCoord(detail.longitude),
       });
       setContact(detail.contact ?? "");
-      if (detail.ticketPrice != null) {
+      if (detail.ticketPrice === 0) {
+        setIsFreeTicket(true);
+        setTicketPrice("");
+      } else if (detail.ticketPrice != null) {
+        setIsFreeTicket(false);
         setTicketPrice(String(detail.ticketPrice));
       }
       if (detail.startedAt) {
@@ -196,7 +201,13 @@ const MusicNewsRegistrationScreen = () => {
         : {}),
       startedAt: dateToISO(startedAt),
       contact: contact.trim().slice(0, 30),
-      ...(ticketPrice.trim() ? { ticketPrice: parseInt(ticketPrice, 10) || undefined } : {}),
+      ...(isFreeTicket
+        ? { ticketPrice: 0 }
+        : ticketPrice.trim()
+          ? { ticketPrice: parseInt(ticketPrice, 10) || undefined }
+          : isEditMode
+            ? { ticketPrice: null }
+            : {}),
       ...(useEndDate && endedAt ? { endedAt: dateToISO(endedAt) } : {}),
     };
 
@@ -306,14 +317,38 @@ const MusicNewsRegistrationScreen = () => {
           </View>
 
           <View style={styles.formField}>
-            <Form title="티켓 가격" isRequired={false}>
+            <View style={styles.endDateToggleRow}>
+              <Form title="티켓 가격" isRequired={false} />
+              <Pressable
+                style={styles.toggleButton}
+                onPress={() => {
+                  setIsFreeTicket((prev) => {
+                    const next = !prev;
+                    if (next) setTicketPrice("");
+                    return next;
+                  });
+                }}
+              >
+                <Text style={styles.toggleText}>무료</Text>
+                <MaterialCommunityIcons
+                  name={isFreeTicket ? "checkbox-marked" : "checkbox-blank-outline"}
+                  size={20}
+                  color={MAIN.DEFAULT}
+                />
+              </Pressable>
+            </View>
+            {!isFreeTicket ? (
               <FormTextInput
                 placeholder="금액만 입력 (선택, 예: 30000)"
                 value={ticketPrice}
-                onChangeText={setTicketPrice}
+                onChangeText={(text) => setTicketPrice(text.replace(/[^0-9]/g, ""))}
                 keyboardType="number-pad"
               />
-            </Form>
+            ) : (
+              <View style={styles.freeTicketField}>
+                <Text style={styles.freeTicketText}>무료 공연 (0원)</Text>
+              </View>
+            )}
           </View>
 
           <View style={styles.formField}>
