@@ -2,7 +2,9 @@ import fs from "fs";
 import path from "path";
 
 const plistPath = path.resolve(__dirname, "GoogleService-Info.plist");
+const googleServicesJsonPath = path.resolve(__dirname, "google-services.json");
 const googleServicesBase64 = process.env.GOOGLE_SERVICES_PLIST;
+const googleServicesJsonBase64 = process.env.GOOGLE_SERVICES_JSON;
 
 if (googleServicesBase64) {
   try {
@@ -13,10 +15,34 @@ if (googleServicesBase64) {
   }
 }
 
+if (googleServicesJsonBase64) {
+  try {
+    fs.writeFileSync(googleServicesJsonPath, googleServicesJsonBase64, {
+      encoding: "base64",
+    });
+    console.log("google-services.json generated.");
+  } catch (err) {
+    console.error("google-services.json creation failed:", err);
+  }
+}
+
 const hasPlist = fs.existsSync(plistPath);
+const hasGoogleServicesJson = fs.existsSync(googleServicesJsonPath);
 
 const googleMapsApiKey =
   process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
+
+const googleIosUrlScheme =
+  process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME?.trim() ?? "";
+
+const googleSignInPlugins = googleIosUrlScheme
+  ? [
+      [
+        "@react-native-google-signin/google-signin",
+        { iosUrlScheme: googleIosUrlScheme },
+      ],
+    ]
+  : [];
 
 export default ({ config }) => ({
   ...config,
@@ -36,9 +62,7 @@ export default ({ config }) => ({
     },
     android: {
       package: "com.rbdus.mfrontend",
-      googleServicesFile: fs.existsSync(
-        path.resolve(__dirname, "google-services.json"),
-      )
+      googleServicesFile: hasGoogleServicesJson
         ? "./google-services.json"
         : undefined,
       config: {
@@ -80,6 +104,7 @@ export default ({ config }) => ({
             process.env.EXPO_PUBLIC_NAVER_URL_SCHEME || "comrbdusmfrontend",
         },
       ],
+      ...googleSignInPlugins,
     ],
     extra: {
       eas: { projectId: "773ddc8a-786b-4fa9-8638-2ad456ef803a" },

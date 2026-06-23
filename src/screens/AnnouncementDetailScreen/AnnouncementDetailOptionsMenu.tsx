@@ -16,6 +16,7 @@ import {
   deleteScrapByTarget,
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
+import { useRequireLogin } from "../../hooks/useRequireLogin";
 
 interface AnnouncementDetailOptionsMenuProps {
   isMine: boolean;
@@ -32,6 +33,7 @@ const AnnouncementDetailOptionsMenu = ({
   onDelete,
   onReport,
 }: AnnouncementDetailOptionsMenuProps) => {
+  const { ensureLoggedIn } = useRequireLogin();
   const [menuVisible, setMenuVisible] = useState(false);
   const [scraped, setScraped] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({
@@ -53,6 +55,7 @@ const AnnouncementDetailOptionsMenu = ({
   }, [postId]);
 
   const handlePressScrap = async () => {
+    if (!ensureLoggedIn()) return;
     if (!postId) {
       Alert.alert("알림", "대상 공고 정보를 찾을 수 없습니다.");
       return;

@@ -10,6 +10,7 @@ import CategoryTabBar from "../../components/layout/CategoryTabBar";
 import MusicNewsScene from "./components/MusicNewsScene";
 import CommunityScene from "./components/CommunityScene";
 import { RootRoutes } from "../../navigations/routes";
+import { useRequireLogin } from "../../hooks/useRequireLogin";
 
 type LoungeRouteParams = {
   initialTab?: "음악계 소식" | "커뮤니티";
@@ -17,6 +18,7 @@ type LoungeRouteParams = {
 
 const LoungeScreen = () => {
   const navigation = useNavigation<any>();
+  const { ensureLoggedIn } = useRequireLogin();
   const route = useRoute<RouteProp<{ Lounge: LoungeRouteParams }, "Lounge">>();
   const { top } = useSafeAreaInsets();
   const layout = useWindowDimensions();
@@ -69,18 +71,24 @@ const LoungeScreen = () => {
         menuItems={[
           {
             label: "모집공고",
-            onPress: () =>
-              navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION),
+            onPress: () => {
+              if (!ensureLoggedIn()) return;
+              navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION);
+            },
           },
           {
             label: "음악계 소식",
-            onPress: () =>
-              navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION),
+            onPress: () => {
+              if (!ensureLoggedIn()) return;
+              navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION);
+            },
           },
           {
             label: "커뮤니티",
-            onPress: () =>
-              navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION),
+            onPress: () => {
+              if (!ensureLoggedIn()) return;
+              navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION);
+            },
           },
         ]}
       />

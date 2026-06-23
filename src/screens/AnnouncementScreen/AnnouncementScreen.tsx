@@ -24,6 +24,7 @@ import {
 } from "../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
 import { useAuth } from "../../contexts/AuthContext";
+import { useRequireLogin } from "../../hooks/useRequireLogin";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
 import {
@@ -51,6 +52,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const navigation = useNavigation<NavigationProp>();
   const { top } = useSafeAreaInsets();
   const { isLoggedIn } = useAuth();
+  const { ensureLoggedIn } = useRequireLogin();
   const [selectedStatus, setSelectedStatus] = useState<string[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
@@ -249,7 +251,10 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             <Pressable
               key={option}
               style={[styles.sortTab, activeTab === option && styles.sortTabActive]}
-              onPress={() => setActiveTab(option)}
+              onPress={() => {
+                if (option === "내 공고" && !ensureLoggedIn()) return;
+                setActiveTab(option);
+              }}
             >
               <Text
                 style={[
@@ -386,18 +391,24 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           menuItems={[
             {
               label: "모집공고",
-              onPress: () =>
-                navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION),
+              onPress: () => {
+                if (!ensureLoggedIn()) return;
+                navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION);
+              },
             },
             {
               label: "음악계 소식",
-              onPress: () =>
-                navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION),
+              onPress: () => {
+                if (!ensureLoggedIn()) return;
+                navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION);
+              },
             },
             {
               label: "커뮤니티",
-              onPress: () =>
-                navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION),
+              onPress: () => {
+                if (!ensureLoggedIn()) return;
+                navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION);
+              },
             },
           ]}
         />

@@ -10,6 +10,11 @@ import {
 import { initializeKakaoSDK } from "@react-native-kakao/core";
 import NaverLogin from "@react-native-seoul/naver-login";
 import { NAVER_APP_NAME, NAVER_URL_SCHEME } from "./lib/naver/naverConfig";
+import {
+  GOOGLE_IOS_CLIENT_ID,
+  GOOGLE_WEB_CLIENT_ID,
+} from "./lib/google/googleConfig";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { FcmTokenSyncBridge } from "./components/internal/FcmTokenSyncBridge";
 import { AuthProvider } from "./contexts/AuthContext";
 import Navigation from "./navigations/Navigation";
@@ -42,6 +47,14 @@ if (
     consumerSecret: naverClientSecret,
     serviceUrlSchemeIOS: NAVER_URL_SCHEME,
     disableNaverAppAuthIOS: true,
+  });
+}
+
+if (GOOGLE_WEB_CLIENT_ID) {
+  GoogleSignin.configure({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+    ...(GOOGLE_IOS_CLIENT_ID ? { iosClientId: GOOGLE_IOS_CLIENT_ID } : {}),
+    offlineAccess: true,
   });
 }
 

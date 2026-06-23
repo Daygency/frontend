@@ -5,6 +5,7 @@ import CategoryTabBar from "../../components/layout/CategoryTabBar";
 import { useCallback, useState } from "react";
 import { useFocusEffect, useRoute, RouteProp } from "@react-navigation/native";
 import { useAuth } from "../../contexts/AuthContext";
+import { useRequireLogin } from "../../hooks/useRequireLogin";
 import type { FollowListParams } from "./types";
 import styles from "./styles";
 
@@ -13,6 +14,7 @@ const FollowListScreen = () => {
   const route = useRoute<RouteProp<{ FollowList: FollowListParams }, "FollowList">>();
   const params = route.params;
   const { user } = useAuth();
+  const { isLoggedIn, requireLogin } = useRequireLogin();
 
   const targetUserId =
     params?.userId?.trim() || user?.socialId?.trim() || "";
@@ -29,6 +31,14 @@ const FollowListScreen = () => {
       if (tab === "followers") setIndex(1);
       else setIndex(0);
     }, [params?.initialTab]),
+  );
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!isLoggedIn && !params?.userId?.trim()) {
+        requireLogin();
+      }
+    }, [isLoggedIn, params?.userId, requireLogin]),
   );
 
   const renderScene = ({ route: scene }: { route: { key: string } }) => {

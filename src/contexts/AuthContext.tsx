@@ -15,13 +15,14 @@ import {
 import { clearProfileCache } from "../lib/profileCache";
 import { onAuthExpired } from "../lib/authEvents";
 import { completeKakaoSignup } from "../lib/apis/auth/completeKakaoSignup";
+import { completeGoogleSignup } from "../lib/apis/auth/completeGoogleSignup";
 import { completeNaverSignup } from "../lib/apis/auth/completeNaverSignup";
 import { syncFcmTokenToServer } from "../lib/fcmServerSync";
 const USER_INFO_KEY = "@daygency_user_info";
 const PENDING_SIGNUP_KEY = "@daygency_pending_signup";
 const PENDING_SIGNUP_PROVIDER_KEY = "@daygency_pending_signup_provider";
 
-export type SignupProvider = "kakao" | "naver";
+export type SignupProvider = "kakao" | "naver" | "google";
 
 export type SocialUser = {
   socialId: string;
@@ -56,13 +57,15 @@ type AuthContextType = {
   completeSignup: (params: SignupParams) => Promise<void>;
   logout: () => Promise<void>;
   enterBrowse: () => void;
+  /** 비로그인 시 둘러보기 종료 후 로그인 화면으로 전환 */
+  requireLogin: () => void;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isBrowsing, setIsBrowsing] = useState(false);
+  const [isBrowsing, setIsBrowsing] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [needsRoleSelection, setNeedsRoleSelection] = useState(false);
   const [user, setUser] = useState<SocialUser | null>(null);
@@ -71,7 +74,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const unsub = onAuthExpired(() => {
       setUser(null);
       setIsLoggedIn(false);
-      setIsBrowsing(false);
+      setIsBrowsing(true);
       setNeedsRoleSelection(false);
     });
     return unsub;
@@ -101,15 +104,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           setUser(parsedUser);
           setNeedsRoleSelection(true);
           setIsLoggedIn(false);
-        } else {
+          setIsBrowsing(false);
+        } else if (token) {
           setUser(parsedUser);
           setNeedsRoleSelection(false);
-          setIsLoggedIn(!!token);
+          setIsLoggedIn(true);
+        } else {
+          setUser(null);
+          setNeedsRoleSelection(false);
+          setIsLoggedIn(false);
+          setIsBrowsing(true);
         }
       } catch {
         setIsLoggedIn(false);
         setUser(null);
         setNeedsRoleSelection(false);
+        setIsBrowsing(true);
       } finally {
         setIsLoading(false);
       }
@@ -160,6 +170,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(userInfo);
     setNeedsRoleSelection(false);
     setIsLoggedIn(true);
+    setIsBrowsing(false);
   };
 
   const completeSignup = async (params: SignupParams) => {
@@ -183,12 +194,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
               ...(name?.trim() ? { name: name.trim() } : {}),
               role: role === "planner" ? "admin" : "user",
             })
-          : await completeKakaoSignup({
-              accessToken,
-              role,
-              ...(name?.trim() ? { name: name.trim() } : {}),
-              ...(activityName?.trim() ? { activityName: activityName.trim() } : {}),
-            });
+          : signupProvider === "google"
+            ? await completeGoogleSignup({
+                accessToken,
+                role,
+                ...(name?.trim() ? { name: name.trim() } : {}),
+                ...(activityName?.trim()
+                  ? { activityName: activityName.trim() }
+                  : {}),
+              })
+            : await completeKakaoSignup({
+                accessToken,
+                role,
+                ...(name?.trim() ? { name: name.trim() } : {}),
+                ...(activityName?.trim()
+                  ? { activityName: activityName.trim() }
+                  : {}),
+              });
 
       // 토큰 발급 시 새 토큰으로 갱신 (auth-api.md: accessToken + refreshToken)
       if (data?.accessToken) {
@@ -216,6 +238,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       ]);
       setNeedsRoleSelection(false);
       setIsLoggedIn(true);
+      setIsBrowsing(false);
       void syncFcmTokenToServer();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -236,12 +259,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     ]);
     setUser(null);
     setIsLoggedIn(false);
-    setIsBrowsing(false);
+    setIsBrowsing(true);
     setNeedsRoleSelection(false);
   };
 
   const enterBrowse = () => {
     setIsBrowsing(true);
+  };
+
+  const requireLogin = () => {
+    if (isLoggedIn) return;
+    setIsBrowsing(false);
   };
 
   return (
@@ -256,6 +284,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         completeSignup,
         logout,
         enterBrowse,
+        requireLogin,
       }}
     >
       {children}

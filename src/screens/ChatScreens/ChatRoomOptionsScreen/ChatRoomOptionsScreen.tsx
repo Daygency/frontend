@@ -10,6 +10,7 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useRequireLogin } from "../../../hooks/useRequireLogin";
 import {
   getChatRoomMemberSettings,
   leaveChatRoom,
@@ -34,6 +35,7 @@ const ChatRoomOptionsScreen = () => {
   const route =
     useRoute<RouteProp<{ ChatRoomOptions: ChatRoomOptionsParams }, "ChatRoomOptions">>();
   const { user } = useAuth();
+  const { requireLogin } = useRequireLogin();
   const { top } = useSafeAreaInsets();
 
   const chatRoomId = String(route.params?.chatRoomId ?? "").trim();
@@ -117,7 +119,7 @@ const ChatRoomOptionsScreen = () => {
 
   const handleReportPress = () => {
     if (!myUserId) {
-      Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
+      requireLogin();
       return;
     }
     if (!peerUserId) {

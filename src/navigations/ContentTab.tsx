@@ -1,10 +1,12 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import type { EventArg } from "@react-navigation/native";
 import { ContentRoutes } from "./routes";
 import MainHomeScreen from "../screens/MainHomeScreen/MainHomeScreen";
 import AnnouncementScreen from "../screens/AnnouncementScreen/AnnouncementScreen";
 import ChatScreen from "../screens/ChatScreens/ChatScreen/ChatScreen";
 import LoungeScreen from "../screens/LoungeScreen/LoungeScreen";
 import PortfolioScreen from "../screens/PortfolioScreen/PortfolioScreen";
+import { useAuth } from "../contexts/AuthContext";
 import { getFcmToken } from "../lib/pushNotifications";
 import {
   AntDesign,
@@ -27,6 +29,16 @@ const TAB_BAR_STYLE = {
 } as const;
 
 const ContentTab = () => {
+  const { isLoggedIn, requireLogin } = useAuth();
+
+  const requireLoginOnTabPress = (
+    e: EventArg<"tabPress", true, undefined>,
+  ) => {
+    if (isLoggedIn) return;
+    e.preventDefault();
+    requireLogin();
+  };
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -59,6 +71,7 @@ const ContentTab = () => {
       <Tab.Screen
         name={ContentRoutes.PAYMENT}
         component={ChatScreen}
+        listeners={{ tabPress: requireLoginOnTabPress }}
         options={{
           tabBarIcon: ({ color }) => (
             <Ionicons name="chatbubble-outline" size={24} color={color} />
@@ -80,7 +93,11 @@ const ContentTab = () => {
         name={ContentRoutes.LOUNGE}
         component={PortfolioScreen}
         listeners={{
-          tabPress: () => {
+          tabPress: (e) => {
+            if (!isLoggedIn) {
+              requireLoginOnTabPress(e);
+              return;
+            }
             void (async () => {
               const token = await getFcmToken();
               console.log("[FCM] device token:", token ?? "(null — 권한 없음 또는 네이티브 미지원)");

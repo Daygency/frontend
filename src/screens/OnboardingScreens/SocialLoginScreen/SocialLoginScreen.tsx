@@ -5,121 +5,118 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
-  Alert,
 } from "react-native";
+import { StatusBar } from "expo-status-bar";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useKakaoLogin } from "./useKakaoLogin";
 import { useNaverLogin } from "./useNaverLogin";
+import { useGoogleLogin } from "./useGoogleLogin";
+import { WHITE } from "../../../color";
 import { styles } from "./styles";
+
+const WHITE_LOGO = require("../../../../assets/daygency_logo_white.png");
+const GOOGLE_LOGO = require("../../../../assets/google.png");
 
 const SocialLoginScreen = () => {
   const { top, bottom } = useSafeAreaInsets();
   const { enterBrowse } = useAuth();
   const { handleKakaoLogin, isLoading: isKakaoLoading } = useKakaoLogin();
   const { handleNaverLogin, isLoading: isNaverLoading } = useNaverLogin();
+  const { handleGoogleLogin, isLoading: isGoogleLoading } = useGoogleLogin();
 
-  const authBusy = isKakaoLoading || isNaverLoading;
-
-  const handleGoogleLogin = () => {
-    Alert.alert(
-      "준비 중",
-      "구글 로그인은 현재 준비 중입니다. 카카오 또는 네이버로 로그인해 주세요.",
-    );
-  };
+  const authBusy = isKakaoLoading || isNaverLoading || isGoogleLoading;
 
   return (
-    <ScrollView
-      style={styles.container}
-      contentContainerStyle={[
-        styles.contentContainer,
-        { paddingTop: top, paddingBottom: bottom, paddingVertical: 24 },
-      ]}
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.logoWrap}>
-        <Image
-          source={require("../../../../assets/logo.png")}
-          style={styles.logo}
-          resizeMode="contain"
-        />
-        <Text style={styles.logoText}>DAYGENCY</Text>
-      </View>
-      <Text style={styles.tagline}>
-        계정에 로그인하여 데이전시를 시작하세요
-      </Text>
+    <View style={styles.screen}>
+      <StatusBar style="light" />
+      <Pressable
+        style={[styles.closeButton, { top: top + 4 }]}
+        onPress={enterBrowse}
+        hitSlop={12}
+        accessibilityLabel="닫기"
+        accessibilityRole="button"
+      >
+        <MaterialCommunityIcons name="close" size={28} color={WHITE} />
+      </Pressable>
 
-      <View style={styles.buttonContainer}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.socialButton,
-            styles.kakaoButton,
-            pressed && styles.buttonPressed,
-          ]}
-          onPress={handleKakaoLogin}
-          disabled={authBusy}
-        >
-          {isKakaoLoading ? (
-            <ActivityIndicator size="small" color="#000" />
-          ) : (
-            <MaterialCommunityIcons name="chat" size={22} color="#000" />
-          )}
-          <Text style={[styles.buttonText, styles.kakaoButtonText]}>
-            {isKakaoLoading ? "로그인 중..." : "카카오로 시작하기"}
-          </Text>
-        </Pressable>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingTop: top + 48, paddingBottom: bottom + 24 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.logoWrap}>
+          <Image
+            source={WHITE_LOGO}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.socialButton,
-            styles.naverButton,
-            pressed && styles.buttonPressed,
-          ]}
-          onPress={handleNaverLogin}
-          disabled={authBusy}
-        >
-          {isNaverLoading ? (
-            <ActivityIndicator size="small" color="#fff" />
-          ) : (
-            <Text style={styles.naverLogo}>N</Text>
-          )}
-          <Text style={[styles.buttonText, styles.naverButtonText]}>
-            {isNaverLoading ? "로그인 중..." : "네이버로 시작하기"}
-          </Text>
-        </Pressable>
+        <View style={styles.buttonContainer}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.socialButton,
+              styles.kakaoButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handleKakaoLogin}
+            disabled={authBusy}
+          >
+            {isKakaoLoading ? (
+              <ActivityIndicator size="small" color="#000" />
+            ) : (
+              <MaterialCommunityIcons name="chat" size={22} color="#000" />
+            )}
+            <Text style={[styles.buttonText, styles.kakaoButtonText]}>
+              {isKakaoLoading ? "로그인 중..." : "카카오로 시작하기"}
+            </Text>
+          </Pressable>
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.socialButton,
-            styles.googleButton,
-            pressed && styles.buttonPressed,
-            styles.googleButtonDisabled,
-          ]}
-          onPress={handleGoogleLogin}
-          disabled={authBusy}
-        >
-          <View style={styles.googleIconContainer}>
-            <Text style={styles.googleG}>G</Text>
-          </View>
-          <Text style={[styles.buttonText, styles.googleButtonText]}>
-            구글로 시작하기
-          </Text>
-        </Pressable>
+          <Pressable
+            style={({ pressed }) => [
+              styles.socialButton,
+              styles.naverButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handleNaverLogin}
+            disabled={authBusy}
+          >
+            {isNaverLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.naverLogo}>N</Text>
+            )}
+            <Text style={[styles.buttonText, styles.naverButtonText]}>
+              {isNaverLoading ? "로그인 중..." : "네이버로 시작하기"}
+            </Text>
+          </Pressable>
 
-        <View style={styles.divider} />
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.browseButton,
-            pressed && styles.buttonPressed,
-          ]}
-          onPress={enterBrowse}
-        >
-          <Text style={styles.browseButtonText}>둘러보기</Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+          <Pressable
+            style={({ pressed }) => [
+              styles.socialButton,
+              styles.googleButton,
+              pressed && styles.buttonPressed,
+            ]}
+            onPress={handleGoogleLogin}
+            disabled={authBusy}
+          >
+            {isGoogleLoading ? (
+              <ActivityIndicator size="small" color="#000" />
+            ) : (
+              <Image source={GOOGLE_LOGO} style={styles.googleLogo} />
+            )}
+            <Text style={[styles.buttonText, styles.googleButtonText]}>
+              {isGoogleLoading ? "로그인 중..." : "구글로 시작하기"}
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 

@@ -4,6 +4,7 @@ import { Feather } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Logo from "../../../components/ui/Logo";
 import { GRAY, MAIN } from "../../../color";
+import { useAuthGate } from "../../../hooks/useRequireLogin";
 import styles from "./styles";
 import ChatList, { getUnreadCountByTopTabMock } from "./components/ChatList/ChatList";
 
@@ -11,6 +12,7 @@ type ChatTopTab = "일반" | "내 공고" | "지원 공고";
 const TOP_TABS: ChatTopTab[] = ["일반", "내 공고", "지원 공고"];
 
 const ChatScreen = () => {
+  useAuthGate();
   const { top } = useSafeAreaInsets();
   const [selectedTopTab, setSelectedTopTab] = useState<ChatTopTab>("일반");
   const [isSearchOpen, setIsSearchOpen] = useState(false);

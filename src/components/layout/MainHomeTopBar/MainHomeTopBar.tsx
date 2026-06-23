@@ -9,6 +9,7 @@ import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../navigations/routes";
 import type { ContentTabParamList, RootStackParamList } from "../../../navigations/types";
+import { useRequireLogin } from "../../../hooks/useRequireLogin";
 
 type MainHomeTopBarNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<ContentTabParamList>,
@@ -31,6 +32,7 @@ const MainHomeTopBar = ({
   variant = "light",
 }: MainHomeTopBarProps) => {
   const navigation = useNavigation<MainHomeTopBarNavigationProp>();
+  const { ensureLoggedIn } = useRequireLogin();
   const iconColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
 
   const handleSearchPress = () => {
@@ -75,7 +77,10 @@ const MainHomeTopBar = ({
         </Pressable>
         <Pressable
           style={styles.iconButton}
-          onPress={() => navigation.navigate(RootRoutes.NOTIFICATIONS)}
+          onPress={() => {
+            if (!ensureLoggedIn()) return;
+            navigation.navigate(RootRoutes.NOTIFICATIONS);
+          }}
         >
           <MaterialCommunityIcons
             name="bell-outline"
@@ -85,7 +90,10 @@ const MainHomeTopBar = ({
         </Pressable>
         <Pressable
           style={styles.iconButton}
-          onPress={() => navigation.navigate(RootRoutes.SETTINGS)}
+          onPress={() => {
+            if (!ensureLoggedIn()) return;
+            navigation.navigate(RootRoutes.SETTINGS);
+          }}
         >
           <MaterialCommunityIcons
             name="cog-outline"

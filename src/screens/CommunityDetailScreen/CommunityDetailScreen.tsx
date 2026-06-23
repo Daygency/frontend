@@ -46,6 +46,7 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
+import { useRequireLogin } from "../../hooks/useRequireLogin";
 import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
 import ReportDotsDropdownMenu from "../../components/menus/ReportDotsDropdownMenu";
 import { createReport } from "../../lib/apis/report/reportApi";
@@ -179,6 +180,7 @@ const CommunityDetailScreen = () => {
   const route = useRoute<CommunityDetailRouteProp>();
   const { communityId } = route.params;
   const { user, isLoggedIn } = useAuth();
+  const { ensureLoggedIn } = useRequireLogin();
   const { bottom } = useSafeAreaInsets();
   const [data, setData] = useState<CommunityDetailResponse | null>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
@@ -273,10 +275,7 @@ const CommunityDetailScreen = () => {
   }, [communityId, user?.socialId]);
 
   const openReportPost = useCallback(() => {
-    if (!isLoggedIn) {
-      Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
-      return;
-    }
+    if (!ensureLoggedIn()) return;
     if (data?.isMine) {
       Alert.alert("알림", "본인이 작성한 글은 신고할 수 없습니다.");
       return;
@@ -300,10 +299,7 @@ const CommunityDetailScreen = () => {
 
   const openReportComment = useCallback(
     (targetId: string, reportedUserId: string | undefined) => {
-      if (!isLoggedIn) {
-        Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
-        return;
-      }
+      if (!ensureLoggedIn()) return;
       if (!reportedUserId) {
         Alert.alert("알림", "신고할 수 없습니다.");
         return;
@@ -416,6 +412,7 @@ const CommunityDetailScreen = () => {
   );
 
   const handleToggleLike = async () => {
+    if (!ensureLoggedIn()) return;
     if (liked) {
       const res = await deleteLikeByTarget({
         likeType: "COMMUNITY",
@@ -442,6 +439,7 @@ const CommunityDetailScreen = () => {
   };
 
   const handleToggleScrap = async () => {
+    if (!ensureLoggedIn()) return;
     if (scraped) {
       const res = await deleteScrapByTarget({
         targetType: "COMMUNITY",
@@ -468,6 +466,7 @@ const CommunityDetailScreen = () => {
   };
 
   const handleCreateComment = async (content: string) => {
+    if (!ensureLoggedIn()) return;
     if (editingComment) {
       const updated = await updateComment(editingComment.commentId, { content });
       if (!updated) {
@@ -533,6 +532,7 @@ const CommunityDetailScreen = () => {
   );
 
   const handleToggleCommentLike = async (targetId: string, currentLiked: boolean) => {
+    if (!ensureLoggedIn()) return;
     if (currentLiked) {
       const res = await deleteLikeByTarget({
         likeType: "COMMENT",

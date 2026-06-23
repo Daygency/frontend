@@ -1,10 +1,26 @@
 import { StyleSheet, Platform } from "react-native";
 import { WHITE, GRAY, MAIN } from "../../../color";
 
+const WHITE_LOGO_ASPECT_RATIO = 660 / 595;
+const LOGO_HEIGHT = 32 + 30;
+const LOGO_WIDTH = Math.min(LOGO_HEIGHT * WHITE_LOGO_ASPECT_RATIO, 88) + 30;
+
 export const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: MAIN.DEFAULT,
+  },
+  closeButton: {
+    position: "absolute",
+    right: 16,
+    zIndex: 10,
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
-    backgroundColor: WHITE,
   },
   contentContainer: {
     flexGrow: 1,
@@ -15,26 +31,15 @@ export const styles = StyleSheet.create({
   },
   logoWrap: {
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 12,
   },
   logo: {
-    width: 64,
-    height: 64,
-  },
-  logoText: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: MAIN.DEFAULT,
-  },
-  tagline: {
-    fontSize: 13,
-    color: MAIN.DEFAULT,
-    marginBottom: 4,
-    textAlign: "center",
+    width: LOGO_WIDTH,
+    height: LOGO_HEIGHT,
   },
   buttonContainer: {
     width: "100%",
-    marginTop: 48,
+    marginTop: 32,
   },
   socialButton: {
     flexDirection: "row",
@@ -60,9 +65,6 @@ export const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
   },
-  googleButtonDisabled: {
-    opacity: 0.55,
-  },
   buttonText: {
     fontSize: 16,
     fontWeight: "600",
@@ -85,32 +87,9 @@ export const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: Platform.OS === "ios" ? 24 : 22,
   },
-  googleIconContainer: {
+  googleLogo: {
     width: 22,
     height: 22,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  googleG: {
-    fontSize: 18,
-    fontWeight: "800",
-    color: "#4285F4",
-  },
-  divider: {
-    height: 1,
-    backgroundColor: GRAY.MEDIUM_2,
-    marginVertical: 24,
-  },
-  browseButton: {
-    backgroundColor: GRAY.DEFAULT_1,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  browseButtonText: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: MAIN.DEFAULT,
+    resizeMode: "contain",
   },
 });

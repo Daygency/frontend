@@ -63,6 +63,7 @@ import {
   parseApplicationConfig,
 } from "../../lib/application/parseApplicationConfig";
 import { useAuth } from "../../contexts/AuthContext";
+import { useRequireLogin } from "../../hooks/useRequireLogin";
 import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
 import { createReport } from "../../lib/apis/report/reportApi";
 import type { ReportCategory } from "../../lib/apis/report/types";
@@ -145,6 +146,7 @@ const AnnouncementDetailScreen = () => {
   /** 홈 인디케이터 등 안전 영역 + 아주 소량만 (박스 없이 버튼만 붙일 때) */
   const floatingBottomPad = insets.bottom + 4;
   const { isLoggedIn, user } = useAuth();
+  const { ensureLoggedIn } = useRequireLogin();
   const params = route.params ?? {};
   const { width: screenWidth } = useWindowDimensions();
   const [isMine, setIsMine] = useState(false);
@@ -187,10 +189,7 @@ const AnnouncementDetailScreen = () => {
   const authorDisplayLabel = useAnnouncementAuthorLabel(author);
 
   const handleOpenReport = useCallback(() => {
-    if (!isLoggedIn) {
-      Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
-      return;
-    }
+    if (!ensureLoggedIn()) return;
     if (isMine) {
       Alert.alert("알림", "본인이 작성한 글은 신고할 수 없습니다.");
       return;
@@ -908,10 +907,7 @@ const AnnouncementDetailScreen = () => {
           <Pressable
             style={[styles.btnApply, { bottom: 0 }]}
             onPress={() => {
-              if (!isLoggedIn) {
-                Alert.alert("알림", "로그인 후 지원서를 작성할 수 있습니다.");
-                return;
-              }
+              if (!ensureLoggedIn()) return;
               if (!params.postId) {
                 Alert.alert("알림", "공고 정보가 없습니다.");
                 return;

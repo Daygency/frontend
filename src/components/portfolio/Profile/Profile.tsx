@@ -30,6 +30,7 @@ import {
   saveProfileCache,
 } from "../../../lib/profileCache";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useRequireLogin } from "../../../hooks/useRequireLogin";
 import {
   followUser,
   unfollowUser,
@@ -84,6 +85,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
   const isInvalidOtherRoute = isArtistPortfolio && !viewingUserId;
 
   const { user, isLoggedIn } = useAuth();
+  const { ensureLoggedIn } = useRequireLogin();
   const myUserId = user?.socialId?.trim() ?? "";
   const [profile, setProfile] = useState<LoadedProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -145,9 +147,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
 
   const onPressFollow = async () => {
     if (!canSocialActions || !viewingUserId || followLoading) {
-      if (!isLoggedIn) {
-        Alert.alert("로그인", "팔로우하려면 로그인해 주세요.");
-      }
+      if (!isLoggedIn) ensureLoggedIn();
       return;
     }
     setFollowLoading(true);
@@ -245,8 +245,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       return;
     }
     if (!isOtherProfile && (!isLoggedIn || !myUserId)) {
-      Alert.alert("로그인", "내 팔로우 목록을 보려면 로그인해 주세요.");
-      return;
+      if (!ensureLoggedIn()) return;
     }
     navigation.navigate(RootRoutes.FOLLOW_LIST, {
       userId: uid,
@@ -257,10 +256,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
 
   const onPressChat = async () => {
     if (!viewingUserId) return;
-    if (!isLoggedIn) {
-      Alert.alert("로그인", "채팅하려면 로그인해 주세요.");
-      return;
-    }
+    if (!ensureLoggedIn()) return;
     if (viewingUserId === myUserId) {
       Alert.alert("채팅", "본인과는 채팅할 수 없습니다.");
       return;
@@ -737,7 +733,10 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
               <View style={styles.profileActionsRow}>
                 <Pressable
                   style={styles.profileEditContainer}
-                  onPress={() => navigation.navigate(RootRoutes.PROFILE_EDIT)}
+                  onPress={() => {
+                    if (!ensureLoggedIn()) return;
+                    navigation.navigate(RootRoutes.PROFILE_EDIT);
+                  }}
                 >
                   <Ionicons name="create-outline" size={18} color="white" />
                   <Text style={styles.profileEditText}>프로필 수정</Text>

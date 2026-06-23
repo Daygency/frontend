@@ -7,9 +7,11 @@ import { MAIN } from "../../../../../color";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../../../navigations/routes";
+import { useRequireLogin } from "../../../../../hooks/useRequireLogin";
 
 const ChatHeader = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const { ensureLoggedIn } = useRequireLogin();
 
   return (
     <View style={styles.headerContainer}>
@@ -20,7 +22,10 @@ const ChatHeader = () => {
         </Pressable>
         <Pressable
           style={styles.iconButton}
-          onPress={() => navigation.navigate(RootRoutes.SETTINGS)}
+          onPress={() => {
+            if (!ensureLoggedIn()) return;
+            navigation.navigate(RootRoutes.SETTINGS);
+          }}
         >
           <MaterialCommunityIcons
             name="cog-outline"

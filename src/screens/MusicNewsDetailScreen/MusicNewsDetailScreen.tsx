@@ -46,6 +46,7 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
+import { useRequireLogin } from "../../hooks/useRequireLogin";
 import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
 import ReportDotsDropdownMenu from "../../components/menus/ReportDotsDropdownMenu";
 import { createReport } from "../../lib/apis/report/reportApi";
@@ -252,6 +253,7 @@ const MusicNewsDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<MusicNewsDetailRouteProp>();
   const { user, isLoggedIn } = useAuth();
+  const { ensureLoggedIn } = useRequireLogin();
   const { bottom } = useSafeAreaInsets();
   const newsId = route.params?.newsId;
   const newsFromParams = route.params?.news;
@@ -372,10 +374,7 @@ const MusicNewsDetailScreen = () => {
       newsAuthorUserId === user?.socialId?.trim());
 
   const openReportPost = useCallback(() => {
-    if (!isLoggedIn) {
-      Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
-      return;
-    }
+    if (!ensureLoggedIn()) return;
     if (isNewsMine) {
       Alert.alert("알림", "본인이 작성한 글은 신고할 수 없습니다.");
       return;
@@ -404,10 +403,7 @@ const MusicNewsDetailScreen = () => {
 
   const openReportComment = useCallback(
     (targetId: string, reportedUserId: string | undefined) => {
-      if (!isLoggedIn) {
-        Alert.alert("알림", "로그인 후 신고할 수 있습니다.");
-        return;
-      }
+      if (!ensureLoggedIn()) return;
       if (!reportedUserId) {
         Alert.alert("알림", "신고할 수 없습니다.");
         return;
@@ -525,6 +521,7 @@ const MusicNewsDetailScreen = () => {
   );
 
   const handleToggleLike = async () => {
+    if (!ensureLoggedIn()) return;
     if (!targetNewsId) return;
     if (liked) {
       const res = await deleteLikeByTarget({
@@ -552,6 +549,7 @@ const MusicNewsDetailScreen = () => {
   };
 
   const handleToggleScrap = async () => {
+    if (!ensureLoggedIn()) return;
     if (!targetNewsId) return;
     if (scraped) {
       const res = await deleteScrapByTarget({
@@ -579,6 +577,7 @@ const MusicNewsDetailScreen = () => {
   };
 
   const handleCreateComment = async (content: string) => {
+    if (!ensureLoggedIn()) return;
     if (!targetNewsId) return;
     if (editingComment) {
       const updated = await updateComment(editingComment.commentId, { content });
@@ -645,6 +644,7 @@ const MusicNewsDetailScreen = () => {
   );
 
   const handleToggleCommentLike = async (targetId: string, currentLiked: boolean) => {
+    if (!ensureLoggedIn()) return;
     if (currentLiked) {
       const res = await deleteLikeByTarget({
         likeType: "COMMENT",

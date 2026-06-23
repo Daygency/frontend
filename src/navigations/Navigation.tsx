@@ -43,7 +43,8 @@ import MusicNewsRegistrationScreen from "../screens/MusicNewsRegistrationScreen"
 import HomeBannerDetailScreen from "../screens/HomeBannerDetailScreen/HomeBannerDetailScreen";
 import HomeBannerListScreen from "../screens/HomeBannerListScreen/HomeBannerListScreen";
 import { RootRoutes } from "./routes";
-import { WHITE } from "../color";
+import { withAuthGate } from "../hooks/useRequireLogin";
+import { WHITE, MAIN } from "../color";
 import { Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import styles from "./styles";
@@ -70,7 +71,7 @@ const Navigation = () => {
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
-            contentStyle: { backgroundColor: WHITE },
+            contentStyle: { backgroundColor: MAIN.DEFAULT },
             headerShown: false,
           }}
         >
@@ -171,7 +172,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.APPLICATION}
-          component={ApplicationScreen}
+          component={withAuthGate(ApplicationScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -241,7 +242,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.PORTFOLIO_PHOTO_GALLERY}
-          component={PortfolioPhotoGalleryScreen}
+          component={withAuthGate(PortfolioPhotoGalleryScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -273,7 +274,7 @@ const Navigation = () => {
         <Stack.Screen name={RootRoutes.SEARCH} component={SearchScreen} />
         <Stack.Screen
           name={RootRoutes.ANNOUNCEMENT_REGISTRATION}
-          component={AnnouncementRegistrationScreen}
+          component={withAuthGate(AnnouncementRegistrationScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -366,7 +367,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.MUSIC_NEWS_REGISTRATION}
-          component={MusicNewsRegistrationScreen}
+          component={withAuthGate(MusicNewsRegistrationScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -397,7 +398,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.COMMUNITY_REGISTRATION}
-          component={CommunityRegistrationScreen}
+          component={withAuthGate(CommunityRegistrationScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -428,7 +429,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.SETTINGS}
-          component={SettingsScreen}
+          component={withAuthGate(SettingsScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -557,7 +558,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.NOTIFICATION_SETTINGS}
-          component={NotificationSettingsScreen}
+          component={withAuthGate(NotificationSettingsScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -588,7 +589,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.NOTIFICATIONS}
-          component={NotificationsScreen}
+          component={withAuthGate(NotificationsScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -619,7 +620,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.MY_INFO}
-          component={MyInfoScreen}
+          component={withAuthGate(MyInfoScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -650,7 +651,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.MY_ACTIVITY_NEWS_LIST}
-          component={MyActivityNewsListScreen}
+          component={withAuthGate(MyActivityNewsListScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -681,7 +682,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.MY_ACTIVITY_LIST}
-          component={MyActivityListScreen}
+          component={withAuthGate(MyActivityListScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -712,7 +713,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.MY_ACTIVITY_ANNOUNCEMENT_LIST}
-          component={MyActivityAnnouncementListScreen}
+          component={withAuthGate(MyActivityAnnouncementListScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -743,7 +744,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.MY_ACTIVITY}
-          component={MyActivityScreen}
+          component={withAuthGate(MyActivityScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -774,7 +775,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.MY_DATA_ARCHIVE}
-          component={MyDataArchiveScreen}
+          component={withAuthGate(MyDataArchiveScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -810,7 +811,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.CUSTOMER_SERVICE}
-          component={CustomerServiceScreen}
+          component={withAuthGate(CustomerServiceScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -841,7 +842,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.INQUIRY}
-          component={InquiryScreen}
+          component={withAuthGate(InquiryScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -872,7 +873,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.INQUIRY_DETAIL}
-          component={InquiryDetailScreen}
+          component={withAuthGate(InquiryDetailScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -903,7 +904,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.ACCOUNT}
-          component={AccountScreen}
+          component={withAuthGate(AccountScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -934,7 +935,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.WITHDRAW_CONFIRM}
-          component={WithdrawConfirmScreen}
+          component={withAuthGate(WithdrawConfirmScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -965,7 +966,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.CHANGE_NAME}
-          component={ChangeNameScreen}
+          component={withAuthGate(ChangeNameScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -996,17 +997,17 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.CHAT_ROOM}
-          component={ChatRoomScreen}
+          component={withAuthGate(ChatRoomScreen)}
           options={{ headerShown: false }}
         />
         <Stack.Screen
           name={RootRoutes.ACTIVITY_REVIEW}
-          component={ActivityReviewScreen}
+          component={withAuthGate(ActivityReviewScreen)}
           options={{ headerShown: false }}
         />
         <Stack.Screen
           name={RootRoutes.MY_POSTED_CHAT_ROOMS}
-          component={MyPostedChatRoomsScreen}
+          component={withAuthGate(MyPostedChatRoomsScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -1035,7 +1036,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.ANNOUNCEMENT_APPLICANTS}
-          component={AnnouncementApplicantsScreen}
+          component={withAuthGate(AnnouncementApplicantsScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -1064,7 +1065,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.RECEIVED_APPLICATION_DETAIL}
-          component={ReceivedApplicationDetailScreen}
+          component={withAuthGate(ReceivedApplicationDetailScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
@@ -1093,14 +1094,14 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.CHAT_ROOM_OPTIONS}
-          component={ChatRoomOptionsScreen}
+          component={withAuthGate(ChatRoomOptionsScreen)}
           options={{
             headerShown: false,
           }}
         />
         <Stack.Screen
           name={RootRoutes.PROFILE_EDIT}
-          component={ProfileEditScreen}
+          component={withAuthGate(ProfileEditScreen)}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>

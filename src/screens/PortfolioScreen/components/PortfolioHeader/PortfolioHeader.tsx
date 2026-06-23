@@ -10,6 +10,7 @@ import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
 import { getProfileCache, saveProfileCache } from "../../../../lib/profileCache";
 import { RootRoutes } from "../../../../navigations/routes";
 import { useHeaderScrollFade } from "../../../../hooks/useHeaderScrollFade";
+import { useRequireLogin } from "../../../../hooks/useRequireLogin";
 import FadeDualLayer from "../../../../components/portfolio/FadeDualLayer";
 import { portfolioHeaderStyles } from "../../../../components/portfolio/portfolioHeaderStyles";
 
@@ -29,6 +30,7 @@ const PortfolioHeader = ({
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const { top } = useSafeAreaInsets();
   const { user } = useAuth();
+  const { ensureLoggedIn } = useRequireLogin();
   const [activityName, setActivityName] = useState("");
   const { useScrollFade, solidOpacity, overlayOpacity } = useHeaderScrollFade({
     scrollY,
@@ -133,7 +135,10 @@ const PortfolioHeader = ({
         <Pressable
           style={styles.settingsButton}
           hitSlop={{ top: 10, bottom: 6, left: 10, right: 10 }}
-          onPress={() => navigation.navigate(RootRoutes.SETTINGS)}
+          onPress={() => {
+            if (!ensureLoggedIn()) return;
+            navigation.navigate(RootRoutes.SETTINGS);
+          }}
         >
           <FadeDualLayer
             overlayOpacity={overlayOpacity}
