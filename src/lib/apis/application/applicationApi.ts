@@ -29,7 +29,7 @@ function formatApplicationApiError(raw: string): string {
   } catch {
     /* plain text */
   }
-  return t.length > 500 ? `${t.slice(0, 500)}…` : t;
+  return t.length > 500 ? `${t.slice(0, 500)}...` : t;
 }
 
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {

@@ -785,7 +785,7 @@ const ChatRoomScreen = () => {
         {fileUploading ? (
           <View style={styles.uploadingRow}>
             <ActivityIndicator size="small" color={MAIN.DEFAULT} />
-            <Text style={styles.uploadingText}>파일 전송 중…</Text>
+            <Text style={styles.uploadingText}>파일 전송 중...</Text>
           </View>
         ) : null}
         <Pressable style={styles.addButton} onPress={toggleAttachmentMenu}>
@@ -804,7 +804,7 @@ const ChatRoomScreen = () => {
           onChangeText={setMessage}
           onKeyPress={handleKeyPress}
           onSubmitEditing={sendMessage}
-          placeholder={sendReady ? "메시지를 입력하세요" : "연결 중…"}
+          placeholder={sendReady ? "메시지를 입력하세요" : "연결 중..."}
           placeholderTextColor={GRAY.DARK_2}
           multiline
           maxLength={255}

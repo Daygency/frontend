@@ -63,7 +63,7 @@ const requestUserPermission = async () => {
     if (logToken && token) {
       Alert.alert(
         "FCM 토큰 (개발)",
-        `${token.slice(0, 32)}…\n\n별도 터미널에서 Metro(npm start)를 켜 두면 같은 내용이 터미널에도 출력됩니다. 공유로 전체 토큰을 복사할 수 있습니다.`,
+        `${token.slice(0, 32)}...\n\n별도 터미널에서 Metro(npm start)를 켜 두면 같은 내용이 터미널에도 출력됩니다. 공유로 전체 토큰을 복사할 수 있습니다.`,
         [
           { text: "닫기", style: "cancel" },
           {

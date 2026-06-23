@@ -77,7 +77,7 @@ function parseErrorMessage(text: string): string {
   } catch {
     /* plain text */
   }
-  return t.length > 400 ? `${t.slice(0, 400)}…` : t;
+  return t.length > 400 ? `${t.slice(0, 400)}...` : t;
 }
 
 export async function createReport(

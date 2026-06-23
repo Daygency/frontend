@@ -652,7 +652,7 @@ const AnnouncementRegistrationScreen = () => {
             ? await createAnnouncementWithFiles(dto, createPostImages)
             : await createAnnouncement(dto);
         setIsSubmitting(false);
-        if (res) {
+        if (res.ok) {
           (navigation as { dispatch?: (action: object) => void }).dispatch?.(
             CommonActions.reset({
               index: 0,
@@ -665,10 +665,7 @@ const AnnouncementRegistrationScreen = () => {
             }),
           );
         } else {
-          Alert.alert(
-            "등록 실패",
-            "모집공고 등록에 실패했습니다. 다시 시도해주세요.",
-          );
+          Alert.alert("등록 실패", res.message);
         }
       }
     } catch (e) {

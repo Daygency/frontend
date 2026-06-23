@@ -1,12 +1,5 @@
 import { useEffect, useState } from "react";
-import {
-  Animated,
-  StyleSheet,
-  View,
-  Pressable,
-  ActivityIndicator,
-  Alert,
-} from "react-native";
+import { Text, Animated, StyleSheet, View, Pressable, ActivityIndicator, Alert } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";

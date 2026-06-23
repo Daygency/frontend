@@ -17,6 +17,10 @@ import {
   pickMajorsFromAnnouncementRaw,
 } from "../../announcement/recruitmentMajors";
 
+export type AnnouncementMutationResult =
+  | { ok: true; data: CreateAnnouncementResponse }
+  | { ok: false; status: number; message: string };
+
 async function getAuthHeaders(): Promise<Record<string, string>> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
   return {
@@ -36,22 +40,32 @@ async function getAuthHeadersRequired(): Promise<Record<string, string>> {
 
 /** 공고 작성 — 텍스트만 (README: `POST /announcement/json`) */
 export async function createAnnouncement(
-  dto: CreateAnnouncementDto
-): Promise<CreateAnnouncementResponse | null> {
-  const headers = await getAuthHeadersRequired();
-  const res = await fetchWithAuth(`${API_BASE}/announcement/json`, {
-    method: "POST",
-    headers,
-    body: JSON.stringify(dto),
-  });
+  dto: CreateAnnouncementDto,
+): Promise<AnnouncementMutationResult> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/announcement/json`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify(dto),
+    });
 
-  if (!res.ok) {
-    const errText = await res.text().catch(() => "");
-    console.warn("[createAnnouncement] 실패:", res.status, errText);
-    return null;
+    const text = await res.text().catch(() => "");
+    if (!res.ok) {
+      const message =
+        parseAnnouncementErrorMessage(text) || "요청에 실패했습니다.";
+      console.warn("[createAnnouncement] 실패:", res.status, text);
+      return { ok: false, status: res.status, message };
+    }
+
+    const data = text.trim()
+      ? (JSON.parse(text) as CreateAnnouncementResponse)
+      : ({} as CreateAnnouncementResponse);
+    return { ok: true, data };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, status: 0, message: msg };
   }
-
-  return res.json() as Promise<CreateAnnouncementResponse>;
 }
 
 /**
@@ -60,7 +74,7 @@ export async function createAnnouncement(
 export async function createAnnouncementWithFiles(
   dto: CreateAnnouncementDto,
   files: LocalImageAsset[],
-): Promise<CreateAnnouncementResponse | null> {
+): Promise<AnnouncementMutationResult> {
   if (files.length === 0) return createAnnouncement(dto);
   try {
     const res = await postBoardMultipart(
@@ -68,15 +82,21 @@ export async function createAnnouncementWithFiles(
       dto as unknown as Record<string, unknown>,
       files,
     );
+    const text = await res.text().catch(() => "");
     if (!res.ok) {
-      const errText = await res.text().catch(() => "");
-      console.warn("[createAnnouncementWithFiles] 실패:", res.status, errText);
-      return null;
+      const message =
+        parseAnnouncementErrorMessage(text) || "요청에 실패했습니다.";
+      console.warn("[createAnnouncementWithFiles] 실패:", res.status, text);
+      return { ok: false, status: res.status, message };
     }
-    return res.json() as Promise<CreateAnnouncementResponse>;
+    const data = text.trim()
+      ? (JSON.parse(text) as CreateAnnouncementResponse)
+      : ({} as CreateAnnouncementResponse);
+    return { ok: true, data };
   } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
     console.warn("[createAnnouncementWithFiles] 에러:", e);
-    return null;
+    return { ok: false, status: 0, message: msg };
   }
 }
 
@@ -196,16 +216,19 @@ export async function getAnnouncementDetail(
   return res.json() as Promise<Record<string, unknown>>;
 }
 
-function parseAnnouncementPatchErrorMessage(raw: string): string {
+function parseAnnouncementErrorMessage(raw: string): string {
   const t = raw?.trim() ?? "";
   if (!t) return "";
   try {
     const o = JSON.parse(t) as { message?: unknown };
+    if (Array.isArray(o.message)) {
+      return o.message.map(String).join("\n");
+    }
     if (typeof o.message === "string") return o.message;
   } catch {
     /* plain text */
   }
-  return t.length > 500 ? `${t.slice(0, 500)}…` : t;
+  return t.length > 500 ? `${t.slice(0, 500)}...` : t;
 }
 
 /** 공고 수정 — 403 시 본문에 거절 사유(문자열 등) */
@@ -226,7 +249,7 @@ export async function updateAnnouncement(
     const text = await res.text().catch(() => "");
     if (!res.ok) {
       const message =
-        parseAnnouncementPatchErrorMessage(text) || "요청에 실패했습니다.";
+        parseAnnouncementErrorMessage(text) || "요청에 실패했습니다.";
       console.warn("[updateAnnouncement] 실패:", res.status, text);
       return { ok: false, status: res.status, message };
     }

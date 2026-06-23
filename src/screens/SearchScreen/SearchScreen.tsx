@@ -158,7 +158,7 @@ const SearchScreen = () => {
               selectedTag && styles.searchInputWithTag,
             ]}
             placeholder={
-              selectedTag ? "추가 검색어 입력" : "모집공고, 공연소식, 아티스트…"
+              selectedTag ? "추가 검색어 입력" : "모집공고, 공연소식, 아티스트..."
             }
             placeholderTextColor={GRAY.DARK}
             value={inputText}

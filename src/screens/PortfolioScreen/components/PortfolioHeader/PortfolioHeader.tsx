@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react";
-import { Animated, StyleSheet, View, Pressable } from "react-native";
+import { Text, Animated, StyleSheet, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
