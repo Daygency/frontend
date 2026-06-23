@@ -8,6 +8,7 @@ import {
   Alert,
   useWindowDimensions,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import styles, { PROFILE_BANNER_RATIO } from "./styles";
 import { Ionicons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../color";
@@ -646,12 +647,19 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       <View style={styles.profileCard}>
         <View style={[styles.banner, { height: bannerHeight }]}>
           {displayCoverImgUrl ? (
-            <Image
-              source={{ uri: displayCoverImgUrl }}
-              style={styles.bannerImage}
-              resizeMode="cover"
-              onError={() => setCoverImageError(true)}
-            />
+            <>
+              <Image
+                source={{ uri: displayCoverImgUrl }}
+                style={styles.bannerImage}
+                resizeMode="cover"
+                onError={() => setCoverImageError(true)}
+              />
+              <LinearGradient
+                colors={["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.3)"]}
+                style={styles.bannerBottomGradient}
+                pointerEvents="none"
+              />
+            </>
           ) : null}
           {!isOtherProfile ? (
             <Pressable

@@ -21,10 +21,17 @@ const styles = StyleSheet.create({
   banner: {
     width: "100%",
     backgroundColor: PORTFOLIO_IMMERSIVE_BG,
+    position: "relative",
   },
   bannerImage: {
-    width: "100%",
-    height: "100%",
+    ...StyleSheet.absoluteFillObject,
+  },
+  bannerBottomGradient: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: "50%",
   },
   bannerEditBtn: {
     position: "absolute",
