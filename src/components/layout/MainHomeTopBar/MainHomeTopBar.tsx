@@ -106,6 +106,7 @@ const MainHomeTopBar = ({
                     color: titleColor,
                   },
                 ]}
+                numberOfLines={1}
               >
                 {displayedTitle}
               </Text>
@@ -197,7 +198,7 @@ const MainHomeTopBar = ({
 
   return (
     <View style={styles.container}>
-      {renderTitle()}
+      <View style={styles.titleArea}>{renderTitle()}</View>
       <View style={styles.iconContainer}>
         <Pressable style={styles.iconButton} onPress={handleSearchPress}>
           <Feather name="search" size={23} color={iconColor} />

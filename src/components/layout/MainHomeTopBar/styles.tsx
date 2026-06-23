@@ -15,6 +15,11 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     minHeight: 44,
   },
+  titleArea: {
+    flex: 1,
+    minWidth: 0,
+    marginRight: 4,
+  },
   iconContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -59,7 +64,7 @@ const styles = StyleSheet.create({
   },
   titleMenuDropdown: {
     position: "absolute",
-    minWidth: 140,
+    minWidth: 168,
     backgroundColor: WHITE,
     borderRadius: 10,
     borderWidth: 1,

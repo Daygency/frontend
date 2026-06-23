@@ -100,8 +100,31 @@ export async function createAnnouncementWithFiles(
   }
 }
 
-/** 내가 작성한 모집공고 목록 (`GET /announcement/my`) */
-export async function getMyAnnouncementList(
+function normalizeAnnouncementListItems(
+  data: AnnouncementListResponse,
+): AnnouncementListResponse {
+  const items = Array.isArray(data?.items) ? data.items : [];
+  return {
+    items: items.map((item) => {
+      const row = item as Record<string, unknown>;
+      const address = pickAddressFromAnnouncementRaw(item);
+      const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
+      const createdAtRaw = row.createdAt ?? row.created_at;
+      return {
+        ...(item as AnnouncementListItem),
+        ...pickMajorsFromAnnouncementRaw(item),
+        ...(address ? { address } : {}),
+        ...(deadlineAt ? { deadlineAt } : {}),
+        ...(createdAtRaw ? { createdAt: String(createdAtRaw) } : {}),
+      };
+    }),
+    nextCursor: data?.nextCursor ?? null,
+    hasMore: Boolean(data?.hasMore),
+  };
+}
+
+async function fetchAuthAnnouncementList(
+  path: "my" | "applied",
   params?: AnnouncementListParams,
 ): Promise<AnnouncementListResponse | null> {
   try {
@@ -116,38 +139,35 @@ export async function getMyAnnouncementList(
     if (params?.sort) q.set("sort", params.sort);
 
     const query = q.toString();
-    const url = `${API_BASE}/announcement/my${query ? `?${query}` : ""}`;
+    const url = `${API_BASE}/announcement/${path}${query ? `?${query}` : ""}`;
 
     const res = await fetchWithAuth(url, { method: "GET", headers });
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
-      console.warn("[getMyAnnouncementList] 실패:", res.status, url, errText);
+      console.warn(`[announcement/${path}] 실패:`, res.status, url, errText);
       return null;
     }
 
     const data = (await res.json()) as AnnouncementListResponse;
-    const items = Array.isArray(data?.items) ? data.items : [];
-    return {
-      items: items.map((item) => {
-        const row = item as Record<string, unknown>;
-        const address = pickAddressFromAnnouncementRaw(item);
-        const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
-        const createdAtRaw = row.createdAt ?? row.created_at;
-        return {
-          ...(item as AnnouncementListItem),
-          ...pickMajorsFromAnnouncementRaw(item),
-          ...(address ? { address } : {}),
-          ...(deadlineAt ? { deadlineAt } : {}),
-          ...(createdAtRaw ? { createdAt: String(createdAtRaw) } : {}),
-        };
-      }),
-      nextCursor: data?.nextCursor ?? null,
-      hasMore: Boolean(data?.hasMore),
-    };
+    return normalizeAnnouncementListItems(data);
   } catch (e) {
-    console.warn("[getMyAnnouncementList] 네트워크 에러:", e);
+    console.warn(`[announcement/${path}] 네트워크 에러:`, e);
     return null;
   }
+}
+
+/** 내가 작성한 모집공고 목록 (`GET /announcement/my`) */
+export async function getMyAnnouncementList(
+  params?: AnnouncementListParams,
+): Promise<AnnouncementListResponse | null> {
+  return fetchAuthAnnouncementList("my", params);
+}
+
+/** 내가 지원한 모집공고 목록 (`GET /announcement/applied`) */
+export async function getMyAppliedAnnouncementList(
+  params?: AnnouncementListParams,
+): Promise<AnnouncementListResponse | null> {
+  return fetchAuthAnnouncementList("applied", params);
 }
 
 /** 공고 목록 일괄 조회 — `GET /announcement` (cursor·limit·필터, 메인 홈 미리보기 등) */

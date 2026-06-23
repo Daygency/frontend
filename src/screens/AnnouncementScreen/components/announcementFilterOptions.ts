@@ -1,4 +1,5 @@
 export type AnnouncementFilterSheetType =
+  | "feed"
   | "sort"
   | "status"
   | "type"
@@ -13,6 +14,7 @@ export const ANNOUNCEMENT_FILTER_SHEET_TITLES: Record<
   AnnouncementFilterSheetType,
   string
 > = {
+  feed: "공고 보기",
   sort: "정렬",
   status: "모집 상태",
   type: "공고 유형",

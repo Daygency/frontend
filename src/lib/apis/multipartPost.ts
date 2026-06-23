@@ -3,8 +3,8 @@ import { API_BASE, AUTH_TOKEN_KEY } from "./api";
 import { fetchWithAuth } from "./fetchWithAuth";
 import type { LocalImageAsset } from "./fileApi";
 
-/** README: 게시판별 multipart 최대 장수 */
-export const MAX_MULTIPART_FILES = 20;
+/** 모집공고·커뮤니티 multipart 최대 장수 */
+export const MAX_MULTIPART_FILES = 5;
 
 /**
  * README §1 — `payload`(JSON 문자열) + 동일 필드명 `files`로 여러 번 append

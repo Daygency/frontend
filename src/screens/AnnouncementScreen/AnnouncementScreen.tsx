@@ -27,6 +27,7 @@ import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
 import {
   getAnnouncementList,
   getMyAnnouncementList,
+  getMyAppliedAnnouncementList,
 } from "../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
 import { useAuth } from "../../contexts/AuthContext";
@@ -50,9 +51,17 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-type AnnouncementFeedView = "모집공고" | "내 공고";
+type AnnouncementFeedView = "전체" | "내가 올린 공고" | "지원공고";
 
-const FEED_VIEW_OPTIONS = ["모집공고", "내 공고"] as const;
+const FEED_VIEW_OPTIONS: AnnouncementFeedView[] = [
+  "전체",
+  "내가 올린 공고",
+  "지원공고",
+];
+
+function feedViewRequiresLogin(view: AnnouncementFeedView): boolean {
+  return view === "내가 올린 공고" || view === "지원공고";
+}
 
 function sortTabToApiParam(tab: AnnouncementSortOption): "imminent" | "created" {
   return tab === "임박순" ? "imminent" : "created";
@@ -74,7 +83,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [filterSheet, setFilterSheet] = useState<AnnouncementFilterSheetType | null>(
     null,
   );
-  const [feedView, setFeedView] = useState<AnnouncementFeedView>("모집공고");
+  const [feedView, setFeedView] = useState<AnnouncementFeedView>("전체");
   const [sortTab, setSortTab] = useState<AnnouncementSortOption>("등록순");
 
   const recruitmentStatusOptions = ["모집중", "모집마감"];
@@ -151,7 +160,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
 
   const loadData = useCallback(
     async (cursor?: string) => {
-      if (feedView === "내 공고" && !isLoggedIn) {
+      if (feedViewRequiresLogin(feedView) && !isLoggedIn) {
         setItems([]);
         setNextCursor(null);
         setHasMore(false);
@@ -172,9 +181,11 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           sort,
         };
         const res =
-          feedView === "내 공고"
+          feedView === "내가 올린 공고"
             ? await getMyAnnouncementList(params)
-            : await getAnnouncementList(params);
+            : feedView === "지원공고"
+              ? await getMyAppliedAnnouncementList(params)
+              : await getAnnouncementList(params);
         if (seq !== loadListSeqRef.current) return;
         if (!res) {
           setItems([]);
@@ -252,6 +263,15 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     AnnouncementFilterSheetType,
     { options: string[]; selectedValues: string[]; onToggle: (value: string) => void }
   > = {
+    feed: {
+      options: [...FEED_VIEW_OPTIONS],
+      selectedValues: feedView === "전체" ? [] : [feedView],
+      onToggle: (value) => {
+        const next = value as AnnouncementFeedView;
+        if (feedViewRequiresLogin(next) && !ensureLoggedIn()) return;
+        setFeedView(next);
+      },
+    },
     sort: {
       options: [...ANNOUNCEMENT_SORT_OPTIONS],
       selectedValues: [sortTab],
@@ -294,6 +314,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     defaultLabel: string;
     selectedValues: string[];
   }[] = [
+    { type: "feed", defaultLabel: "공고 보기", selectedValues: feedView === "전체" ? [] : [feedView] },
     { type: "sort", defaultLabel: "정렬", selectedValues: [sortTab] },
     { type: "status", defaultLabel: "모집 상태", selectedValues: selectedStatus ? [selectedStatus] : [] },
     { type: "type", defaultLabel: "공고 유형", selectedValues: selectedTypes },
@@ -307,25 +328,18 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   };
 
   const emptyMessage =
-    feedView === "내 공고" && !isLoggedIn
+    feedViewRequiresLogin(feedView) && !isLoggedIn
       ? "로그인이 필요합니다"
-      : feedView === "내 공고"
+      : feedView === "내가 올린 공고"
         ? "작성한 공고가 없습니다"
-        : "모집공고가 없습니다";
+        : feedView === "지원공고"
+          ? "지원한 공고가 없습니다"
+          : "모집공고가 없습니다";
 
   return (
     <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
       {!hideTopBar && (
-        <MainHomeTopBar
-          logoName="모집공고"
-          initialTag={feedView}
-          titleMenuOptions={FEED_VIEW_OPTIONS}
-          selectedTitleMenuOption={feedView}
-          onTitleMenuOptionChange={(option) => {
-            if (option === "내 공고" && !ensureLoggedIn()) return;
-            setFeedView(option as AnnouncementFeedView);
-          }}
-        />
+        <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />
       )}
       <View style={styles.filterWrapper}>
         <ScrollView
@@ -336,7 +350,8 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         >
           {filterChips.map((chip) => {
             const isActive =
-              chip.type === "sort" || chip.selectedValues.length > 0;
+              chip.type === "sort" ||
+              chip.selectedValues.length > 0;
             return (
               <Pressable
                 key={chip.type}
