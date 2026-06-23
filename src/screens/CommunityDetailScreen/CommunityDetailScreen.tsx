@@ -11,7 +11,6 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  Image,
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
@@ -19,10 +18,12 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
 import CommentInputBar from "../../components/comments/CommentInputBar";
-import styles from "./styles";
+import CommentAuthorAvatar from "../../components/comments/CommentAuthorAvatar/CommentAuthorAvatar";
+import CommunityPostImageGallery from "./CommunityPostImageGallery";
+import styles, { AVATAR_SIZE, REPLY_AVATAR_SIZE } from "./styles";
 import { getCommunityDetail, deleteCommunity } from "../../lib/apis/community/communityApi";
 import type { CommunityDetailResponse } from "../../lib/apis/community/types";
-import { BLACK, GRAY, MAIN, RED } from "../../color";
+import { BLACK, GRAY, RED } from "../../color";
 import {
   createComment,
   deleteComment,
@@ -31,8 +32,6 @@ import {
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
 import PostDetailOptionsMenu from "../../components/menus/PostDetailOptionsMenu";
-import { isContentNew } from "../../lib/content/newBadge";
-import NewBadge from "../../components/ui/NewBadge";
 import { RootRoutes } from "../../navigations/routes";
 import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
 import {
@@ -40,11 +39,6 @@ import {
   deleteLikeByTarget,
   getLikes,
 } from "../../lib/apis/like/likeApi";
-import {
-  createScrap,
-  deleteScrapByTarget,
-  getScraps,
-} from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRequireLogin } from "../../hooks/useRequireLogin";
 import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
@@ -58,6 +52,11 @@ import {
   mapAttachmentsToImageUrls,
   pickUrlFromFileLike,
 } from "../../lib/media/attachmentImageUrl";
+import { pickCommentUserProfileImgUrl } from "../../lib/apis/comment/commentUserProfile";
+import {
+  pickAuthorFromUser,
+  pickProfileImgFromUser,
+} from "../../lib/community/communityAuthor";
 
 type CommunityDetailRouteParams = {
   communityId: string;
@@ -71,6 +70,7 @@ type CommunityDetailRouteProp = RouteProp<
 type CommentItem = {
   id: string;
   author: string;
+  profileImgUrl?: string;
   createdAt: string;
   content: string;
   likeCount: number;
@@ -81,6 +81,7 @@ type CommentItem = {
   replies?: Array<{
     id: string;
     author: string;
+    profileImgUrl?: string;
     createdAt?: string;
     content: string;
     likeCount?: number;
@@ -104,12 +105,27 @@ function formatTimeAgo(value?: string): string {
   return `${Math.floor(diffMonths / 12)}년`;
 }
 
+function formatPostDate(value?: string): string {
+  if (!value) return "";
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const y = d.getFullYear();
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  return `${y}. ${m}. ${day}. ${hh}:${mm}`;
+}
+
 function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem {
   const uid = String(comment.user?.userId ?? "").trim();
   const isMine = Boolean(myUserId && uid && uid === myUserId);
   return {
     id: String(comment.id),
-    author: String(comment.user?.name ?? "익명"),
+    author: pickAuthorFromUser(
+      comment.user as Record<string, unknown> | undefined,
+    ),
+    profileImgUrl: pickCommentUserProfileImgUrl(comment.user),
     createdAt: String(comment.createdAt ?? ""),
     content: String(comment.content ?? ""),
     likeCount: Number((comment as any)?.likeCount ?? 0),
@@ -191,8 +207,7 @@ const CommunityDetailScreen = () => {
   } | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const [scraped, setScraped] = useState(false);
-  const [scrapCount, setScrapCount] = useState(0);
+  const [imageIndex, setImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
@@ -209,11 +224,20 @@ const CommunityDetailScreen = () => {
       : undefined;
     return urls.length > 0 ? urls : fromFile ? [fromFile] : [];
   }, [data]);
+
+  useEffect(() => {
+    setImageIndex(0);
+  }, [communityId, imageUrls.length]);
+
   const displayedComments = comments;
   const myUserId = user?.socialId?.trim() ?? "";
   const commentCount = Number(
-    (data as any)?.commentCount ?? (data as any)?.commentsCount ?? comments.length
+    data?.commentCount ?? (data as { commentsCount?: number })?.commentsCount ?? comments.length,
   );
+  const viewCount = Number(data?.viewCount ?? 0);
+  const postAuthor = data ? pickAuthorFromUser(data.user) : "";
+  const postProfileImg = data ? pickProfileImgFromUser(data.user) : undefined;
+  const categoryName = data?.category?.name?.trim() ?? "";
 
   useEffect(() => {
     (async () => {
@@ -252,22 +276,6 @@ const CommunityDetailScreen = () => {
       setLikeCount(res.count);
       const myId = user?.socialId;
       setLiked(
-        !!myId &&
-          res.items.some((item) => String(item.user?.userId ?? "") === myId),
-      );
-    })();
-  }, [communityId, user?.socialId]);
-
-  useEffect(() => {
-    (async () => {
-      const res = await getScraps({
-        targetType: "COMMUNITY",
-        targetId: communityId,
-      });
-      if (!res) return;
-      setScrapCount(res.count);
-      const myId = user?.socialId;
-      setScraped(
         !!myId &&
           res.items.some((item) => String(item.user?.userId ?? "") === myId),
       );
@@ -348,15 +356,18 @@ const CommunityDetailScreen = () => {
 
   useLayoutEffect(() => {
     navigation.setOptions({
+      headerTitle: () => (
+        <View>
+          <Text style={styles.navTitle}>커뮤니티</Text>
+          {viewCount > 0 ? (
+            <Text style={styles.navSubtitle}>
+              조회 {viewCount.toLocaleString()}회
+            </Text>
+          ) : null}
+        </View>
+      ),
       headerRight: () => (
         <View style={navigationHeaderStyles.rightItemsWrap}>
-          <Pressable hitSlop={10}>
-            <MaterialCommunityIcons
-              name="heart-outline"
-              size={21}
-              color="#000"
-            />
-          </Pressable>
           {data?.isMine ? (
             <PostDetailOptionsMenu
               isMine
@@ -383,6 +394,7 @@ const CommunityDetailScreen = () => {
     data?.isMine,
     onEditCommunity,
     onDeleteCommunity,
+    viewCount,
   ]);
 
   const handlePickReportCategory = useCallback(
@@ -436,33 +448,6 @@ const CommunityDetailScreen = () => {
     }
     setLiked(true);
     setLikeCount((prev) => prev + 1);
-  };
-
-  const handleToggleScrap = async () => {
-    if (!ensureLoggedIn()) return;
-    if (scraped) {
-      const res = await deleteScrapByTarget({
-        targetType: "COMMUNITY",
-        targetId: communityId,
-      });
-      if (!res.success) {
-        Alert.alert("알림", "스크랩 취소에 실패했습니다.");
-        return;
-      }
-      setScraped(false);
-      setScrapCount((prev) => Math.max(0, prev - 1));
-      return;
-    }
-    const created = await createScrap({
-      targetType: "COMMUNITY",
-      targetId: communityId,
-    });
-    if (!created) {
-      Alert.alert("알림", "스크랩에 실패했습니다.");
-      return;
-    }
-    setScraped(true);
-    setScrapCount((prev) => prev + 1);
   };
 
   const handleCreateComment = async (content: string) => {
@@ -591,223 +576,248 @@ const CommunityDetailScreen = () => {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-        <View style={styles.header}>
-          <View style={styles.tagBadge}>
-            <Text style={styles.tagText}>{data.category?.name}</Text>
-          </View>
-          <View style={styles.titleRow}>
-            <Text style={styles.title}>{data.title}</Text>
-            {isContentNew(data.createdAt) ? <NewBadge /> : null}
-          </View>
-          <Text style={styles.meta}>
-            {data.user && (data.user as any).name
-              ? String((data.user as any).name)
-              : "알수없음"}{" "}
-            · {new Date(data.createdAt).toLocaleDateString()}
-          </Text>
-        </View>
+        <View style={styles.postSection}>
+          {!!categoryName && (
+            <Text style={styles.categoryText}>{categoryName}</Text>
+          )}
 
-        <View style={styles.body}>
-          <Text style={styles.bodyText}>{data.content}</Text>
-        </View>
+          {!!data.title?.trim() && (
+            <Text style={styles.postTitleLarge}>{data.title}</Text>
+          )}
 
-        {imageUrls.length > 0 ? (
-          <View style={styles.imageGallery}>
-            {imageUrls.map((uri, idx) => (
-              <Image
-                key={`${uri}-${idx}`}
-                source={{ uri }}
-                style={styles.contentImage}
-                resizeMode="cover"
+          <View style={styles.authorMetaRow}>
+            <CommentAuthorAvatar
+              profileImgUrl={postProfileImg}
+              size={40}
+            />
+            <View style={styles.authorMetaText}>
+              <Text style={styles.authorName}>{postAuthor}</Text>
+              <Text style={styles.postDate}>
+                {formatPostDate(data.createdAt)}
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.contentDivider} />
+
+          {!!data.content?.trim() && (
+            <Text style={styles.postBody}>{data.content}</Text>
+          )}
+
+          {imageUrls.length > 0 ? (
+            <View style={styles.carouselWrap}>
+              <CommunityPostImageGallery
+                urls={imageUrls}
+                onIndexChange={setImageIndex}
               />
-            ))}
-          </View>
-        ) : null}
+              {imageUrls.length > 1 ? (
+                <View style={styles.pageBadge} pointerEvents="none">
+                  <Text style={styles.pageBadgeText}>
+                    {imageIndex + 1}/{imageUrls.length}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
 
-        <View style={styles.actionRow}>
-          <View style={styles.actionItem}>
-            <Pressable onPress={handleToggleLike} hitSlop={8}>
+          <View style={styles.actionRow}>
+            <View style={styles.actionItem}>
+              <Pressable onPress={handleToggleLike} hitSlop={8}>
+                <Ionicons
+                  name={liked ? "heart" : "heart-outline"}
+                  size={22}
+                  color={liked ? RED.DEFAULT : BLACK}
+                />
+              </Pressable>
+              <Text style={styles.actionCount}>{likeCount}</Text>
+            </View>
+            <View style={styles.actionItem}>
               <Ionicons
-                name={liked ? "heart" : "heart-outline"}
-                size={21}
-                color={RED.DEFAULT}
+                name="chatbubble-outline"
+                size={22}
+                color={BLACK}
               />
-            </Pressable>
-            <Text style={styles.actionCount}>{likeCount}</Text>
-          </View>
-          <View style={styles.actionItem}>
-            <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
-            <Text style={styles.actionCount}>{commentCount}</Text>
-          </View>
-          <View style={styles.actionItem}>
-            <Pressable onPress={handleToggleScrap} hitSlop={8}>
-              <Ionicons
-                name={scraped ? "bookmark" : "bookmark-outline"}
-                size={20}
-                color="#FFC107"
-              />
-            </Pressable>
-            <Text style={styles.actionCount}>{scrapCount}</Text>
+              <Text style={styles.actionCount}>{commentCount}</Text>
+            </View>
           </View>
         </View>
-        <View style={styles.commentList}>
-          {displayedComments.map((comment) => (
-              <View
-                key={comment.id}
-                style={[
-                  styles.commentCard,
-                  comment.isMine && styles.myCommentCard,
-                ]}
-              >
-                <View style={styles.commentTopRow}>
-                  <View style={styles.commentAuthorRow}>
-                    <View style={styles.avatarCircle}>
-                      <Ionicons name="person-outline" size={18} color={GRAY.MEDIUM} />
+
+        <View style={styles.sectionDivider} />
+
+        <View style={styles.commentsSection}>
+          {displayedComments.map((comment, index) => {
+            const isLast =
+              index === displayedComments.length - 1 &&
+              !comment.replies?.length;
+            return (
+              <View key={comment.id} style={styles.commentBlock}>
+                <View style={styles.avatarColumn}>
+                  <CommentAuthorAvatar
+                    profileImgUrl={comment.profileImgUrl}
+                    size={AVATAR_SIZE}
+                  />
+                  {!isLast || (comment.replies?.length ?? 0) > 0 ? (
+                    <View style={styles.threadLine} />
+                  ) : null}
+                </View>
+
+                <View style={styles.commentContent}>
+                  <View style={styles.commentTopRow}>
+                    <View style={styles.commentMetaRow}>
+                      <Text style={styles.commentAuthor}>
+                        {comment.author}
+                      </Text>
+                      {!!comment.createdAt && (
+                        <Text style={styles.commentDate}>
+                          {formatTimeAgo(comment.createdAt)}
+                        </Text>
+                      )}
                     </View>
-                    <View style={styles.commentHeaderText}>
-                      <View style={styles.commentMetaRow}>
-                        <Text style={styles.commentAuthor}>{comment.author}</Text>
-                        {!!comment.createdAt && (
-                          <Text style={styles.commentDate}>{formatTimeAgo(comment.createdAt)}</Text>
-                        )}
-                      </View>
-                      <Text style={styles.commentContent}>{comment.content}</Text>
-                    </View>
+                    {!comment.isMine && comment.authorUserId ? (
+                      <ReportDotsDropdownMenu
+                        enabled
+                        onReport={() =>
+                          openReportComment(comment.id, comment.authorUserId)
+                        }
+                        variant="comment"
+                        disabledMessage="신고할 수 없습니다."
+                      />
+                    ) : comment.isMine ? (
+                      <Pressable
+                        hitSlop={8}
+                        onPress={() => openOwnCommentActions(comment)}
+                      >
+                        <MaterialCommunityIcons
+                          name="dots-vertical"
+                          size={18}
+                          color={GRAY.DARK_2}
+                        />
+                      </Pressable>
+                    ) : null}
                   </View>
-                  {!comment.isMine && comment.authorUserId ? (
-                    <ReportDotsDropdownMenu
-                      enabled
-                      onReport={() =>
-                        openReportComment(comment.id, comment.authorUserId)
+
+                  <Text style={styles.commentText}>{comment.content}</Text>
+
+                  <View style={styles.commentStats}>
+                    <Pressable
+                      onPress={() =>
+                        handleToggleCommentLike(
+                          comment.id,
+                          Boolean(comment.isLiked),
+                        )
                       }
-                      variant="comment"
-                      disabledMessage="신고할 수 없습니다."
-                    />
-                  ) : comment.isMine ? (
-                    <Pressable hitSlop={8} onPress={() => openOwnCommentActions(comment)}>
-                      <MaterialCommunityIcons
-                        name="dots-vertical"
-                        size={18}
-                        color={GRAY.DARK_2}
+                      hitSlop={8}
+                    >
+                      <Ionicons
+                        name={comment.isLiked ? "heart" : "heart-outline"}
+                        size={20}
+                        color={comment.isLiked ? RED.DEFAULT : BLACK}
                       />
                     </Pressable>
-                  ) : (
-                    <View style={{ width: 18 }} />
-                  )}
-                </View>
+                    <Text style={styles.commentCount}>
+                      {comment.likeCount}
+                    </Text>
+                    <Pressable
+                      onPress={() =>
+                        setReplyTarget({
+                          id: comment.id,
+                          author: comment.author,
+                        })
+                      }
+                      hitSlop={8}
+                    >
+                      <Text style={styles.replyActionText}>답글</Text>
+                    </Pressable>
+                  </View>
 
-                <View style={styles.commentStats}>
-                  <Pressable
-                    onPress={() =>
-                      handleToggleCommentLike(comment.id, Boolean(comment.isLiked))
-                    }
-                    hitSlop={8}
-                  >
-                    <Ionicons
-                      name={comment.isLiked ? "heart" : "heart-outline"}
-                      size={20}
-                      color={comment.isLiked ? RED.DEFAULT : "#FFCACA"}
-                    />
-                  </Pressable>
-                  <Text style={styles.commentCount}>{comment.likeCount}</Text>
-                  {comment.replyCount > 0 && (
-                    <>
-                      <Ionicons name="chatbubble-outline" size={18} color={MAIN.DEFAULT} />
-                      <Text style={styles.commentCount}>{comment.replyCount}</Text>
-                    </>
-                  )}
-                  <Pressable
-                    onPress={() =>
-                      setReplyTarget({
-                        id: comment.id,
-                        author: comment.author,
-                      })
-                    }
-                    hitSlop={8}
-                  >
-                    <Text style={styles.replyActionText}>답글달기</Text>
-                  </Pressable>
-                </View>
-                {!!comment.replies?.length && (
-                  <View style={styles.replyList}>
-                    {comment.replies.map((reply) => (
-                      <View key={reply.id} style={styles.replyRow}>
-                        <View style={styles.replyAvatarCircle}>
-                          <Ionicons name="person-outline" size={14} color={GRAY.MEDIUM} />
-                        </View>
-                        <View style={styles.replyBody}>
-                          <View
-                            style={[
-                              styles.replyMetaRow,
-                              { justifyContent: "space-between", flexWrap: "nowrap" },
-                            ]}
-                          >
-                            <View
-                              style={{
-                                flexDirection: "row",
-                                alignItems: "center",
-                                gap: 8,
-                                flex: 1,
-                              }}
-                            >
-                              <Text style={styles.replyAuthor}>{reply.author}</Text>
-                              {!!reply.createdAt && (
-                                <Text style={styles.replyDate}>
-                                  {formatTimeAgo(reply.createdAt)}
+                  {!!comment.replies?.length && (
+                    <View style={styles.replyList}>
+                      {comment.replies.map((reply) => (
+                        <View key={reply.id} style={styles.replyBlock}>
+                          <View style={styles.replyAvatarColumn}>
+                            <CommentAuthorAvatar
+                              profileImgUrl={reply.profileImgUrl}
+                              size={REPLY_AVATAR_SIZE}
+                            />
+                          </View>
+                          <View style={styles.replyBody}>
+                            <View style={styles.replyMetaRow}>
+                              <View
+                                style={{
+                                  flexDirection: "row",
+                                  alignItems: "center",
+                                  gap: 8,
+                                  flex: 1,
+                                }}
+                              >
+                                <Text style={styles.replyAuthor}>
+                                  {reply.author}
                                 </Text>
-                              )}
+                                {!!reply.createdAt && (
+                                  <Text style={styles.replyDate}>
+                                    {formatTimeAgo(reply.createdAt)}
+                                  </Text>
+                                )}
+                              </View>
+                              {!reply.isMine && reply.authorUserId ? (
+                                <ReportDotsDropdownMenu
+                                  enabled
+                                  onReport={() =>
+                                    openReportComment(
+                                      reply.id,
+                                      reply.authorUserId,
+                                    )
+                                  }
+                                  variant="reply"
+                                  disabledMessage="신고할 수 없습니다."
+                                />
+                              ) : reply.isMine ? (
+                                <Pressable
+                                  hitSlop={8}
+                                  onPress={() => openOwnCommentActions(reply)}
+                                >
+                                  <MaterialCommunityIcons
+                                    name="dots-vertical"
+                                    size={16}
+                                    color={GRAY.DARK_2}
+                                  />
+                                </Pressable>
+                              ) : null}
                             </View>
-                            {!reply.isMine && reply.authorUserId ? (
-                              <ReportDotsDropdownMenu
-                                enabled
-                                onReport={() =>
-                                  openReportComment(
+                            <Text style={styles.replyText}>
+                              {reply.content}
+                            </Text>
+                            <View style={styles.replyStats}>
+                              <Pressable
+                                onPress={() =>
+                                  handleToggleCommentLike(
                                     reply.id,
-                                    reply.authorUserId,
+                                    Boolean(reply.isLiked),
                                   )
                                 }
-                                variant="reply"
-                                disabledMessage="신고할 수 없습니다."
-                              />
-                            ) : reply.isMine ? (
-                              <Pressable
                                 hitSlop={8}
-                                onPress={() => openOwnCommentActions(reply)}
                               >
-                                <MaterialCommunityIcons
-                                  name="dots-vertical"
-                                  size={16}
-                                  color={GRAY.DARK_2}
+                                <Ionicons
+                                  name={
+                                    reply.isLiked ? "heart" : "heart-outline"
+                                  }
+                                  size={18}
+                                  color={reply.isLiked ? RED.DEFAULT : BLACK}
                                 />
                               </Pressable>
-                            ) : null}
-                          </View>
-                          <Text style={styles.replyContent}>{reply.content}</Text>
-                          <View style={styles.replyStats}>
-                            <Pressable
-                              onPress={() =>
-                                handleToggleCommentLike(
-                                  reply.id,
-                                  Boolean(reply.isLiked),
-                                )
-                              }
-                              hitSlop={8}
-                            >
-                              <Ionicons
-                                name={reply.isLiked ? "heart" : "heart-outline"}
-                                size={16}
-                                color={reply.isLiked ? RED.DEFAULT : "#FFCACA"}
-                              />
-                            </Pressable>
-                            <Text style={styles.replyCount}>{reply.likeCount ?? 0}</Text>
+                              <Text style={styles.replyCount}>
+                                {reply.likeCount ?? 0}
+                              </Text>
+                            </View>
                           </View>
                         </View>
-                      </View>
-                    ))}
-                  </View>
-                )}
+                      ))}
+                    </View>
+                  )}
+                </View>
               </View>
-          ))}
+            );
+          })}
         </View>
         </ScrollView>
 

@@ -20,3 +20,23 @@ export function pickCommunityProfileImgUrl(
 ): string | undefined {
   return pickProfileImageUrlDeep(item.user);
 }
+
+export function pickAuthorFromUser(
+  user: Record<string, unknown> | null | undefined,
+): string {
+  if (!user || typeof user !== "object") return "알수없음";
+  const activity =
+    typeof user.activityName === "string"
+      ? user.activityName
+      : typeof user.activity_name === "string"
+        ? user.activity_name
+        : "";
+  const nick = typeof user.name === "string" ? user.name : "";
+  return activity.trim() || nick.trim() || "알수없음";
+}
+
+export function pickProfileImgFromUser(
+  user: Record<string, unknown> | null | undefined,
+): string | undefined {
+  return pickProfileImageUrlDeep(user);
+}

@@ -1,12 +1,14 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY, WHITE } from "../../color";
+
+const AVATAR_SIZE = 36;
+const REPLY_AVATAR_SIZE = 28;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: WHITE,
   },
-  /** KeyboardAvoidingView 안: 스크롤 + 하단 댓글 (채팅과 동일한 flex 구조) */
   detailInner: {
     flex: 1,
   },
@@ -14,259 +16,247 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
     paddingBottom: 24,
   },
-  header: {
+  postSection: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+  },
+  categoryText: {
+    fontSize: 13,
+    color: GRAY.DARK_100,
+    marginBottom: 10,
+  },
+  postTitleLarge: {
+    fontSize: 22,
+    fontWeight: "800",
+    color: BLACK,
+    lineHeight: 30,
     marginBottom: 16,
   },
-  tagBadge: {
-    alignSelf: "flex-start",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    backgroundColor: GRAY.MEDIUM,
-    marginBottom: 8,
+  authorMetaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginBottom: 16,
   },
-  tagText: {
-    fontSize: 11,
-    color: BLACK,
+  authorMetaText: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
   },
-  title: {
-    flexShrink: 1,
-    fontSize: 18,
+  authorName: {
+    fontSize: 14,
     fontWeight: "700",
     color: BLACK,
   },
-  titleRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginBottom: 8,
-  },
-  meta: {
+  postDate: {
     fontSize: 12,
     color: GRAY.DARK_2,
   },
-  body: {
-    marginTop: 16,
+  contentDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: GRAY.MEDIUM,
+    marginBottom: 16,
   },
-  bodyText: {
-    fontSize: 14,
-    lineHeight: 22,
+  postBody: {
+    fontSize: 15,
+    lineHeight: 24,
     color: BLACK,
   },
-  imageGallery: {
-    marginTop: 16,
-  },
-  contentImage: {
+  carouselWrap: {
     width: "100%",
-    height: 220,
+    position: "relative",
+  },
+  pageBadge: {
+    position: "absolute",
+    top: 22,
+    right: 10,
+    zIndex: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
     borderRadius: 12,
-    marginBottom: 10,
+    backgroundColor: "rgba(0,0,0,0.55)",
+  },
+  pageBadgeText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: WHITE,
   },
   actionRow: {
-    height: 54,
     flexDirection: "row",
     alignItems: "center",
-    gap: 44,
+    gap: 20,
+    marginTop: 14,
   },
   actionItem: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
   },
   actionCount: {
-    fontSize: 16,
+    fontSize: 14,
+    fontWeight: "500",
     color: BLACK,
-    fontWeight: "600",
   },
-  statsRow: {
+  sectionDivider: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: GRAY.MEDIUM,
+    marginTop: 16,
+    marginBottom: 4,
+  },
+  avatarColumn: {
+    width: AVATAR_SIZE,
+    marginRight: 12,
+    alignItems: "center",
+  },
+  threadLine: {
+    flex: 1,
+    width: 2,
+    backgroundColor: GRAY.MEDIUM,
+    marginTop: 8,
+    marginBottom: 4,
+    borderRadius: 1,
+  },
+  commentsSection: {
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  commentBlock: {
     flexDirection: "row",
-    alignItems: "center",
-    marginTop: 24,
-  },
-  statText: {
-    fontSize: 12,
-    color: GRAY.DARK_100,
-  },
-  dot: {
-    fontSize: 12,
-    color: GRAY.DARK_100,
-    marginHorizontal: 4,
-  },
-  firstCommentPlaceholder: {
-    marginTop: 26,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  firstCommentText: {
-    fontSize: 13,
-    color: GRAY.DARK_2,
-  },
-  commentList: {
-    marginTop: 10,
-    gap: 14,
-  },
-  commentCard: {
-    paddingHorizontal: 4,
+    alignItems: "stretch",
     paddingVertical: 12,
   },
-  myCommentCard: {
-    backgroundColor: "transparent",
+  commentContent: {
+    flex: 1,
+    minWidth: 0,
   },
   commentTopRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "flex-start",
-    marginBottom: 12,
-  },
-  commentAuthorRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  avatarCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#102042",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  commentHeaderText: {
-    flex: 1,
+    justifyContent: "space-between",
+    gap: 8,
   },
   commentMetaRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginBottom: 3,
+    marginBottom: 4,
+    flex: 1,
+    minWidth: 0,
   },
   commentAuthor: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "700",
-    color: MAIN.DEFAULT,
+    color: BLACK,
   },
   commentDate: {
-    fontSize: 13,
-    color: "#717182",
+    fontSize: 14,
+    color: GRAY.DARK_2,
   },
-  commentContent: {
+  commentText: {
     fontSize: 15,
-    color: MAIN.DEFAULT,
-    fontWeight: "500",
-    marginBottom: 5,
+    lineHeight: 22,
+    color: BLACK,
   },
   commentStats: {
     flexDirection: "row",
     alignItems: "center",
     gap: 6,
-    marginLeft: 50,
+    marginTop: 10,
   },
   commentCount: {
     fontSize: 14,
-    color: MAIN.DEFAULT,
+    fontWeight: "500",
+    color: BLACK,
     marginRight: 8,
-    fontWeight: "600",
+  },
+  replyActionText: {
+    fontSize: 14,
+    color: GRAY.DARK_2,
+    fontWeight: "500",
   },
   replyList: {
-    marginTop: 10,
-    marginLeft: 18,
-    paddingLeft: 16,
-    gap: 8,
+    marginTop: 8,
+    gap: 12,
   },
-  replyRow: {
+  replyBlock: {
     flexDirection: "row",
     alignItems: "flex-start",
-    gap: 8,
-    position: "relative",
+    gap: 10,
   },
-  replyAvatarCircle: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#102042",
+  replyAvatarColumn: {
+    width: REPLY_AVATAR_SIZE,
     alignItems: "center",
-    justifyContent: "center",
-    marginTop: 1,
   },
   replyBody: {
     flex: 1,
-    paddingTop: 1,
-  },
-  replyAuthor: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: MAIN.DEFAULT,
+    minWidth: 0,
   },
   replyMetaRow: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     gap: 8,
-    marginBottom: 2,
+    marginBottom: 4,
+  },
+  replyAuthor: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: BLACK,
   },
   replyDate: {
     fontSize: 13,
-    color: "#717182",
+    color: GRAY.DARK_2,
   },
-  replyContent: {
+  replyText: {
     fontSize: 15,
-    color: MAIN.DEFAULT,
-    marginBottom: 3,
+    lineHeight: 22,
+    color: BLACK,
   },
   replyStats: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
+    gap: 6,
+    marginTop: 8,
   },
   replyCount: {
     fontSize: 13,
-    color: MAIN.DEFAULT,
-    fontWeight: "600",
+    fontWeight: "500",
+    color: BLACK,
   },
   commentInputContainer: {
     backgroundColor: WHITE,
-    borderTopWidth: 1,
-    borderTopColor: GRAY.DEFAULT,
-  },
-  replyActionText: {
-    fontSize: 12,
-    color: GRAY.DARK_2,
-    fontWeight: "600",
-    marginLeft: 2,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: GRAY.MEDIUM,
   },
   replyComposerInfo: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 10,
   },
   replyComposerText: {
-    fontSize: 12,
+    fontSize: 13,
     color: GRAY.DARK_100,
   },
   replyComposerCancel: {
-    fontSize: 12,
-    color: MAIN.DEFAULT,
-    fontWeight: "600",
-  },
-  inputWrapper: {
-    flex: 1,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  commentInput: {
     fontSize: 13,
     color: BLACK,
-    maxHeight: 80,
+    fontWeight: "600",
+  },
+  navTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: BLACK,
+  },
+  navSubtitle: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+    marginTop: 1,
   },
 });
 
 export default styles;
-
+export { AVATAR_SIZE, REPLY_AVATAR_SIZE };

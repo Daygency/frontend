@@ -37,6 +37,9 @@ export type CommunityDetailResponse = {
   title: string;
   content: string;
   createdAt: string;
+  viewCount?: number;
+  likeCount?: number;
+  commentCount?: number;
   user: Record<string, unknown>;
   category: CommunityCategory;
   file: Record<string, unknown> | null;
