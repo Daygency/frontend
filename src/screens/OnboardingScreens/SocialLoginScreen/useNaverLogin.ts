@@ -50,7 +50,7 @@ function parseAuthErrorBody(text: string, status: number): string {
 }
 
 export const useNaverLogin = () => {
-  const { login: authLogin } = useAuth();
+  const { login: authLogin, enterBrowse } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const [isLoading, setIsLoading] = useState(false);
   const busyRef = useRef(false);
@@ -129,6 +129,7 @@ export const useNaverLogin = () => {
         naverTokenFromServer ?? oauthAccessToken ?? tokenFromSdk;
 
       if (data.needsReactivation) {
+        enterBrowse();
         navigation.navigate(RootRoutes.ACCOUNT_REACTIVATION, {
           provider: "naver",
           oauthAccessToken: pendingOauthToken,

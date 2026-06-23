@@ -16,7 +16,7 @@ import { GOOGLE_WEB_CLIENT_ID } from "../../../lib/google/googleConfig";
 import { RootRoutes } from "../../../navigations/routes";
 
 export const useGoogleLogin = () => {
-  const { login: authLogin } = useAuth();
+  const { login: authLogin, enterBrowse } = useAuth();
   const navigation =
     useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const [isLoading, setIsLoading] = useState(false);
@@ -79,6 +79,7 @@ export const useGoogleLogin = () => {
       };
 
       if (data.needsReactivation) {
+        enterBrowse();
         navigation.navigate(RootRoutes.ACCOUNT_REACTIVATION, {
           provider: "google",
           oauthAccessToken: accessToken,

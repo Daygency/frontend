@@ -2,7 +2,7 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 import ContentTab from "./ContentTab";
-import SocialLoginScreen from "../screens/OnboardingScreens/SocialLoginScreen/SocialLoginScreen";
+import LoginBottomSheet from "../screens/OnboardingScreens/SocialLoginScreen/LoginBottomSheet";
 import AccountReactivationScreen from "../screens/AccountReactivationScreen/AccountReactivationScreen";
 import SignupFlowScreen from "../screens/OnboardingScreens/SignupFlowScreen/SignupFlowScreen";
 import SplashScreenView from "../screens/OnboardingScreens/SplashScreen/SplashScreen";
@@ -44,15 +44,40 @@ import HomeBannerDetailScreen from "../screens/HomeBannerDetailScreen/HomeBanner
 import HomeBannerListScreen from "../screens/HomeBannerListScreen/HomeBannerListScreen";
 import { RootRoutes } from "./routes";
 import { withAuthGate } from "../hooks/useRequireLogin";
-import { WHITE, MAIN } from "../color";
+import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import styles from "./styles";
 
 const Stack = createNativeStackNavigator();
 
+const accountReactivationScreenOptions = ({ navigation }: { navigation: any }) => ({
+  headerTitle: () => (
+    <View style={styles.titleWrap}>
+      <Text style={styles.title}>계정 복구</Text>
+    </View>
+  ),
+  headerShadowVisible: false,
+  headerShown: true,
+  headerTitleAlign: "left" as const,
+  headerLeft: () => (
+    <Pressable
+      onPress={() => {
+        if (navigation.canGoBack()) {
+          navigation.goBack();
+        }
+      }}
+      hitSlop={10}
+      style={styles.leftIcon}
+    >
+      <MaterialCommunityIcons name="chevron-left" size={30} color="#000" />
+    </Pressable>
+  ),
+});
+
 const Navigation = () => {
-  const { isLoggedIn, isBrowsing, isLoading, needsRoleSelection } = useAuth();
+  const { isLoggedIn, isBrowsing, isLoading, needsRoleSelection, enterBrowse } =
+    useAuth();
 
   if (isLoading) {
     return <SplashScreenView />;
@@ -66,54 +91,9 @@ const Navigation = () => {
     );
   }
 
-  if (!isLoggedIn && !isBrowsing) {
-    return (
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            contentStyle: { backgroundColor: MAIN.DEFAULT },
-            headerShown: false,
-          }}
-        >
-          <Stack.Screen name={RootRoutes.LOGIN} component={SocialLoginScreen} />
-          <Stack.Screen
-            name={RootRoutes.ACCOUNT_REACTIVATION}
-            component={AccountReactivationScreen}
-            options={({ navigation }) => ({
-              headerTitle: () => (
-                <View style={styles.titleWrap}>
-                  <Text style={styles.title}>계정 복구</Text>
-                </View>
-              ),
-              headerShadowVisible: false,
-              headerShown: true,
-              headerTitleAlign: "left",
-              headerLeft: () => (
-                <Pressable
-                  onPress={() => {
-                    if (navigation.canGoBack()) {
-                      navigation.goBack();
-                    }
-                  }}
-                  hitSlop={10}
-                  style={styles.leftIcon}
-                >
-                  <MaterialCommunityIcons
-                    name="chevron-left"
-                    size={30}
-                    color="#000"
-                  />
-                </Pressable>
-              ),
-            })}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    );
-  }
-
   return (
     <NavigationContainer>
+      <View style={{ flex: 1 }}>
       <Stack.Navigator
         screenOptions={{
           contentStyle: { backgroundColor: WHITE },
@@ -121,6 +101,11 @@ const Navigation = () => {
         }}
       >
         <Stack.Screen name={RootRoutes.CONTENT_TAB} component={ContentTab} />
+        <Stack.Screen
+          name={RootRoutes.ACCOUNT_REACTIVATION}
+          component={AccountReactivationScreen}
+          options={accountReactivationScreenOptions}
+        />
         <Stack.Screen
           name={RootRoutes.ANNOUNCEMENT_DETAIL}
           component={AnnouncementDetailScreen}
@@ -1131,6 +1116,10 @@ const Navigation = () => {
           })}
         />
       </Stack.Navigator>
+        {!isLoggedIn && !isBrowsing ? (
+          <LoginBottomSheet onDismiss={enterBrowse} />
+        ) : null}
+      </View>
     </NavigationContainer>
   );
 };

@@ -47,7 +47,7 @@ const AccountReactivationScreen = () => {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route =
     useRoute<RouteProp<RootStackParamList, typeof RootRoutes.ACCOUNT_REACTIVATION>>();
-  const { login: authLogin } = useAuth();
+  const { login: authLogin, requireLogin } = useAuth();
   const insets = useSafeAreaInsets();
   const [submitting, setSubmitting] = useState(false);
 
@@ -98,7 +98,7 @@ const AccountReactivationScreen = () => {
           "안내",
           "가입이 필요한 상태입니다. 로그인 화면으로 돌아가 다시 시도해 주세요.",
         );
-        navigation.navigate(RootRoutes.LOGIN);
+        requireLogin();
         return;
       }
 
@@ -134,7 +134,7 @@ const AccountReactivationScreen = () => {
 
   const handleCancel = () => {
     if (navigation.canGoBack()) navigation.goBack();
-    else navigation.navigate(RootRoutes.LOGIN);
+    else requireLogin();
   };
 
   const proceedToSignup = async (profile: Record<string, unknown>) => {

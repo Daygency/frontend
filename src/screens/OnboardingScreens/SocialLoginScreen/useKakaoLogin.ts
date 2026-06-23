@@ -11,7 +11,7 @@ import {
 import { RootRoutes } from "../../../navigations/routes";
 
 export const useKakaoLogin = () => {
-  const { login: authLogin } = useAuth();
+  const { login: authLogin, enterBrowse } = useAuth();
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -84,6 +84,7 @@ export const useKakaoLogin = () => {
       }
 
       if (data.needsReactivation) {
+        enterBrowse();
         navigation.navigate(RootRoutes.ACCOUNT_REACTIVATION, {
           provider: "kakao",
           oauthAccessToken: accessTokenFromKakao,

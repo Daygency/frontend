@@ -19,9 +19,14 @@ import { styles } from "./styles";
 const WHITE_LOGO = require("../../../../assets/daygency_logo_white.png");
 const GOOGLE_LOGO = require("../../../../assets/google.png");
 
-const SocialLoginScreen = () => {
+type SocialLoginScreenProps = {
+  onClose?: () => void;
+};
+
+const SocialLoginScreen = ({ onClose }: SocialLoginScreenProps) => {
   const { top, bottom } = useSafeAreaInsets();
   const { enterBrowse } = useAuth();
+  const handleClose = onClose ?? enterBrowse;
   const { handleKakaoLogin, isLoading: isKakaoLoading } = useKakaoLogin();
   const { handleNaverLogin, isLoading: isNaverLoading } = useNaverLogin();
   const { handleGoogleLogin, isLoading: isGoogleLoading } = useGoogleLogin();
@@ -33,7 +38,7 @@ const SocialLoginScreen = () => {
       <StatusBar style="light" />
       <Pressable
         style={[styles.closeButton, { top: top + 4 }]}
-        onPress={enterBrowse}
+        onPress={handleClose}
         hitSlop={12}
         accessibilityLabel="닫기"
         accessibilityRole="button"
