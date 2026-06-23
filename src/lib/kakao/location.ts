@@ -25,3 +25,7 @@ export function hasMapCoords(
     Number.isFinite(value.longitude)
   );
 }
+
+export function getKakaoMapLink(latitude: number, longitude: number): string {
+  return `https://map.kakao.com/link/map/${latitude},${longitude}`;
+}

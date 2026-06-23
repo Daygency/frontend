@@ -15,6 +15,9 @@ if (googleServicesBase64) {
 
 const hasPlist = fs.existsSync(plistPath);
 
+const googleMapsApiKey =
+  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
+
 export default ({ config }) => ({
   ...config,
   expo: {
@@ -38,6 +41,11 @@ export default ({ config }) => ({
       )
         ? "./google-services.json"
         : undefined,
+      config: {
+        googleMaps: {
+          apiKey: googleMapsApiKey,
+        },
+      },
     },
     plugins: [
       [
