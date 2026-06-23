@@ -144,7 +144,12 @@ const PortfolioHeader = ({
             overlayOpacity={overlayOpacity}
             solidOpacity={solidOpacity}
             overlay={
-              <MaterialCommunityIcons name="cog-outline" size={23} color={WHITE} />
+              <MaterialCommunityIcons
+                name="cog-outline"
+                size={23}
+                color={WHITE}
+                style={portfolioHeaderStyles.iconOverlay}
+              />
             }
             solid={
               <MaterialCommunityIcons name="cog-outline" size={23} color={MAIN.DEFAULT} />

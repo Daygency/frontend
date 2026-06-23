@@ -53,6 +53,11 @@ export const portfolioHeaderStyles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 3,
   },
+  iconOverlay: {
+    textShadowColor: "rgba(0, 0, 0, 0.45)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
   iconSolid: {
     ...StyleSheet.absoluteFillObject,
     alignItems: "center",
