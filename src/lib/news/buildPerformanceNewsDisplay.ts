@@ -1,4 +1,4 @@
-import { formatPerformanceOpenLabel } from "./formatPerformanceOpenLabel";
+import { formatPerformanceListDateLabel } from "./formatPerformanceOpenLabel";
 import type { NewsListItem } from "../apis/news/types";
 import { isContentNew } from "../content/newBadge";
 
@@ -26,7 +26,7 @@ export function buildPerformanceNewsDisplay(
   const isNew = isContentNew(item.createdAt);
 
   return {
-    openLabel: formatPerformanceOpenLabel(item.startedAt),
+    openLabel: formatPerformanceListDateLabel(item.startedAt, item.endedAt),
     priceLabel: formatNewsTicketPrice(item.ticketPrice),
     isHot: likeCount >= 5,
     isExclusive: isNew && likeCount >= 1,

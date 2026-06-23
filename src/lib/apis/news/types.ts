@@ -3,6 +3,7 @@ export type NewsListParams = {
   cursor?: string;
   limit?: number;
   q?: string;
+  sort?: "created" | "imminent";
 };
 
 /** 공연소식 목록 항목 (GET /news) — README: `thumbnailUrl` 우선 */
@@ -11,6 +12,7 @@ export type NewsListItem = {
   title: string;
   place: string;
   startedAt: string;
+  endedAt?: string | null;
   viewCount?: number;
   likeCount?: number;
   commentCount?: number;

@@ -11,7 +11,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BLUE, GRAY, MAIN, RED, WHITE } from "../../../color";
-import { formatPerformanceOpenLabel } from "../../../lib/news/formatPerformanceOpenLabel";
+import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerformanceOpenLabel";
 import { buildPerformanceNewsDisplay } from "../../../lib/news/buildPerformanceNewsDisplay";
 import type { NewsListItem } from "../../../lib/apis/news/types";
 import { pickNewsListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
@@ -40,7 +40,9 @@ const PerformanceNewsListCard = ({
 
   const imageUrl = pickNewsListThumbnailUrl(item);
   const display = buildPerformanceNewsDisplay(item);
-  const openLabel = display.openLabel || formatPerformanceOpenLabel(item.startedAt);
+  const openLabel =
+    display.openLabel ||
+    formatPerformanceListDateLabel(item.startedAt, item.endedAt);
 
   useEffect(() => {
     if (!item.newsId) return;
@@ -99,16 +101,9 @@ const PerformanceNewsListCard = ({
 
       <View style={styles.body}>
         <View style={styles.topRow}>
-          <View style={styles.timeRow}>
-            <Text style={styles.openTime}>{openLabel}</Text>
-            {display.hasMultipleSessions ? (
-              <MaterialCommunityIcons
-                name="chevron-down"
-                size={18}
-                color={BLUE.DEFAULT}
-              />
-            ) : null}
-          </View>
+          <Text style={styles.title} numberOfLines={2}>
+            {item.title}
+          </Text>
           <Pressable
             hitSlop={10}
             onPress={(e) => {
@@ -125,9 +120,19 @@ const PerformanceNewsListCard = ({
           </Pressable>
         </View>
 
-        <Text style={styles.title} numberOfLines={2}>
-          {item.title}
-        </Text>
+        {openLabel ? (
+          <View style={styles.timeRow}>
+            <Text style={styles.openTime}>{openLabel}</Text>
+            {display.hasMultipleSessions ? (
+              <MaterialCommunityIcons
+                name="chevron-down"
+                size={18}
+                color={BLUE.DEFAULT}
+              />
+            ) : null}
+          </View>
+        ) : null}
+
         <Text style={styles.place} numberOfLines={1}>
           {item.place}
         </Text>
@@ -191,12 +196,11 @@ const styles = StyleSheet.create({
   },
   topRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     gap: 8,
   },
   timeRow: {
-    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     gap: 2,
@@ -204,7 +208,7 @@ const styles = StyleSheet.create({
   },
   scrapButton: {
     flexShrink: 0,
-    marginTop: -2,
+    marginTop: 2,
   },
   openTime: {
     fontSize: 15,
@@ -213,11 +217,11 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   title: {
-    fontSize: 16,
+    flex: 1,
+    fontSize: 18,
     fontWeight: "700",
     color: MAIN.DEFAULT,
-    lineHeight: 22,
-    marginTop: 2,
+    lineHeight: 24,
   },
   place: {
     fontSize: 14,

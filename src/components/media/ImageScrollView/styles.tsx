@@ -23,8 +23,8 @@ const styles = StyleSheet.create({
   },
   imageTitle: {
     marginTop: 5,
-    fontSize: 14,
-    lineHeight: 16,
+    fontSize: 16,
+    lineHeight: 20,
     letterSpacing: 0.3,
     fontWeight: "500",
     color: BLACK,

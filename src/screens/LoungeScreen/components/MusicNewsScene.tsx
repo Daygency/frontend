@@ -160,6 +160,7 @@ const MusicNewsScene = ({
         cursor: cursor ?? undefined,
         limit: 20,
         q: searchKeyword,
+        sort: sortMode,
       });
 
       if (mode === "more") setLoadingMore(false);
@@ -178,7 +179,7 @@ const MusicNewsScene = ({
       setNextCursor(res.nextCursor);
       setHasMore(res.hasMore);
     },
-    [searchKeyword],
+    [searchKeyword, sortMode],
   );
 
   useEffect(() => {
@@ -188,6 +189,7 @@ const MusicNewsScene = ({
 
   const displayedItems = useMemo(() => {
     const filtered = applyClientFilters(items, selectedGenre, selectedRegion);
+    if (sortMode === "imminent") return filtered;
     return sortNewsItems(filtered, sortMode);
   }, [items, sortMode, selectedGenre, selectedRegion]);
 

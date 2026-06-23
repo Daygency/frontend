@@ -18,6 +18,7 @@ import { getMajors } from "../../../lib/apis/announcement/majorApi";
 import { parseAnnouncementDaysLeft } from "../../../lib/announcement/parseAnnouncementDaysLeft";
 import { resolveRecruitmentMajorDisplayNames } from "../../../lib/announcement/recruitmentMajors";
 import { getImageAverageColor } from "../../../lib/media/getImageAverageColor";
+import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerformanceOpenLabel";
 import {
   CURATION_LOADING_BACKGROUND,
   type CurationThemeState,
@@ -36,21 +37,6 @@ type ContentTabParamList = {
 };
 
 type NavigationProp = BottomTabNavigationProp<ContentTabParamList>;
-
-function formatStartedAt(iso: string): string {
-  try {
-    const d = new Date(iso);
-    if (isNaN(d.getTime())) return iso;
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, "0");
-    const day = String(d.getDate()).padStart(2, "0");
-    const h = String(d.getHours()).padStart(2, "0");
-    const min = String(d.getMinutes()).padStart(2, "0");
-    return `${y}.${m}.${day} ${h}:${min}`;
-  } catch {
-    return iso;
-  }
-}
 
 const HOME_ANNOUNCEMENT_PREVIEW_LIMIT = 3;
 
@@ -337,7 +323,10 @@ const AllContentScene = ({
                 height={NEWS_CARD_IMAGE_HEIGHT}
                 title={item.title}
                 place={item.place}
-                dateRange={formatStartedAt(item.startedAt)}
+                dateRange={formatPerformanceListDateLabel(
+                  item.startedAt,
+                  item.endedAt,
+                )}
                 imageUrl={normalizeListThumbnailUrl(item.thumbnailUrl) ?? undefined}
                 showNew={isContentNew(item.createdAt)}
                 onPress={() => {

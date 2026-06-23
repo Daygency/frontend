@@ -12,6 +12,7 @@ import AnnouncementCard from "../../../components/cards/AnnouncementCard";
 import ArtistCard from "../../../components/cards/ArtistCard";
 import EventNewsCard from "../../../components/cards/EventNewsCard";
 import CommunityCard from "../../LoungeScreen/components/CommunityCard";
+import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerformanceOpenLabel";
 import { RootRoutes } from "../../../navigations/routes";
 import { getAnnouncementList } from "../../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../../lib/apis/announcement/types";
@@ -44,11 +45,11 @@ function EmptyMessage({ text }: { text: string }) {
   );
 }
 
-function formatNewsDate(iso?: string): string {
-  if (!iso) return "";
-  const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return iso;
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+function formatNewsListDate(
+  startedAt?: string,
+  endedAt?: string | null,
+): string {
+  return formatPerformanceListDateLabel(startedAt, endedAt);
 }
 
 function formatCommunityDate(iso?: string): string {
@@ -312,7 +313,7 @@ export function SearchNewsScene({ query }: SceneProps) {
             height={220}
             title={item.title}
             place={item.place}
-            dateRange={formatNewsDate(item.startedAt)}
+            dateRange={formatNewsListDate(item.startedAt, item.endedAt)}
             imageUrl={pickNewsListThumbnailUrl(item) ?? undefined}
             onPress={() =>
               navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
@@ -636,7 +637,7 @@ export function SearchAllScene({ query }: SceneProps) {
                   height={193}
                   title={item.title}
                   place={item.place}
-                  dateRange={formatNewsDate(item.startedAt)}
+                  dateRange={formatNewsListDate(item.startedAt, item.endedAt)}
                   imageUrl={pickNewsListThumbnailUrl(item) ?? undefined}
                   onPress={() =>
                     navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {

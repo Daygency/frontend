@@ -24,6 +24,7 @@ export type HomeNewsItem = {
   title: string;
   place: string;
   startedAt: string;
+  endedAt?: string | null;
   createdAt?: string;
   thumbnailUrl: string | null;
 };

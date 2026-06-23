@@ -53,6 +53,10 @@ function normalizeNewsListItem(raw: unknown): NewsListItem {
     title: String(r.title ?? ""),
     place: String(r.place ?? ""),
     startedAt: String(r.startedAt ?? r.started_at ?? ""),
+    endedAt:
+      r.endedAt != null || r.ended_at != null
+        ? String(r.endedAt ?? r.ended_at)
+        : null,
     viewCount: pickNumber(r.viewCount, r.view_count),
     likeCount: pickNumber(r.likeCount, r.like_count),
     commentCount: pickNumber(r.commentCount, r.comment_count),
@@ -186,6 +190,7 @@ export async function getNewsList(
     if (params?.cursor) q.set("cursor", params.cursor);
     if (params?.limit != null) q.set("limit", String(params.limit));
     if (params?.q?.trim()) q.set("q", params.q.trim());
+    if (params?.sort) q.set("sort", params.sort);
     const query = q.toString();
     const url = `${API_BASE}/news${query ? `?${query}` : ""}`;
     const res = await fetch(url);
