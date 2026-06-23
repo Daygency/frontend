@@ -9,8 +9,17 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  body: {
+    flex: 1,
+    position: "relative",
+  },
   tabView: {
     flex: 1,
+  },
+  fab: {
+    position: "absolute",
+    zIndex: 50,
+    elevation: 50,
   },
   newsSceneContainer: {
     flex: 1,

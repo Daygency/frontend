@@ -12,50 +12,33 @@ import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import styles from "../styles";
 import PerformanceNewsListCard from "./PerformanceNewsListCard";
-import SectorTagSelectModal from "../../../components/modals/SectorTagSelectModal";
 import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
 import { GRAY, MAIN, WHITE } from "../../../color";
+import {
+  PERFORMANCE_NEWS_SORT_LABEL,
+  type PerformanceNewsFilterSheetType,
+  type PerformanceNewsSortMode,
+} from "./performanceNewsFilterOptions";
 
-const GENRE_OPTIONS = [
-  "클래식",
-  "재즈",
-  "뮤지컬",
-  "국악",
-  "대중음악",
-  "오페라",
-  "기타",
-];
+const POSTER_WIDTH = 112;
 
-const REGION_OPTIONS = [
-  "서울",
-  "경기",
-  "인천",
-  "부산",
-  "대구",
-  "광주",
-  "대전",
-  "울산",
-  "세종",
-  "강원",
-  "충북",
-  "충남",
-  "전북",
-  "전남",
-  "경북",
-  "경남",
-  "제주",
-];
-
-type OpenOrder = "asc" | "desc";
-
-function sortByStartedAt(items: NewsListItem[], order: OpenOrder) {
+function sortNewsItems(items: NewsListItem[], mode: PerformanceNewsSortMode) {
   return [...items].sort((a, b) => {
+    if (mode === "created") {
+      const ta = new Date(a.createdAt ?? 0).getTime();
+      const tb = new Date(b.createdAt ?? 0).getTime();
+      if (Number.isFinite(ta) && Number.isFinite(tb) && ta !== tb) {
+        return tb - ta;
+      }
+      return String(b.newsId).localeCompare(String(a.newsId));
+    }
+
     const ta = new Date(a.startedAt).getTime();
     const tb = new Date(b.startedAt).getTime();
     if (!Number.isFinite(ta) || !Number.isFinite(tb)) return 0;
-    return order === "asc" ? ta - tb : tb - ta;
+    return ta - tb;
   });
 }
 
@@ -114,7 +97,7 @@ const localStyles = StyleSheet.create({
   separator: {
     height: 1,
     backgroundColor: GRAY.MEDIUM,
-    marginLeft: 16 + 84 + 14,
+    marginLeft: 16 + POSTER_WIDTH + 14,
   },
   loaderContainer: {
     flex: 1,
@@ -136,7 +119,19 @@ const localStyles = StyleSheet.create({
   },
 });
 
-const MusicNewsScene = () => {
+type MusicNewsSceneProps = {
+  sortMode: PerformanceNewsSortMode;
+  selectedGenre: string | null;
+  selectedRegion: string | null;
+  onFilterSheetOpen: (sheet: PerformanceNewsFilterSheetType) => void;
+};
+
+const MusicNewsScene = ({
+  sortMode,
+  selectedGenre,
+  selectedRegion,
+  onFilterSheetOpen,
+}: MusicNewsSceneProps) => {
   const navigation = useNavigation<any>();
   const [items, setItems] = useState<NewsListItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -145,14 +140,9 @@ const MusicNewsScene = () => {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [openOrder, setOpenOrder] = useState<OpenOrder>("asc");
-  const [selectedGenre, setSelectedGenre] = useState<string[]>([]);
-  const [selectedRegion, setSelectedRegion] = useState<string[]>([]);
-  const [genreModalVisible, setGenreModalVisible] = useState(false);
-  const [regionModalVisible, setRegionModalVisible] = useState(false);
 
   const searchKeyword = useMemo(() => {
-    return selectedRegion[0] ?? selectedGenre[0] ?? undefined;
+    return selectedRegion ?? selectedGenre ?? undefined;
   }, [selectedGenre, selectedRegion]);
 
   const loadPage = useCallback(
@@ -197,13 +187,9 @@ const MusicNewsScene = () => {
   }, [loadPage]);
 
   const displayedItems = useMemo(() => {
-    const filtered = applyClientFilters(
-      items,
-      selectedGenre[0] ?? null,
-      selectedRegion[0] ?? null,
-    );
-    return sortByStartedAt(filtered, openOrder);
-  }, [items, openOrder, selectedGenre, selectedRegion]);
+    const filtered = applyClientFilters(items, selectedGenre, selectedRegion);
+    return sortNewsItems(filtered, sortMode);
+  }, [items, sortMode, selectedGenre, selectedRegion]);
 
   const refresh = useCallback(() => {
     if (refreshing || loadingMore) return;
@@ -219,39 +205,37 @@ const MusicNewsScene = () => {
     void loadPage(nextCursor, true, "more");
   }, [loadPage, loadingMore, refreshing, loading, hasMore, nextCursor]);
 
-  const genreLabel =
-    selectedGenre.length > 0 ? `장르 (${selectedGenre.length})` : "장르";
-  const regionLabel =
-    selectedRegion.length > 0 ? `지역 (${selectedRegion.length})` : "지역";
+  const genreLabel = selectedGenre ? `장르 (${selectedGenre})` : "장르";
+  const regionLabel = selectedRegion ? `지역 (${selectedRegion})` : "지역";
 
   return (
     <View style={styles.newsSceneContainer}>
       <View style={localStyles.filterRow}>
         <Pressable
           style={localStyles.filterChip}
-          onPress={() =>
-            setOpenOrder((prev) => (prev === "asc" ? "desc" : "asc"))
-          }
+          onPress={() => onFilterSheetOpen("sort")}
         >
           <MaterialCommunityIcons
             name="swap-vertical"
             size={16}
             color={MAIN.DEFAULT}
           />
-          <Text style={localStyles.filterChipText}>오픈순</Text>
+          <Text style={localStyles.filterChipText}>
+            {PERFORMANCE_NEWS_SORT_LABEL[sortMode]}
+          </Text>
         </Pressable>
 
         <Pressable
           style={[
             localStyles.filterChip,
-            selectedGenre.length > 0 && localStyles.filterChipActive,
+            selectedGenre && localStyles.filterChipActive,
           ]}
-          onPress={() => setGenreModalVisible(true)}
+          onPress={() => onFilterSheetOpen("genre")}
         >
           <Text
             style={[
               localStyles.filterChipText,
-              selectedGenre.length > 0 && localStyles.filterChipTextActive,
+              selectedGenre && localStyles.filterChipTextActive,
             ]}
           >
             {genreLabel}
@@ -259,21 +243,21 @@ const MusicNewsScene = () => {
           <MaterialCommunityIcons
             name="chevron-down"
             size={16}
-            color={selectedGenre.length > 0 ? WHITE : MAIN.DEFAULT}
+            color={selectedGenre ? WHITE : MAIN.DEFAULT}
           />
         </Pressable>
 
         <Pressable
           style={[
             localStyles.filterChip,
-            selectedRegion.length > 0 && localStyles.filterChipActive,
+            selectedRegion && localStyles.filterChipActive,
           ]}
-          onPress={() => setRegionModalVisible(true)}
+          onPress={() => onFilterSheetOpen("region")}
         >
           <Text
             style={[
               localStyles.filterChipText,
-              selectedRegion.length > 0 && localStyles.filterChipTextActive,
+              selectedRegion && localStyles.filterChipTextActive,
             ]}
           >
             {regionLabel}
@@ -281,44 +265,10 @@ const MusicNewsScene = () => {
           <MaterialCommunityIcons
             name="chevron-down"
             size={16}
-            color={selectedRegion.length > 0 ? WHITE : MAIN.DEFAULT}
+            color={selectedRegion ? WHITE : MAIN.DEFAULT}
           />
         </Pressable>
       </View>
-
-      <SectorTagSelectModal
-        visible={genreModalVisible}
-        title="장르 선택"
-        sections={[
-          {
-            title: "장르",
-            options: GENRE_OPTIONS,
-            selectedValues: selectedGenre,
-            onToggle: (value) =>
-              setSelectedGenre((prev) =>
-                prev.includes(value) ? [] : [value],
-              ),
-          },
-        ]}
-        onComplete={() => setGenreModalVisible(false)}
-      />
-
-      <SectorTagSelectModal
-        visible={regionModalVisible}
-        title="지역 선택"
-        sections={[
-          {
-            title: "지역",
-            options: REGION_OPTIONS,
-            selectedValues: selectedRegion,
-            onToggle: (value) =>
-              setSelectedRegion((prev) =>
-                prev.includes(value) ? [] : [value],
-              ),
-          },
-        ]}
-        onComplete={() => setRegionModalVisible(false)}
-      />
 
       {loading && items.length === 0 ? (
         <View style={localStyles.loaderContainer}>
