@@ -664,6 +664,8 @@ const AnnouncementDetailScreen = () => {
               priceType={detailData?.priceType}
               price={detailData?.price}
               address={addressLabel}
+              authorName={authorDisplayLabel}
+              profileImgUrl={author?.profileImgUrl}
               showNew={isContentNew(detailData?.createdAt)}
             />
           </View>

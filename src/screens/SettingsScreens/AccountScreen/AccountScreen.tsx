@@ -6,6 +6,7 @@ import SettingItem from "../../SettingsScreen/components/SettingItem/SettingItem
 import { useAuth } from "../../../contexts/AuthContext";
 import { RED } from "../../../color";
 import { RootRoutes } from "../../../navigations/routes";
+import { resetNavigationToBrowseHome } from "../../../lib/navigation/resetToBrowseHome";
 import styles from "./styles";
 
 const AccountScreen = () => {
@@ -21,7 +22,10 @@ const AccountScreen = () => {
         {
           text: "로그아웃",
           style: "destructive",
-          onPress: () => logout(),
+          onPress: async () => {
+            await logout();
+            resetNavigationToBrowseHome(navigation);
+          },
         },
       ]
     );

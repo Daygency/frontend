@@ -23,6 +23,7 @@ import type { AnnouncementListItem } from "../../../lib/apis/announcement/types"
 import { getMajors } from "../../../lib/apis/announcement/majorApi";
 import { parseAnnouncementDaysLeft } from "../../../lib/announcement/parseAnnouncementDaysLeft";
 import { resolveRecruitmentMajorDisplayNames } from "../../../lib/announcement/recruitmentMajors";
+import { resolveAnnouncementAuthorLabel } from "../../../lib/announcement/announcementAuthor";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
 import { getCommunityList } from "../../../lib/apis/community/communityApi";
@@ -179,6 +180,8 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
             priceType={item.priceType}
             price={item.price}
             address={item.address}
+            authorName={resolveAnnouncementAuthorLabel(item.user)}
+            profileImgUrl={item.user?.profileImgUrl}
             recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
               item,
               majorsCatalog,
@@ -587,6 +590,8 @@ export function SearchAllScene({ query }: SceneProps) {
                 priceType={item.priceType}
                 price={item.price}
                 address={item.address}
+                authorName={resolveAnnouncementAuthorLabel(item.user)}
+                profileImgUrl={item.user?.profileImgUrl}
                 recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
                   item,
                   majorsCatalog,

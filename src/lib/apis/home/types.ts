@@ -17,6 +17,11 @@ export type HomeAnnouncementItem = {
   /** 마감일 ISO 8601 — API `deadlineAt` (D-day 표시 보정용) */
   deadlineAt?: string;
   createdAt?: string;
+  user?: {
+    activityName?: string | null;
+    profileImgUrl?: string | null;
+    name?: string | null;
+  } | null;
 };
 
 export type HomeNewsItem = {

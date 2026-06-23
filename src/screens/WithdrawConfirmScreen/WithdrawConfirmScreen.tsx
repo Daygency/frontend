@@ -18,6 +18,9 @@ import {
   isPushSupportedNative,
 } from "../../lib/pushNotifications";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { resetNavigationToBrowseHome } from "../../lib/navigation/resetToBrowseHome";
 import styles from "./styles";
 
 const WITHDRAW_PRECAUTIONS = [
@@ -29,6 +32,7 @@ const WITHDRAW_PRECAUTIONS = [
 
 const WithdrawConfirmScreen = () => {
   const { logout } = useAuth();
+  const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const insets = useSafeAreaInsets();
   const floatingBottomPad = insets.bottom + 4;
   const scrollBottomPad = insets.bottom + 88;
@@ -57,6 +61,7 @@ const WithdrawConfirmScreen = () => {
         /* 탈퇴는 계속 진행 */
       }
       await logout();
+      resetNavigationToBrowseHome(navigation);
     } finally {
       setSubmitting(false);
     }

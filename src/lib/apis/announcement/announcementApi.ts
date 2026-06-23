@@ -16,6 +16,7 @@ import {
   pickDeadlineAtFromAnnouncementRaw,
   pickMajorsFromAnnouncementRaw,
 } from "../../announcement/recruitmentMajors";
+import { pickAnnouncementAuthorFromRaw } from "../../announcement/announcementAuthor";
 
 export type AnnouncementMutationResult =
   | { ok: true; data: CreateAnnouncementResponse }
@@ -100,24 +101,28 @@ export async function createAnnouncementWithFiles(
   }
 }
 
+function normalizeAnnouncementListItem(item: unknown): AnnouncementListItem {
+  const row = item as Record<string, unknown>;
+  const address = pickAddressFromAnnouncementRaw(item);
+  const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
+  const createdAtRaw = row.createdAt ?? row.created_at;
+  const user = pickAnnouncementAuthorFromRaw(item);
+  return {
+    ...(item as AnnouncementListItem),
+    ...pickMajorsFromAnnouncementRaw(item),
+    ...(address ? { address } : {}),
+    ...(deadlineAt ? { deadlineAt } : {}),
+    ...(createdAtRaw ? { createdAt: String(createdAtRaw) } : {}),
+    ...(user ? { user } : {}),
+  };
+}
+
 function normalizeAnnouncementListItems(
   data: AnnouncementListResponse,
 ): AnnouncementListResponse {
   const items = Array.isArray(data?.items) ? data.items : [];
   return {
-    items: items.map((item) => {
-      const row = item as Record<string, unknown>;
-      const address = pickAddressFromAnnouncementRaw(item);
-      const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
-      const createdAtRaw = row.createdAt ?? row.created_at;
-      return {
-        ...(item as AnnouncementListItem),
-        ...pickMajorsFromAnnouncementRaw(item),
-        ...(address ? { address } : {}),
-        ...(deadlineAt ? { deadlineAt } : {}),
-        ...(createdAtRaw ? { createdAt: String(createdAtRaw) } : {}),
-      };
-    }),
+    items: items.map((item) => normalizeAnnouncementListItem(item)),
     nextCursor: data?.nextCursor ?? null,
     hasMore: Boolean(data?.hasMore),
   };
@@ -200,19 +205,7 @@ export async function getAnnouncementList(
     const itemCount = items.length;
     console.log("[getAnnouncementList] 성공:", url, "items:", itemCount);
     return {
-      items: items.map((item) => {
-        const row = item as Record<string, unknown>;
-        const address = pickAddressFromAnnouncementRaw(item);
-        const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
-        const createdAtRaw = row.createdAt ?? row.created_at;
-        return {
-          ...(item as AnnouncementListItem),
-          ...pickMajorsFromAnnouncementRaw(item),
-          ...(address ? { address } : {}),
-          ...(deadlineAt ? { deadlineAt } : {}),
-          ...(createdAtRaw ? { createdAt: String(createdAtRaw) } : {}),
-        };
-      }),
+      items: items.map((item) => normalizeAnnouncementListItem(item)),
       nextCursor: data?.nextCursor ?? null,
       hasMore: Boolean(data?.hasMore),
     };

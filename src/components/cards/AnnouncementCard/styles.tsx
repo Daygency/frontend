@@ -1,44 +1,75 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY } from "../../../color";
-import { sharedAnnouncementStyles } from "../../shared/AnnouncementShared/sharedAnnouncementStyles";
+import { BLACK, GRAY, WHITE } from "../../../color";
 
 export default StyleSheet.create({
-  ...sharedAnnouncementStyles,
   container: {
     width: "100%",
   },
-  header: {
+  profileRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 3,
+    alignItems: "center",
+    width: "100%",
+    marginBottom: 8,
+  },
+  profileAvatar: {
+    flexShrink: 0,
+    marginRight: 8,
+  },
+  authorName: {
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
+    minWidth: 0,
+    marginRight: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    fontWeight: "500",
+    color: BLACK,
+  },
+  dDayOnRow: {
+    flexShrink: 0,
+    textAlign: "right",
   },
   titleWrap: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 4,
-    width: "80%",
-    maxWidth: "80%",
-    flexShrink: 1,
+    marginBottom: 8,
+    width: "100%",
   },
-  titleInHeader: {
-    flex: 1,
+  title: {
+    flexGrow: 1,
+    flexShrink: 1,
     minWidth: 0,
+    fontSize: 18,
+    lineHeight: 26,
+    letterSpacing: -0.2,
+    color: BLACK,
+    fontWeight: "800",
   },
   tagsRow: {
     flexDirection: "row",
     alignItems: "center",
+    flexWrap: "wrap",
     gap: 6,
     width: "100%",
   },
-  addressInline: {
-    flex: 1,
-    minWidth: 0,
-    fontSize: 12,
+  locationTag: {
+    flexShrink: 1,
+    maxWidth: "100%",
+    backgroundColor: WHITE,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  locationTagText: {
+    fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.2,
     color: BLACK,
-    fontWeight: "500",
+    fontWeight: "400",
   },
   recruitmentMajorsSection: {
     marginTop: 10,

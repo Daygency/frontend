@@ -68,6 +68,11 @@ export type AnnouncementListItem = {
   /** 마감일 ISO 8601 — 목록 API가 `deadlineAt`으로 반환 (D-day 표시 보정·카드에 사용) */
   deadlineAt?: string;
   createdAt?: string;
+  user?: {
+    activityName?: string | null;
+    profileImgUrl?: string | null;
+    name?: string | null;
+  } | null;
 };
 
 export type AnnouncementListResponse = {

@@ -17,6 +17,7 @@ import { normalizeListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
 import { getMajors } from "../../../lib/apis/announcement/majorApi";
 import { parseAnnouncementDaysLeft } from "../../../lib/announcement/parseAnnouncementDaysLeft";
 import { resolveRecruitmentMajorDisplayNames } from "../../../lib/announcement/recruitmentMajors";
+import { resolveAnnouncementAuthorLabel } from "../../../lib/announcement/announcementAuthor";
 import { getImageAverageColor } from "../../../lib/media/getImageAverageColor";
 import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerformanceOpenLabel";
 import {
@@ -356,6 +357,8 @@ const AllContentScene = ({
               priceType={item.priceType}
               price={item.price}
               address={item.address}
+              authorName={resolveAnnouncementAuthorLabel(item.user)}
+              profileImgUrl={item.user?.profileImgUrl}
               showNew={isContentNew(item.createdAt)}
               recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
                 item,
