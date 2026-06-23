@@ -55,7 +55,7 @@ const ChatScreen = () => {
           </View>
         ) : (
           <View style={styles.headerTitleWrap}>
-            <Logo size={24} logoName="채팅" />
+            <Logo logoName="채팅" />
           </View>
         )}
         <View style={styles.iconContainer}>

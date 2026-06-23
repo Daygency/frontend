@@ -72,7 +72,6 @@ const ProfileEditScreen = () => {
   const [activityName, setActivityName] = useState("");
   const [originalActivityName, setOriginalActivityName] = useState("");
   const [aboutMe, setAboutMe] = useState("");
-  const [selfIntroduction, setSelfIntroduction] = useState("");
   const [majorId, setMajorId] = useState<number | null>(null);
   const [major, setMajor] = useState<string>("");
   const [majorDetail, setMajorDetail] = useState<string>("");
@@ -173,7 +172,6 @@ const ProfileEditScreen = () => {
     setActivityName(initialActivityName);
     setOriginalActivityName(initialActivityName);
     setAboutMe(p.aboutMe || "");
-    setSelfIntroduction((p as any).selfIntroduction || "");
 
     const backendMajorId = (p as any).majorId as number | undefined;
     if (typeof backendMajorId === "number") {
@@ -347,8 +345,6 @@ const ProfileEditScreen = () => {
     if (route.key === "profile") {
       return (
         <ProfileTab
-          aboutMe={selfIntroduction}
-          setAboutMe={setSelfIntroduction}
           educationList={educationList}
           setEducationList={setEducationList}
           careerList={careerList}
@@ -371,7 +367,6 @@ const ProfileEditScreen = () => {
       name,
       activityName,
       aboutMe,
-      selfIntroduction,
       major,
       majorDetail,
       educationEntries: educationList,
@@ -424,7 +419,6 @@ const ProfileEditScreen = () => {
       name: current.name,
       activityName: current.activityName,
       aboutMe: current.aboutMe,
-      selfIntroduction: (current as any).selfIntroduction,
       role: current.role,
       email: current.contact?.email,
       phoneNumber: current.contact?.phoneNumber,
@@ -453,7 +447,6 @@ const ProfileEditScreen = () => {
       name,
       activityName,
       aboutMe,
-      selfIntroduction,
       role: current.role ?? "user",
       email: current.contact?.email ?? (user as any)?.email ?? "",
       phoneNumber:
@@ -583,7 +576,6 @@ const ProfileEditScreen = () => {
           name,
           activityName,
           aboutMe,
-          selfIntroduction,
           majorId,
           major,
           majorDetail,

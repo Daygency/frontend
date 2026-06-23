@@ -2,7 +2,7 @@ import { Image, Pressable, View, type ImageSourcePropType } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Logo from "../../ui/Logo";
 import { MAIN, WHITE } from "../../../color";
-import styles from "./styles";
+import styles, { MAIN_HOME_TOP_BAR_TITLE_SIZE } from "./styles";
 import Feather from "@expo/vector-icons/Feather";
 import { CompositeNavigationProp, useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
@@ -41,8 +41,9 @@ const MainHomeTopBar = ({
     navigation.navigate(RootRoutes.SEARCH);
   };
 
-  const logoHeight = variant === "dark" ? 18 : 24;
-  const logoMaxWidth = variant === "dark" ? 22 : 120;
+  const logoHeight =
+    variant === "dark" ? 16 : MAIN_HOME_TOP_BAR_TITLE_SIZE;
+  const logoMaxWidth = variant === "dark" ? 20 : 110;
   const logoWidth = Math.min(logoHeight * logoAspectRatio, logoMaxWidth);
 
   return (
@@ -66,7 +67,7 @@ const MainHomeTopBar = ({
           />
         </View>
       ) : (
-        <Logo size={24} logoName={logoName ?? ""} />
+        <Logo logoName={logoName ?? ""} />
       )}
       <View style={styles.iconContainer}>
         <Pressable style={styles.iconButton} onPress={handleSearchPress}>

@@ -1,6 +1,5 @@
 import React, { Fragment } from "react";
-import { View, Text, TextInput } from "react-native";
-import { GRAY } from "../../../color";
+import { View } from "react-native";
 import type {
   EducationEntry,
   CareerEntry,
@@ -17,8 +16,6 @@ import styles from "../styles";
 const newId = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
 type Props = {
-  aboutMe: string;
-  setAboutMe: (v: string) => void;
   educationList: EducationEntry[];
   setEducationList: (v: EducationEntry[]) => void;
   careerList: CareerEntry[];
@@ -35,8 +32,6 @@ type Props = {
 };
 
 const ProfileTab = ({
-  aboutMe,
-  setAboutMe,
   educationList,
   setEducationList,
   careerList,
@@ -47,7 +42,6 @@ const ProfileTab = ({
   setCertificateList,
   onEditingFocusChange,
 }: Props) => {
-  const [isAboutFocused, setIsAboutFocused] = React.useState(false);
   // ── 학력 ──
   const updateEducation = (id: string, updates: Partial<EducationEntry>) =>
     setEducationList((prev) =>
@@ -138,29 +132,6 @@ const ProfileTab = ({
 
   return (
     <View style={[styles.tabContent, styles.tabContentContainer]}>
-      <View style={styles.contentSheet}>
-        <View style={[styles.field, styles.fieldLast]}>
-          <Text style={[styles.label, isAboutFocused && styles.labelFocused]}>
-            소개
-          </Text>
-        <TextInput
-          style={[
-            styles.input,
-            styles.multilineInput,
-            isAboutFocused && styles.inputFocused,
-          ]}
-          value={aboutMe}
-          onChangeText={setAboutMe}
-          placeholder="소개를 입력하세요"
-          placeholderTextColor={GRAY.DARK_2}
-          multiline
-          numberOfLines={5}
-          onFocus={() => setIsAboutFocused(true)}
-          onBlur={() => setIsAboutFocused(false)}
-        />
-        </View>
-      </View>
-
       {/* 학력 */}
       <View style={styles.contentSheet}>
         <View style={styles.section}>

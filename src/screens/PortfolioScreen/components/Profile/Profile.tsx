@@ -70,11 +70,11 @@ function safeFollowCount(n: unknown): number {
   return Math.floor(x);
 }
 
-const Profile = () => {
+const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const route = useRoute();
   const { height: windowHeight } = useWindowDimensions();
-  const bannerHeight = Math.round(windowHeight * PROFILE_BANNER_RATIO);
+  const bannerHeight = Math.round(windowHeight * PROFILE_BANNER_RATIO) + coverExtendTop;
   const routeParams = (route.params ?? {}) as { userId?: string };
   const viewingUserId = routeParams.userId?.trim() ?? "";
   const isArtistPortfolio =
@@ -648,11 +648,7 @@ const Profile = () => {
   return (
     <View style={styles.container}>
       <View style={styles.profileCard}>
-        <Pressable
-          style={[styles.banner, { height: bannerHeight }]}
-          onPress={!isOtherProfile ? () => void pickCoverImage() : undefined}
-          disabled={isOtherProfile || coverUploading}
-        >
+        <View style={[styles.banner, { height: bannerHeight }]}>
           {displayCoverImgUrl ? (
             <Image
               source={{ uri: displayCoverImgUrl }}
@@ -662,7 +658,11 @@ const Profile = () => {
             />
           ) : null}
           {!isOtherProfile ? (
-            <View style={styles.bannerEditBtn}>
+            <Pressable
+              style={styles.bannerEditBtn}
+              onPress={() => void pickCoverImage()}
+              disabled={coverUploading}
+            >
               {coverUploading ? (
                 <ActivityIndicator size="small" color={WHITE} />
               ) : (
@@ -671,9 +671,9 @@ const Profile = () => {
                   <Text style={styles.bannerEditText}>배경 변경</Text>
                 </>
               )}
-            </View>
+            </Pressable>
           ) : null}
-        </Pressable>
+        </View>
         <View style={styles.profileBody}>
           <Pressable
             style={styles.avatarWrapper}

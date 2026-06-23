@@ -4,7 +4,6 @@ import {
   FILTER_ROW_PADDING_TOP,
   INLINE_SEARCH_BAR_HEIGHT,
   INLINE_SEARCH_HEADER_PADDING_VERTICAL,
-  MAIN_HOME_TOP_BAR_HEIGHT,
   MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
   MAIN_HOME_TOP_BAR_PADDING_TOP,
 } from "../../../components/layout/MainHomeTopBar/styles";
@@ -16,7 +15,6 @@ const styles = StyleSheet.create({
   },
   header: {
     width: "100%",
-    height: MAIN_HOME_TOP_BAR_HEIGHT,
     flexDirection: "row",
     paddingHorizontal: 17,
     alignItems: "center",

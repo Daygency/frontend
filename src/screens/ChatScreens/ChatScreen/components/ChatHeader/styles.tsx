@@ -1,7 +1,6 @@
 import { StyleSheet } from "react-native";
 import { BLACK, MAIN } from "../../../../../color";
 import {
-  MAIN_HOME_TOP_BAR_HEIGHT,
   MAIN_HOME_TOP_BAR_PADDING_BOTTOM,
   MAIN_HOME_TOP_BAR_PADDING_TOP,
 } from "../../../../../components/layout/MainHomeTopBar/styles";
@@ -9,7 +8,6 @@ import {
 const styles = StyleSheet.create({
   headerContainer: {
     width: "100%",
-    height: MAIN_HOME_TOP_BAR_HEIGHT,
     flexDirection: "row",
     paddingHorizontal: 17,
     alignItems: "center",

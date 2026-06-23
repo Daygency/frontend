@@ -12,6 +12,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: WHITE,
   },
+  containerImmersive: {
+    backgroundColor: "#C8D8E8",
+  },
   scroll: {
     flex: 1,
     backgroundColor: PORTFOLIO_BODY_BG,
