@@ -12,7 +12,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { BLACK, MAIN, WHITE } from "../../../color";
+import { MAIN, WHITE } from "../../../color";
 import styles, {
   MENU_CLOSE_SLIDE_DISTANCE,
   MENU_ICON_SIZE,
@@ -24,6 +24,7 @@ export type FabMenuItem = {
   onPress: () => void;
 };
 
+const COMMUNITY_MENU_ICON_COLOR = "#F64A5B";
 const MEGAPHONE_ICON = require("../../../../assets/megaphone.png");
 const MUSIC_ICON = require("../../../../assets/music.png");
 
@@ -209,7 +210,11 @@ const FabButton = ({
         return renderMenuImage(MUSIC_ICON);
       case "커뮤니티":
         return (
-          <Octicons name="people" size={MENU_ICON_SIZE} color={BLACK} />
+          <Octicons
+            name="people"
+            size={MENU_ICON_SIZE}
+            color={COMMUNITY_MENU_ICON_COLOR}
+          />
         );
       default:
         return null;
