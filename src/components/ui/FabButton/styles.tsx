@@ -3,7 +3,6 @@ import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
 
 export const MENU_ICON_SIZE = 20;
 export const MENU_SLIDE_DISTANCE = 36;
-export const MENU_CLOSE_SLIDE_DISTANCE = 52;
 
 const styles = StyleSheet.create({
   modalRoot: {
