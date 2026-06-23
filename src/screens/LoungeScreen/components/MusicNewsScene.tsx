@@ -205,8 +205,8 @@ const MusicNewsScene = ({
     void loadPage(nextCursor, true, "more");
   }, [loadPage, loadingMore, refreshing, loading, hasMore, nextCursor]);
 
-  const genreLabel = selectedGenre ? `장르 (${selectedGenre})` : "장르";
-  const regionLabel = selectedRegion ? `지역 (${selectedRegion})` : "지역";
+  const genreLabel = selectedGenre ?? "장르";
+  const regionLabel = selectedRegion ?? "지역";
 
   return (
     <View style={styles.newsSceneContainer}>

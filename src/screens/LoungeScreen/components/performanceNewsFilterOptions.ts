@@ -11,6 +11,8 @@ export const PERFORMANCE_NEWS_SORT_LABEL: Record<PerformanceNewsSortMode, string
   imminent: "임박순",
 };
 
+export const PERFORMANCE_NEWS_GENRE_ALL = "전체";
+
 export const PERFORMANCE_NEWS_GENRE_OPTIONS = [
   "클래식",
   "재즈",
@@ -20,6 +22,8 @@ export const PERFORMANCE_NEWS_GENRE_OPTIONS = [
   "오페라",
   "기타",
 ] as const;
+
+export const PERFORMANCE_NEWS_REGION_ALL = "전체";
 
 export const PERFORMANCE_NEWS_REGION_OPTIONS = [
   "서울",

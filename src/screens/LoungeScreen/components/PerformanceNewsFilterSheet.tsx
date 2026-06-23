@@ -9,7 +9,9 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../color";
 import {
+  PERFORMANCE_NEWS_GENRE_ALL,
   PERFORMANCE_NEWS_GENRE_OPTIONS,
+  PERFORMANCE_NEWS_REGION_ALL,
   PERFORMANCE_NEWS_REGION_OPTIONS,
   PERFORMANCE_NEWS_SORT_OPTIONS,
   type PerformanceNewsFilterSheetType,
@@ -28,18 +30,9 @@ type PerformanceNewsFilterSheetProps = {
 };
 
 const SHEET_CONFIG = {
-  sort: {
-    title: "정렬",
-    allowDeselect: false,
-  },
-  genre: {
-    title: "장르",
-    allowDeselect: true,
-  },
-  region: {
-    title: "지역",
-    allowDeselect: true,
-  },
+  sort: { title: "정렬" },
+  genre: { title: "장르" },
+  region: { title: "지역" },
 } as const;
 
 const PerformanceNewsFilterSheet = ({
@@ -54,39 +47,49 @@ const PerformanceNewsFilterSheet = ({
 }: PerformanceNewsFilterSheetProps) => {
   const config = SHEET_CONFIG[type];
 
-  const options =
+  const listOptions =
     type === "sort"
       ? PERFORMANCE_NEWS_SORT_OPTIONS.map((option) => ({
           id: option.id,
           label: option.label,
         }))
-      : type === "genre"
-        ? PERFORMANCE_NEWS_GENRE_OPTIONS.map((option) => ({
+      : [
+          {
+            id: PERFORMANCE_NEWS_REGION_ALL,
+            label: PERFORMANCE_NEWS_REGION_ALL,
+          },
+          ...PERFORMANCE_NEWS_REGION_OPTIONS.map((option) => ({
             id: option,
             label: option,
-          }))
-        : PERFORMANCE_NEWS_REGION_OPTIONS.map((option) => ({
-            id: option,
-            label: option,
-          }));
+          })),
+        ];
 
-  const selected =
-    type === "sort"
-      ? sortMode
-      : type === "genre"
-        ? selectedGenre
-        : selectedRegion;
+  const listSelected = type === "sort" ? sortMode : selectedRegion;
 
-  const handleSelect = (id: string) => {
+  const handleListSelect = (id: string) => {
     if (type === "sort") {
       onSelectSort(id as PerformanceNewsSortMode);
       return;
     }
-    if (type === "genre") {
-      onSelectGenre(config.allowDeselect && selected === id ? null : id);
+    if (id === PERFORMANCE_NEWS_REGION_ALL) {
+      onSelectRegion(null);
       return;
     }
-    onSelectRegion(config.allowDeselect && selected === id ? null : id);
+    onSelectRegion(selectedRegion === id ? null : id);
+  };
+
+  const isListOptionSelected = (optionId: string) => {
+    if (type === "sort") return listSelected === optionId;
+    if (optionId === PERFORMANCE_NEWS_REGION_ALL) return selectedRegion == null;
+    return selectedRegion === optionId;
+  };
+
+  const handleGenreSelect = (genre: string) => {
+    if (genre === PERFORMANCE_NEWS_GENRE_ALL) {
+      onSelectGenre(null);
+      return;
+    }
+    onSelectGenre(selectedGenre === genre ? null : genre);
   };
 
   return (
@@ -99,31 +102,65 @@ const PerformanceNewsFilterSheet = ({
               <MaterialCommunityIcons name="close" size={24} color={MAIN.DEFAULT} />
             </Pressable>
           </View>
-          <ScrollView
-            style={styles.optionsScroll}
-            contentContainerStyle={styles.optionsContent}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-          >
-            {options.map((option, index) => {
-              const isSelected = selected === option.id;
-              const isLast = index === options.length - 1;
-              return (
-                <Pressable
-                  key={option.id}
-                  style={[styles.optionRow, isLast && styles.optionRowLast]}
-                  onPress={() => handleSelect(option.id)}
-                >
-                  <Text style={styles.optionText}>{option.label}</Text>
-                  {isSelected ? (
-                    <MaterialCommunityIcons name="check" size={22} color={MAIN.DEFAULT} />
-                  ) : (
-                    <View style={styles.checkPlaceholder} />
-                  )}
-                </Pressable>
-              );
-            })}
-          </ScrollView>
+
+          {type === "genre" ? (
+            <ScrollView
+              style={styles.optionsScroll}
+              contentContainerStyle={styles.tagContent}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+              <View style={styles.tagContainer}>
+                {[PERFORMANCE_NEWS_GENRE_ALL, ...PERFORMANCE_NEWS_GENRE_OPTIONS].map(
+                  (genre) => {
+                    const isAll = genre === PERFORMANCE_NEWS_GENRE_ALL;
+                    const isSelected = isAll
+                      ? selectedGenre == null
+                      : selectedGenre === genre;
+                    return (
+                      <Pressable
+                        key={genre}
+                        style={[styles.tag, isSelected && styles.tagSelected]}
+                        onPress={() => handleGenreSelect(genre)}
+                      >
+                        <Text
+                          style={[styles.tagText, isSelected && styles.tagTextSelected]}
+                        >
+                          {genre}
+                        </Text>
+                      </Pressable>
+                    );
+                  },
+                )}
+              </View>
+            </ScrollView>
+          ) : (
+            <ScrollView
+              style={styles.optionsScroll}
+              contentContainerStyle={styles.optionsContent}
+              showsVerticalScrollIndicator={false}
+              bounces={false}
+            >
+              {listOptions.map((option, index) => {
+                const isSelected = isListOptionSelected(option.id);
+                const isLast = index === listOptions.length - 1;
+                return (
+                  <Pressable
+                    key={option.id}
+                    style={[styles.optionRow, isLast && styles.optionRowLast]}
+                    onPress={() => handleListSelect(option.id)}
+                  >
+                    <Text style={styles.optionText}>{option.label}</Text>
+                    {isSelected ? (
+                      <MaterialCommunityIcons name="check" size={22} color={MAIN.DEFAULT} />
+                    ) : (
+                      <View style={styles.checkPlaceholder} />
+                    )}
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          )}
         </Pressable>
       </Pressable>
     </View>
@@ -170,6 +207,37 @@ const styles = StyleSheet.create({
   },
   optionsContent: {
     paddingBottom: 20,
+  },
+  tagContent: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 24,
+  },
+  tagContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+  },
+  tag: {
+    paddingHorizontal: 18,
+    paddingVertical: 12,
+    borderRadius: 100,
+    backgroundColor: WHITE,
+    borderWidth: 1,
+    borderColor: MAIN.DEFAULT,
+  },
+  tagSelected: {
+    backgroundColor: MAIN.DEFAULT,
+    borderColor: MAIN.DEFAULT,
+  },
+  tagText: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: MAIN.DEFAULT,
+  },
+  tagTextSelected: {
+    color: WHITE,
+    fontWeight: "500",
   },
   optionRow: {
     flexDirection: "row",
