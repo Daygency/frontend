@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     paddingBottom: 9,
   },
   topTab: {
-    backgroundColor: GRAY.DEFAULT_1,
+    backgroundColor: WHITE,
     borderRadius: 100,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
