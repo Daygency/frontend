@@ -471,7 +471,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
               },
             },
             {
-              label: "음악계 소식",
+              label: "공연 소식",
               onPress: () => {
                 if (!ensureLoggedIn()) return;
                 navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION);
