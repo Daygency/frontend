@@ -67,7 +67,7 @@ const localStyles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: GRAY.DEFAULT_1,
+    backgroundColor: WHITE,
     borderRadius: 100,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,

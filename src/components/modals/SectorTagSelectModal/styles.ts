@@ -37,28 +37,7 @@ const styles = StyleSheet.create({
   tagContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: 12,
-  },
-  tag: {
-    paddingHorizontal: 18,
-    paddingVertical: 12,
-    borderRadius: 100,
-    backgroundColor: WHITE,
-    borderWidth: 1,
-    borderColor: MAIN.DEFAULT,
-  },
-  tagSelected: {
-    backgroundColor: MAIN.DEFAULT,
-    borderColor: MAIN.DEFAULT,
-  },
-  tagText: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: MAIN.DEFAULT,
-  },
-  tagTextSelected: {
-    color: WHITE,
-    fontWeight: "500",
+    gap: 8,
   },
   footer: {
     paddingHorizontal: 20,

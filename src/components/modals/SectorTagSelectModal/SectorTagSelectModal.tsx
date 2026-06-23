@@ -6,8 +6,9 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import SelectableTag from "../../ui/SelectableTag";
 import styles from "./styles";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { MAIN } from "../../../color";
 
 export interface TagSection {
   title: string;
@@ -52,25 +53,14 @@ const SectorTagSelectModal = ({
             <View key={section.title} style={styles.section}>
               <Text style={styles.sectionTitle}>{section.title}</Text>
               <View style={styles.tagContainer}>
-                {section.options.map((option) => {
-                  const isSelected = section.selectedValues.includes(option);
-                  return (
-                    <Pressable
-                      key={option}
-                      style={[styles.tag, isSelected && styles.tagSelected]}
-                      onPress={() => section.onToggle(option)}
-                    >
-                      <Text
-                        style={[
-                          styles.tagText,
-                          isSelected && styles.tagTextSelected,
-                        ]}
-                      >
-                        {option}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
+                {section.options.map((option) => (
+                  <SelectableTag
+                    key={option}
+                    label={option}
+                    selected={section.selectedValues.includes(option)}
+                    onPress={() => section.onToggle(option)}
+                  />
+                ))}
               </View>
             </View>
           ))}

@@ -17,9 +17,9 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: "center",
   },
-  /** 비선택 탭 — 연한 회색 배경 */
+  /** 비선택 탭 */
   sortTab: {
-    backgroundColor: GRAY.DEFAULT_1,
+    backgroundColor: WHITE,
     borderRadius: 100,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
