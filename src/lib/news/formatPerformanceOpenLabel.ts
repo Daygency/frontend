@@ -103,6 +103,31 @@ export function formatPerformanceListDateLabel(
   return `${startLabel} ~ ${endLabel}`;
 }
 
+function formatDetailCalendarDate(iso: string): string {
+  const date = new Date(iso);
+  if (Number.isNaN(date.getTime())) return iso.trim();
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}.${m}.${d}`;
+}
+
+/** 공연소식 상세용 날짜 라벨 (`YYYY.MM.DD` 또는 `시작일 ~ 종료일`) */
+export function formatPerformanceDetailDateLabel(
+  startedAt?: string,
+  endedAt?: string | null,
+): string {
+  if (!startedAt?.trim()) return "";
+
+  const startLabel = formatDetailCalendarDate(startedAt);
+  const endIso = endedAt?.trim();
+  if (!endIso) return startLabel;
+
+  const endLabel = formatDetailCalendarDate(endIso);
+  if (startLabel === endLabel) return startLabel;
+  return `${startLabel} ~ ${endLabel}`;
+}
+
 export function pickNewsOpenTime(item: {
   openedAt?: string;
   startedAt?: string;

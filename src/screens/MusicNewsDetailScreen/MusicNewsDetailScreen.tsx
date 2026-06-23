@@ -61,6 +61,7 @@ import {
 import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
 import ImageCarousel from "../../components/media/ImageCarousel";
 import { parseCoord } from "../../lib/kakao/location";
+import { formatPerformanceDetailDateLabel } from "../../lib/news/formatPerformanceOpenLabel";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -120,9 +121,7 @@ type CommentItem = {
 
 function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
   const d = new Date(res.startedAt);
-  const dateStr = isNaN(d.getTime())
-    ? res.startedAt
-    : `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+  const dateStr = formatPerformanceDetailDateLabel(res.startedAt, res.endedAt);
   const timeStr = isNaN(d.getTime())
     ? ""
     : `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
