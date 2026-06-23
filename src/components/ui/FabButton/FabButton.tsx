@@ -27,10 +27,18 @@ export type FabMenuItem = {
 const COMMUNITY_MENU_ICON_COLOR = "#F64A5B";
 const MEGAPHONE_ICON = require("../../../../assets/megaphone.png");
 const MUSIC_ICON = require("../../../../assets/music.png");
+const THUMBS_UP_ICON = require("../../../../assets/thumbs-up.png");
+const TODO_LIST_ICON = require("../../../../assets/to-do-list.png");
+
+const DEFAULT_UTILITY_MENU_ITEMS: FabMenuItem[] = [
+  { label: "피드백 받기", onPress: () => {} },
+  { label: "투두 리스트 추가", onPress: () => {} },
+];
 
 type FabButtonProps = {
   onPress?: () => void;
   menuItems?: FabMenuItem[];
+  utilityMenuItems?: FabMenuItem[];
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
   size?: number;
   containerStyle?: StyleProp<ViewStyle>;
@@ -47,6 +55,7 @@ const TAB_BAR_HEIGHT = 90;
 const FabButton = ({
   onPress,
   menuItems,
+  utilityMenuItems = DEFAULT_UTILITY_MENU_ITEMS,
   icon = "plus",
   size = 28,
   containerStyle,
@@ -60,6 +69,7 @@ const FabButton = ({
   const overlayOpacityAnim = useRef(new Animated.Value(0)).current;
 
   const hasMenu = menuItems != null && menuItems.length > 0;
+  const hasUtilityMenu = hasMenu && utilityMenuItems.length > 0;
   const fabBottomFromWindow = TAB_BAR_HEIGHT + FAB_BOTTOM;
   const menuBottom = fabBottomFromWindow + FAB_SIZE + MENU_GAP;
 
@@ -216,10 +226,34 @@ const FabButton = ({
             color={COMMUNITY_MENU_ICON_COLOR}
           />
         );
+      case "피드백 받기":
+        return renderMenuImage(THUMBS_UP_ICON);
+      case "투두 리스트 추가":
+        return renderMenuImage(TODO_LIST_ICON);
       default:
         return null;
     }
   };
+
+  const renderMenuBox = (items: FabMenuItem[]) => (
+    <View style={styles.menuContainer}>
+      {items.map((item, index) => (
+        <Pressable
+          key={item.label}
+          style={[
+            styles.menuItem,
+            index < items.length - 1 && styles.menuItemBorder,
+          ]}
+          onPress={() => handleMenuItemPress(item)}
+        >
+          <View style={styles.menuIconSlot}>
+            {renderMenuIcon(item.label)}
+          </View>
+          <Text style={styles.menuItemText}>{item.label}</Text>
+        </Pressable>
+      ))}
+    </View>
+  );
 
   const renderFabIcon = (isOpen: boolean) => {
     if (!isOpen) {
@@ -269,7 +303,7 @@ const FabButton = ({
 
             <Animated.View
               style={[
-                styles.menuContainer,
+                styles.menuStack,
                 {
                   bottom: menuBottom,
                   opacity: menuOpacityAnim,
@@ -277,21 +311,8 @@ const FabButton = ({
                 },
               ]}
             >
-              {menuItems.map((item, index) => (
-                <Pressable
-                  key={item.label}
-                  style={[
-                    styles.menuItem,
-                    index < menuItems.length - 1 && styles.menuItemBorder,
-                  ]}
-                  onPress={() => handleMenuItemPress(item)}
-                >
-                  <View style={styles.menuIconSlot}>
-                    {renderMenuIcon(item.label)}
-                  </View>
-                  <Text style={styles.menuItemText}>{item.label}</Text>
-                </Pressable>
-              ))}
+              {hasUtilityMenu ? renderMenuBox(utilityMenuItems) : null}
+              {renderMenuBox(menuItems!)}
             </Animated.View>
 
             <Pressable

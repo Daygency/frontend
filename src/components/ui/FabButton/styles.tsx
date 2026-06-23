@@ -13,9 +13,13 @@ const styles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0, 0, 0, 0.45)",
   },
-  menuContainer: {
+  menuStack: {
     position: "absolute",
     right: 20,
+    alignItems: "flex-end",
+    gap: 10,
+  },
+  menuContainer: {
     alignSelf: "flex-end",
     minWidth: 176,
     backgroundColor: WHITE,
