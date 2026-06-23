@@ -265,7 +265,7 @@ const AllContentScene = ({
   const handleNewsMore = () => {
     (navigation as { navigate: (a: string, b?: object) => void }).navigate(
       "ContentTab",
-      { screen: ContentRoutes.CHAT },
+      { screen: ContentRoutes.CHAT, params: { initialTab: "공연 소식" } },
     );
   };
 

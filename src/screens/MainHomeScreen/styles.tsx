@@ -9,6 +9,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
+  tabView: {
+    flex: 1,
+  },
   curationLoading: {
     ...StyleSheet.absoluteFillObject,
     justifyContent: "center",

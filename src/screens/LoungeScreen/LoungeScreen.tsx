@@ -1,20 +1,41 @@
+import { useEffect, useMemo, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useMemo, useState } from "react";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { TabView } from "react-native-tab-view";
 import styles from "./styles";
 import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
+import MainHomeHeader, {
+  LOUNGE_TABS,
+  type LoungeTab,
+} from "../../components/layout/MainHomeHeader";
 import FabButton from "../../components/ui/FabButton";
-import { TabView } from "react-native-tab-view";
-import CategoryTabBar from "../../components/layout/CategoryTabBar";
 import MusicNewsScene from "./components/MusicNewsScene";
 import CommunityScene from "./components/CommunityScene";
 import { RootRoutes } from "../../navigations/routes";
 import { useRequireLogin } from "../../hooks/useRequireLogin";
 
 type LoungeRouteParams = {
-  initialTab?: "음악계 소식" | "커뮤니티";
+  initialTab?: LoungeTab | "음악계 소식";
 };
+
+const TAB_TO_SEARCH_TAG: Record<LoungeTab, string> = {
+  "공연 소식": "공연소식",
+  커뮤니티: "커뮤니티",
+};
+
+const LOUNGE_ROUTES = LOUNGE_TABS.map((key) => ({ key, title: key }));
+
+function resolveInitialTab(initialTab?: LoungeRouteParams["initialTab"]): LoungeTab {
+  if (initialTab === "음악계 소식") return "공연 소식";
+  if (initialTab && LOUNGE_TABS.includes(initialTab)) return initialTab;
+  return "공연 소식";
+}
+
+function tabToIndex(tab: LoungeTab): number {
+  const idx = LOUNGE_TABS.indexOf(tab);
+  return idx >= 0 ? idx : 0;
+}
 
 const LoungeScreen = () => {
   const navigation = useNavigation<any>();
@@ -22,30 +43,22 @@ const LoungeScreen = () => {
   const route = useRoute<RouteProp<{ Lounge: LoungeRouteParams }, "Lounge">>();
   const { top } = useSafeAreaInsets();
   const layout = useWindowDimensions();
-  const [routes] = useState([
-    { key: "음악계 소식", title: "음악계 소식" },
-    { key: "커뮤니티", title: "커뮤니티" },
-  ]);
+  const [index, setIndex] = useState(() =>
+    tabToIndex(resolveInitialTab(route.params?.initialTab)),
+  );
 
-  const initialIndex = useMemo(() => {
-    const desired = route.params?.initialTab;
-    if (!desired) return 0;
-    const idx = routes.findIndex((r) => r.key === desired);
-    return idx >= 0 ? idx : 0;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    setIndex(tabToIndex(resolveInitialTab(route.params?.initialTab)));
   }, [route.params?.initialTab]);
 
-  const [index, setIndex] = useState(initialIndex);
+  const activeTab = useMemo(
+    () => LOUNGE_TABS[index] ?? "공연 소식",
+    [index],
+  );
 
-  const tabToSearchTag: Record<string, string> = {
-    "음악계 소식": "공연소식",
-    "커뮤니티": "커뮤니티",
-  };
-  const initialTag = tabToSearchTag[routes[index].key] ?? "커뮤니티";
-
-  const renderScene = ({ route }: { route: { key: string } }) => {
-    switch (route.key) {
-      case "음악계 소식":
+  const renderScene = ({ route: sceneRoute }: { route: { key: string } }) => {
+    switch (sceneRoute.key) {
+      case "공연 소식":
         return <MusicNewsScene />;
       case "커뮤니티":
         return <CommunityScene />;
@@ -56,14 +69,21 @@ const LoungeScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <MainHomeTopBar logoName="라운지" initialTag="커뮤니티" />
+      <MainHomeTopBar
+        logoName="라운지"
+        initialTag={TAB_TO_SEARCH_TAG[activeTab]}
+      />
       <TabView
-        navigationState={{ index, routes }}
+        navigationState={{ index, routes: LOUNGE_ROUTES }}
         renderScene={renderScene}
         onIndexChange={setIndex}
         initialLayout={{ width: layout.width }}
-        renderTabBar={(props) => (
-          <CategoryTabBar {...props} evenlyDistributed />
+        renderTabBar={() => (
+          <MainHomeHeader
+            tabs={LOUNGE_TABS}
+            activeTab={activeTab}
+            onTabChange={(tab) => setIndex(tabToIndex(tab as LoungeTab))}
+          />
         )}
         style={styles.tabView}
       />
@@ -77,7 +97,7 @@ const LoungeScreen = () => {
             },
           },
           {
-            label: "음악계 소식",
+            label: "공연 소식",
             onPress: () => {
               if (!ensureLoggedIn()) return;
               navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION);

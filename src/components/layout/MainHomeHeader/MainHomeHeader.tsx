@@ -1,28 +1,31 @@
 import { useState } from "react";
 import { LayoutChangeEvent, Pressable, Text, View } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../../color";
 import styles from "./styles";
 
-export type MainHomeTab = "홈" | "큐레이션";
+export const MAIN_HOME_TABS = ["홈", "큐레이션"] as const;
+export type MainHomeTab = (typeof MAIN_HOME_TABS)[number];
 
-const TABS: MainHomeTab[] = ["홈", "큐레이션"];
+export const LOUNGE_TABS = ["공연 소식", "커뮤니티"] as const;
+export type LoungeTab = (typeof LOUNGE_TABS)[number];
 
-interface MainHomeHeaderProps {
-  activeTab: MainHomeTab;
-  onTabChange: (tab: MainHomeTab) => void;
+interface MainHomeHeaderProps<T extends string = MainHomeTab> {
+  tabs?: readonly T[];
+  activeTab: T;
+  onTabChange: (tab: T) => void;
   variant?: "light" | "dark";
 }
 
-const MainHomeHeader = ({
+const MainHomeHeader = <T extends string = MainHomeTab>({
+  tabs = MAIN_HOME_TABS as unknown as readonly T[],
   activeTab,
   onTabChange,
   variant = "light",
-}: MainHomeHeaderProps) => {
-  const [labelWidths, setLabelWidths] = useState<Partial<Record<MainHomeTab, number>>>(
+}: MainHomeHeaderProps<T>) => {
+  const [labelWidths, setLabelWidths] = useState<Partial<Record<string, number>>>(
     {},
   );
 
-  const handleLabelLayout = (tab: MainHomeTab) => (event: LayoutChangeEvent) => {
+  const handleLabelLayout = (tab: T) => (event: LayoutChangeEvent) => {
     const width = event.nativeEvent.layout.width;
     setLabelWidths((prev) => (prev[tab] === width ? prev : { ...prev, [tab]: width }));
   };
@@ -31,7 +34,7 @@ const MainHomeHeader = ({
 
   return (
     <View style={styles.container}>
-      {TABS.map((tab) => {
+      {tabs.map((tab) => {
         const selected = activeTab === tab;
         const indicatorWidth = labelWidths[tab];
 
