@@ -1,18 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-native";
-import { View } from "react-native";
 import { fn } from "storybook/test";
+import { withPadding } from "../../../storybook/decorators";
 import SelectableTag from "./SelectableTag";
 
 const meta = {
   title: "UI/SelectableTag",
   component: SelectableTag,
-  decorators: [
-    (Story) => (
-      <View style={{ padding: 16 }}>
-        <Story />
-      </View>
-    ),
-  ],
+  decorators: [withPadding],
   args: {
     onPress: fn(),
   },

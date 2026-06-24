@@ -1,17 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-native";
-import { View } from "react-native";
+import { withPadding } from "../../../storybook/decorators";
 import Tag from "./Tag";
 
 const meta = {
   title: "UI/Tag",
   component: Tag,
-  decorators: [
-    (Story) => (
-      <View style={{ padding: 16 }}>
-        <Story />
-      </View>
-    ),
-  ],
+  decorators: [withPadding],
 } satisfies Meta<typeof Tag>;
 
 export default meta;

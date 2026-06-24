@@ -1,18 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-native";
-import { Text, View } from "react-native";
+import { Text } from "react-native";
 import { fn } from "storybook/test";
+import { withPadding } from "../../../storybook/decorators";
 import Section from "./Section";
 
 const meta = {
   title: "UI/Section",
   component: Section,
-  decorators: [
-    (Story) => (
-      <View style={{ padding: 16 }}>
-        <Story />
-      </View>
-    ),
-  ],
+  decorators: [withPadding],
   args: {
     onPressMore: fn(),
   },

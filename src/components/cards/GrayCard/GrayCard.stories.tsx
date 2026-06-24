@@ -1,18 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-native";
-import { View } from "react-native";
 import { fn } from "storybook/test";
+import { withFullWidth } from "../../../storybook/decorators";
 import GrayCard from "./GrayCard";
 
 const meta = {
   title: "Cards/GrayCard",
   component: GrayCard,
-  decorators: [
-    (Story) => (
-      <View style={{ padding: 16 }}>
-        <Story />
-      </View>
-    ),
-  ],
+  decorators: [withFullWidth],
   args: {
     onPressItem: fn(),
   },

@@ -1,17 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-native";
-import { View } from "react-native";
+import { withPadding } from "../../../storybook/decorators";
 import NewBadge from "./NewBadge";
 
 const meta = {
   title: "UI/NewBadge",
   component: NewBadge,
-  decorators: [
-    (Story) => (
-      <View style={{ padding: 16 }}>
-        <Story />
-      </View>
-    ),
-  ],
+  decorators: [withPadding],
 } satisfies Meta<typeof NewBadge>;
 
 export default meta;

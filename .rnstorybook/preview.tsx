@@ -17,6 +17,22 @@ const preview: Preview = {
         date: /Date$/,
       },
     },
+    options: {
+      storySort: {
+        order: [
+          "UI",
+          "Cards",
+          "Forms",
+          "Comments",
+          "Lists",
+          "Layout",
+          "Menus",
+          "Media",
+          "Modals",
+          "Icons",
+        ],
+      },
+    },
   },
 };
 

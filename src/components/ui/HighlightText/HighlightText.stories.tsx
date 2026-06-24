@@ -1,18 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-native";
-import { View } from "react-native";
 import { MAIN } from "../../../color";
+import { withPadding } from "../../../storybook/decorators";
 import HighlightText from "./HighlightText";
 
 const meta = {
   title: "UI/HighlightText",
   component: HighlightText,
-  decorators: [
-    (Story) => (
-      <View style={{ padding: 16 }}>
-        <Story />
-      </View>
-    ),
-  ],
+  decorators: [withPadding],
 } satisfies Meta<typeof HighlightText>;
 
 export default meta;
