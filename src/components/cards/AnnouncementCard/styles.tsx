@@ -32,7 +32,7 @@ export default StyleSheet.create({
   },
   titleWrap: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 4,
     marginBottom: 8,
     width: "100%",
