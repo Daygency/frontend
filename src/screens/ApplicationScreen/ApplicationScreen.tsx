@@ -15,7 +15,6 @@ import {
 } from "@react-navigation/native";
 import { useEffect, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import { RootRoutes } from "../../navigations/routes";
 import Form from "../../components/forms/Form";
@@ -45,12 +44,6 @@ import {
   hasAnyApplicationField,
   parseApplicationConfig,
 } from "../../lib/application/parseApplicationConfig";
-import {
-  normalizeAnnouncementPriceType,
-  parseAnnouncementPrice,
-} from "../../lib/announcement/announcementPrice";
-import { pickMajorsFromAnnouncementRaw } from "../../lib/announcement/recruitmentMajors";
-import type { AnnouncementPriceType } from "../../lib/apis/announcement/types";
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -169,22 +162,10 @@ const ApplicationScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const floatingBottomPad = insets.bottom + 4;
-  const { title, type, status, daysLeft, viewCount: viewCountParam } =
-    route.params;
+  const { status } = route.params;
   const postId = route.params.postId;
 
   const [config, setConfig] = useState<ApplicationConfig | null>(null);
-  const [viewCount, setViewCount] = useState<number | undefined>(
-    viewCountParam,
-  );
-  const [postPriceType, setPostPriceType] = useState<
-    AnnouncementPriceType | undefined
-  >();
-  const [postPrice, setPostPrice] = useState<number | undefined>();
-  const [recruitmentMajorNames, setRecruitmentMajorNames] = useState<string[]>(
-    [],
-  );
-  const [postDeadlineAt, setPostDeadlineAt] = useState<string | undefined>();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [applicationId, setApplicationId] = useState<string | null>(null);
@@ -252,28 +233,6 @@ const ApplicationScreen = () => {
           return;
         }
         const d = detail as Record<string, unknown>;
-        const dlRaw = d.deadlineAt ?? d.deadline_at;
-        if (typeof dlRaw === "string" && dlRaw.trim()) {
-          setPostDeadlineAt(dlRaw.trim());
-        } else {
-          setPostDeadlineAt(undefined);
-        }
-        const vcRaw = d.viewCount ?? d.view_count;
-        if (
-          typeof vcRaw === "number" &&
-          Number.isFinite(vcRaw) &&
-          vcRaw >= 0
-        ) {
-          setViewCount(Math.floor(vcRaw));
-        }
-        setPostPriceType(
-          normalizeAnnouncementPriceType(d.priceType ?? d.price_type),
-        );
-        setPostPrice(parseAnnouncementPrice(d.price));
-        const majorsPick = pickMajorsFromAnnouncementRaw(d);
-        setRecruitmentMajorNames(
-          majorsPick.majors?.map((m) => m.name).filter(Boolean) ?? [],
-        );
         setRecruitmentOpen(deriveRecruitmentOpen(d, status));
         if (detailHasExplicitNullApplicationConfig(d)) {
           Alert.alert(
@@ -535,19 +494,6 @@ const ApplicationScreen = () => {
           paddingBottom: applicationId ? 150 : 90,
         }}
       >
-        <View style={{ paddingHorizontal: 12 }}>
-          <AnnouncementCard
-            title={title}
-            type={type}
-            status={status}
-            daysLeft={daysLeft}
-            deadlineAt={postDeadlineAt}
-            viewCount={viewCount}
-            priceType={postPriceType}
-            price={postPrice}
-            recruitmentMajorNames={recruitmentMajorNames}
-          />
-        </View>
         <View style={{ paddingHorizontal: 12, paddingVertical: 15 }}>
           {config.includeName && (
             <View>

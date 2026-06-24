@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Image, View, type StyleProp, type ViewStyle } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { GRAY } from "../../color";
 import { pickProfileImageUrlDeep } from "./peerImageFields";
 import type { ChatPeerSummary } from "../apis/chat/types";
@@ -23,7 +24,8 @@ export default function ApplicantAvatar({
 }: Props) {
   const fromPeer =
     (peer ? pickProfileImageUrlDeep(peer) : undefined) ??
-    peer?.profileImageUrl;
+    peer?.profileImageUrl ??
+    peer?.profileImgUrl;
   const uid = (peerUserId ?? peer?.userId ?? "").trim() || undefined;
   const avatarUrl = usePeerAvatarUrl(uid, fromPeer);
   const [imgErr, setImgErr] = useState(false);
@@ -34,6 +36,7 @@ export default function ApplicantAvatar({
 
   const r = size / 2;
   const baseStyle = [{ width: size, height: size, borderRadius: r }, style];
+  const iconSize = Math.max(20, Math.round(size * 0.45));
 
   return (
     <View style={baseStyle}>
@@ -51,8 +54,16 @@ export default function ApplicantAvatar({
             height: size,
             borderRadius: r,
             backgroundColor: GRAY.MEDIUM_2,
+            alignItems: "center",
+            justifyContent: "center",
           }}
-        />
+        >
+          <Ionicons
+            name="person-outline"
+            size={iconSize}
+            color={GRAY.DARK}
+          />
+        </View>
       )}
     </View>
   );

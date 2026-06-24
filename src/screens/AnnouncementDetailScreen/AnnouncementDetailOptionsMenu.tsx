@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
-  Alert,
   InteractionManager,
   Modal,
   Pressable,
@@ -11,12 +10,6 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BLACK, GRAY, WHITE } from "../../color";
-import {
-  createScrap,
-  deleteScrapByTarget,
-  getScraps,
-} from "../../lib/apis/scrap/scrapApi";
-import { useRequireLogin } from "../../hooks/useRequireLogin";
 
 interface AnnouncementDetailOptionsMenuProps {
   isMine: boolean;
@@ -33,58 +26,12 @@ const AnnouncementDetailOptionsMenu = ({
   onDelete,
   onReport,
 }: AnnouncementDetailOptionsMenuProps) => {
-  const { ensureLoggedIn } = useRequireLogin();
   const [menuVisible, setMenuVisible] = useState(false);
-  const [scraped, setScraped] = useState(false);
   const [dropdownPosition, setDropdownPosition] = useState({
     x: 0,
     y: 0,
   });
   const dotsRef = useRef<View>(null);
-
-  useEffect(() => {
-    if (!postId) return;
-    (async () => {
-      const res = await getScraps({
-        targetType: "ANNOUNCEMENT",
-        targetId: postId,
-      });
-      if (!res) return;
-      setScraped(res.count > 0);
-    })();
-  }, [postId]);
-
-  const handlePressScrap = async () => {
-    if (!ensureLoggedIn()) return;
-    if (!postId) {
-      Alert.alert("알림", "대상 공고 정보를 찾을 수 없습니다.");
-      return;
-    }
-    if (scraped) {
-      const removed = await deleteScrapByTarget({
-        targetType: "ANNOUNCEMENT",
-        targetId: postId,
-      });
-      if (!removed.success) {
-        Alert.alert("알림", "스크랩 취소에 실패했습니다.");
-        return;
-      }
-      setScraped(false);
-      return;
-    }
-
-    const created = await createScrap({
-      targetType: "ANNOUNCEMENT",
-      targetId: postId,
-    });
-
-    if (created) {
-      setScraped(true);
-      return;
-    }
-
-    Alert.alert("알림", "스크랩에 실패했습니다. 다시 시도해주세요.");
-  };
 
   const handleEdit = () => {
     setMenuVisible(false);
@@ -125,13 +72,6 @@ const AnnouncementDetailOptionsMenu = ({
 
   return (
     <View style={styles.rightItemsWrap}>
-      <Pressable hitSlop={10} onPress={handlePressScrap}>
-        <MaterialCommunityIcons
-          name={scraped ? "bookmark" : "bookmark-outline"}
-          size={21}
-          color={scraped ? "#FFC107" : "#000"}
-        />
-      </Pressable>
       <View ref={dotsRef} collapsable={false}>
         <Pressable hitSlop={10} onPress={toggleMenu} style={styles.dotsButton}>
           <MaterialCommunityIcons

@@ -58,6 +58,8 @@ export type ApplicationEntity = Partial<Omit<CreateApplicationDto, "postId">> & 
   id: string;
   postId?: string;
   userId?: string;
+  /** GET /applications/post/:postId — nested `user` 프로필 이미지 */
+  profileImgUrl?: string;
   status?: ApplicationReviewStatus;
   createdAt?: string;
   canceledAt?: string | null;

@@ -1,13 +1,11 @@
 import {
   ActivityIndicator,
   Alert,
-  Image,
   Pressable,
   RefreshControl,
   ScrollView,
   Text,
   View,
-  useWindowDimensions,
 } from "react-native";
 import {
   RouteProp,
@@ -20,18 +18,18 @@ import { getMyActivityReview } from "../../lib/apis/announcement/activityReviewA
 import { getMyApplicationForPost } from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import AnnouncementCard from "../../components/cards/AnnouncementCard";
+import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
 import AcceptedPerformersSection from "./AcceptedPerformersSection";
-import { GRAY, MAIN, WHITE } from "../../color";
 import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
+import { GRAY, MAIN, WHITE } from "../../color";
 import {
   mapAttachmentsToImageUrls,
   pickUrlFromFileLike,
 } from "../../lib/media/attachmentImageUrl";
+import ImageCarousel from "../../components/media/ImageCarousel/ImageCarousel";
 import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
-import { hasMapCoords, parseCoord } from "../../lib/kakao/location";
+import { parseCoord } from "../../lib/kakao/location";
 import { extractAnnouncementAuthorFromDetail } from "../../lib/announcement/extractAnnouncementAuthor";
 import type { AnnouncementAuthor } from "../../lib/announcement/extractAnnouncementAuthor";
 import { useAnnouncementAuthorLabel } from "../../lib/announcement/useAnnouncementAuthorLabel";
@@ -47,7 +45,6 @@ import type {
   ApplicationConfig,
 } from "../../lib/apis/announcement/types";
 import {
-  formatAnnouncementPriceLine,
   normalizeAnnouncementPriceType,
   parseAnnouncementPrice,
 } from "../../lib/announcement/announcementPrice";
@@ -70,7 +67,12 @@ import type { ReportCategory } from "../../lib/apis/report/types";
 import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";
 import { confirmReportSubmission } from "../../lib/report/confirmReportSubmission";
 import { pickReportedUserIdFromUnknown } from "../../lib/report/pickReportedUserId";
-import { isContentNew } from "../../lib/content/newBadge";
+import {
+  createScrap,
+  deleteScrapByTarget,
+  getScraps,
+} from "../../lib/apis/scrap/scrapApi";
+import { sharedAnnouncementStyles } from "../../components/shared/AnnouncementShared/sharedAnnouncementStyles";
 import styles from "./styles";
 
 export type AnnouncementDetailParams = {
@@ -105,13 +107,6 @@ function formatDateKorean(iso?: string): string {
   return `${dt.getFullYear()}.${String(dt.getMonth() + 1).padStart(2, "0")}.${String(dt.getDate()).padStart(2, "0")}`;
 }
 
-function formatTimeHHMM(iso?: string): string {
-  if (!iso?.trim()) return "";
-  const dt = new Date(iso);
-  if (isNaN(dt.getTime())) return "";
-  return `${String(dt.getHours()).padStart(2, "0")}:${String(dt.getMinutes()).padStart(2, "0")}`;
-}
-
 function parseAnnouncementAttachments(
   raw: unknown,
 ): { name: string; size: string }[] {
@@ -139,6 +134,14 @@ function parseAnnouncementAttachments(
   return out;
 }
 
+function locationBadgeLabel(address: string): string {
+  const trimmed = address.trim();
+  if (!trimmed) return "";
+  const parts = trimmed.split(/\s+/).filter(Boolean);
+  if (parts.length <= 2) return trimmed;
+  return parts.slice(2).join(" ") || trimmed;
+}
+
 const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
   const navigation = useNavigation<any>();
@@ -148,12 +151,8 @@ const AnnouncementDetailScreen = () => {
   const { isLoggedIn, user } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
   const params = route.params ?? {};
-  const { width: screenWidth } = useWindowDimensions();
   const [isMine, setIsMine] = useState(false);
   const [hasApplicants, setHasApplicants] = useState(false);
-  const [imageHeights, setImageHeights] = useState<{ [key: number]: number }>(
-    {},
-  );
   const [detailData, setDetailData] = useState<{
     title: string;
     type: string;
@@ -186,6 +185,8 @@ const AnnouncementDetailScreen = () => {
   const [myApplication, setMyApplication] = useState<ApplicationEntity | null>(
     null,
   );
+  const [scraped, setScraped] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const authorDisplayLabel = useAnnouncementAuthorLabel(author);
 
   const handleOpenReport = useCallback(() => {
@@ -262,9 +263,18 @@ const AnnouncementDetailScreen = () => {
           | undefined;
       const mine =
         (d.isMine as boolean | undefined) ?? (d.is_mine as boolean | undefined);
-      if (typeof mine === "boolean") setIsMine(mine);
-
       const extractedAuthor = extractAnnouncementAuthorFromDetail(d);
+      if (typeof mine === "boolean") {
+        setIsMine(mine);
+      } else if (
+        user?.socialId?.trim() &&
+        extractedAuthor?.userId?.trim() === user.socialId.trim()
+      ) {
+        setIsMine(true);
+      } else {
+        setIsMine(false);
+      }
+
       if (extractedAuthor) {
         setAuthor(extractedAuthor);
       } else if (
@@ -403,6 +413,10 @@ const AnnouncementDetailScreen = () => {
     }, [params.postId, fetchDetail]),
   );
 
+  useEffect(() => {
+    setIsMine(false);
+  }, [params.postId]);
+
   useNavFocusEffect(
     useCallback(() => {
       const postId = params.postId;
@@ -450,6 +464,50 @@ const AnnouncementDetailScreen = () => {
     };
   }, [params.postId, isMine]);
 
+  const targetPostId = params.postId;
+
+  useEffect(() => {
+    if (!targetPostId) return;
+    (async () => {
+      const res = await getScraps({
+        targetType: "ANNOUNCEMENT",
+        targetId: targetPostId,
+      });
+      if (!res) return;
+      const myId = user?.socialId;
+      setScraped(
+        !!myId &&
+          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+      );
+    })();
+  }, [targetPostId, user?.socialId]);
+
+  const handleToggleScrap = useCallback(async () => {
+    if (!ensureLoggedIn()) return;
+    if (!targetPostId) return;
+    if (scraped) {
+      const res = await deleteScrapByTarget({
+        targetType: "ANNOUNCEMENT",
+        targetId: targetPostId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "스크랩 취소에 실패했습니다.");
+        return;
+      }
+      setScraped(false);
+      return;
+    }
+    const created = await createScrap({
+      targetType: "ANNOUNCEMENT",
+      targetId: targetPostId,
+    });
+    if (!created) {
+      Alert.alert("알림", "스크랩에 실패했습니다.");
+      return;
+    }
+    setScraped(true);
+  }, [ensureLoggedIn, scraped, targetPostId]);
+
   const displayTitle = detailData?.title ?? params.title ?? "";
   const displayType = detailData?.type ?? params.type ?? "";
   const displayStatus = detailData?.status ?? params.status ?? "모집중";
@@ -460,18 +518,46 @@ const AnnouncementDetailScreen = () => {
   const deadlineAtForUi = detailData?.deadlineAt;
   const displayCompleted = detailData?.completed ?? false;
 
+  const isRecruitingOpen = displayStatus === "모집중";
   const showApplicantReviewBar =
     !isMine &&
     displayCompleted &&
     isLoggedIn &&
     !myReviewExists &&
     myApplication?.status === "ACCEPTED";
-  const showApplicantApplyBar = !isMine && !displayCompleted;
-  const visitorBottomBar = showApplicantApplyBar || showApplicantReviewBar;
+  /** 타인 공고 + 모집중 — 지원하기 노출 (예정일 경과로 completed여도 모집 중이면 지원 가능) */
+  const showApplicantApplyBar =
+    !isMine &&
+    Boolean(params.postId) &&
+    isRecruitingOpen &&
+    !myApplication;
+  const showApplicantClosedBar =
+    !isMine &&
+    Boolean(params.postId) &&
+    !isRecruitingOpen &&
+    !showApplicantReviewBar &&
+    !showApplicantApplyBar;
+  const showApplicantAlreadyAppliedBar =
+    !isMine &&
+    Boolean(params.postId) &&
+    isLoggedIn &&
+    Boolean(myApplication) &&
+    isRecruitingOpen &&
+    !showApplicantReviewBar &&
+    !showApplicantApplyBar;
+  const visitorBottomBar =
+    !isMine &&
+    Boolean(params.postId) &&
+    (showApplicantApplyBar ||
+      showApplicantReviewBar ||
+      showApplicantAlreadyAppliedBar ||
+      showApplicantClosedBar);
 
-  /** 작성자·미완료일 때 하단 한 칸: 조기 마감 ↔ 공연 완료 둘 중 하나만 */
+  /** 작성자 + 모집 중·마감 후 미완료 — 조기 마감 / 공연 완료 */
   const showOwnerActionBar =
-    isMine && Boolean(params.postId) && !displayCompleted;
+    isMine &&
+    Boolean(params.postId) &&
+    (isRecruitingOpen || displayStatus === "모집마감");
 
   const showEarlyCloseButton =
     showOwnerActionBar &&
@@ -620,260 +706,79 @@ const AnnouncementDetailScreen = () => {
   const attachmentList = detailData?.attachments ?? [];
 
   const deadlineLabel = formatDateKorean(detailData?.deadlineAt);
-  const scheduledLabel = formatDateKorean(detailData?.scheduledAt);
-  const scheduledTimeLabel = formatTimeHHMM(detailData?.scheduledAt);
   const addressLabel = detailData?.address?.trim() || "";
   const descriptionText = detailData?.content?.trim() ?? "";
+  const dDayLabel = formatAnnouncementDDayLabel(
+    displayDaysLeft,
+    displayStatus,
+  );
+  const venueLabel = locationBadgeLabel(addressLabel);
 
-  const handleImageLoad = (index: number, event: any) => {
-    const { width, height } = event.nativeEvent.source;
-    const imageWidth = screenWidth - 40;
-    const aspectRatio = height / width;
-    const calculatedHeight = imageWidth * aspectRatio;
-    setImageHeights((prev) => ({ ...prev, [index]: calculatedHeight }));
+  const showBottomBar =
+    showOwnerActionBar || visitorBottomBar;
+  const scrollBottomPad = showBottomBar ? 88 + floatingBottomPad : 32;
+
+  const navigateToAuthorPortfolio = () => {
+    if (!author) return;
+    navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+      userId: author.userId,
+      activityName: author.activityName?.trim() ?? "",
+    });
   };
 
-  return (
-    <View style={styles.container}>
-      <ScrollView
-        style={styles.scroll}
-        contentContainerStyle={[
-          styles.scrollContent,
-          {
-            paddingBottom: showOwnerActionBar ? 88 : visitorBottomBar ? 100 : 32,
-          },
-        ]}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            tintColor={MAIN.DEFAULT}
-            colors={[MAIN.DEFAULT]}
-          />
-        }
-      >
-        <View style={styles.contentSheetFlush}>
-          <View style={{ paddingHorizontal: 12 }}>
-            <AnnouncementCard
-              title={displayTitle}
-              type={displayType}
-              status={displayStatus}
-              daysLeft={displayDaysLeft}
-              deadlineAt={detailData?.deadlineAt}
-              viewCount={displayViewCount}
-              priceType={detailData?.priceType}
-              price={detailData?.price}
-              address={addressLabel}
-              authorName={authorDisplayLabel}
-              profileImgUrl={author?.profileImgUrl}
-              showNew={isContentNew(detailData?.createdAt)}
-            />
-          </View>
-        </View>
-        {isMine && params.postId ? (
-          <View style={[styles.contentSheet, { paddingVertical: 16 }]}>
-            <AcceptedPerformersSection
-              postId={params.postId}
-              announcementTitle={displayTitle}
-              typeTag={displayType}
-              statusTag={displayStatus}
-              dDay={formatAnnouncementDDayLabel(
-                displayDaysLeft,
-                displayStatus,
-              )}
-              displayCompleted={displayCompleted}
-              showReviewEntry={displayCompleted && !myReviewExists}
-              onWriteReview={(p) => {
-                navigation.navigate(RootRoutes.ACTIVITY_REVIEW, {
-                  postId: params.postId,
-                  revieweeUserId: p.userId,
-                  revieweeActivityName: p.activityName,
-                  announcementTitle: displayTitle,
-                  revieweeHandle: p.handle,
-                });
-              }}
-            />
-          </View>
-        ) : null}
-        <View style={styles.contentSheet}>
-          {author ? (
-            <Pressable
-              style={({ pressed }) => [
-                styles.producerInfo,
-                pressed && { opacity: 0.85 },
-              ]}
-              onPress={() =>
-                navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
-                  userId: author.userId,
-                  activityName: author.activityName?.trim() ?? "",
-                })
-              }
-            >
-              <ApplicantAvatar
-                peerUserId={author.userId}
-                peer={{
-                  userId: author.userId,
-                  name: author.name,
-                  activityName: author.activityName,
-                  profileImageUrl: author.profileImgUrl,
-                }}
-                size={36}
-              />
-              <Text style={styles.producerName} numberOfLines={1}>
-                {authorDisplayLabel}
-              </Text>
-            </Pressable>
-          ) : (
-            <View style={styles.producerInfo}>
-              <ApplicantAvatar peerUserId={undefined} peer={null} size={36} />
-              <Text style={styles.producerName}>작성자</Text>
-            </View>
-          )}
-        </View>
-        <View style={styles.contentSheet}>
-          <View style={styles.infoContainer}>
-            <View style={styles.infoRow}>
-              <MaterialCommunityIcons
-                name="calendar-outline"
-                size={17}
-                color={MAIN.DEFAULT}
-              />
-              <Text style={styles.infoLabel}>마감일 : </Text>
-              <Text style={styles.infoValue}>
-                {deadlineLabel || "-"}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <MaterialCommunityIcons
-                name="calendar-outline"
-                size={17}
-                color={MAIN.DEFAULT}
-              />
-              <Text style={styles.infoLabel}>예정일 : </Text>
-              <Text style={styles.infoValue}>
-                {scheduledLabel || "-"}
-              </Text>
-            </View>
-            <View style={styles.infoRow}>
-              <MaterialCommunityIcons
-                name="clock-outline"
-                size={17}
-                color={MAIN.DEFAULT}
-              />
-              <Text style={styles.infoLabel}>예정 시간 : </Text>
-              <Text style={styles.infoValue}>
-                {scheduledTimeLabel || "-"}
-              </Text>
-            </View>
-            {detailData != null ? (
-              <View style={styles.infoRow}>
-                <MaterialCommunityIcons
-                  name="cash-multiple"
-                  size={17}
-                  color={MAIN.DEFAULT}
-                />
-                <Text style={styles.infoLabel}>금액 : </Text>
-                <Text style={styles.infoValue}>
-                  {formatAnnouncementPriceLine(
-                    detailData.priceType ?? "PENDING",
-                    detailData.price ?? 0,
-                  )}
-                </Text>
-              </View>
-            ) : null}
-            {detailData?.majors && detailData.majors.length > 0 ? (
-              <View style={styles.majorsBlock}>
-                <Text style={styles.majorsLabel}>모집전공</Text>
-                <View style={styles.majorsChips}>
-                  {detailData.majors.map((m, i) => (
-                    <View
-                      key={`${m.majorId}-${i}`}
-                      style={styles.majorChip}
-                    >
-                      <Text style={styles.majorChipText}>{m.name}</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            ) : null}
-            <View style={styles.infoRow}>
-              <View style={styles.statusBadge}>
-                <MaterialCommunityIcons name="check" size={10} color={WHITE} />
-              </View>
-              <Text style={styles.statusText}>{displayStatus}</Text>
-            </View>
-          </View>
-        </View>
-        {detailData && hasMapCoords(detailData) ? (
-          <View style={styles.contentSheet}>
-            <Text style={styles.mapSectionLabel}>공연 위치</Text>
-            <KakaoMapView
-              latitude={detailData.latitude}
-              longitude={detailData.longitude}
-              height={200}
-            />
-          </View>
-        ) : null}
-        <View style={styles.contentSheet}>
-          {descriptionText ? (
-            <Text style={styles.descriptionText}>{descriptionText}</Text>
-          ) : (
-            <Text style={[styles.descriptionText, { color: GRAY.DARK_100 }]}>
-              등록된 본문이 없습니다.
-            </Text>
-          )}
-          {imageList.map((uri, index) => (
-            <Image
-              key={`${uri}-${index}`}
-              source={{ uri }}
-              resizeMode="cover"
-              style={[
-                styles.contentImage,
-                { height: imageHeights[index] || 200 },
-              ]}
-              onLoad={(event) => handleImageLoad(index, event)}
-            />
-          ))}
-        </View>
-        {attachmentList.length > 0 ? (
-          <View style={styles.contentSheet}>
-            <Text style={styles.attachmentTitle}>첨부파일</Text>
-            {attachmentList.map((file, index) => (
-              <Pressable
-                key={`${file.name}-${index}`}
-                style={styles.attachmentCard}
-                onPress={() => {}}
-              >
-                <MaterialCommunityIcons
-                  name="paperclip"
-                  size={20}
-                  color={MAIN.DEFAULT}
-                />
-                <View style={styles.attachmentInfo}>
-                  <Text style={styles.attachmentFileName}>{file.name}</Text>
-                  {file.size ? (
-                    <Text style={styles.attachmentFileSize}>{file.size}</Text>
-                  ) : null}
-                </View>
-                <MaterialCommunityIcons
-                  name="download"
-                  size={22}
-                  color={MAIN.DEFAULT}
-                />
-              </Pressable>
-            ))}
-          </View>
-        ) : null}
-      </ScrollView>
-      {!isMine && showApplicantReviewBar ? (
+  const navigateToApplication = () => {
+    if (!ensureLoggedIn()) return;
+    if (!params.postId) {
+      Alert.alert("알림", "공고 정보가 없습니다.");
+      return;
+    }
+    navigation.navigate(RootRoutes.APPLICATION, {
+      title: displayTitle,
+      type: displayType,
+      status: displayStatus,
+      daysLeft: displayDaysLeft,
+      postId: params.postId,
+      viewCount: displayViewCount,
+      applicationConfig:
+        detailData?.applicationConfig ?? params.applicationConfig ?? null,
+    });
+  };
+
+  const renderVisitorBottomWithScrap = (message: string) => (
+    <View
+      style={[styles.floatingBottomBar, { paddingBottom: floatingBottomPad }]}
+    >
+      <Pressable style={styles.btnBookmark} onPress={handleToggleScrap}>
+        <Ionicons
+          name={scraped ? "bookmark" : "bookmark-outline"}
+          size={22}
+          color={WHITE}
+        />
+      </Pressable>
+      <View style={[styles.btnApply, styles.visitorInfoBar]}>
+        <Text style={styles.visitorInfoText}>{message}</Text>
+      </View>
+    </View>
+  );
+
+  const renderBottomBar = () => {
+    if (!isMine && params.postId && showApplicantReviewBar) {
+      return (
         <View
           style={[
             styles.floatingBottomBar,
             { paddingBottom: floatingBottomPad },
           ]}
         >
+          <Pressable style={styles.btnBookmark} onPress={handleToggleScrap}>
+            <Ionicons
+              name={scraped ? "bookmark" : "bookmark-outline"}
+              size={22}
+              color={WHITE}
+            />
+          </Pressable>
           <Pressable
-            style={[styles.btnApply, { bottom: 0 }]}
+            style={styles.btnApply}
             onPress={() => {
               if (!params.postId) {
                 Alert.alert("알림", "공고 정보가 없습니다.");
@@ -899,7 +804,41 @@ const AnnouncementDetailScreen = () => {
             <Text style={styles.btnApplyText}>활동 후기 작성</Text>
           </Pressable>
         </View>
-      ) : !isMine && showApplicantApplyBar ? (
+      );
+    }
+
+    if (!isMine && params.postId && showApplicantApplyBar) {
+      return (
+        <View
+          style={[
+            styles.floatingBottomBar,
+            { paddingBottom: floatingBottomPad },
+          ]}
+        >
+          <Pressable style={styles.btnBookmark} onPress={handleToggleScrap}>
+            <Ionicons
+              name={scraped ? "bookmark" : "bookmark-outline"}
+              size={22}
+              color={WHITE}
+            />
+          </Pressable>
+          <Pressable style={styles.btnApply} onPress={navigateToApplication}>
+            <Text style={styles.btnApplyText}>지원하기</Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    if (!isMine && params.postId && showApplicantClosedBar) {
+      return renderVisitorBottomWithScrap("마감된 공고입니다.");
+    }
+
+    if (!isMine && params.postId && showApplicantAlreadyAppliedBar) {
+      return renderVisitorBottomWithScrap("이미 지원한 공고입니다.");
+    }
+
+    if (showOwnerActionBar) {
+      return (
         <View
           style={[
             styles.floatingBottomBar,
@@ -907,79 +846,204 @@ const AnnouncementDetailScreen = () => {
           ]}
         >
           <Pressable
-            style={[styles.btnApply, { bottom: 0 }]}
-            onPress={() => {
-              if (!ensureLoggedIn()) return;
-              if (!params.postId) {
-                Alert.alert("알림", "공고 정보가 없습니다.");
-                return;
-              }
-              navigation.navigate(RootRoutes.APPLICATION, {
-                title: displayTitle,
-                type: displayType,
-                status: displayStatus,
-                daysLeft: displayDaysLeft,
-                postId: params.postId,
-                viewCount: displayViewCount,
-                applicationConfig:
-                  detailData?.applicationConfig ??
-                  params.applicationConfig ??
-                  null,
-              });
-            }}
+            style={[styles.btnApply, styles.btnApplyFull]}
+            disabled={showEarlyCloseButton ? closingEarly : completing}
+            onPress={showEarlyCloseButton ? onEarlyClose : onMarkComplete}
           >
-            <Text style={styles.btnApplyText}>지원서 작성하기</Text>
-          </Pressable>
-        </View>
-      ) : showOwnerActionBar ? (
-        showEarlyCloseButton ? (
-          <View
-            style={[
-              styles.floatingBottomBar,
-              { paddingBottom: floatingBottomPad },
-            ]}
-          >
-            <Pressable
-              style={[
-                styles.btnApply,
-                { bottom: 0 },
-                closingEarly && { opacity: 0.65 },
-              ]}
-              disabled={closingEarly}
-              onPress={onEarlyClose}
-            >
-              {closingEarly ? (
+            {showEarlyCloseButton ? (
+              closingEarly ? (
                 <ActivityIndicator color={WHITE} />
               ) : (
                 <Text style={styles.btnApplyText}>조기 마감</Text>
-              )}
-            </Pressable>
-          </View>
-        ) : (
+              )
+            ) : completing ? (
+              <ActivityIndicator color={WHITE} />
+            ) : (
+              <Text style={styles.btnApplyText}>공연 완료</Text>
+            )}
+          </Pressable>
+        </View>
+      );
+    }
+
+    return null;
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.detailInner}>
+        <ScrollView
+          style={styles.detailScroll}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: scrollBottomPad },
+          ]}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              tintColor={MAIN.DEFAULT}
+              colors={[MAIN.DEFAULT]}
+            />
+          }
+        >
+          {imageList.length > 0 ? (
+            <View style={styles.heroCarousel}>
+              <ImageCarousel
+                gap={0}
+                images={imageList}
+                slideBackgroundColor={GRAY.MEDIUM}
+                onActiveIndexChange={setActiveImageIndex}
+              />
+              {imageList.length > 1 ? (
+                <View style={styles.imageCounter}>
+                  <Text style={styles.imageCounterText}>
+                    {activeImageIndex + 1}/{imageList.length}
+                  </Text>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
+
           <View
             style={[
-              styles.floatingBottomBar,
-              { paddingBottom: floatingBottomPad },
+              styles.body,
+              imageList.length === 0 ? { paddingTop: 20 } : null,
             ]}
           >
-            <Pressable
-              style={[
-                styles.btnApply,
-                { bottom: 0 },
-                completing && { opacity: 0.65 },
-              ]}
-              disabled={completing}
-              onPress={onMarkComplete}
-            >
-              {completing ? (
-                <ActivityIndicator color={WHITE} />
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>{displayTitle}</Text>
+              {author ? (
+                <Pressable
+                  style={styles.authorChip}
+                  onPress={navigateToAuthorPortfolio}
+                >
+                  <ApplicantAvatar
+                    peerUserId={author.userId}
+                    peer={{
+                      userId: author.userId,
+                      name: author.name,
+                      activityName: author.activityName,
+                      profileImageUrl: author.profileImgUrl,
+                    }}
+                    size={28}
+                  />
+                  <Text style={styles.authorName} numberOfLines={1}>
+                    {authorDisplayLabel}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
+
+            <View style={styles.badgeRow}>
+              {displayType ? (
+                <View style={sharedAnnouncementStyles.typeTag}>
+                  <Text style={sharedAnnouncementStyles.typeTagText}>
+                    {displayType}
+                  </Text>
+                </View>
+              ) : null}
+              <View style={sharedAnnouncementStyles.statusTag}>
+                <Text style={sharedAnnouncementStyles.statusTagText}>
+                  {displayStatus}
+                </Text>
+              </View>
+              {venueLabel ? (
+                <Text style={styles.locationText} numberOfLines={1}>
+                  {venueLabel}
+                </Text>
+              ) : null}
+            </View>
+
+            <View style={styles.sectionBlock}>
+              <Text style={styles.sectionHeading}>본문</Text>
+              {descriptionText ? (
+                <Text style={styles.description}>{descriptionText}</Text>
               ) : (
-                <Text style={styles.btnApplyText}>공연 완료</Text>
+                <Text style={[styles.description, { color: GRAY.DARK_100 }]}>
+                  등록된 본문이 없습니다.
+                </Text>
               )}
-            </Pressable>
+            </View>
+
+            <View style={styles.sectionBlock}>
+              <Text style={styles.sectionHeading}>마감일</Text>
+              <Text style={styles.deadlineText}>
+                {deadlineLabel || "-"}
+              </Text>
+            </View>
+
+            {addressLabel ? (
+              <View style={styles.sectionBlock}>
+                <Text style={styles.sectionHeading}>근무지역</Text>
+                <View style={styles.locationCard}>
+                  <KakaoMapView
+                    latitude={detailData?.latitude}
+                    longitude={detailData?.longitude}
+                    place={addressLabel}
+                    height={200}
+                  />
+                  <View style={styles.addressInCard}>
+                    <Text style={styles.addressText}>{addressLabel}</Text>
+                  </View>
+                </View>
+              </View>
+            ) : null}
+
+            {attachmentList.length > 0 ? (
+              <View style={styles.attachmentsCard}>
+                <Text style={styles.sectionHeading}>첨부파일</Text>
+                {attachmentList.map((file, index) => (
+                  <Pressable key={`${file.name}-${index}`} style={styles.fileRow}>
+                    <MaterialCommunityIcons
+                      name="paperclip"
+                      size={18}
+                      color={GRAY.DARK}
+                    />
+                    <Text style={styles.fileName} numberOfLines={1}>
+                      {file.name}
+                    </Text>
+                    {file.size ? (
+                      <Text style={styles.fileSize}>{file.size}</Text>
+                    ) : null}
+                    <MaterialCommunityIcons
+                      name="download"
+                      size={20}
+                      color={GRAY.DARK}
+                    />
+                  </Pressable>
+                ))}
+              </View>
+            ) : null}
+
+            {isMine && params.postId ? (
+              <View style={styles.performersSection}>
+                <AcceptedPerformersSection
+                  postId={params.postId}
+                  announcementTitle={displayTitle}
+                  typeTag={displayType}
+                  statusTag={displayStatus}
+                  dDay={dDayLabel}
+                  displayCompleted={displayCompleted}
+                  showReviewEntry={displayCompleted && !myReviewExists}
+                  onWriteReview={(p) => {
+                    navigation.navigate(RootRoutes.ACTIVITY_REVIEW, {
+                      postId: params.postId,
+                      revieweeUserId: p.userId,
+                      revieweeActivityName: p.activityName,
+                      announcementTitle: displayTitle,
+                      revieweeHandle: p.handle,
+                    });
+                  }}
+                />
+              </View>
+            ) : null}
           </View>
-        )
-      ) : null}
+        </ScrollView>
+      </View>
+      {renderBottomBar()}
       <ReportCategoryModal
         visible={reportModalVisible}
         onClose={() => !reportSubmitting && setReportModalVisible(false)}

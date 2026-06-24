@@ -12,7 +12,9 @@ import { getApplicationsForPost } from "../../lib/apis/application/applicationAp
 import type { ApplicationEntity } from "../../lib/apis/application/types";
 import { getRoomsByPost } from "../../lib/apis/chat/chatApi";
 import type { ChatRoomListItem } from "../../lib/apis/chat/types";
+import type { ChatPeerSummary } from "../../lib/apis/chat/types";
 import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
+import { pickProfileImageUrlDeep } from "../../lib/chat/peerImageFields";
 import { RootRoutes } from "../../navigations/routes";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
@@ -43,6 +45,37 @@ function displayName(row: RowModel): string {
   const fromPeer = peer?.name ?? peer?.activityName ?? "";
   const fromApp = row.application.name?.trim() ?? "";
   return fromPeer || fromApp || "지원자";
+}
+
+function resolvePeerForAvatar(row: RowModel): ChatPeerSummary | null {
+  const peer = row.room?.peer;
+  const uid = (row.application.userId ?? peer?.userId ?? "").trim();
+  if (!uid) return peer ?? null;
+
+  const profileImgUrl =
+    pickProfileImageUrlDeep(peer) ??
+    row.application.profileImgUrl?.trim() ??
+    peer?.profileImgUrl?.trim() ??
+    peer?.profileImageUrl?.trim();
+
+  if (peer) {
+    if (!profileImgUrl) return peer;
+    return {
+      ...peer,
+      profileImgUrl,
+      profileImageUrl: profileImgUrl,
+    };
+  }
+
+  if (!profileImgUrl) {
+    return { userId: uid };
+  }
+
+  return {
+    userId: uid,
+    profileImgUrl,
+    profileImageUrl: profileImgUrl,
+  };
 }
 
 export default function AcceptedPerformersSection({
@@ -168,7 +201,7 @@ export default function AcceptedPerformersSection({
                 >
                   <ApplicantAvatar
                     peerUserId={row.application.userId ?? peer?.userId}
-                    peer={peer ?? null}
+                    peer={resolvePeerForAvatar(row)}
                     size={AVATAR}
                   />
                   <Text style={styles.name} numberOfLines={2}>

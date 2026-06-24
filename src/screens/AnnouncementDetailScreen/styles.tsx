@@ -1,190 +1,190 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
-/** 본문 스크롤 영역 배경 — 흰색 시트 사이 마진으로 이 색이 “띠”로 보임 */
-export const ANNOUNCEMENT_BODY_BG = "#F2F2F2";
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: WHITE,
   },
-  /** 스크롤 뷰 자체 배경 = 본문 회색 (끝까지 스크롤해도 이어짐) */
-  scroll: {
+  detailInner: {
     flex: 1,
-    backgroundColor: ANNOUNCEMENT_BODY_BG,
+  },
+  detailScroll: {
+    flex: 1,
   },
   scrollContent: {
-    flexGrow: 1,
-    backgroundColor: ANNOUNCEMENT_BODY_BG,
-    paddingTop: 8,
+    paddingBottom: 24,
   },
-  /**
-   * 흰색 콘텐츠 시트. 아래 margin으로 회색 배경이 드러남 (디바이더 대신).
-   */
-  contentSheet: {
-    backgroundColor: WHITE,
+  heroCarousel: {
+    position: "relative",
+    marginBottom: 16,
+  },
+  imageCounter: {
+    position: "absolute",
+    right: 16,
+    bottom: 16,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  imageCounterText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: WHITE,
+  },
+  body: {
     paddingHorizontal: 20,
-    paddingVertical: 20,
-    marginBottom: 8,
   },
-  /** 상단 공고 카드(AnnouncementCard)와 본문 사이 회색 띠 */
-  contentSheetFlush: {
-    marginBottom: 8,
-  },
-  producerInfo: {
+  titleRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
     gap: 12,
-    marginBottom: 10,
-  },
-  producerName: {
-    fontSize: 16,
-    lineHeight: 22,
-    fontWeight: "400",
-    letterSpacing: 0.3,
-    color: BLACK,
-  },
-  infoContainer: {
-    gap: 10,
-  },
-  infoRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-  },
-  infoLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.28,
-    fontWeight: "500",
-    color: GRAY.DARK_100,
-  },
-  infoValue: {
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.28,
-    fontWeight: "400",
-    color: BLACK,
-  },
-  majorsBlock: {
-    gap: 10,
-    marginTop: 6,
-  },
-  majorsLabel: {
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.28,
-    fontWeight: "600",
-    color: GRAY.DARK_100,
-  },
-  majorsChips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  majorChip: {
-    backgroundColor: GRAY.DEFAULT,
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-  },
-  majorChipText: {
-    fontSize: 15,
-    lineHeight: 20,
-    color: BLACK,
-    fontWeight: "500",
-  },
-  statusBadge: {
-    width: 16,
-    height: 16,
-    borderRadius: 10,
-    backgroundColor: "#4CAF50",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  statusText: {
-    fontSize: 14,
-    lineHeight: 20,
-    letterSpacing: 0.28,
-    fontWeight: "600",
-    color: MAIN.DEFAULT,
-  },
-  descriptionText: {
-    fontSize: 15,
-    lineHeight: 24,
-    fontWeight: "400",
-    letterSpacing: 0.3,
-    color: BLACK,
-  },
-  mapSectionLabel: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: MAIN.DEFAULT,
-    marginBottom: 10,
-  },
-  contentImage: {
-    width: "100%",
-    marginTop: 16,
-    borderRadius: 8,
-  },
-  attachmentTitle: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: "600",
-    letterSpacing: -0.32,
-    color: MAIN.DEFAULT,
     marginBottom: 12,
   },
-  attachmentCard: {
+  title: {
+    flex: 1,
+    fontSize: 22,
+    fontWeight: "800",
+    color: BLACK,
+    lineHeight: 30,
+  },
+  authorChip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: GRAY.DEFAULT,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    marginBottom: 10,
-    gap: 12,
+    gap: 6,
+    maxWidth: 120,
+    marginTop: 2,
   },
-  attachmentInfo: {
-    flex: 1,
-  },
-  attachmentFileName: {
-    fontSize: 15,
-    fontWeight: "500",
+  authorName: {
+    fontSize: 12,
+    lineHeight: 16,
     color: BLACK,
-    marginBottom: 4,
+    fontWeight: "500",
+    flexShrink: 1,
   },
-  attachmentFileSize: {
+  badgeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 24,
+  },
+  locationText: {
     fontSize: 13,
-    color: GRAY.DARK_2,
-    fontWeight: "400",
+    lineHeight: 18,
+    color: BLACK,
+    fontWeight: "500",
+    flexShrink: 1,
   },
-  /** 하단 플로팅 버튼만 — 배경·그림자 없음 */
+  sectionBlock: {
+    marginBottom: 28,
+  },
+  sectionHeading: {
+    fontSize: 17,
+    fontWeight: "800",
+    color: BLACK,
+    lineHeight: 24,
+    marginBottom: 12,
+  },
+  description: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: BLACK,
+  },
+  deadlineText: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: BLACK,
+    fontWeight: "500",
+  },
+  locationCard: {
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: WHITE,
+  },
+  addressInCard: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: GRAY.DEFAULT,
+  },
+  addressText: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: GRAY.DARK,
+  },
+  attachmentsCard: {
+    marginBottom: 28,
+    gap: 8,
+  },
+  fileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 8,
+    gap: 8,
+  },
+  fileName: {
+    flex: 1,
+    fontSize: 13,
+    color: BLACK,
+  },
+  fileSize: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+  },
+  performersSection: {
+    marginBottom: 28,
+  },
   floatingBottomBar: {
     position: "absolute",
     bottom: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 16,
-    paddingTop: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingTop: 10,
+    backgroundColor: WHITE,
+    borderTopWidth: 1,
+    borderTopColor: GRAY.MEDIUM_2,
   },
-  btnApply: {
+  btnBookmark: {
+    width: 52,
+    height: 52,
+    borderRadius: 10,
     backgroundColor: MAIN.DEFAULT,
-    borderRadius: 16,
-    paddingVertical: 16,
-    bottom: 10,
     alignItems: "center",
     justifyContent: "center",
   },
+  btnApply: {
+    flex: 1,
+    backgroundColor: MAIN.DEFAULT,
+    borderRadius: 10,
+    paddingVertical: 16,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  btnApplyFull: {
+    flex: 1,
+  },
   btnApplyText: {
-    fontSize: 17,
-    lineHeight: 26,
-    letterSpacing: 0.3,
-    fontWeight: "600",
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "700",
     color: WHITE,
+  },
+  visitorInfoBar: {
+    backgroundColor: GRAY.DEFAULT,
+  },
+  visitorInfoText: {
+    fontSize: 16,
+    lineHeight: 24,
+    fontWeight: "600",
+    color: GRAY.DARK,
   },
 });
 

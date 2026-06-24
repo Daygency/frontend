@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { pickProfileImageUrlDeep } from "../../chat/peerImageFields";
 import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
 import type {
@@ -280,6 +281,7 @@ function parseApplicationEntity(
   const userIdRaw =
     (get("userId", "user_id") as string | undefined) ??
     (get("applicantUserId", "applicant_user_id") as string | undefined);
+  const profileImgUrl = pickProfileImageUrlDeep(get("user", "user"));
 
   return {
     id,
@@ -309,6 +311,7 @@ function parseApplicationEntity(
     ...(career ? { career } : {}),
     ...(award ? { award } : {}),
     ...(certificate ? { certificate } : {}),
+    ...(profileImgUrl ? { profileImgUrl } : {}),
   };
 }
 
