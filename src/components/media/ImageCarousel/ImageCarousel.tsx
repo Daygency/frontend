@@ -18,6 +18,7 @@ import Carousel, {
 } from "react-native-reanimated-carousel";
 import styles from "./styles";
 import { GRAY } from "../../../color";
+import { useImageViewerOptional } from "../../../contexts/ImageViewerContext";
 
 export type CarouselBannerItem = {
   bannerId: string;
@@ -136,6 +137,7 @@ type FitHeightImageGalleryProps = {
   imageDimensions: Record<string, ImageDimensions>;
   rememberDimensions: (uri: string, width: number, height: number) => void;
   onActiveIndexChange?: (index: number) => void;
+  onPressImage?: (index: number) => void;
 };
 
 const FitHeightImageGallery = ({
@@ -145,6 +147,7 @@ const FitHeightImageGallery = ({
   imageDimensions,
   rememberDimensions,
   onActiveIndexChange,
+  onPressImage,
 }: FitHeightImageGalleryProps) => {
   const [layoutWidth, setLayoutWidth] = useState(0);
   const slideWidth = Math.max(0, layoutWidth - gap * 2);
@@ -157,12 +160,12 @@ const FitHeightImageGallery = ({
     setLayoutWidth((prev) => (prev === next ? prev : next));
   };
 
-  const renderImage = (uri: string) => {
+  const renderImage = (uri: string, index: number) => {
     const dims = imageDimensions[uri];
     if (!dims || slideWidth <= 0) return null;
     const aspectRatio = dims.width / dims.height;
 
-    return (
+    const image = (
       <Image
         source={{ uri }}
         style={[styles.slide, { width: slideWidth, aspectRatio }]}
@@ -174,6 +177,14 @@ const FitHeightImageGallery = ({
           }
         }}
       />
+    );
+
+    if (!onPressImage) return image;
+
+    return (
+      <Pressable onPress={() => onPressImage(index)} accessibilityRole="image">
+        {image}
+      </Pressable>
     );
   };
 
@@ -192,7 +203,7 @@ const FitHeightImageGallery = ({
         style={styles.containerFit}
         onLayout={(event) => handleLayout(event.nativeEvent.layout.width)}
       >
-        <View style={{ paddingHorizontal: gap }}>{renderImage(uris[0])}</View>
+        <View style={{ paddingHorizontal: gap }}>{renderImage(uris[0], 0)}</View>
       </View>
     );
   }
@@ -215,7 +226,7 @@ const FitHeightImageGallery = ({
         style={{ width: layoutWidth, height: activeHeight }}
         onMomentumScrollEnd={handleScrollEnd}
       >
-        {uris.map((uri) => (
+        {uris.map((uri, index) => (
           <View
             key={uri}
             style={{
@@ -225,7 +236,7 @@ const FitHeightImageGallery = ({
               justifyContent: "flex-start",
             }}
           >
-            {renderImage(uri)}
+            {renderImage(uri, index)}
           </View>
         ))}
       </ScrollView>
@@ -254,6 +265,7 @@ const ImageCarousel = ({
   const [imageDimensions, setImageDimensions] = useState<
     Record<string, ImageDimensions>
   >({});
+  const imageViewer = useImageViewerOptional();
 
   const rememberDimensions = useCallback(
     (uri: string, width: number, height: number) => {
@@ -337,6 +349,11 @@ const ImageCarousel = ({
           setActiveIndex(index);
           onActiveIndexChange?.(index);
         }}
+        onPressImage={
+          imageViewer
+            ? (index) => imageViewer.openImageViewer(uris, index)
+            : undefined
+        }
       />
     );
   }

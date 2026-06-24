@@ -1,11 +1,11 @@
 import {
   View,
   ScrollView,
-  Image,
   ActivityIndicator,
   Text,
   useWindowDimensions,
 } from "react-native";
+import ViewerPressableImage from "../../components/media/ViewerPressableImage";
 import { useEffect, useState } from "react";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -84,8 +84,10 @@ const HomeBannerDetailScreen = () => {
         </View>
       ) : null}
       {imageUrls.map((url, index) => (
-        <Image
+        <ViewerPressableImage
           key={`${url}-${index}`}
+          urls={imageUrls}
+          imageIndex={index}
           source={{ uri: url }}
           style={[styles.image, { width, aspectRatio: 1 }]}
           resizeMode="cover"

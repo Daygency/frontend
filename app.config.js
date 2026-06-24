@@ -105,6 +105,15 @@ export default ({ config }) => ({
         },
       ],
       ...googleSignInPlugins,
+      [
+        "expo-media-library",
+        {
+          photosPermission:
+            "사진을 기기에 저장하기 위해 사진 보관함 접근 권한이 필요합니다.",
+          savePhotosPermission:
+            "사진을 기기에 저장하기 위해 사진 보관함 접근 권한이 필요합니다.",
+        },
+      ],
     ],
     extra: {
       eas: { projectId: "773ddc8a-786b-4fa9-8638-2ad456ef803a" },

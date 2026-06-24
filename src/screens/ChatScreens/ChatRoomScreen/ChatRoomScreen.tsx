@@ -30,6 +30,7 @@ import { findMessageMatchIndices } from "../../../lib/chat/chatSearch";
 import { createChatSocket } from "../../../lib/chat/createChatSocket";
 import { usePeerAvatarUrl } from "../../../lib/chat/usePeerAvatarUrl";
 import HighlightText from "../../../components/ui/HighlightText";
+import { useImageViewer } from "../../../contexts/ImageViewerContext";
 import type { Socket } from "socket.io-client";
 
 export type ChatRoomParams = {
@@ -111,6 +112,7 @@ const ChatRoomScreen = () => {
   } = route.params ?? {};
 
   const myUserId = String(user?.socialId ?? "");
+  const { openImageViewer } = useImageViewer();
   const [peerUserId, setPeerUserId] = useState(peerUserIdParam || "");
 
   /** 지원 직후 등 목록에 peer 가 비어 있을 때, 메시지에서 상대 ID 추론 */
@@ -647,7 +649,13 @@ const ChatRoomScreen = () => {
               const bubbleContent = (
                 <>
                   {showImage ? (
-                    <Pressable onPress={() => openFileUrl(msg.fileUrl)}>
+                    <Pressable
+                      onPress={() => {
+                        if (fileDisplayUrl) {
+                          openImageViewer(fileDisplayUrl);
+                        }
+                      }}
+                    >
                       <Image
                         source={{ uri: fileDisplayUrl }}
                         style={styles.messageFileImage}

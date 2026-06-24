@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View, StyleSheet, Image, ActivityIndicator } from "react-native";
+import { ScrollView, Text, View, StyleSheet, ActivityIndicator } from "react-native";
+import ViewerPressableImage from "../../components/media/ViewerPressableImage";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import ShadowCardList from "../../components/lists/ShadowCardList";
 import { GRAY, MAIN } from "../../color";
@@ -57,8 +58,10 @@ const InquiryDetailScreen = () => {
               {inquiry.images.map((uri, index) => {
                 const displayUri = resolveProfileImageUrlForDisplay(uri) ?? uri;
                 return (
-                  <Image
+                  <ViewerPressableImage
                     key={`${uri}-${index}`}
+                    urls={inquiry.images}
+                    imageIndex={index}
                     source={{ uri: displayUri }}
                     style={styles.attachedImage}
                     resizeMode="cover"

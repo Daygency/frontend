@@ -17,6 +17,7 @@ import {
 import { GoogleSignin } from "@react-native-google-signin/google-signin";
 import { FcmTokenSyncBridge } from "./components/internal/FcmTokenSyncBridge";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ImageViewerProvider } from "./contexts/ImageViewerContext";
 import Navigation from "./navigations/Navigation";
 import SplashScreenView from "./screens/OnboardingScreens/SplashScreen/SplashScreen";
 
@@ -122,9 +123,11 @@ const App = () => {
   return (
     <SafeAreaProvider initialMetrics={initialWindowMetrics}>
       <AuthProvider>
-        <FcmTokenSyncBridge />
-        <StatusBar style="dark" />
-        <Navigation />
+        <ImageViewerProvider>
+          <FcmTokenSyncBridge />
+          <StatusBar style="dark" />
+          <Navigation />
+        </ImageViewerProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
