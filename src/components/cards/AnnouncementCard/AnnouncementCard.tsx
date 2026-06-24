@@ -13,7 +13,7 @@ import { formatAnnouncementPriceLineList } from "../../../lib/announcement/annou
 import { sharedAnnouncementStyles } from "../../shared/AnnouncementShared/sharedAnnouncementStyles";
 import styles from "./styles";
 
-const LOCATION_LABEL_MAX_LENGTH = 10;
+const LOCATION_LABEL_MAX_LENGTH = 15;
 
 function formatLocationLabel(address: string): string {
   const trimmed = address.trim();
@@ -124,11 +124,11 @@ const AnnouncementCard = ({
           </Text>
         </View>
         {address?.trim() ? (
-          <View style={styles.locationTag}>
+          // <View style={styles.locationTag}>
             <Text style={styles.locationTagText} numberOfLines={1}>
               {formatLocationLabel(address)}
             </Text>
-          </View>
+          // </View>
         ) : null}
       </View>
 
