@@ -22,10 +22,17 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: GRAY.DARK_2,
   },
-  headerButton: {
-    marginRight: 12,
+  headerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
-  headerButtonText: {
+  headerTitle: {
+    fontSize: 17,
+    fontWeight: "600",
+    color: "#000",
+  },
+  headerInlineButton: {
     fontSize: 14,
     fontWeight: "500",
     color: GRAY.DARK_2,

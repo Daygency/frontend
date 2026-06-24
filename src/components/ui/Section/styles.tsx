@@ -12,10 +12,12 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 20,
   },
-  headerActions: {
+  headerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 8,
+    flex: 1,
+    minWidth: 0,
   },
   title: {
     fontSize: 19,

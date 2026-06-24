@@ -20,7 +20,8 @@ interface Styles {
 interface SectionProps {
   title: string;
   onPressMore?: () => void;
-  headerRight?: ReactNode;
+  /** 제목 바로 오른쪽 (예: 숨겨진 후기) */
+  headerInline?: ReactNode;
   children: ReactNode;
   styles?: Styles;
 }
@@ -28,21 +29,21 @@ interface SectionProps {
 export default function Section({
   title,
   onPressMore,
-  headerRight,
+  headerInline,
   children,
   styles,
 }: SectionProps) {
   const headerContent = (
     <>
-      <Text style={[defaultStyles.title, styles?.title]}>{title}</Text>
-      <View style={defaultStyles.headerActions}>
-        {headerRight}
-        {onPressMore ? (
-          <Pressable onPress={onPressMore} hitSlop={8}>
-            <MaterialIcons name="chevron-right" size={28} color="#000" />
-          </Pressable>
-        ) : null}
+      <View style={defaultStyles.headerLeft}>
+        <Text style={[defaultStyles.title, styles?.title]}>{title}</Text>
+        {headerInline}
       </View>
+      {onPressMore ? (
+        <Pressable onPress={onPressMore} hitSlop={8}>
+          <MaterialIcons name="chevron-right" size={28} color="#000" />
+        </Pressable>
+      ) : null}
     </>
   );
 

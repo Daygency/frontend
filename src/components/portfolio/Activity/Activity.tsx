@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import { Pressable, ScrollView, Text, View } from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import styles from "./styles";
 import { portfolioSectionStyles } from "../styles";
@@ -8,8 +8,6 @@ import Section from "../../ui/Section";
 import ReceivedReviewsList, {
   RECEIVED_REVIEW_PREVIEW_LIMIT,
 } from "../ReceivedReviewsList";
-import { GRAY } from "../../../color";
-import { hasHiddenReceivedActivityReviews } from "../../../lib/apis/announcement/activityReviewApi";
 import { RootRoutes } from "../../../navigations/routes";
 
 type ActivityProps = {
@@ -21,24 +19,7 @@ type ActivityProps = {
 const Activity = ({ embedded = false, userId }: ActivityProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const [showMore, setShowMore] = useState(false);
-  const [hasHiddenReviews, setHasHiddenReviews] = useState(false);
   const isOwnProfile = !userId?.trim();
-
-  const refreshHiddenAvailability = useCallback(async () => {
-    if (!isOwnProfile) {
-      setHasHiddenReviews(false);
-      return;
-    }
-    const hasHidden = await hasHiddenReceivedActivityReviews();
-    setHasHiddenReviews(hasHidden);
-  }, [isOwnProfile]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void refreshHiddenAvailability();
-      return () => {};
-    }, [refreshHiddenAvailability]),
-  );
 
   const openFullList = useCallback(() => {
     const trimmed = userId?.trim();
@@ -56,8 +37,8 @@ const Activity = ({ embedded = false, userId }: ActivityProps) => {
       <Section
         title="받은 후기"
         onPressMore={showMore ? openFullList : undefined}
-        headerRight={
-          isOwnProfile && hasHiddenReviews ? (
+        headerInline={
+          isOwnProfile ? (
             <Pressable onPress={openHiddenList} hitSlop={8}>
               <Text style={styles.hiddenReviewsButton}>숨겨진 후기</Text>
             </Pressable>
@@ -69,7 +50,6 @@ const Activity = ({ embedded = false, userId }: ActivityProps) => {
           userId={userId}
           previewLimit={RECEIVED_REVIEW_PREVIEW_LIMIT}
           onShowMoreChange={setShowMore}
-          onHasHiddenReviewsChange={setHasHiddenReviews}
           cardWrapperStyle={{ marginBottom: 8 }}
         />
       </Section>
