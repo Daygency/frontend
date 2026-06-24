@@ -160,12 +160,12 @@ const styles = StyleSheet.create({
   },
   username: {
     flexShrink: 1,
-    fontSize: 15,
-    fontWeight: "700",
-    color: BLACK,
+    fontSize: 12,
+    fontWeight: "400",
+    color: GRAY.DARK_2,
   },
   timestamp: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "400",
     color: GRAY.DARK_2,
   },

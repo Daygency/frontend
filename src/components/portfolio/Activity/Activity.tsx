@@ -1,15 +1,16 @@
-import { useCallback, useEffect, useState } from "react";
-import { View, Text, ScrollView, ActivityIndicator } from "react-native";
+import { useCallback, useState } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import styles from "./styles";
-import portfolioStyles, { portfolioSectionStyles } from "../styles";
+import { portfolioSectionStyles } from "../styles";
+import Section from "../../ui/Section";
+import ReceivedReviewsList, {
+  RECEIVED_REVIEW_PREVIEW_LIMIT,
+} from "../ReceivedReviewsList";
 import { GRAY } from "../../../color";
-import Section from "../../../components/ui/Section";
-import ReviewCard from "../../../components/cards/ReviewCard";
-import {
-  getReceivedActivityReviewList,
-  getUserReceivedActivityReviewList,
-} from "../../../lib/apis/announcement/activityReviewApi";
-import type { ActivityReviewListItem } from "../../../lib/apis/announcement/activityReviewTypes";
+import { hasHiddenReceivedActivityReviews } from "../../../lib/apis/announcement/activityReviewApi";
+import { RootRoutes } from "../../../navigations/routes";
 
 type ActivityProps = {
   embedded?: boolean;
@@ -18,71 +19,59 @@ type ActivityProps = {
 };
 
 const Activity = ({ embedded = false, userId }: ActivityProps) => {
-  const [reviews, setReviews] = useState<ActivityReviewListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const [showMore, setShowMore] = useState(false);
+  const [hasHiddenReviews, setHasHiddenReviews] = useState(false);
+  const isOwnProfile = !userId?.trim();
 
-  const loadReceivedReviews = useCallback(async () => {
-    setLoading(true);
-    const trimmedUserId = userId?.trim();
-    const res = trimmedUserId
-      ? await getUserReceivedActivityReviewList(trimmedUserId, { limit: 20 })
-      : await getReceivedActivityReviewList({ limit: 20 });
-    if (!res) {
-      setReviews([]);
-      setLoading(false);
+  const refreshHiddenAvailability = useCallback(async () => {
+    if (!isOwnProfile) {
+      setHasHiddenReviews(false);
       return;
     }
-    setReviews(res.items);
-    setLoading(false);
-  }, [userId]);
+    const hasHidden = await hasHiddenReceivedActivityReviews();
+    setHasHiddenReviews(hasHidden);
+  }, [isOwnProfile]);
 
-  useEffect(() => {
-    void loadReceivedReviews();
-  }, [loadReceivedReviews]);
+  useFocusEffect(
+    useCallback(() => {
+      void refreshHiddenAvailability();
+      return () => {};
+    }, [refreshHiddenAvailability]),
+  );
 
-  const formatDate = (iso?: string | null) => {
-    if (!iso?.trim()) return "";
-    const d = new Date(iso);
-    if (Number.isNaN(d.getTime())) return "";
-    return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
-  };
+  const openFullList = useCallback(() => {
+    const trimmed = userId?.trim();
+    navigation.navigate(RootRoutes.RECEIVED_REVIEWS, {
+      ...(trimmed ? { userId: trimmed } : {}),
+    });
+  }, [navigation, userId]);
 
-  const reactionLabel = (rating: ActivityReviewListItem["rating"]) => {
-    if (rating === "DISAPPOINTING") return "아쉬웠어요";
-    if (rating === "GOOD") return "좋았어요";
-    return "감동했어요";
-  };
+  const openHiddenList = useCallback(() => {
+    navigation.navigate(RootRoutes.RECEIVED_REVIEWS, { hiddenOnly: true });
+  }, [navigation]);
 
   const inner = (
     <View style={embedded ? styles.embeddedContainer : styles.container}>
       <Section
         title="받은 후기"
-        onPressMore={() => {}}
+        onPressMore={showMore ? openFullList : undefined}
+        headerRight={
+          isOwnProfile && hasHiddenReviews ? (
+            <Pressable onPress={openHiddenList} hitSlop={8}>
+              <Text style={styles.hiddenReviewsButton}>숨겨진 후기</Text>
+            </Pressable>
+          ) : undefined
+        }
         styles={embedded ? portfolioSectionStyles : undefined}
       >
-        {loading ? (
-          <View style={{ paddingVertical: 24, alignItems: "center" }}>
-            <ActivityIndicator size="small" color={GRAY.DARK} />
-          </View>
-        ) : reviews.length === 0 ? (
-          <View style={{ paddingVertical: 20 }}>
-            <Text style={{ fontSize: 14, color: GRAY.DARK_100 }}>
-              받은 후기가 없습니다.
-            </Text>
-          </View>
-        ) : (
-          reviews.map((item) => (
-            <ReviewCard
-              key={item.id}
-              author={
-                item.reviewer?.activityName || item.reviewer?.name || "작성자"
-              }
-              date={formatDate(item.createdAt)}
-              title={item.announcement?.title || item.postId}
-              reactionTag={reactionLabel(item.rating)}
-            />
-          ))
-        )}
+        <ReceivedReviewsList
+          userId={userId}
+          previewLimit={RECEIVED_REVIEW_PREVIEW_LIMIT}
+          onShowMoreChange={setShowMore}
+          onHasHiddenReviewsChange={setHasHiddenReviews}
+          cardWrapperStyle={{ marginBottom: 8 }}
+        />
       </Section>
     </View>
   );

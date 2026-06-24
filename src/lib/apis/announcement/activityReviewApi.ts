@@ -57,11 +57,19 @@ async function fetchReviewPath(
   return last;
 }
 
+function asRecord(v: unknown): Record<string, unknown> {
+  return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
+}
+
 function parseReview(raw: Record<string, unknown>): ActivityReviewEntity | null {
   const id = pickString(raw, "id");
   const postId = pickString(raw, "postId", "post_id");
-  const reviewerUserId = pickString(raw, "reviewerUserId", "reviewer_user_id");
-  const revieweeUserId = pickString(raw, "revieweeUserId", "reviewee_user_id");
+  const reviewerUserId =
+    pickString(raw, "reviewerUserId", "reviewer_user_id") ||
+    pickString(asRecord(raw.reviewer), "userId", "user_id");
+  const revieweeUserId =
+    pickString(raw, "revieweeUserId", "reviewee_user_id") ||
+    pickString(asRecord(raw.reviewee), "userId", "user_id");
   const rating = raw.rating as ActivityReviewRating;
   const createdAt = pickString(raw, "createdAt", "created_at");
   if (!id || !postId || !reviewerUserId || !revieweeUserId || !createdAt)
@@ -78,6 +86,11 @@ function parseReview(raw: Record<string, unknown>): ActivityReviewEntity | null 
   const note = raw.privateNoteToOps ?? raw.private_note_to_ops;
   const privateNoteToOps =
     note === null || typeof note === "string" ? note : null;
+  const publicNoteRaw = raw.publicNote ?? raw.public_note;
+  const publicNote =
+    publicNoteRaw === null || typeof publicNoteRaw === "string"
+      ? publicNoteRaw
+      : null;
   return {
     id,
     postId,
@@ -86,6 +99,7 @@ function parseReview(raw: Record<string, unknown>): ActivityReviewEntity | null 
     rating,
     disappointmentReasonCodes,
     privateNoteToOps,
+    publicNote,
     createdAt,
   };
 }
@@ -138,7 +152,16 @@ function parseReviewListItem(raw: unknown): ActivityReviewListItem | null {
     announcement,
     reviewer: parseUserSummary(o.reviewer),
     reviewee: parseUserSummary(o.reviewee),
+    hiddenFromProfileAt: parseOptionalIsoDate(
+      o.hiddenFromProfileAt ?? o.hidden_from_profile_at,
+    ),
   };
+}
+
+function parseOptionalIsoDate(raw: unknown): string | null {
+  if (raw === null) return null;
+  if (typeof raw === "string" && raw.trim()) return raw;
+  return null;
 }
 
 function parseCursorList(raw: unknown): ActivityReviewCursorListResponse | null {
@@ -250,12 +273,14 @@ export async function getMyActivityReviewList(params?: {
 export async function getReceivedActivityReviewList(params?: {
   cursor?: string | null;
   limit?: number;
+  hiddenOnly?: boolean;
 }): Promise<ActivityReviewCursorListResponse | null> {
   try {
     const headers = await getAuthHeadersRequired();
     const q = new URLSearchParams();
     if (params?.cursor) q.set("cursor", params.cursor);
     if (params?.limit != null) q.set("limit", String(params.limit));
+    if (params?.hiddenOnly) q.set("hiddenOnly", "true");
     const qs = q.toString();
     const res = await fetchReviewPath(
       `/reviews/received${qs ? `?${qs}` : ""}`,
@@ -269,6 +294,11 @@ export async function getReceivedActivityReviewList(params?: {
   }
 }
 
+export async function hasHiddenReceivedActivityReviews(): Promise<boolean> {
+  const res = await getReceivedActivityReviewList({ limit: 1, hiddenOnly: true });
+  return (res?.items.length ?? 0) > 0;
+}
+
 /** 특정 유저가 받은 활동 후기 — GET /users/:userId/reviews/received */
 export async function getUserReceivedActivityReviewList(
   userId: string,
@@ -280,8 +310,10 @@ export async function getUserReceivedActivityReviewList(
     if (params?.cursor) q.set("cursor", params.cursor);
     if (params?.limit != null) q.set("limit", String(params.limit));
     const qs = q.toString();
-    const url = `${API_BASE}/users/${encodeURIComponent(userId)}/reviews/received${qs ? `?${qs}` : ""}`;
-    const res = await fetch(url);
+    const res = await fetchReviewPath(
+      `/users/${encodeURIComponent(userId)}/reviews/received${qs ? `?${qs}` : ""}`,
+      { method: "GET", headers: { "Content-Type": "application/json" } },
+    );
     if (!res.ok) return null;
     const raw = (await res.json()) as Record<string, unknown>;
     return parseCursorList(raw);
@@ -323,6 +355,66 @@ export async function updateMyActivityReview(
     const msg = e instanceof Error ? e.message : String(e);
     return { ok: false, status: 0, message: msg };
   }
+}
+
+export async function hideActivityReviewFromProfile(
+  reviewId: string,
+): Promise<{ ok: true } | { ok: false; status: number; message?: string }> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchReviewPath(
+      `/reviews/${encodeURIComponent(reviewId)}/hide-from-profile`,
+      { method: "PATCH", headers },
+    );
+    const text = await res.text().catch(() => "");
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        message: parseErrorMessage(text) || "숨김 처리에 실패했습니다.",
+      };
+    }
+    return { ok: true };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, status: 0, message: msg };
+  }
+}
+
+export async function unhideActivityReviewFromProfile(
+  reviewId: string,
+): Promise<{ ok: true } | { ok: false; status: number; message?: string }> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchReviewPath(
+      `/reviews/${encodeURIComponent(reviewId)}/unhide-from-profile`,
+      { method: "PATCH", headers },
+    );
+    const text = await res.text().catch(() => "");
+    if (!res.ok) {
+      return {
+        ok: false,
+        status: res.status,
+        message: parseErrorMessage(text) || "다시 표시에 실패했습니다.",
+      };
+    }
+    return { ok: true };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    return { ok: false, status: 0, message: msg };
+  }
+}
+
+function parseErrorMessage(text: string): string {
+  const t = text?.trim() ?? "";
+  if (!t) return "";
+  try {
+    const o = JSON.parse(t) as { message?: unknown };
+    if (typeof o.message === "string") return o.message;
+  } catch {
+    /* plain */
+  }
+  return t.length > 400 ? `${t.slice(0, 400)}...` : t;
 }
 
 export async function deleteMyActivityReview(

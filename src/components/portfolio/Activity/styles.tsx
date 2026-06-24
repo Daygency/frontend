@@ -57,6 +57,11 @@ const styles = StyleSheet.create({
     color: GRAY.DARK,
     fontWeight: "400",
   },
+  hiddenReviewsButton: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: GRAY.DARK_2,
+  },
 });
 
 export default styles;

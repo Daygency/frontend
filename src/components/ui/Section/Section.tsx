@@ -20,6 +20,7 @@ interface Styles {
 interface SectionProps {
   title: string;
   onPressMore?: () => void;
+  headerRight?: ReactNode;
   children: ReactNode;
   styles?: Styles;
 }
@@ -27,32 +28,27 @@ interface SectionProps {
 export default function Section({
   title,
   onPressMore,
+  headerRight,
   children,
   styles,
 }: SectionProps) {
   const headerContent = (
     <>
       <Text style={[defaultStyles.title, styles?.title]}>{title}</Text>
-      {onPressMore ? (
-        <MaterialIcons name="chevron-right" size={28} color="#000" />
-      ) : null}
+      <View style={defaultStyles.headerActions}>
+        {headerRight}
+        {onPressMore ? (
+          <Pressable onPress={onPressMore} hitSlop={8}>
+            <MaterialIcons name="chevron-right" size={28} color="#000" />
+          </Pressable>
+        ) : null}
+      </View>
     </>
   );
 
   return (
     <View style={[defaultStyles.container, styles?.container]}>
-      {onPressMore ? (
-        <Pressable
-          onPress={onPressMore}
-          style={[defaultStyles.header, styles?.header]}
-        >
-          {headerContent}
-        </Pressable>
-      ) : (
-        <View style={[defaultStyles.header, styles?.header]}>
-          {headerContent}
-        </View>
-      )}
+      <View style={[defaultStyles.header, styles?.header]}>{headerContent}</View>
       <View style={[defaultStyles.content, styles?.content]}>{children}</View>
     </View>
   );

@@ -13,6 +13,7 @@ const ArtistPortfolioScreen = () => {
     <View style={[portfolioStyles.container, portfolioStyles.containerImmersive]}>
       <PortfolioScrollLayout
         immersiveCover
+        portfolioUserId={targetUserId || undefined}
         header={
           <ArtistPortfolioHeader
             activityName={activityName}

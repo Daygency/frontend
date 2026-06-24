@@ -13,7 +13,8 @@ export type ReportTargetType =
   | "NEWS"
   | "COMMENT"
   | "ANNOUNCEMENT"
-  | "CHAT";
+  | "CHAT"
+  | "REVIEW";
 
 export type CreateReportBody = {
   reportedUserId: string;

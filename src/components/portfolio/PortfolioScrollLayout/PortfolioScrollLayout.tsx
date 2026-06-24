@@ -25,6 +25,8 @@ import { RootRoutes } from "../../../navigations/routes";
 type Props = {
   header: ReactNode;
   immersiveCover?: boolean;
+  /** 타인 포트폴리오 — route.params.userId 대신 명시적으로 전달 가능 */
+  portfolioUserId?: string;
 };
 
 export type PortfolioHeaderScrollProps = {
@@ -35,13 +37,18 @@ export type PortfolioHeaderScrollProps = {
 
 const HEADER_FADE_RANGE = 60;
 
-const PortfolioScrollLayout = ({ header, immersiveCover = false }: Props) => {
+const PortfolioScrollLayout = ({
+  header,
+  immersiveCover = false,
+  portfolioUserId,
+}: Props) => {
   const { top } = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
   const route = useRoute();
   const routeParams = (route.params ?? {}) as { userId?: string };
-  const viewingUserId = routeParams.userId?.trim() ?? "";
+  const viewingUserId =
+    portfolioUserId?.trim() || routeParams.userId?.trim() || "";
   const hasPhotos = PORTFOLIO_PHOTOS.length > 0;
   const hasMorePhotos = PORTFOLIO_PHOTOS.length > PHOTO_PREVIEW_LIMIT;
   const coverExtendTop = immersiveCover ? top + 44 : 0;

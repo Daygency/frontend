@@ -34,6 +34,8 @@ export type ActivityReviewEntity = {
   revieweeUserId: string;
   rating: ActivityReviewRating;
   disappointmentReasonCodes: DisappointmentReasonCode[] | null;
+  positiveReasonCodes?: string[] | null;
+  publicNote?: string | null;
   privateNoteToOps: string | null;
   createdAt: string;
 };
@@ -55,6 +57,7 @@ export type ActivityReviewListItem = ActivityReviewEntity & {
   announcement: ActivityReviewAnnouncementSummary | null;
   reviewer: ActivityReviewUserSummary | null;
   reviewee: ActivityReviewUserSummary | null;
+  hiddenFromProfileAt?: string | null;
 };
 
 export type ActivityReviewCursorListResponse = {

@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { View, Text, Pressable } from "react-native";
 import ShadowCardButton from "../../cards/ShadowCardButton";
 import { Entypo } from "@expo/vector-icons";
@@ -12,7 +13,9 @@ export interface ReviewCardProps {
   content?: string;
   reactionTag?: string;
   tags?: { text: string; variant?: "type" | "status" | "reaction" }[];
+  onPress?: () => void;
   onOptionsPress?: () => void;
+  optionsMenu?: ReactNode;
 }
 
 const ReviewCard = ({
@@ -22,26 +25,33 @@ const ReviewCard = ({
   content,
   reactionTag,
   tags,
+  onPress,
   onOptionsPress,
+  optionsMenu,
 }: ReviewCardProps) => {
   const showReactionTag = reactionTag !== undefined && reactionTag !== "";
   const showTags = tags && tags.length > 0;
+  const showOptions = Boolean(optionsMenu || onOptionsPress);
 
   return (
-    <ShadowCardButton>
+    <ShadowCardButton onPress={onPress}>
       <View style={styles.header}>
         <View style={[styles.profileContainer, { backgroundColor: MAIN.DEFAULT }]} />
         <View style={styles.profileNameContainer}>
           <Text style={styles.authorText}>{author}</Text>
           <Text style={styles.dateText}>{date}</Text>
         </View>
-        <Pressable
-          onPress={onOptionsPress}
-          hitSlop={10}
-          style={styles.dotsContainer}
-        >
-          <Entypo name="dots-three-vertical" size={24} color="black" />
-        </Pressable>
+        {optionsMenu ? (
+          optionsMenu
+        ) : showOptions ? (
+          <Pressable
+            onPress={onOptionsPress}
+            hitSlop={10}
+            style={styles.dotsContainer}
+          >
+            <Entypo name="dots-three-vertical" size={24} color="black" />
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={styles.contentContainer}>

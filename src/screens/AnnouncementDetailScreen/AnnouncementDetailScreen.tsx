@@ -996,7 +996,7 @@ const AnnouncementDetailScreen = () => {
 
             {addressLabel ? (
               <View style={styles.sectionBlock}>
-                <Text style={styles.sectionHeading}>근무지역</Text>
+                <Text style={styles.sectionHeading}>지역</Text>
                 <View style={styles.locationCard}>
                   <KakaoMapView
                     latitude={detailData?.latitude}
