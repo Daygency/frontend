@@ -87,7 +87,7 @@ export default StyleSheet.create({
     gap: 5,
   },
   recruitmentMajorChip: {
-    backgroundColor: GRAY.DEFAULT,
+    backgroundColor: WHITE,
     borderRadius: 4,
     paddingHorizontal: 6,
     paddingVertical: 3,

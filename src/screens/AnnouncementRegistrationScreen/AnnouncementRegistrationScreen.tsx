@@ -46,7 +46,12 @@ import {
 } from "../../lib/announcement/announcementPrice";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
-import { buildMajorIdsForSubmit } from "../../lib/announcement/recruitmentMajors";
+import {
+  buildMajorIdsForSubmit,
+  isMajorOptionSelected,
+  majorOptionKey,
+  normalizeMajorSelectionKeys,
+} from "../../lib/announcement/recruitmentMajors";
 import { API_BASE } from "../../lib/apis/api";
 import { getFileId, uploadFile, type LocalImageAsset } from "../../lib/apis/fileApi";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
@@ -322,6 +327,10 @@ const AnnouncementRegistrationScreen = () => {
       }
     });
   }, []);
+
+  useEffect(() => {
+    setRecruitmentMajors((prev) => normalizeMajorSelectionKeys(prev, majorOptions));
+  }, [majorOptions]);
 
   useEffect(() => {
     if (!postId) return;
@@ -968,16 +977,18 @@ const AnnouncementRegistrationScreen = () => {
                   <Form title="모집 전공" isRequired={false}>
                     <View style={styles.chipRow}>
                       {majorOptions.map((opt) => {
-                        const optKey = opt.value || opt.label;
+                        const optKey = majorOptionKey(opt);
                         return (
                           <SelectableTag
                             key={optKey}
                             label={opt.label}
-                            selected={recruitmentMajors.includes(optKey)}
+                            selected={isMajorOptionSelected(recruitmentMajors, opt)}
                             onPress={() =>
                               setRecruitmentMajors((prev) =>
-                                prev.includes(optKey)
-                                  ? prev.filter((v) => v !== optKey)
+                                isMajorOptionSelected(prev, opt)
+                                  ? prev.filter(
+                                      (v) => v !== optKey && v !== opt.label,
+                                    )
                                   : [...prev, optKey],
                               )
                             }

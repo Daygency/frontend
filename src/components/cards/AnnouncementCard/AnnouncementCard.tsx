@@ -132,6 +132,19 @@ const AnnouncementCard = ({
         ) : null}
       </View>
 
+      {/* 모집 전공 */}
+      {showMajors ? (
+        <View style={styles.recruitmentMajorsSection}>
+          <View style={styles.recruitmentMajorsChips}>
+            {recruitmentMajorNames.map((name, i) => (
+              <View key={`${name}-${i}`} style={styles.recruitmentMajorChip}>
+                <Text style={styles.recruitmentMajorChipText}>{name}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+      ) : null}
+
       {showPrice || typeof viewCount === "number" ? (
         <View style={sharedAnnouncementStyles.priceAndViewRow}>
           {showPrice ? (
@@ -155,19 +168,6 @@ const AnnouncementCard = ({
               조회 {viewCount}
             </Text>
           ) : null}
-        </View>
-      ) : null}
-
-      {showMajors ? (
-        <View style={styles.recruitmentMajorsSection}>
-          <Text style={styles.recruitmentMajorsLabel}>모집전공</Text>
-          <View style={styles.recruitmentMajorsChips}>
-            {recruitmentMajorNames.map((name, i) => (
-              <View key={`${name}-${i}`} style={styles.recruitmentMajorChip}>
-                <Text style={styles.recruitmentMajorChipText}>{name}</Text>
-              </View>
-            ))}
-          </View>
         </View>
       ) : null}
     </View>
