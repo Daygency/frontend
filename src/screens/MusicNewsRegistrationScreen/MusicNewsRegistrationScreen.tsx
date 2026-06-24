@@ -173,14 +173,12 @@ const MusicNewsRegistrationScreen = () => {
       !title.trim() ||
       !content.trim() ||
       !placeValue.address.trim() ||
-      !contact.trim() ||
       !hasRequiredImages
     ) {
       const missing: string[] = [];
       if (!title.trim()) missing.push("제목");
       if (!content.trim()) missing.push("내용");
       if (!placeValue.address.trim()) missing.push("장소");
-      if (!contact.trim()) missing.push("문의처");
       if (!hasRequiredImages) missing.push("이미지 (최소 1장)");
       Alert.alert("입력 확인", `다음 항목을 확인해주세요:\n\n${missing.join("\n")}`);
       return;
@@ -200,7 +198,11 @@ const MusicNewsRegistrationScreen = () => {
           }
         : {}),
       startedAt: dateToISO(startedAt),
-      contact: contact.trim().slice(0, 30),
+      ...(contact.trim()
+        ? { contact: contact.trim().slice(0, 30) }
+        : isEditMode
+          ? { contact: null }
+          : {}),
       ...(isFreeTicket
         ? { ticketPrice: 0 }
         : ticketPrice.trim()
@@ -249,7 +251,6 @@ const MusicNewsRegistrationScreen = () => {
     title: submitAttempted && !title.trim(),
     content: submitAttempted && !content.trim(),
     place: submitAttempted && !placeValue.address.trim(),
-    contact: submitAttempted && !contact.trim(),
     images: submitAttempted && !hasRequiredImages,
   };
 
@@ -257,7 +258,6 @@ const MusicNewsRegistrationScreen = () => {
     !!title.trim() &&
     !!content.trim() &&
     !!placeValue.address.trim() &&
-    !!contact.trim() &&
     hasRequiredImages;
 
   if (loadingEdit) {
@@ -446,14 +446,13 @@ const MusicNewsRegistrationScreen = () => {
           </View>
 
           <View style={styles.formField}>
-            <Form title="문의처" isRequired hasError={err.contact}>
+            <Form title="문의처">
               <FormTextInput
                 placeholder="연락처를 입력하세요 (최대 30자)"
                 value={contact}
                 onChangeText={setContact}
                 maxLength={30}
                 keyboardType="phone-pad"
-                hasError={err.contact}
               />
             </Form>
           </View>

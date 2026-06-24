@@ -62,6 +62,7 @@ import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
 import ImageCarousel from "../../components/media/ImageCarousel";
 import { parseCoord } from "../../lib/kakao/location";
 import { formatPerformanceDetailDateLabel } from "../../lib/news/formatPerformanceOpenLabel";
+import { formatNewsTicketPrice } from "../../lib/news/buildPerformanceNewsDisplay";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -72,6 +73,7 @@ export type MusicNewsDetailItem = {
   date: string;
   time: string;
   contact: string;
+  ticketPrice?: number | null;
   authorId?: string;
   uploadedAt: string;
   description: string;
@@ -149,7 +151,8 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     longitude: parseCoord(res.longitude),
     date: dateStr,
     time: timeStr || "00:00",
-    contact: res.contact,
+    contact: res.contact ?? "",
+    ticketPrice: res.ticketPrice,
     authorId: res.user?.name ?? res.user?.userId,
     uploadedAt: uploadedStr,
     description: res.content,
@@ -703,6 +706,8 @@ const MusicNewsDetailScreen = () => {
     );
   }
 
+  const ticketPriceLabel = formatNewsTicketPrice(news.ticketPrice);
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -755,6 +760,16 @@ const MusicNewsDetailScreen = () => {
               <Text style={styles.infoValue}>{news.time}</Text>
             </View>
 
+            {ticketPriceLabel ? (
+              <>
+                <View style={styles.divider} />
+                <View style={styles.infoBlock}>
+                  <Text style={styles.infoLabel}>티켓 가격</Text>
+                  <Text style={styles.infoValue}>{ticketPriceLabel}</Text>
+                </View>
+              </>
+            ) : null}
+
             <View style={styles.divider} />
 
             <View style={styles.infoBlock}>
@@ -776,12 +791,16 @@ const MusicNewsDetailScreen = () => {
               </>
             ) : null}
 
-            <View style={styles.divider} />
+            {news.contact?.trim() ? (
+              <>
+                <View style={styles.divider} />
 
-            <View style={styles.infoBlock}>
-              <Text style={styles.infoLabel}>문의</Text>
-              <Text style={styles.infoValue}>{news.contact}</Text>
-            </View>
+                <View style={styles.infoBlock}>
+                  <Text style={styles.infoLabel}>문의</Text>
+                  <Text style={styles.infoValue}>{news.contact}</Text>
+                </View>
+              </>
+            ) : null}
 
             <View style={styles.divider} />
 
