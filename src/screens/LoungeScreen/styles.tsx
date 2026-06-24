@@ -23,13 +23,12 @@ const styles = StyleSheet.create({
   },
   newsSceneContainer: {
     flex: 1,
-    paddingTop: 8,
+    paddingTop: 4,
   },
   sortFilterContainer: {
     flexDirection: "row",
     paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingBottom: 9,
     gap: 8,
     alignItems: "center",
   },

@@ -60,8 +60,7 @@ const localStyles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     paddingHorizontal: 12,
-    paddingTop: 8,
-    paddingBottom: 10,
+    paddingBottom: 9,
   },
   filterChip: {
     flexDirection: "row",
@@ -91,6 +90,7 @@ const localStyles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
+    paddingTop: 4,
     paddingBottom: 24,
     flexGrow: 1,
   },

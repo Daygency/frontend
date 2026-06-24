@@ -216,7 +216,7 @@ const localStyles = StyleSheet.create({
     flexShrink: 0,
   },
   listContent: {
-    paddingTop: 8,
+    paddingTop: 4,
     paddingBottom: 24,
   },
   loaderContainer: {
