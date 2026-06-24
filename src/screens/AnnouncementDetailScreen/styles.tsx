@@ -100,6 +100,25 @@ const styles = StyleSheet.create({
     color: BLACK,
     fontWeight: "500",
   },
+  recruitmentMajorsChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  recruitmentMajorChip: {
+    backgroundColor: WHITE,
+    borderRadius: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+  },
+  recruitmentMajorChipText: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: BLACK,
+    fontWeight: "500",
+  },
   locationCard: {
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,

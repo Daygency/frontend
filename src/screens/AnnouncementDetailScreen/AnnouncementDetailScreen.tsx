@@ -13,7 +13,7 @@ import {
   useNavigation,
   useFocusEffect as useNavFocusEffect,
 } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getMyActivityReview } from "../../lib/apis/announcement/activityReviewApi";
 import { getMyApplicationForPost } from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
@@ -54,7 +54,8 @@ import {
   isRecruitmentDeadlineDatePassed,
 } from "../../lib/announcement/announcementDeadline";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
-import { pickMajorsFromAnnouncementRaw } from "../../lib/announcement/recruitmentMajors";
+import { pickMajorsFromAnnouncementRaw, resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
+import { getMajors } from "../../lib/apis/announcement/majorApi";
 import {
   extractApplicationConfigRaw,
   parseApplicationConfig,
@@ -188,7 +189,21 @@ const AnnouncementDetailScreen = () => {
   );
   const [scraped, setScraped] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [majorsCatalog, setMajorsCatalog] = useState<
+    { name: string; majorId: string }[]
+  >([]);
   const authorDisplayLabel = useAnnouncementAuthorLabel(author);
+
+  useEffect(() => {
+    void getMajors().then((list) => {
+      setMajorsCatalog(
+        list.map((m) => ({
+          name: m.name,
+          majorId: m.majorId,
+        })),
+      );
+    });
+  }, []);
 
   const handleOpenReport = useCallback(() => {
     if (!ensureLoggedIn()) return;
@@ -345,7 +360,10 @@ const AnnouncementDetailScreen = () => {
       const majorsPick = pickMajorsFromAnnouncementRaw(d);
       const majorsList = majorsPick.majors?.length
         ? majorsPick.majors
-        : [];
+        : (majorsPick.majorIds ?? []).map((majorId) => ({
+            majorId,
+            name: "",
+          }));
 
       const viewCountRaw = d.viewCount ?? d.view_count;
       const parsedViewCount =
@@ -718,6 +736,17 @@ const AnnouncementDetailScreen = () => {
     displayStatus,
   );
   const venueLabel = locationBadgeLabel(addressLabel);
+  const recruitmentMajorNames = useMemo(
+    () =>
+      resolveRecruitmentMajorDisplayNames(
+        {
+          majors: detailData?.majors,
+          majorIds: detailData?.majors?.map((m) => m.majorId),
+        },
+        majorsCatalog,
+      ),
+    [detailData?.majors, majorsCatalog],
+  );
 
   const showBottomBar =
     showOwnerActionBar || showOwnerCompletedBar || visitorBottomBar;
@@ -975,6 +1004,24 @@ const AnnouncementDetailScreen = () => {
                 </Text>
               ) : null}
             </View>
+
+            {recruitmentMajorNames.length > 0 ? (
+              <View style={styles.sectionBlock}>
+                <Text style={styles.sectionHeading}>모집 전공</Text>
+                <View style={styles.recruitmentMajorsChips}>
+                  {recruitmentMajorNames.map((name, i) => (
+                    <View
+                      key={`${name}-${i}`}
+                      style={styles.recruitmentMajorChip}
+                    >
+                      <Text style={styles.recruitmentMajorChipText}>
+                        {name}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            ) : null}
 
             <View style={styles.sectionBlock}>
               <Text style={styles.sectionHeading}>본문</Text>
