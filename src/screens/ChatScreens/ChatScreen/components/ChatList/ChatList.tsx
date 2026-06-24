@@ -24,6 +24,10 @@ import { chatRoomItemToParams } from "../../../../../lib/chat/chatRoomNavigation
 import { CHAT_APPLIED_ROOMS_REFRESH } from "../../../../../lib/chat/chatRoomsEvents";
 import { matchesAnnouncement, matchesChatRoom } from "../../../../../lib/chat/chatSearch";
 import { shouldShowAnnouncementDDayChip } from "../../../../../lib/announcement/announcementDeadline";
+import EmptyState, {
+  contentContainerWhenEmpty,
+  emptyScreenStyle,
+} from "../../../../../components/ui/EmptyState";
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
 
@@ -134,10 +138,8 @@ function ChatRoomsFlatList({
 
   if (!isLoggedIn) {
     return (
-      <View style={{ padding: 24, alignItems: "center" }}>
-        <Text style={{ color: "#888", textAlign: "center" }}>
-          로그인 후 채팅 목록을 불러올 수 있습니다.
-        </Text>
+      <View style={emptyScreenStyle}>
+        <EmptyState message="로그인 후 채팅 목록을 불러올 수 있습니다." />
       </View>
     );
   }
@@ -158,10 +160,8 @@ function ChatRoomsFlatList({
 
   if (filter === "안읽음") {
     return (
-      <View style={{ padding: 24, alignItems: "center" }}>
-        <Text style={{ color: "#888", textAlign: "center" }}>
-          안읽음 필터는 서버 연동 후 제공 예정입니다.
-        </Text>
+      <View style={emptyScreenStyle}>
+        <EmptyState message="안읽음 필터는 서버 연동 후 제공 예정입니다." />
       </View>
     );
   }
@@ -186,13 +186,13 @@ function ChatRoomsFlatList({
         ) : null
       }
       ListEmptyComponent={
-        <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
-          <Text style={{ color: "#888", textAlign: "center" }}>
-            {searchQuery.trim()
+        <EmptyState
+          message={
+            searchQuery.trim()
               ? "검색 결과가 없습니다."
-              : "채팅방이 없습니다."}
-          </Text>
-        </View>
+              : "채팅방이 없습니다."
+          }
+        />
       }
       renderItem={({ item }) => {
         const peer = item.peer;
@@ -223,10 +223,9 @@ function ChatRoomsFlatList({
       ItemSeparatorComponent={() => (
         <View style={{ height: 1, backgroundColor: "#F0F0F0" }} />
       )}
-      contentContainerStyle={[
-        { paddingBottom: 20 },
-        isEmpty && { flexGrow: 1, justifyContent: "center" },
-      ]}
+      contentContainerStyle={contentContainerWhenEmpty(isEmpty, {
+        paddingBottom: 20,
+      })}
     />
   );
 }
@@ -293,10 +292,8 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
 
   if (!isLoggedIn) {
     return (
-      <View style={{ padding: 24, alignItems: "center" }}>
-        <Text style={{ color: "#888", textAlign: "center" }}>
-          로그인 후 내 공고 목록을 불러올 수 있습니다.
-        </Text>
+      <View style={emptyScreenStyle}>
+        <EmptyState message="로그인 후 내 공고 목록을 불러올 수 있습니다." />
       </View>
     );
   }
@@ -335,13 +332,13 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
         ) : null
       }
       ListEmptyComponent={
-        <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
-          <Text style={{ color: "#888", textAlign: "center" }}>
-            {searchQuery.trim()
+        <EmptyState
+          message={
+            searchQuery.trim()
               ? "검색 결과가 없습니다."
-              : "작성한 공고가 없습니다."}
-          </Text>
-        </View>
+              : "작성한 공고가 없습니다."
+          }
+        />
       }
       renderItem={({ item }) => {
         const showDDayChip = shouldShowAnnouncementDDayChip(
@@ -495,10 +492,9 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
         </Pressable>
         );
       }}
-      contentContainerStyle={[
-        { paddingBottom: 20 },
-        isEmpty && { flexGrow: 1, justifyContent: "center" },
-      ]}
+      contentContainerStyle={contentContainerWhenEmpty(isEmpty, {
+        paddingBottom: 20,
+      })}
     />
   );
 }

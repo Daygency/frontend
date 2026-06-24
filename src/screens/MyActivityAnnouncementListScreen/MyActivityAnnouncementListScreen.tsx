@@ -3,6 +3,7 @@ import { FlatList, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
+import EmptyState, { contentContainerWhenEmpty } from "../../components/ui/EmptyState";
 import { RootRoutes } from "../../navigations/routes";
 import { getMyAnnouncements } from "../../lib/apis/userPosts/myPostsApi";
 import type { MyAnnouncementPostItem } from "../../lib/apis/userPosts/types";
@@ -75,11 +76,12 @@ const MyActivityAnnouncementListScreen = () => {
             />
           </View>
         )}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={contentContainerWhenEmpty(
+          data.length === 0,
+          styles.listContent,
+        )}
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>작성한 모집공고가 없습니다.</Text>
-          </View>
+          <EmptyState message="작성한 모집공고가 없습니다." />
         }
       />
     </View>

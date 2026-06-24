@@ -3,6 +3,7 @@ import { FlatList, Text, View } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import CommunityCard from "../LoungeScreen/components/CommunityCard";
+import EmptyState, { contentContainerWhenEmpty } from "../../components/ui/EmptyState";
 import styles from "./styles";
 import { RootRoutes } from "../../navigations/routes";
 import { getMyPosts, getMyComments } from "../../lib/apis/userPosts/myPostsApi";
@@ -184,7 +185,10 @@ const MyActivityListScreen = () => {
             onPress={() => handleRowPress(item)}
           />
         )}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={contentContainerWhenEmpty(
+          data.length === 0,
+          styles.listContent,
+        )}
         onEndReachedThreshold={0.4}
         onEndReached={async () => {
           if (type !== "posts" || source !== "scrap" || loadingMore || !hasMore) return;
@@ -208,9 +212,7 @@ const MyActivityListScreen = () => {
           ) : null
         }
         ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>{getEmptyMessage()}</Text>
-          </View>
+          <EmptyState message={getEmptyMessage()} />
         }
       />
     </View>

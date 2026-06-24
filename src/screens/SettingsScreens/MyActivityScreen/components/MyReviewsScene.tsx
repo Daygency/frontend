@@ -2,6 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { FlatList, View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import ReviewCard from "../../../../components/cards/ReviewCard";
+import EmptyState, {
+  contentContainerWhenEmpty,
+  emptyScreenStyle,
+} from "../../../../components/ui/EmptyState";
 import styles from "../styles";
 import { getMyActivityReviewList } from "../../../../lib/apis/announcement/activityReviewApi";
 import type { ActivityReviewListItem } from "../../../../lib/apis/announcement/activityReviewTypes";
@@ -80,10 +84,8 @@ const MyReviewsScene = () => {
 
   if (loading) {
     return (
-      <View style={styles.postsCommentsContainer}>
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator size="small" color="#4B5563" />
-        </View>
+      <View style={[styles.postsCommentsContainer, emptyScreenStyle]}>
+        <ActivityIndicator size="small" color="#4B5563" />
       </View>
     );
   }
@@ -109,11 +111,12 @@ const MyReviewsScene = () => {
         )}
         onEndReached={() => void loadMore()}
         onEndReachedThreshold={0.4}
-        contentContainerStyle={localStyles.listContent}
+        contentContainerStyle={contentContainerWhenEmpty(
+          items.length === 0,
+          localStyles.listContent,
+        )}
         ListEmptyComponent={
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>작성한 후기가 없습니다.</Text>
-        </View>
+          <EmptyState message="작성한 후기가 없습니다." />
         }
         ListFooterComponent={
           loadingMore ? (

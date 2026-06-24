@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { ScrollView, Text, View, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import SelectableTag from "../../../../components/ui/SelectableTag";
+import EmptyState, { emptyScreenStyle } from "../../../../components/ui/EmptyState";
 import InquiryHistoryItem from "./InquiryHistoryItem";
 import { getMyInquiries, mapInquiryToItem } from "../../../../lib/apis/inquiry/inquiryApi";
 import { MAIN } from "../../../../color";
@@ -71,10 +72,14 @@ const InquiryHistoryTab = () => {
             />
           ))
         ) : (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>
-              {filter === "answered" ? "답변 완료된 문의가 없습니다." : "미답변 문의가 없습니다."}
-            </Text>
+          <View style={[styles.emptyState, emptyScreenStyle, { minHeight: 320 }]}>
+            <EmptyState
+              message={
+                filter === "answered"
+                  ? "답변 완료된 문의가 없습니다."
+                  : "미답변 문의가 없습니다."
+              }
+            />
           </View>
         )}
       </View>

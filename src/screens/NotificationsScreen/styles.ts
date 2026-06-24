@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
   listContentEmpty: {
     flexGrow: 1,
     justifyContent: "center",
+    alignItems: "center",
   },
   emptyState: {
     alignItems: "center",

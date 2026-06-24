@@ -6,6 +6,7 @@ import Section from "../../../../components/ui/Section";
 import { RootRoutes } from "../../../../navigations/routes";
 import ImageScrollView from "../../../../components/media/ImageScrollView";
 import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
+import EmptyState, { emptySectionStyle } from "../../../../components/ui/EmptyState";
 import SelectableTag from "../../../../components/ui/SelectableTag";
 import styles from "../styles";
 import AnnouncementCard from "../../../../components/cards/AnnouncementCard";
@@ -165,8 +166,8 @@ const PostsCommentsScene = () => {
           />
         ))
       ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>{emptyMessage}</Text>
+        <View style={emptySectionStyle}>
+          <EmptyState message={emptyMessage} />
         </View>
       )}
     </Section>
@@ -200,8 +201,8 @@ const PostsCommentsScene = () => {
             ))}
           </ScrollView>
         ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>작성한 공연 소식이 없습니다.</Text>
+          <View style={emptySectionStyle}>
+            <EmptyState message="작성한 공연 소식이 없습니다." />
           </View>
         )
       ) : (
@@ -247,8 +248,8 @@ const PostsCommentsScene = () => {
           />
         </View>
       ) : (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>작성한 모집공고가 없습니다.</Text>
+        <View style={emptySectionStyle}>
+          <EmptyState message="작성한 모집공고가 없습니다." />
         </View>
       )}
     </Section>

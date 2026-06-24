@@ -3,6 +3,7 @@ import { ActivityIndicator, FlatList, Text, View, useWindowDimensions } from "re
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import EventNewsCard from "../../components/cards/EventNewsCard";
+import EmptyState, { contentContainerWhenEmpty } from "../../components/ui/EmptyState";
 import styles from "./styles";
 import { getMyScrappedNews } from "../../lib/apis/scrap/scrapApi";
 import type { MyScrappedNewsItem } from "../../lib/apis/scrap/types";
@@ -104,7 +105,10 @@ const MyActivityNewsListScreen = () => {
         keyExtractor={(item) => item.id}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={contentContainerWhenEmpty(
+          !loadingInitial && data.length === 0,
+          styles.listContent,
+        )}
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
             <EventNewsCard
@@ -124,13 +128,9 @@ const MyActivityNewsListScreen = () => {
         )}
         ListEmptyComponent={
           loadingInitial ? (
-            <View style={styles.emptyContainer}>
-              <ActivityIndicator size="small" color="#1F2A44" />
-            </View>
+            <ActivityIndicator size="small" color="#1F2A44" />
           ) : (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>{emptyMessage}</Text>
-            </View>
+            <EmptyState message={emptyMessage} />
           )
         }
         onEndReachedThreshold={0.4}

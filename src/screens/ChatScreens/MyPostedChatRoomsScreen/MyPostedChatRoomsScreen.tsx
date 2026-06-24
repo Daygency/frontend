@@ -15,6 +15,7 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import ChatItem from "../ChatScreen/components/ChatItem/ChatItem";
+import EmptyState, { contentContainerWhenEmpty } from "../../../components/ui/EmptyState";
 import styles from "./styles";
 import { RootRoutes } from "../../../navigations/routes";
 import { getRoomsByPost } from "../../../lib/apis/chat/chatApi";
@@ -168,11 +169,7 @@ export default function MyPostedChatRoomsScreen() {
           ) : null
         }
         ListEmptyComponent={
-          <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
-            <Text style={{ color: "#888", textAlign: "center" }}>
-              이 공고에 열린 채팅방이 없습니다.
-            </Text>
-          </View>
+          <EmptyState message="이 공고에 열린 채팅방이 없습니다." />
         }
         renderItem={({ item }) => {
           const peer = item.peer;
@@ -198,10 +195,10 @@ export default function MyPostedChatRoomsScreen() {
           );
         }}
         ItemSeparatorComponent={() => <View style={styles.separator} />}
-        contentContainerStyle={[
+        contentContainerStyle={contentContainerWhenEmpty(
+          rooms.length === 0,
           styles.listContent,
-          rooms.length === 0 && { flexGrow: 1, justifyContent: "center" },
-        ]}
+        )}
       />
     </View>
   );

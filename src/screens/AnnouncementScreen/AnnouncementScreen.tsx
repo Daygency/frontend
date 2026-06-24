@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import FabButton from "../../components/ui/FabButton";
+import EmptyState, { emptyListContentStyle } from "../../components/ui/EmptyState";
 import AnnouncementFilterSheet from "./components/AnnouncementFilterSheet";
 import {
   ANNOUNCEMENT_SORT_OPTIONS,
@@ -391,7 +392,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           style={{ flex: 1 }}
           contentContainerStyle={[
             styles.scrollContent,
-            items.length === 0 && { flexGrow: 1 },
+            items.length === 0 && emptyListContentStyle,
           ]}
           refreshControl={
             <RefreshControl
@@ -421,9 +422,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
               <ActivityIndicator size="large" color="#666" />
             </View>
           ) : items.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>{emptyMessage}</Text>
-            </View>
+            <EmptyState message={emptyMessage} />
           ) : (
             items.map((item) => (
               <View key={item.postId} style={styles.cardWrapper}>

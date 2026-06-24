@@ -15,6 +15,7 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import { RootRoutes } from "../../navigations/routes";
+import EmptyState, { contentContainerWhenEmpty } from "../../components/ui/EmptyState";
 import {
   getApplicationById,
   getApplicationsForPost,
@@ -255,11 +256,7 @@ export default function AnnouncementApplicantsScreen() {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         ListEmptyComponent={
-          <View style={{ paddingHorizontal: 24, paddingTop: 24 }}>
-            <Text style={{ color: "#888", textAlign: "center" }}>
-              아직 지원자가 없습니다.
-            </Text>
-          </View>
+          <EmptyState message="아직 지원자가 없습니다." />
         }
         renderItem={({ item: row }) => {
           const peer = row.room?.peer;
@@ -314,7 +311,10 @@ export default function AnnouncementApplicantsScreen() {
             </View>
           );
         }}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={contentContainerWhenEmpty(
+          rows.length === 0,
+          styles.listContent,
+        )}
       />
     </View>
   );

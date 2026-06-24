@@ -12,6 +12,10 @@ import AnnouncementCard from "../../../components/cards/AnnouncementCard";
 import ArtistCard from "../../../components/cards/ArtistCard";
 import EventNewsCard from "../../../components/cards/EventNewsCard";
 import CommunityCard from "../../LoungeScreen/components/CommunityCard";
+import EmptyState, {
+  contentContainerWhenEmpty,
+  emptyScreenStyle,
+} from "../../../components/ui/EmptyState";
 import {
   pickCommunityAuthor,
   pickCommunityProfileImgUrl,
@@ -41,14 +45,6 @@ import styles from "../sceneStyles";
 type SceneProps = {
   query: string;
 };
-
-function EmptyMessage({ text }: { text: string }) {
-  return (
-    <View style={styles.emptyBox}>
-      <Text style={styles.emptyText}>{text}</Text>
-    </View>
-  );
-}
 
 function formatNewsListDate(
   startedAt?: string,
@@ -152,8 +148,8 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
       onEndReached={() => void onEndReached()}
       onEndReachedThreshold={0.35}
       ListEmptyComponent={
-        <EmptyMessage
-          text={
+        <EmptyState
+          message={
             query.trim()
               ? `"${query.trim()}"에 맞는 모집공고가 없습니다.`
               : "모집공고가 없습니다."
@@ -167,7 +163,10 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
           </View>
         ) : null
       }
-      contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.listContent}
+      contentContainerStyle={contentContainerWhenEmpty(
+        items.length === 0,
+        styles.listContent,
+      )}
       renderItem={({ item }) => (
         <View style={styles.cardPad}>
           <AnnouncementCard
@@ -276,8 +275,8 @@ export function SearchNewsScene({ query }: SceneProps) {
       onEndReached={() => void onEndReached()}
       onEndReachedThreshold={0.35}
       ListEmptyComponent={
-        <EmptyMessage
-          text={
+        <EmptyState
+          message={
             query.trim()
               ? `"${query.trim()}"에 맞는 공연소식이 없습니다.`
               : "공연소식이 없습니다."
@@ -291,7 +290,10 @@ export function SearchNewsScene({ query }: SceneProps) {
           </View>
         ) : null
       }
-      contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.newsListContent}
+      contentContainerStyle={contentContainerWhenEmpty(
+        items.length === 0,
+        styles.newsListContent,
+      )}
       renderItem={({ item }) => (
         <View style={styles.newsCardWrap}>
           <EventNewsCard
@@ -356,15 +358,18 @@ export function SearchCommunityScene({ query }: SceneProps) {
         />
       }
       ListEmptyComponent={
-        <EmptyMessage
-          text={
+        <EmptyState
+          message={
             query.trim()
               ? `"${query.trim()}"에 맞는 커뮤니티 글이 없습니다.`
               : "커뮤니티 글이 없습니다."
           }
         />
       }
-      contentContainerStyle={items.length === 0 ? styles.listEmpty : styles.listContent}
+      contentContainerStyle={contentContainerWhenEmpty(
+        items.length === 0,
+        styles.listContent,
+      )}
       renderItem={({ item }) => (
         <View style={styles.cardPad}>
           <CommunityCard
@@ -460,8 +465,8 @@ export function SearchArtistScene({ query }: SceneProps) {
       onEndReached={() => void onEndReached()}
       onEndReachedThreshold={0.35}
       ListEmptyComponent={
-        <EmptyMessage
-          text={
+        <EmptyState
+          message={
             query.trim()
               ? `"${query.trim()}"에 맞는 아티스트가 없습니다.`
               : "아티스트가 없습니다."
@@ -475,7 +480,10 @@ export function SearchArtistScene({ query }: SceneProps) {
           </View>
         ) : null
       }
-      contentContainerStyle={users.length === 0 ? styles.listEmpty : styles.listContent}
+      contentContainerStyle={contentContainerWhenEmpty(
+        users.length === 0,
+        styles.listContent,
+      )}
       renderItem={({ item }) => (
         <View style={styles.cardPad}>
           <ArtistCard
@@ -563,13 +571,15 @@ export function SearchAllScene({ query }: SceneProps) {
 
   if (!hasAny) {
     return (
-      <EmptyMessage
-        text={
-          query.trim()
-            ? `"${query.trim()}"에 맞는 결과가 없습니다.`
-            : "검색어를 입력해 주세요."
-        }
-      />
+      <View style={emptyScreenStyle}>
+        <EmptyState
+          message={
+            query.trim()
+              ? `"${query.trim()}"에 맞는 결과가 없습니다.`
+              : "검색어를 입력해 주세요."
+          }
+        />
+      </View>
     );
   }
 

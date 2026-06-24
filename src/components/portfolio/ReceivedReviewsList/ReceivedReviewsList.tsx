@@ -13,6 +13,11 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ReviewCard from "../../cards/ReviewCard";
 import ReviewOptionsMenu from "../../menus/ReviewOptionsMenu";
 import ReportCategoryModal from "../../modals/ReportCategoryModal";
+import EmptyState, {
+  contentContainerWhenEmpty,
+  emptyScreenStyle,
+  emptySectionStyle,
+} from "../../ui/EmptyState";
 import { GRAY } from "../../../color";
 import {
   getReceivedActivityReviewList,
@@ -290,9 +295,23 @@ const ReceivedReviewsList = ({
   }
 
   if (displayItems.length === 0) {
+    const emptyBody = (
+      <>
+        <EmptyState message={emptyMessage} />
+        <ReportCategoryModal
+          visible={reportTarget != null}
+          onClose={() => !reportSubmitting && setReportTarget(null)}
+          onSelect={handlePickReportCategory}
+          submitting={reportSubmitting}
+        />
+      </>
+    );
+
     return (
-      <View style={{ paddingVertical: 20 }}>
-        <Text style={{ fontSize: 14, color: GRAY.DARK_100 }}>{emptyMessage}</Text>
+      <View
+        style={previewLimit != null ? emptySectionStyle : emptyScreenStyle}
+      >
+        {emptyBody}
       </View>
     );
   }
@@ -321,7 +340,10 @@ const ReceivedReviewsList = ({
         renderItem={({ item }) => renderItem(item)}
         onEndReached={() => void loadMore()}
         onEndReachedThreshold={0.4}
-        contentContainerStyle={listContentStyle}
+        contentContainerStyle={contentContainerWhenEmpty(
+          displayItems.length === 0,
+          listContentStyle,
+        )}
         ListFooterComponent={
           loadingMore ? (
             <View style={{ paddingVertical: 12 }}>

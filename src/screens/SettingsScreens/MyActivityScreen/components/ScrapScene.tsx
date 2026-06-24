@@ -11,6 +11,10 @@ import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Section from "../../../../components/ui/Section";
 import { RootRoutes } from "../../../../navigations/routes";
 import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
+import EmptyState, {
+  contentContainerWhenEmpty,
+  emptySectionStyle,
+} from "../../../../components/ui/EmptyState";
 import SelectableTag from "../../../../components/ui/SelectableTag";
 import AnnouncementCard from "../../../../components/cards/AnnouncementCard";
 import styles from "../styles";
@@ -179,8 +183,8 @@ const ScrapScene = () => {
             />
           ))
         ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>스크랩한 글이 없습니다.</Text>
+          <View style={emptySectionStyle}>
+            <EmptyState message="스크랩한 글이 없습니다." />
           </View>
         )}
       </Section>
@@ -214,8 +218,8 @@ const ScrapScene = () => {
             ))}
           </ScrollView>
         ) : (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>스크랩한 공연 소식이 없습니다.</Text>
+          <View style={emptySectionStyle}>
+            <EmptyState message="스크랩한 공연 소식이 없습니다." />
           </View>
         )}
       </Section>
@@ -254,15 +258,16 @@ const ScrapScene = () => {
             />
           </View>
         )}
-        contentContainerStyle={localStyles.announcementScrollContent}
+        contentContainerStyle={contentContainerWhenEmpty(
+          !loadingInitial && announcementItems.length === 0,
+          localStyles.announcementScrollContent,
+        )}
         onEndReachedThreshold={0.4}
         onEndReached={() => loadAnnouncements("more")}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={
           !loadingInitial ? (
-            <View style={styles.emptyContainer}>
-              <Text style={styles.emptyText}>스크랩한 모집공고가 없습니다.</Text>
-            </View>
+            <EmptyState message="스크랩한 모집공고가 없습니다." />
           ) : null
         }
         ListFooterComponent={

@@ -8,6 +8,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import ArtistCard from "../../../components/cards/ArtistCard";
+import EmptyState, { contentContainerWhenEmpty } from "../../../components/ui/EmptyState";
 import MajorTagFilter from "../../../components/modals/MajorTagFilter";
 import MajorTagSelectModal from "../../../components/modals/MajorTagSelectModal";
 import styles from "./artistStyles";
@@ -166,11 +167,7 @@ const ArtistScene = () => {
             ) : null
           }
           ListEmptyComponent={
-            <View style={{ paddingHorizontal: 24, alignItems: "center" }}>
-              <Text style={{ color: "#888", textAlign: "center" }}>
-                유저가 없습니다.
-              </Text>
-            </View>
+            <EmptyState message="유저가 없습니다." />
           }
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
@@ -189,10 +186,10 @@ const ArtistScene = () => {
               />
             </View>
           )}
-          contentContainerStyle={[
+          contentContainerStyle={contentContainerWhenEmpty(
+            isEmpty,
             styles.scrollContent,
-            isEmpty && { flexGrow: 1, justifyContent: "center" },
-          ]}
+          )}
         />
       )}
     </View>

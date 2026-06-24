@@ -17,6 +17,7 @@ import * as LegacyFileSystem from "expo-file-system/legacy";
 import { GRAY } from "../../../color";
 import ShadowCardButton from "../../../components/cards/ShadowCardButton";
 import FabButton from "../../../components/ui/FabButton";
+import EmptyState, { contentContainerWhenEmpty } from "../../../components/ui/EmptyState";
 import {
   deleteMyDocument,
   getMyDocuments,
@@ -375,18 +376,16 @@ const MyDataArchiveScreen = () => {
               circleOpacityAnim={circleOpacityAnim}
             />
           )}
-          contentContainerStyle={[
-            styles.listContent,
-            isManageMode && styles.listContentManage,
-            documents.length === 0 && { flexGrow: 1, justifyContent: "center" },
-          ]}
+          contentContainerStyle={contentContainerWhenEmpty(
+            documents.length === 0,
+            [styles.listContent, isManageMode && styles.listContentManage],
+          )}
           ListEmptyComponent={
-            <View style={{ paddingVertical: 48, alignItems: "center", paddingHorizontal: 24 }}>
-              <Text style={{ fontSize: 15, color: GRAY.DARK_2, textAlign: "center" }}>
-                보관된 자료가 없습니다.{"\n"}+ 버튼으로 파일을 추가하거나, 지원서·게시글
-                첨부 파일이 여기 모입니다.
-              </Text>
-            </View>
+            <EmptyState
+              message={
+                "보관된 자료가 없습니다.\n+ 버튼으로 파일을 추가하거나, 지원서·게시글 첨부 파일이 여기 모입니다."
+              }
+            />
           }
         />
       )}

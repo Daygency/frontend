@@ -16,6 +16,7 @@ import { getHomeBanners } from "../../lib/apis/home/homeBannerApi";
 import type { HomeBannerListItem } from "../../lib/apis/home/homeBannerApi";
 import { isContentNew } from "../../lib/content/newBadge";
 import NewBadge from "../../components/ui/NewBadge";
+import EmptyState, { contentContainerWhenEmpty } from "../../components/ui/EmptyState";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 import { RootRoutes } from "../../navigations/routes";
 import styles from "./styles";
@@ -72,12 +73,12 @@ const HomeBannerListScreen = () => {
       keyExtractor={(item) => item.bannerId}
       numColumns={2}
       columnWrapperStyle={styles.row}
-      contentContainerStyle={[
-        styles.listContent,
-        { paddingBottom: bottom + 24 },
-      ]}
+      contentContainerStyle={contentContainerWhenEmpty(
+        banners.length === 0,
+        [styles.listContent, { paddingBottom: bottom + 24 }],
+      )}
       ListEmptyComponent={
-        <Text style={styles.emptyText}>큐레이션이 없습니다.</Text>
+        <EmptyState message="큐레이션이 없습니다." />
       }
       renderItem={({ item }) => {
         const showNewBadge = isContentNew(item.createdAt);

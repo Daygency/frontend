@@ -13,6 +13,7 @@ import {
 } from "../../../../lib/apis/follow/followApi";
 import type { FollowListItemDto } from "../../../../lib/apis/follow/followListTypes";
 import PersonItem from "../PersonItem/PersonItem";
+import EmptyState, { contentContainerWhenEmpty } from "../../../../components/ui/EmptyState";
 import styles from "./styles";
 
 type ListMode = "following" | "follower";
@@ -133,21 +134,23 @@ const List = ({ type, userId }: ListProps) => {
       data={items}
       keyExtractor={(item) => item.userId}
       renderItem={({ item }) => <PersonItem person={item} />}
-      contentContainerStyle={[
+      contentContainerStyle={contentContainerWhenEmpty(
+        items.length === 0,
         styles.listContent,
-        items.length === 0 && styles.centeredGrow,
-      ]}
+      )}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
       onEndReached={onEndReached}
       onEndReachedThreshold={0.35}
       ListEmptyComponent={
-        <View style={styles.emptyWrap}>
-          <Text style={styles.emptyText}>
-            {type === "following" ? "팔로잉한 사용자가 없습니다." : "팔로워가 없습니다."}
-          </Text>
-        </View>
+        <EmptyState
+          message={
+            type === "following"
+              ? "팔로잉한 사용자가 없습니다."
+              : "팔로워가 없습니다."
+          }
+        />
       }
       ListFooterComponent={
         loadingMore ? (
