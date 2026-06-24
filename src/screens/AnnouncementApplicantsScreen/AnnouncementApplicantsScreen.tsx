@@ -72,7 +72,7 @@ export default function AnnouncementApplicantsScreen() {
     setLoading(true);
     const [appsRes, roomsPage] = await Promise.all([
       getApplicationsForPost(postId),
-      getRoomsByPost(postId, { limit: 100 }),
+      getRoomsByPost(postId, { limit: 50 }),
     ]);
 
     const rooms = roomsPage?.items ?? [];

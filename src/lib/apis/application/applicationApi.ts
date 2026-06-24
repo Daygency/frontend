@@ -4,6 +4,7 @@ import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
 import type {
   ApplicationEntity,
+  ApplicationApplicantSummary,
   ApplicationReviewStatus,
   CreateApplicationDto,
   UpdateApplicationDto,
@@ -188,6 +189,26 @@ function parseGenderField(raw: unknown): ApplicationEntity["gender"] {
   return undefined;
 }
 
+function parseApplicantSummary(raw: unknown): ApplicationApplicantSummary | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const r = raw as Record<string, unknown>;
+  const userId = String(r.userId ?? r.user_id ?? "").trim();
+  if (!userId) return undefined;
+  const nameRaw = r.name;
+  const name =
+    typeof nameRaw === "string" && nameRaw.trim() ? nameRaw.trim() : null;
+  const activityName = String(
+    r.activityName ?? r.activity_name ?? "",
+  ).trim();
+  const profileImgUrl = pickProfileImageUrlDeep(r);
+  return {
+    userId,
+    name,
+    ...(activityName ? { activityName } : {}),
+    ...(profileImgUrl ? { profileImgUrl } : {}),
+  };
+}
+
 function parseApplicationEntity(
   raw: Record<string, unknown>,
 ): ApplicationEntity {
@@ -281,12 +302,16 @@ function parseApplicationEntity(
   const userIdRaw =
     (get("userId", "user_id") as string | undefined) ??
     (get("applicantUserId", "applicant_user_id") as string | undefined);
-  const profileImgUrl = pickProfileImageUrlDeep(get("user", "user"));
+  const applicant =
+    parseApplicantSummary(get("applicant", "applicant")) ??
+    parseApplicantSummary(get("user", "user"));
+  const profileImgUrl =
+    applicant?.profileImgUrl ?? pickProfileImageUrlDeep(get("user", "user"));
 
   return {
     id,
     postId,
-    userId: userIdRaw ?? undefined,
+    userId: userIdRaw ?? applicant?.userId ?? undefined,
     status: parseReviewStatus(get("status", "status")),
     ...(name !== undefined ? { name } : {}),
     ...(birth !== undefined ? { birth } : {}),
@@ -311,6 +336,8 @@ function parseApplicationEntity(
     ...(career ? { career } : {}),
     ...(award ? { award } : {}),
     ...(certificate ? { certificate } : {}),
+    ...(applicant ? { applicant } : {}),
+    ...(applicant?.activityName ? { activityName: applicant.activityName } : {}),
     ...(profileImgUrl ? { profileImgUrl } : {}),
   };
 }

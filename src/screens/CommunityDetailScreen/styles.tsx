@@ -67,11 +67,12 @@ const styles = StyleSheet.create({
   carouselWrap: {
     width: "100%",
     position: "relative",
+    marginTop: 16,
   },
   pageBadge: {
     position: "absolute",
-    top: 22,
-    right: 10,
+    right: 16,
+    bottom: 16,
     zIndex: 2,
     paddingHorizontal: 8,
     paddingVertical: 4,

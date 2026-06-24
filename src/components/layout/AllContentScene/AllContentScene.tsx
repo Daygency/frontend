@@ -278,6 +278,7 @@ const AllContentScene = ({
           <ImageCarousel
             gap={12}
             banners={carouselBanners}
+            loop
             slideBackgroundColor={CURATION_LOADING_BACKGROUND}
             onActiveIndexChange={handleCurationBannerIndexChange}
             onPressBanner={(bannerId) => {
@@ -297,6 +298,7 @@ const AllContentScene = ({
       <ImageCarousel
         gap={12}
         banners={carouselBanners}
+        loop
         onPressBanner={(bannerId) => {
           (navigation as { navigate: (a: string, b?: object) => void }).navigate(
             RootRoutes.HOME_BANNER_DETAIL,

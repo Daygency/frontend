@@ -54,6 +54,7 @@ function resolvePeerForAvatar(row: RowModel): ChatPeerSummary | null {
 
   const profileImgUrl =
     pickProfileImageUrlDeep(peer) ??
+    row.application.applicant?.profileImgUrl?.trim() ??
     row.application.profileImgUrl?.trim() ??
     peer?.profileImgUrl?.trim() ??
     peer?.profileImageUrl?.trim();
@@ -101,7 +102,7 @@ export default function AcceptedPerformersSection({
     setLoading(true);
     const [appsRes, roomsPage] = await Promise.all([
       getApplicationsForPost(postId),
-      getRoomsByPost(postId, { limit: 100 }),
+      getRoomsByPost(postId, { limit: 50 }),
     ]);
 
     const rooms = roomsPage?.items ?? [];

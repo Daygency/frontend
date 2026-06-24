@@ -721,9 +721,9 @@ const MusicNewsDetailScreen = () => {
           {news.imageUrls && news.imageUrls.length > 0 ? (
             <View style={styles.carouselWrapper}>
               <ImageCarousel
-                gap={12}
+                gap={0}
                 images={news.imageUrls}
-                slideBackgroundColor={GRAY.MEDIUM}
+                fitImageHeight
               />
             </View>
           ) : null}

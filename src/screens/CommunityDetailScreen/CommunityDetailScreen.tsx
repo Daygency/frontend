@@ -19,7 +19,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
 import CommentInputBar from "../../components/comments/CommentInputBar";
 import CommentAuthorAvatar from "../../components/comments/CommentAuthorAvatar/CommentAuthorAvatar";
-import CommunityPostImageGallery from "./CommunityPostImageGallery";
+import ImageCarousel from "../../components/media/ImageCarousel";
 import styles, { AVATAR_SIZE, REPLY_AVATAR_SIZE } from "./styles";
 import { getCommunityDetail, deleteCommunity } from "../../lib/apis/community/communityApi";
 import type { CommunityDetailResponse } from "../../lib/apis/community/types";
@@ -664,9 +664,11 @@ const CommunityDetailScreen = () => {
 
           {imageUrls.length > 0 ? (
             <View style={styles.carouselWrap}>
-              <CommunityPostImageGallery
-                urls={imageUrls}
-                onIndexChange={setImageIndex}
+              <ImageCarousel
+                gap={0}
+                images={imageUrls}
+                fitImageHeight
+                onActiveIndexChange={setImageIndex}
               />
               {imageUrls.length > 1 ? (
                 <View style={styles.pageBadge} pointerEvents="none">

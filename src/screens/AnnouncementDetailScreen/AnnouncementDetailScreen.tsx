@@ -115,6 +115,7 @@ function parseAnnouncementAttachments(
   for (const item of raw) {
     if (!item || typeof item !== "object") continue;
     const r = item as Record<string, unknown>;
+    if (pickUrlFromFileLike(r)) continue;
     const name = String(
       r.originalName ?? r.original_name ?? r.name ?? r.fileName ?? "",
     ).trim();
@@ -553,10 +554,14 @@ const AnnouncementDetailScreen = () => {
       showApplicantAlreadyAppliedBar ||
       showApplicantClosedBar);
 
+  /** 작성자 + 공연 완료 후 — 종료 안내 */
+  const showOwnerCompletedBar =
+    isMine && Boolean(params.postId) && displayCompleted;
   /** 작성자 + 모집 중·마감 후 미완료 — 조기 마감 / 공연 완료 */
   const showOwnerActionBar =
     isMine &&
     Boolean(params.postId) &&
+    !displayCompleted &&
     (isRecruitingOpen || displayStatus === "모집마감");
 
   const showEarlyCloseButton =
@@ -715,7 +720,7 @@ const AnnouncementDetailScreen = () => {
   const venueLabel = locationBadgeLabel(addressLabel);
 
   const showBottomBar =
-    showOwnerActionBar || visitorBottomBar;
+    showOwnerActionBar || showOwnerCompletedBar || visitorBottomBar;
   const scrollBottomPad = showBottomBar ? 88 + floatingBottomPad : 32;
 
   const navigateToAuthorPortfolio = () => {
@@ -756,6 +761,16 @@ const AnnouncementDetailScreen = () => {
         />
       </Pressable>
       <View style={[styles.btnApply, styles.visitorInfoBar]}>
+        <Text style={styles.visitorInfoText}>{message}</Text>
+      </View>
+    </View>
+  );
+
+  const renderOwnerInfoBar = (message: string) => (
+    <View
+      style={[styles.floatingBottomBar, { paddingBottom: floatingBottomPad }]}
+    >
+      <View style={[styles.btnApply, styles.btnApplyFull, styles.visitorInfoBar]}>
         <Text style={styles.visitorInfoText}>{message}</Text>
       </View>
     </View>
@@ -837,6 +852,10 @@ const AnnouncementDetailScreen = () => {
       return renderVisitorBottomWithScrap("이미 지원한 공고입니다.");
     }
 
+    if (showOwnerCompletedBar) {
+      return renderOwnerInfoBar("종료된 공연입니다.");
+    }
+
     if (showOwnerActionBar) {
       return (
         <View
@@ -894,7 +913,7 @@ const AnnouncementDetailScreen = () => {
               <ImageCarousel
                 gap={0}
                 images={imageList}
-                slideBackgroundColor={GRAY.MEDIUM}
+                fitImageHeight
                 onActiveIndexChange={setActiveImageIndex}
               />
               {imageList.length > 1 ? (

@@ -7,6 +7,9 @@ const styles = StyleSheet.create({
     marginTop: 6,
     marginBottom: 8,
   },
+  containerFit: {
+    width: "100%",
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",

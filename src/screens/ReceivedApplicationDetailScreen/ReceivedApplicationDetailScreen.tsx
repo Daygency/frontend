@@ -6,14 +6,25 @@ import {
   Text,
   View,
 } from "react-native";
-import { RouteProp, useRoute } from "@react-navigation/native";
-import { useCallback, useEffect, useState } from "react";
+import {
+  RouteProp,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   getApplicationById,
   updateApplicationStatus,
 } from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
 import { applicationStatusLabel } from "../../lib/application/applicationStatusLabels";
+import type { AnnouncementAuthor } from "../../lib/announcement/extractAnnouncementAuthor";
+import { useAnnouncementAuthorLabel } from "../../lib/announcement/useAnnouncementAuthorLabel";
+import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
+import { sharedAnnouncementStyles } from "../../components/shared/AnnouncementShared/sharedAnnouncementStyles";
+import { RootRoutes } from "../../navigations/routes";
+import { MAIN, RED, WHITE } from "../../color";
 import styles from "./styles";
 
 type Params = {
@@ -39,19 +50,47 @@ function birthDisplay(birth: string | undefined): string {
   return m ? `${m[1]}년` : birth.trim();
 }
 
-function Field({
+function resolveApplicantAuthor(
+  data: ApplicationEntity,
+): AnnouncementAuthor | null {
+  const userId = (data.applicant?.userId ?? data.userId ?? "").trim();
+  if (!userId) return null;
+  return {
+    userId,
+    name: data.applicant?.name ?? data.name ?? undefined,
+    activityName: data.applicant?.activityName ?? data.activityName,
+    profileImgUrl: data.applicant?.profileImgUrl ?? data.profileImgUrl,
+  };
+}
+
+function DetailField({
   label,
   value,
 }: {
   label: string;
   value: string | undefined | null;
 }) {
-  const t = (value ?? "").trim();
-  if (!t) return null;
+  const text = (value ?? "").trim();
+  if (!text) return null;
   return (
-    <View style={styles.row}>
-      <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{t}</Text>
+    <View style={styles.fieldRow}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldValue}>{text}</Text>
+    </View>
+  );
+}
+
+function DetailSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <View style={styles.sectionBlock}>
+      <Text style={styles.sectionHeading}>{title}</Text>
+      {children}
     </View>
   );
 }
@@ -73,11 +112,14 @@ function formatStatusErrorMessage(raw: string): string {
 
 export default function ReceivedApplicationDetailScreen() {
   const route = useRoute<RouteParams>();
-  const { applicationId } = route.params;
+  const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
+  const floatingBottomPad = insets.bottom + 4;
+  const scrollBottomPad = 88 + floatingBottomPad;
+  const { applicationId, announcementTitle } = route.params;
   const [data, setData] = useState<ApplicationEntity | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  /** 어떤 심사 버튼이 요청 중인지 (로딩 표시용) */
   const [pendingKind, setPendingKind] = useState<"ACCEPT" | "REJECT" | null>(
     null,
   );
@@ -107,6 +149,12 @@ export default function ReceivedApplicationDetailScreen() {
       cancelled = true;
     };
   }, [applicationId]);
+
+  const applicantAuthor = useMemo(
+    () => (data ? resolveApplicantAuthor(data) : null),
+    [data],
+  );
+  const applicantDisplayLabel = useAnnouncementAuthorLabel(applicantAuthor);
 
   const onSetStatus = useCallback(
     (next: "ACCEPTED" | "REJECTED") => {
@@ -142,10 +190,18 @@ export default function ReceivedApplicationDetailScreen() {
     [applicationId, pendingKind],
   );
 
+  const navigateToApplicantPortfolio = () => {
+    if (!applicantAuthor?.userId) return;
+    navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+      userId: applicantAuthor.userId,
+      activityName: applicantAuthor.activityName?.trim() ?? "",
+    });
+  };
+
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#1F2A44" />
+        <ActivityIndicator size="large" color={MAIN.DEFAULT} />
       </View>
     );
   }
@@ -153,7 +209,9 @@ export default function ReceivedApplicationDetailScreen() {
   if (error || !data) {
     return (
       <View style={styles.center}>
-        <Text style={styles.emptyText}>{error ?? "지원서를 불러올 수 없습니다."}</Text>
+        <Text style={styles.emptyText}>
+          {error ?? "지원서를 불러올 수 없습니다."}
+        </Text>
       </View>
     );
   }
@@ -184,66 +242,122 @@ export default function ReceivedApplicationDetailScreen() {
   const acceptLocked = status === "ACCEPTED";
   const rejectLocked = status === "REJECTED";
   const busy = pendingKind !== null;
+  const displayTitle = announcementTitle?.trim() || "지원서";
+  const statusLabel = applicationStatusLabel(data.status);
+  const majorLabel = data.major?.trim() || "";
+
+  const basicFields = [
+    { label: "이름", value: data.name },
+    { label: "출생연도", value: birthDisplay(data.birth) },
+    ...(g ? [{ label: "성별", value: g }] : []),
+    { label: "전공", value: data.major },
+    { label: "전공 상세", value: data.majorDetail },
+    { label: "분야", value: data.category },
+    { label: "곡·레퍼토리", value: data.music },
+    { label: "주소", value: data.address },
+    { label: "학과·부서", value: data.department },
+    { label: "링크", value: data.link },
+  ].filter((f) => (f.value ?? "").trim());
 
   return (
-    <View style={styles.root}>
-      <ScrollView
-        style={styles.container}
-        contentContainerStyle={styles.scrollContent}
-      >
-      <Text style={styles.sectionTitle}>기본 정보</Text>
-      <Field label="이름" value={data.name} />
-      <Field label="출생연도" value={birthDisplay(data.birth)} />
-      {g ? <Field label="성별" value={g} /> : null}
-      <Field label="전공" value={data.major} />
-      <Field label="전공 상세" value={data.majorDetail} />
-      <Field label="분야" value={data.category} />
-      <Field label="곡·레퍼토리" value={data.music} />
-      <Field label="주소" value={data.address} />
-      <Field label="학과·부서" value={data.department} />
-      <Field label="링크" value={data.link} />
+    <View style={styles.container}>
+      <View style={styles.detailInner}>
+        <ScrollView
+          style={styles.detailScroll}
+          contentContainerStyle={[
+            styles.scrollContent,
+            { paddingBottom: scrollBottomPad },
+          ]}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.body}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title}>{displayTitle}</Text>
+              {applicantAuthor ? (
+                <Pressable
+                  style={styles.applicantChip}
+                  onPress={navigateToApplicantPortfolio}
+                >
+                  <ApplicantAvatar
+                    peerUserId={applicantAuthor.userId}
+                    peer={{
+                      userId: applicantAuthor.userId,
+                      name: applicantAuthor.name,
+                      activityName: applicantAuthor.activityName,
+                      profileImgUrl: applicantAuthor.profileImgUrl,
+                      profileImageUrl: applicantAuthor.profileImgUrl,
+                    }}
+                    size={28}
+                  />
+                  <Text style={styles.applicantName} numberOfLines={1}>
+                    {applicantDisplayLabel}
+                  </Text>
+                </Pressable>
+              ) : null}
+            </View>
 
-      {edu ? (
-        <>
-          <Text style={styles.sectionTitle}>학력</Text>
-          <Text style={styles.value}>{edu}</Text>
-        </>
-      ) : null}
+            <View style={styles.badgeRow}>
+              <View style={sharedAnnouncementStyles.statusTag}>
+                <Text style={sharedAnnouncementStyles.statusTagText}>
+                  {statusLabel}
+                </Text>
+              </View>
+              {majorLabel ? (
+                <Text style={styles.majorText} numberOfLines={1}>
+                  {majorLabel}
+                </Text>
+              ) : null}
+            </View>
 
-      {career ? (
-        <>
-          <Text style={styles.sectionTitle}>경력</Text>
-          <Text style={styles.value}>{career}</Text>
-        </>
-      ) : null}
+            {basicFields.length > 0 ? (
+              <DetailSection title="기본 정보">
+                {basicFields.map((field) => (
+                  <DetailField
+                    key={field.label}
+                    label={field.label}
+                    value={field.value}
+                  />
+                ))}
+              </DetailSection>
+            ) : null}
 
-      {awards ? (
-        <>
-          <Text style={styles.sectionTitle}>수상</Text>
-          <Text style={styles.value}>{awards}</Text>
-        </>
-      ) : null}
+            {edu ? (
+              <DetailSection title="학력">
+                <Text style={styles.multilineValue}>{edu}</Text>
+              </DetailSection>
+            ) : null}
 
-      {certs ? (
-        <>
-          <Text style={styles.sectionTitle}>자격증</Text>
-          <Text style={styles.value}>{certs}</Text>
-        </>
-      ) : null}
+            {career ? (
+              <DetailSection title="경력">
+                <Text style={styles.multilineValue}>{career}</Text>
+              </DetailSection>
+            ) : null}
 
-      {data.introduce?.trim() ? (
-        <>
-          <Text style={styles.sectionTitle}>자기소개</Text>
-          <Text style={styles.value}>{data.introduce}</Text>
-        </>
-      ) : null}
+            {awards ? (
+              <DetailSection title="수상">
+                <Text style={styles.multilineValue}>{awards}</Text>
+              </DetailSection>
+            ) : null}
 
-      <View style={styles.row}>
-        <Text style={styles.label}>심사 상태</Text>
-        <Text style={styles.value}>{applicationStatusLabel(data.status)}</Text>
+            {certs ? (
+              <DetailSection title="자격증">
+                <Text style={styles.multilineValue}>{certs}</Text>
+              </DetailSection>
+            ) : null}
+
+            {data.introduce?.trim() ? (
+              <DetailSection title="자기소개">
+                <Text style={styles.multilineValue}>{data.introduce}</Text>
+              </DetailSection>
+            ) : null}
+          </View>
+        </ScrollView>
       </View>
-      </ScrollView>
-      <View style={styles.actionBar}>
+
+      <View
+        style={[styles.floatingBottomBar, { paddingBottom: floatingBottomPad }]}
+      >
         <Pressable
           style={[
             styles.rejectBtn,
@@ -253,7 +367,7 @@ export default function ReceivedApplicationDetailScreen() {
           onPress={() => onSetStatus("REJECTED")}
         >
           {pendingKind === "REJECT" ? (
-            <ActivityIndicator color="#DC2626" size="small" />
+            <ActivityIndicator color={RED.DEFAULT} size="small" />
           ) : (
             <Text style={styles.rejectBtnText}>탈락</Text>
           )}
@@ -267,7 +381,7 @@ export default function ReceivedApplicationDetailScreen() {
           onPress={() => onSetStatus("ACCEPTED")}
         >
           {pendingKind === "ACCEPT" ? (
-            <ActivityIndicator color="#FFFFFF" size="small" />
+            <ActivityIndicator color={WHITE} size="small" />
           ) : (
             <Text style={styles.acceptBtnText}>합격</Text>
           )}

@@ -18,10 +18,11 @@ const styles = StyleSheet.create({
   heroCarousel: {
     position: "relative",
     marginBottom: 16,
+    paddingHorizontal: 20,
   },
   imageCounter: {
     position: "absolute",
-    right: 16,
+    right: 20,
     bottom: 16,
     backgroundColor: "rgba(0,0,0,0.55)",
     borderRadius: 14,

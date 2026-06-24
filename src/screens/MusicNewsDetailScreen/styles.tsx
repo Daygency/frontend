@@ -18,6 +18,7 @@ const styles = StyleSheet.create({
   carouselWrapper: {
     width: "100%",
     marginBottom: 4,
+    paddingHorizontal: 20,
   },
   contentSection: {
     paddingHorizontal: 20,

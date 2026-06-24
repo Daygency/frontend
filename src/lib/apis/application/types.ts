@@ -53,13 +53,23 @@ export type UpdateApplicationStatusDto = {
   status: ApplicationReviewStatus;
 };
 
+export type ApplicationApplicantSummary = {
+  userId: string;
+  name?: string | null;
+  activityName?: string;
+  profileImgUrl?: string;
+};
+
 /** GET 응답 등 — README 부록 B 엔티티 표 (`name`~`introduce`, 스냅샷 배열, `status`, 타임스탬프) */
 export type ApplicationEntity = Partial<Omit<CreateApplicationDto, "postId">> & {
   id: string;
   postId?: string;
   userId?: string;
-  /** GET /applications/post/:postId — nested `user` 프로필 이미지 */
+  /** GET /applications/:id — 지원자 공개 프로필 요약 */
+  applicant?: ApplicationApplicantSummary;
+  /** GET /applications/post/:postId — nested `user` 프로필 이미지 (구 응답 호환) */
   profileImgUrl?: string;
+  activityName?: string;
   status?: ApplicationReviewStatus;
   createdAt?: string;
   canceledAt?: string | null;
