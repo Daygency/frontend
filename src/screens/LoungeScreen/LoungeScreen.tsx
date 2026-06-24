@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { useRoute, RouteProp } from "@react-navigation/native";
 import { TabView } from "react-native-tab-view";
 import styles from "./styles";
 import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
@@ -9,7 +9,7 @@ import MainHomeHeader, {
   LOUNGE_TABS,
   type LoungeTab,
 } from "../../components/layout/MainHomeHeader";
-import FabButton from "../../components/ui/FabButton";
+import ContentRegistrationFabButton from "../../components/ui/FabButton/ContentRegistrationFabButton";
 import MusicNewsScene from "./components/MusicNewsScene";
 import CommunityScene from "./components/CommunityScene";
 import PerformanceNewsFilterSheet from "./components/PerformanceNewsFilterSheet";
@@ -17,8 +17,6 @@ import {
   type PerformanceNewsFilterSheetType,
   type PerformanceNewsSortMode,
 } from "./components/performanceNewsFilterOptions";
-import { RootRoutes } from "../../navigations/routes";
-import { useRequireLogin } from "../../hooks/useRequireLogin";
 
 type LoungeRouteParams = {
   initialTab?: LoungeTab | "음악계 소식";
@@ -43,8 +41,6 @@ function tabToIndex(tab: LoungeTab): number {
 }
 
 const LoungeScreen = () => {
-  const navigation = useNavigation<any>();
-  const { ensureLoggedIn } = useRequireLogin();
   const route = useRoute<RouteProp<{ Lounge: LoungeRouteParams }, "Lounge">>();
   const { top } = useSafeAreaInsets();
   const layout = useWindowDimensions();
@@ -110,32 +106,7 @@ const LoungeScreen = () => {
           )}
           style={styles.tabView}
         />
-        <FabButton
-          containerStyle={styles.fab}
-          menuItems={[
-            {
-              label: "모집공고",
-              onPress: () => {
-                if (!ensureLoggedIn()) return;
-                navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION);
-              },
-            },
-            {
-              label: "공연 소식",
-              onPress: () => {
-                if (!ensureLoggedIn()) return;
-                navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION);
-              },
-            },
-            {
-              label: "커뮤니티",
-              onPress: () => {
-                if (!ensureLoggedIn()) return;
-                navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION);
-              },
-            },
-          ]}
-        />
+        <ContentRegistrationFabButton containerStyle={styles.fab} />
         {filterSheet && activeTab === "공연 소식" ? (
           <PerformanceNewsFilterSheet
             type={filterSheet}

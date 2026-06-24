@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-native";
 import { fn } from "storybook/test";
 import { withFabArea } from "../../../storybook/decorators";
 import FabButton from "./FabButton";
+import { CONTENT_REGISTRATION_FAB_MENU_LABELS } from "./contentRegistrationFabMenu";
 
 const meta = {
   title: "UI/FabButton",
@@ -21,9 +22,18 @@ export const Simple: Story = {};
 export const WithMenu: Story = {
   args: {
     menuItems: [
-      { label: "모집공고", onPress: fn() },
-      { label: "음악계 소식", onPress: fn() },
-      { label: "커뮤니티", onPress: fn() },
+      {
+        label: CONTENT_REGISTRATION_FAB_MENU_LABELS.announcement,
+        onPress: fn(),
+      },
+      {
+        label: CONTENT_REGISTRATION_FAB_MENU_LABELS.musicNews,
+        onPress: fn(),
+      },
+      {
+        label: CONTENT_REGISTRATION_FAB_MENU_LABELS.community,
+        onPress: fn(),
+      },
     ],
   },
 };

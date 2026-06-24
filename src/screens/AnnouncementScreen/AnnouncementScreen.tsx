@@ -12,7 +12,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
-import FabButton from "../../components/ui/FabButton";
+import { ContentRegistrationFabButton } from "../../components/ui/FabButton";
 import EmptyState, { emptyListContentStyle } from "../../components/ui/EmptyState";
 import AnnouncementFilterSheet from "./components/AnnouncementFilterSheet";
 import {
@@ -459,33 +459,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           )}
         </ScrollView>
       </View>
-      {!hideTopBar && (
-        <FabButton
-          menuItems={[
-            {
-              label: "모집공고",
-              onPress: () => {
-                if (!ensureLoggedIn()) return;
-                navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION);
-              },
-            },
-            {
-              label: "공연 소식",
-              onPress: () => {
-                if (!ensureLoggedIn()) return;
-                navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION);
-              },
-            },
-            {
-              label: "커뮤니티",
-              onPress: () => {
-                if (!ensureLoggedIn()) return;
-                navigation.navigate(RootRoutes.COMMUNITY_REGISTRATION);
-              },
-            },
-          ]}
-        />
-      )}
+      {!hideTopBar && <ContentRegistrationFabButton />}
     </View>
   );
 };
