@@ -66,7 +66,7 @@ export type NewsDetailResponse = {
   ticketPrice: number | null;
   startedAt: string;
   endedAt: string | null;
-  contact: string;
+  contact?: string | null;
   createdAt: string;
   user?: NewsUserInfo;
   file?: NewsFileInfo | null;
@@ -85,7 +85,7 @@ export type CreateNewsDto = {
   ticketPrice?: number | null;
   startedAt: string;
   endedAt?: string | null;
-  contact: string;
+  contact?: string | null;
   fileId?: string | null;
 };
 
