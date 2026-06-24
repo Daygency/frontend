@@ -41,7 +41,7 @@ export default StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 0,
-    fontSize: 18,
+    fontSize: 16,
     lineHeight: 26,
     letterSpacing: -0.2,
     color: BLACK,
