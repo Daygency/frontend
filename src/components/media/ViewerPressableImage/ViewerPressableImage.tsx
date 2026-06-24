@@ -4,7 +4,7 @@ import {
   type ImageProps,
   type ImageSourcePropType,
 } from "react-native";
-import { useImageViewerOptional } from "../../contexts/ImageViewerContext";
+import { useImageViewerOptional } from "../../../contexts/ImageViewerContext";
 
 type Props = Omit<ImageProps, "source"> & {
   source: ImageSourcePropType;

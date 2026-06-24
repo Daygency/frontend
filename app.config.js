@@ -58,6 +58,10 @@ export default ({ config }) => ({
       infoPlist: {
         UIBackgroundModes: ["remote-notification"],
         ITSAppUsesNonExemptEncryption: false,
+        NSPhotoLibraryAddUsageDescription:
+          "사진을 기기에 저장하기 위해 사진 보관함 접근 권한이 필요합니다.",
+        NSPhotoLibraryUsageDescription:
+          "사진을 기기에 저장하기 위해 사진 보관함 접근 권한이 필요합니다.",
       },
     },
     android: {
