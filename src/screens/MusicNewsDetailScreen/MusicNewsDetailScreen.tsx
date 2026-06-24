@@ -249,7 +249,7 @@ function updateCommentLikeState(
 }
 
 const MusicNewsDetailScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute<MusicNewsDetailRouteProp>();
   const { user, isLoggedIn } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
@@ -429,10 +429,9 @@ const MusicNewsDetailScreen = () => {
 
   const onEditNews = useCallback(() => {
     if (!targetNewsId) return;
-    navigation.navigate(
-      RootRoutes.MUSIC_NEWS_REGISTRATION as never,
-      { newsId: targetNewsId } as never,
-    );
+    navigation.navigate(RootRoutes.MUSIC_NEWS_REGISTRATION, {
+      newsId: targetNewsId,
+    });
   }, [navigation, targetNewsId]);
 
   const onDeleteNews = useCallback(() => {

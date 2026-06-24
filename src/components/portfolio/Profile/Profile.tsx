@@ -102,10 +102,12 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
   const [followLoading, setFollowLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
 
-  const displayName =
+  const legalName =
     profile?.name?.trim() ||
     (!isOtherProfile ? user?.name?.trim() : "") ||
     "";
+  const activityLabel = profile?.activityName?.trim() || "";
+  const displayName = legalName || activityLabel;
   const rawProfileImgUrl =
     profile?.profileImgUrl ||
     (!isOtherProfile ? user?.profileImgUrl : undefined);
@@ -575,7 +577,11 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       : "";
 
   const headline =
-    profile?.activityName?.trim() ||
+    legalName && activityLabel
+      ? activityLabel
+      : !legalName && activityLabel
+        ? ""
+        : activityLabel ||
     (typeof (profile as PublicProfileResponseDto)?.major === "object"
       ? (profile as PublicProfileResponseDto).major?.name?.trim()
       : (profile as ProfileResponseDto)?.major?.trim()) ||

@@ -77,7 +77,7 @@ const MyActivityAnnouncementListScreen = () => {
           </View>
         )}
         contentContainerStyle={contentContainerWhenEmpty(
-          data.length === 0,
+          listData.length === 0,
           styles.listContent,
         )}
         ListEmptyComponent={

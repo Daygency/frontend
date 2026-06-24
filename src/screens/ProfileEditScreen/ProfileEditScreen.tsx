@@ -15,6 +15,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { DEFAULT_USER_PROFILE_IMAGE } from "../../lib/media/defaultUserProfileImage";
+import { MAIN, WHITE } from "../../color";
 import {
   getMyProfile,
   pickFollowCountsFromApiJson,
