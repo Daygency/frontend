@@ -24,9 +24,7 @@ import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerforma
 import { RootRoutes } from "../../../navigations/routes";
 import { getAnnouncementList } from "../../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../../lib/apis/announcement/types";
-import { getMajors } from "../../../lib/apis/announcement/majorApi";
 import { parseAnnouncementDaysLeft } from "../../../lib/announcement/parseAnnouncementDaysLeft";
-import { resolveRecruitmentMajorDisplayNames } from "../../../lib/announcement/recruitmentMajors";
 import { resolveAnnouncementAuthorLabel } from "../../../lib/announcement/announcementAuthor";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
@@ -68,23 +66,6 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [majorsCatalog, setMajorsCatalog] = useState<
-    { name: string; majorId: string }[]
-  >([]);
-
-  useEffect(() => {
-    getMajors().then((list) => {
-      setMajorsCatalog(
-        list.map((m) => ({
-          name: m.name,
-          majorId:
-            (m as { majorId?: string }).majorId ??
-            (m as { id?: string }).id ??
-            "",
-        })),
-      );
-    });
-  }, []);
 
   const loadFirst = useCallback(async () => {
     setLoading(true);
@@ -181,10 +162,6 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
             address={item.address}
             authorName={resolveAnnouncementAuthorLabel(item.user)}
             profileImgUrl={item.user?.profileImgUrl}
-            recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
-              item,
-              majorsCatalog,
-            )}
             onPress={() =>
               navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                 title: item.title,
@@ -514,23 +491,6 @@ export function SearchAllScene({ query }: SceneProps) {
   const [news, setNews] = useState<NewsListItem[]>([]);
   const [community, setCommunity] = useState<CommunityListItem[]>([]);
   const [artists, setArtists] = useState<UserListItem[]>([]);
-  const [majorsCatalog, setMajorsCatalog] = useState<
-    { name: string; majorId: string }[]
-  >([]);
-
-  useEffect(() => {
-    getMajors().then((list) => {
-      setMajorsCatalog(
-        list.map((m) => ({
-          name: m.name,
-          majorId:
-            (m as { majorId?: string }).majorId ??
-            (m as { id?: string }).id ??
-            "",
-        })),
-      );
-    });
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -602,10 +562,6 @@ export function SearchAllScene({ query }: SceneProps) {
                 address={item.address}
                 authorName={resolveAnnouncementAuthorLabel(item.user)}
                 profileImgUrl={item.user?.profileImgUrl}
-                recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
-                  item,
-                  majorsCatalog,
-                )}
                 onPress={() =>
                   navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                     title: item.title,

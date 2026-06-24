@@ -3,7 +3,7 @@ import { BLACK, GRAY, MAIN, RED, WHITE } from "../../../color";
 
 export const sharedAnnouncementStyles = StyleSheet.create({
   title: {
-    fontSize: 16,
+    fontSize: 14,
     lineHeight: 26,
     letterSpacing: 0.3,
     color: BLACK,
@@ -16,7 +16,7 @@ export const sharedAnnouncementStyles = StyleSheet.create({
     gap: 8,
   },
   priceLine: {
-    fontSize: 14,
+    fontSize: 12,
     lineHeight: 20,
     color: MAIN.DEFAULT,
     fontWeight: "400",

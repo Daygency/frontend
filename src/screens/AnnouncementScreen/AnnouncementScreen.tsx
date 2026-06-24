@@ -40,7 +40,6 @@ import {
   selectedPriceLabelsToApiParam,
 } from "../../lib/announcement/announcementPrice";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
-import { resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
 import { resolveAnnouncementAuthorLabel } from "../../lib/announcement/announcementAuthor";
 import { isContentNew } from "../../lib/content/newBadge";
 import { MAIN, WHITE } from "../../color";
@@ -439,10 +438,6 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                   authorName={resolveAnnouncementAuthorLabel(item.user)}
                   profileImgUrl={item.user?.profileImgUrl}
                   showNew={isContentNew(item.createdAt)}
-                  recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
-                    item,
-                    majors,
-                  )}
                   onPress={() => {
                     navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                       title: item.title,

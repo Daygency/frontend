@@ -24,9 +24,7 @@ import {
   getMyScrappedAnnouncements,
   getMyScrappedHighlights,
 } from "../../../../lib/apis/scrap/scrapApi";
-import { getMajors } from "../../../../lib/apis/announcement/majorApi";
 import { parseAnnouncementDaysLeft } from "../../../../lib/announcement/parseAnnouncementDaysLeft";
-import { resolveRecruitmentMajorDisplayNames } from "../../../../lib/announcement/recruitmentMajors";
 import type {
   MyScrappedAnnouncementItem,
   MyScrappedCommunityItem,
@@ -62,23 +60,6 @@ const ScrapScene = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [majorsCatalog, setMajorsCatalog] = useState<
-    { name: string; majorId: string }[]
-  >([]);
-
-  useEffect(() => {
-    getMajors().then((list) => {
-      setMajorsCatalog(
-        list.map((m) => ({
-          name: m.name,
-          majorId:
-            (m as { majorId?: string }).majorId ??
-            (m as { id?: string }).id ??
-            "",
-        })),
-      );
-    });
-  }, []);
 
   const handlePressScrapCommunity = () => {
     navigation.navigate(RootRoutes.MY_ACTIVITY_LIST, {
@@ -241,10 +222,6 @@ const ScrapScene = () => {
               deadlineAt={item.deadlineAt}
               viewCount={item.viewCount}
               address={item.address}
-              recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
-                item,
-                majorsCatalog,
-              )}
               onPress={() => {
                 navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                   postId: item.postId,

@@ -31,8 +31,6 @@ interface AnnouncementCardProps {
   /** API가 내려줄 때만 표시 */
   priceType?: AnnouncementPriceType;
   price?: number;
-  /** 모집 전공 이름 (표시할 항목이 있을 때만 하단 영역 렌더) */
-  recruitmentMajorNames?: string[];
   /** 목록·홈 등에서 내려온 누적 조회수 */
   viewCount?: number;
   /** 장소 (목록에서 태그 오른쪽에 표시) */
@@ -53,7 +51,6 @@ const AnnouncementCard = ({
   deadlineAt,
   priceType,
   price,
-  recruitmentMajorNames = [],
   viewCount,
   address,
   authorName = "작성자",
@@ -64,7 +61,6 @@ const AnnouncementCard = ({
   const showPrice =
     priceType !== undefined ||
     (typeof price === "number" && Number.isFinite(price));
-  const showMajors = recruitmentMajorNames.length > 0;
 
   const effectiveDaysLeft = effectiveAnnouncementDaysLeft(
     deadlineAt,
@@ -108,10 +104,10 @@ const AnnouncementCard = ({
       </View>
 
       <View style={styles.titleWrap}>
-        {showNew ? <NewBadge /> : null}
-        <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
+        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
           {title}
         </Text>
+        {/* {showNew ? <NewBadge /> : null} */}
       </View>
 
       <View style={styles.tagsRow}>
@@ -131,19 +127,6 @@ const AnnouncementCard = ({
           // </View>
         ) : null}
       </View>
-
-      {/* 모집 전공 */}
-      {showMajors ? (
-        <View style={styles.recruitmentMajorsSection}>
-          <View style={styles.recruitmentMajorsChips}>
-            {recruitmentMajorNames.map((name, i) => (
-              <View key={`${name}-${i}`} style={styles.recruitmentMajorChip}>
-                <Text style={styles.recruitmentMajorChipText}>{name}</Text>
-              </View>
-            ))}
-          </View>
-        </View>
-      ) : null}
 
       {showPrice || typeof viewCount === "number" ? (
         <View style={sharedAnnouncementStyles.priceAndViewRow}>

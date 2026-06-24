@@ -14,9 +14,7 @@ import { RootRoutes } from "../../../navigations/routes";
 import { getHome } from "../../../lib/apis/home/homeApi";
 import type { HomeAnnouncementItem, HomeBannerItem, HomeNewsItem } from "../../../lib/apis/home/types";
 import { normalizeListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
-import { getMajors } from "../../../lib/apis/announcement/majorApi";
 import { parseAnnouncementDaysLeft } from "../../../lib/announcement/parseAnnouncementDaysLeft";
-import { resolveRecruitmentMajorDisplayNames } from "../../../lib/announcement/recruitmentMajors";
 import { resolveAnnouncementAuthorLabel } from "../../../lib/announcement/announcementAuthor";
 import { getImageAverageColor } from "../../../lib/media/getImageAverageColor";
 import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerformanceOpenLabel";
@@ -67,24 +65,7 @@ const AllContentScene = ({
     }[]
   >([]);
   const [loading, setLoading] = useState(true);
-  const [majorsCatalog, setMajorsCatalog] = useState<
-    { name: string; majorId: string }[]
-  >([]);
   const activeCurationBannerIndexRef = useRef(0);
-
-  useEffect(() => {
-    getMajors().then((list) => {
-      setMajorsCatalog(
-        list.map((m) => ({
-          name: m.name,
-          majorId:
-            (m as { majorId?: string }).majorId ??
-            (m as { id?: string }).id ??
-            "",
-        })),
-      );
-    });
-  }, []);
 
   const loadHome = useCallback(async () => {
     setLoading(true);
@@ -362,10 +343,6 @@ const AllContentScene = ({
               authorName={resolveAnnouncementAuthorLabel(item.user)}
               profileImgUrl={item.user?.profileImgUrl}
               showNew={isContentNew(item.createdAt)}
-              recruitmentMajorNames={resolveRecruitmentMajorDisplayNames(
-                item,
-                majorsCatalog,
-              )}
               onPress={() => {
                 (navigation as { navigate: (a: string, b?: object) => void }).navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                   title: item.title,

@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, BLUE, GRAY, WHITE } from "../../../color";
+import { BLACK } from "../../../color";
 
 export default StyleSheet.create({
   container: {
@@ -41,11 +41,11 @@ export default StyleSheet.create({
     flexGrow: 1,
     flexShrink: 1,
     minWidth: 0,
-    fontSize: 16,
+    fontSize: 15,
     lineHeight: 26,
     letterSpacing: -0.2,
     color: BLACK,
-    fontWeight: "800",
+    fontWeight: "600",
   },
   tagsRow: {
     flexDirection: "row",
@@ -54,50 +54,11 @@ export default StyleSheet.create({
     gap: 6,
     width: "100%",
   },
-  locationTag: {
-    flexShrink: 1,
-    maxWidth: "100%",
-    backgroundColor: WHITE,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-  },
   locationTagText: {
     fontSize: 11,
     lineHeight: 14,
     letterSpacing: 0.2,
     color: BLACK,
     fontWeight: "500",
-  },
-  recruitmentMajorsSection: {
-    marginTop: 10,
-  },
-  recruitmentMajorsLabel: {
-    fontSize: 11,
-    lineHeight: 14,
-    color: GRAY.DARK_2,
-    fontWeight: "500",
-    marginBottom: 6,
-  },
-  recruitmentMajorsChips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 5,
-  },
-  recruitmentMajorChip: {
-    backgroundColor: WHITE,
-    borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-  },
-  recruitmentMajorChipText: {
-    fontSize: 10,
-    lineHeight: 13,
-    color: BLACK,
-    fontWeight: "400",
   },
 });

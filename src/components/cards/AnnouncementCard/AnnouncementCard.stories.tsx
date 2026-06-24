@@ -28,7 +28,7 @@ export const Default: Story = {
   },
 };
 
-export const WithPriceAndMajors: Story = {
+export const WithPrice: Story = {
   args: {
     title: "재즈 페스티벌 세션 뮤지션 모집",
     type: "공연",
@@ -36,7 +36,6 @@ export const WithPriceAndMajors: Story = {
     daysLeft: 5,
     priceType: "INCOME",
     price: 500000,
-    recruitmentMajorNames: ["보컬", "기타", "드럼"],
     showNew: true,
     authorName: "재즈클럽",
     viewCount: 42,
