@@ -1,9 +1,9 @@
-import { Image, Text, View } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import UserProfileAvatar from "../../ui/UserProfileAvatar";
 import ShadowCardButton from "../../cards/ShadowCardButton";
-import { WHITE } from "../../../color";
+import { Text, View } from "react-native";
 import styles from "./styles";
 import MusicNoteIcon from "../../../../assets/music_note.svg";
+
 interface ArtistCardProps {
   name: string;
   category: string;
@@ -17,7 +17,6 @@ const ArtistCard = ({
   name,
   category,
   avatarUrl,
-  activityName,
   musicNoteCount = 0,
   onPress,
 }: ArtistCardProps) => {
@@ -33,30 +32,15 @@ const ArtistCard = ({
       }}
     >
       <View style={styles.container}>
-        {/* Avatar */}
         <View style={styles.avatarContainer}>
-          {avatarUrl?.trim() ? (
-            <Image
-              source={{ uri: avatarUrl }}
-              style={styles.avatarImage}
-              resizeMode="cover"
-            />
-          ) : (
-            <MaterialCommunityIcons
-              name="account-outline"
-              size={24}
-              color={WHITE}
-            />
-          )}
+          <UserProfileAvatar profileImgUrl={avatarUrl} size={50} />
         </View>
 
-        {/* Name and Category */}
         <View style={styles.textContainer}>
           <Text style={styles.name}>{name}</Text>
           <Text style={styles.category}>{category}</Text>
         </View>
 
-        {/* Music Note Icon with Count */}
         <View style={styles.iconsContainer}>
           <View style={styles.iconWithCount}>
             <MusicNoteIcon width={20} height={20} />
@@ -69,4 +53,3 @@ const ArtistCard = ({
 };
 
 export default ArtistCard;
-

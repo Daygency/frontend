@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { DEFAULT_USER_PROFILE_IMAGE } from "../../lib/media/defaultUserProfileImage";
 import {
   getMyProfile,
   pickFollowCountsFromApiJson,
@@ -641,13 +641,11 @@ const ProfileEditScreen = () => {
                 resizeMode="cover"
               />
             ) : (
-              <View style={styles.profileImagePlaceholder}>
-                <MaterialCommunityIcons
-                  name="account"
-                  size={48}
-                  color={GRAY.DARK_2}
-                />
-              </View>
+              <Image
+                source={DEFAULT_USER_PROFILE_IMAGE}
+                style={styles.profileImage}
+                resizeMode="cover"
+              />
             )}
             <View style={styles.profileImageEditButton}>
               <MaterialCommunityIcons

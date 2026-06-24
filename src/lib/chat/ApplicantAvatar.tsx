@@ -1,13 +1,10 @@
-import { useEffect, useState } from "react";
-import { Image, View, type StyleProp, type ViewStyle } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
-import { GRAY } from "../../color";
-import { pickProfileImageUrlDeep } from "./peerImageFields";
+import type { StyleProp, ViewStyle } from "react-native";
 import type { ChatPeerSummary } from "../apis/chat/types";
-import { usePeerAvatarUrl } from "./usePeerAvatarUrl";
+import UserProfileAvatar from "../../components/ui/UserProfileAvatar";
+import { pickProfileImageUrlDeep } from "./peerImageFields";
 
 type Props = {
-  peerUserId?: string | null;
+  peerUserId?: string;
   peer?: ChatPeerSummary | null;
   size?: number;
   style?: StyleProp<ViewStyle>;
@@ -27,44 +24,13 @@ export default function ApplicantAvatar({
     peer?.profileImageUrl ??
     peer?.profileImgUrl;
   const uid = (peerUserId ?? peer?.userId ?? "").trim() || undefined;
-  const avatarUrl = usePeerAvatarUrl(uid, fromPeer);
-  const [imgErr, setImgErr] = useState(false);
-
-  useEffect(() => {
-    setImgErr(false);
-  }, [avatarUrl]);
-
-  const r = size / 2;
-  const baseStyle = [{ width: size, height: size, borderRadius: r }, style];
-  const iconSize = Math.max(20, Math.round(size * 0.45));
 
   return (
-    <View style={baseStyle}>
-      {avatarUrl && !imgErr ? (
-        <Image
-          source={{ uri: avatarUrl }}
-          style={{ width: size, height: size, borderRadius: r }}
-          resizeMode="cover"
-          onError={() => setImgErr(true)}
-        />
-      ) : (
-        <View
-          style={{
-            width: size,
-            height: size,
-            borderRadius: r,
-            backgroundColor: GRAY.MEDIUM_2,
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Ionicons
-            name="person-outline"
-            size={iconSize}
-            color={GRAY.DARK}
-          />
-        </View>
-      )}
-    </View>
+    <UserProfileAvatar
+      peerUserId={uid}
+      profileImgUrl={fromPeer}
+      size={size}
+      style={style}
+    />
   );
 }

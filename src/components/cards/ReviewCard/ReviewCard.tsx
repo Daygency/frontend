@@ -4,7 +4,7 @@ import ShadowCardButton from "../../cards/ShadowCardButton";
 import { Entypo } from "@expo/vector-icons";
 import styles from "./styles";
 import Tag from "../../ui/Tag";
-import { MAIN } from "../../../color";
+import UserProfileAvatar from "../../ui/UserProfileAvatar";
 
 export interface ReviewCardProps {
   author?: string;
@@ -13,6 +13,7 @@ export interface ReviewCardProps {
   content?: string;
   reactionTag?: string;
   tags?: { text: string; variant?: "type" | "status" | "reaction" }[];
+  profileImgUrl?: string | null;
   onPress?: () => void;
   onOptionsPress?: () => void;
   optionsMenu?: ReactNode;
@@ -25,6 +26,7 @@ const ReviewCard = ({
   content,
   reactionTag,
   tags,
+  profileImgUrl,
   onPress,
   onOptionsPress,
   optionsMenu,
@@ -36,7 +38,7 @@ const ReviewCard = ({
   return (
     <ShadowCardButton onPress={onPress}>
       <View style={styles.header}>
-        <View style={[styles.profileContainer, { backgroundColor: MAIN.DEFAULT }]} />
+        <UserProfileAvatar profileImgUrl={profileImgUrl} size={36} />
         <View style={styles.profileNameContainer}>
           <Text style={styles.authorText}>{author}</Text>
           <Text style={styles.dateText}>{date}</Text>

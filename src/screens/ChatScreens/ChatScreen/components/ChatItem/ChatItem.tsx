@@ -1,8 +1,6 @@
-import { Text, View, Image } from "react-native";
-import { useState, useEffect } from "react";
+import { Text, View } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
-import { GRAY } from "../../../../../color";
-import { usePeerAvatarUrl } from "../../../../../lib/chat/usePeerAvatarUrl";
+import UserProfileAvatar from "../../../../../components/ui/UserProfileAvatar";
 import styles from "./styles";
 
 interface ChatItemProps {
@@ -31,27 +29,15 @@ const ChatItem = ({
   peerUserId,
   initialAvatarUrl,
 }: ChatItemProps) => {
-  const avatarUrl = usePeerAvatarUrl(peerUserId, initialAvatarUrl);
-  const [imgErr, setImgErr] = useState(false);
-
-  useEffect(() => {
-    setImgErr(false);
-  }, [avatarUrl]);
-
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
         <View style={styles.avatar}>
-          {avatarUrl && !imgErr ? (
-            <Image
-              source={{ uri: avatarUrl }}
-              style={styles.avatarImage}
-              resizeMode="cover"
-              onError={() => setImgErr(true)}
-            />
-          ) : (
-            <MaterialIcons name="person" size={28} color={GRAY.MEDIUM_2} />
-          )}
+          <UserProfileAvatar
+            peerUserId={peerUserId}
+            profileImgUrl={initialAvatarUrl}
+            size={50}
+          />
         </View>
         {isOnline && <View style={styles.onlineIndicator} />}
       </View>

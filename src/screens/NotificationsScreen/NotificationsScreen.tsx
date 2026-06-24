@@ -2,7 +2,6 @@ import { useCallback, useLayoutEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
-  Image,
   Pressable,
   RefreshControl,
   Text,
@@ -19,6 +18,7 @@ import {
 } from "../../lib/apis/notifications/notificationsApi";
 import type { InboxRecipientItem } from "../../lib/apis/notifications/inboxTypes";
 import { navigateFromInboxItem } from "../../lib/notifications/navigateFromInboxItem";
+import UserProfileAvatar from "../../components/ui/UserProfileAvatar";
 import { GRAY } from "../../color";
 import styles from "./styles";
 
@@ -247,7 +247,6 @@ const NotificationsScreen = () => {
         }
         renderItem={({ item }) => {
           const unread = item.readAt == null;
-          const uri = item.notice.actor?.profileImgUrl?.trim();
           return (
             <Pressable
               style={[
@@ -256,25 +255,11 @@ const NotificationsScreen = () => {
               ]}
               onPress={() => void onPressRow(item)}
             >
-              {uri ? (
-                <Image source={{ uri }} style={styles.avatar} />
-              ) : (
-                <View
-                  style={[
-                    styles.avatar,
-                    {
-                      alignItems: "center",
-                      justifyContent: "center",
-                    },
-                  ]}
-                >
-                  <MaterialCommunityIcons
-                    name="account"
-                    size={26}
-                    color={GRAY.MEDIUM_2}
-                  />
-                </View>
-              )}
+              <UserProfileAvatar
+                profileImgUrl={item.notice.actor?.profileImgUrl}
+                size={44}
+                style={styles.avatar}
+              />
               <View style={styles.body}>
                 <Text
                   style={[

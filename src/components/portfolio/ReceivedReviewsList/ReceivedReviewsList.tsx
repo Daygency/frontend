@@ -265,6 +265,7 @@ const ReceivedReviewsList = ({
         title={item.announcement?.title || item.postId}
         content={item.publicNote ?? undefined}
         reactionTag={reactionLabel(item.rating)}
+        profileImgUrl={item.reviewer?.profileImgUrl}
         onPress={() => navigateToAnnouncement(item)}
         optionsMenu={
           isOwnProfile ? (

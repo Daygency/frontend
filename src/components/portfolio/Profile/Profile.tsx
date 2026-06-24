@@ -40,6 +40,7 @@ import {
 import { createCoffeeRoom } from "../../../lib/apis/chat/chatApi";
 import { chatRoomItemToParams } from "../../../lib/chat/chatRoomNavigation";
 import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
+import { DEFAULT_USER_PROFILE_IMAGE } from "../../../lib/media/defaultUserProfileImage";
 import * as ImagePicker from "expo-image-picker";
 import type { ChatRoomParams } from "../../../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
 
@@ -696,9 +697,9 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
                 />
               ) : (
                 <Image
-                  source={require("../../../../assets/logo.png")}
+                  source={DEFAULT_USER_PROFILE_IMAGE}
                   style={styles.profileImage}
-                  resizeMode="contain"
+                  resizeMode="cover"
                 />
               )}
             </View>

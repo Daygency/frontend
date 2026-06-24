@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../../color";
+import { BLACK, BLUE, GRAY, WHITE } from "../../../color";
 
 export default StyleSheet.create({
   container: {
@@ -69,7 +69,7 @@ export default StyleSheet.create({
     lineHeight: 14,
     letterSpacing: 0.2,
     color: BLACK,
-    fontWeight: "400",
+    fontWeight: "500",
   },
   recruitmentMajorsSection: {
     marginTop: 10,

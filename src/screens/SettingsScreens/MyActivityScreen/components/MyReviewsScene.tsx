@@ -105,6 +105,7 @@ const MyReviewsScene = () => {
             title={item.announcement?.title || item.postId}
             content={item.publicNote ?? item.privateNoteToOps ?? undefined}
             reactionTag={reactionLabel(item.rating)}
+            profileImgUrl={item.reviewee?.profileImgUrl}
             onOptionsPress={() => {}}
           />
         </View>
