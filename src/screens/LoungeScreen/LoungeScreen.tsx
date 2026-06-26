@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute, RouteProp } from "@react-navigation/native";
@@ -17,6 +17,8 @@ import {
   type PerformanceNewsFilterSheetType,
   type PerformanceNewsSortMode,
 } from "./components/performanceNewsFilterOptions";
+import { ContentRoutes } from "../../navigations/routes";
+import { registerTabRetapHandler } from "../../lib/navigation/tabRetap";
 
 type LoungeRouteParams = {
   initialTab?: LoungeTab | "음악계 소식";
@@ -66,6 +68,17 @@ const LoungeScreen = () => {
     () => LOUNGE_TABS[index] ?? "공연 소식",
     [index],
   );
+
+  const toggleSubTabRef = useRef(() => {});
+  toggleSubTabRef.current = () => {
+    setIndex((prev) => (prev === 0 ? 1 : 0));
+  };
+
+  useEffect(() => {
+    return registerTabRetapHandler(ContentRoutes.CHAT, () => {
+      toggleSubTabRef.current();
+    });
+  }, []);
 
   const loungeTabHeader = (
     <MainHomeHeader

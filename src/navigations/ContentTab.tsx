@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import type { EventArg } from "@react-navigation/native";
 import { ContentRoutes } from "./routes";
+import { fireTabRetap } from "../lib/navigation/tabRetap";
 import MainHomeScreen from "../screens/MainHomeScreen/MainHomeScreen";
 import AnnouncementScreen from "../screens/AnnouncementScreen/AnnouncementScreen";
 import ChatScreen from "../screens/ChatScreens/ChatScreen/ChatScreen";
@@ -41,6 +42,22 @@ const ContentTab = () => {
     requireLogin();
   };
 
+  const retapSubTabListener = ({
+    navigation,
+    route,
+  }: {
+    navigation: { getState: () => { index: number; routes: { key: string }[] } };
+    route: { key: string; name: string };
+  }) => ({
+    tabPress: () => {
+      const state = navigation.getState();
+      const focused = state.routes[state.index];
+      if (focused.key === route.key) {
+        fireTabRetap(route.name);
+      }
+    },
+  });
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -53,6 +70,7 @@ const ContentTab = () => {
       <Tab.Screen
         name={ContentRoutes.HOME}
         component={MainHomeScreen}
+        listeners={retapSubTabListener}
         options={{
           tabBarIcon: ({ color }) => (
             <Feather name="home" size={24} color={color} />
@@ -84,6 +102,7 @@ const ContentTab = () => {
       <Tab.Screen
         name={ContentRoutes.CHAT}
         component={LoungeScreen}
+        listeners={retapSubTabListener}
         options={{
           tabBarIcon: ({ color }) => (
             <Octicons name="people" size={24} color={color} />

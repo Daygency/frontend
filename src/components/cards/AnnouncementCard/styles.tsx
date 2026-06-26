@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../../color";
+import { BLACK, BLUE, GRAY, WHITE } from "../../../color";
 
 export default StyleSheet.create({
   card: {
@@ -76,6 +76,13 @@ export default StyleSheet.create({
     flexWrap: "wrap",
     gap: 6,
     minWidth: 0,
+  },
+  priceText: {
+    fontSize: 12,
+    lineHeight: 18,
+    fontWeight: "500",
+    color: BLUE.DEFAULT,
+    flexShrink: 1,
   },
   locationTagText: {
     fontSize: 11,

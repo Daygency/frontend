@@ -6,6 +6,7 @@ import {
   formatAnnouncementDDayLabel,
   isAnnouncementDeadlinePassed,
 } from "../../../lib/announcement/announcementDeadline";
+import { formatAnnouncementPriceLineList } from "../../../lib/announcement/announcementPrice";
 import { formatAnnouncementDistrictLabel } from "../../../lib/announcement/announcementAddress";
 import { sharedAnnouncementStyles } from "../../shared/AnnouncementShared/sharedAnnouncementStyles";
 import styles from "./styles";
@@ -38,6 +39,8 @@ const AnnouncementCard = ({
   status = "모집중",
   daysLeft = 20,
   deadlineAt,
+  priceType,
+  price,
   viewCount,
   address,
   authorName = "작성자",
@@ -58,6 +61,16 @@ const AnnouncementCard = ({
     effectiveDaysLeft,
     displayStatus,
   );
+
+  const showPrice =
+    priceType !== undefined ||
+    (typeof price === "number" && Number.isFinite(price));
+  const priceLabel = showPrice
+    ? formatAnnouncementPriceLineList(
+        priceType ?? "PENDING",
+        typeof price === "number" ? price : 0,
+      )
+    : null;
 
   const content = (
     <>
@@ -96,6 +109,11 @@ const AnnouncementCard = ({
       <View style={styles.footerSection}>
         <View style={styles.tagsRow}>
           <View style={styles.tagsGroup}>
+            {priceLabel ? (
+              <Text style={styles.priceText} numberOfLines={1}>
+                {priceLabel}
+              </Text>
+            ) : null}
             <View style={sharedAnnouncementStyles.typeTag}>
               <Text style={sharedAnnouncementStyles.typeTagText}>{type}</Text>
             </View>

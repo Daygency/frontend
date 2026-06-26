@@ -9,8 +9,12 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
   },
-  tabView: {
+  sceneStack: {
     flex: 1,
+    position: "relative",
+  },
+  sceneLayer: {
+    ...StyleSheet.absoluteFillObject,
   },
   curationLoading: {
     ...StyleSheet.absoluteFillObject,
