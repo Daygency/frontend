@@ -92,11 +92,11 @@ const CommunityCard = ({
 
             <View style={styles.footer}>
               <View style={styles.footerItem}>
-                <Ionicons name="heart-outline" size={20} color={BLACK} />
+                <Ionicons name="heart-outline" size={12} color={BLACK} />
                 <Text style={styles.footerText}>{likes}</Text>
               </View>
               <View style={styles.footerItem}>
-                <Ionicons name="chatbubble-outline" size={20} color={BLACK} />
+                <Ionicons name="chatbubble-outline" size={12} color={BLACK} />
                 <Text style={styles.footerText}>{comments}</Text>
               </View>
             </View>
@@ -208,8 +208,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   footerText: {
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 12,
+    fontWeight: "400",
     color: BLACK,
   },
 });
