@@ -5,6 +5,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: WHITE,
+    position: "relative",
   },
   content: {
     flex: 1,
@@ -21,6 +22,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1,
+  },
+  fab: {
+    position: "absolute",
+    zIndex: 50,
+    elevation: 50,
   },
 });
 

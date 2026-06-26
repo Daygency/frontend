@@ -1,26 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  Pressable,
   RefreshControl,
   SectionList,
   StyleSheet,
   Text,
   View,
 } from "react-native";
+import Animated from "react-native-reanimated";
+import type { ScrollHandlerProcessed } from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import styles from "../styles";
 import PerformanceNewsListCard from "./PerformanceNewsListCard";
 import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
-import { GRAY, MAIN, WHITE } from "../../../color";
-import {
-  PERFORMANCE_NEWS_SORT_LABEL,
-  type PerformanceNewsFilterSheetType,
-  type PerformanceNewsSortMode,
-} from "./performanceNewsFilterOptions";
+import { GRAY } from "../../../color";
+import type { PerformanceNewsSortMode } from "./performanceNewsFilterOptions";
 
 const POSTER_WIDTH = 112;
 
@@ -55,37 +51,6 @@ function applyClientFilters(
 }
 
 const localStyles = StyleSheet.create({
-  filterRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    paddingHorizontal: 12,
-    paddingBottom: 9,
-  },
-  filterChip: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: WHITE,
-    borderRadius: 100,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    paddingHorizontal: 12,
-    height: 36,
-    gap: 4,
-  },
-  filterChipActive: {
-    borderColor: MAIN.DEFAULT,
-    backgroundColor: MAIN.DEFAULT,
-  },
-  filterChipText: {
-    color: MAIN.DEFAULT,
-    fontSize: 14,
-    fontWeight: "500",
-  },
-  filterChipTextActive: {
-    color: WHITE,
-  },
   flatList: {
     flex: 1,
   },
@@ -122,18 +87,16 @@ type MusicNewsSceneProps = {
   sortMode: PerformanceNewsSortMode;
   selectedGenre: string | null;
   selectedRegion: string | null;
-  onFilterSheetOpen: (sheet: PerformanceNewsFilterSheetType) => void;
-  scrollHeader: ReactNode;
-  loungeTabHeader: ReactNode;
+  onListScroll: ScrollHandlerProcessed<Record<string, unknown>>;
 };
+
+const AnimatedSectionList = Animated.createAnimatedComponent(SectionList<NewsListItem>);
 
 const MusicNewsScene = ({
   sortMode,
   selectedGenre,
   selectedRegion,
-  onFilterSheetOpen,
-  scrollHeader,
-  loungeTabHeader,
+  onListScroll,
 }: MusicNewsSceneProps) => {
   const navigation = useNavigation<any>();
   const [items, setItems] = useState<NewsListItem[]>([]);
@@ -143,6 +106,8 @@ const MusicNewsScene = ({
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [bounceEnabled, setBounceEnabled] = useState(false);
+  const listHeightRef = useRef(0);
 
   const searchKeyword = useMemo(() => {
     return selectedRegion ?? selectedGenre ?? undefined;
@@ -210,90 +175,27 @@ const MusicNewsScene = ({
     void loadPage(nextCursor, true, "more");
   }, [loadPage, loadingMore, refreshing, loading, hasMore, nextCursor]);
 
-  const genreLabel = selectedGenre ?? "장르";
-  const regionLabel = selectedRegion ?? "지역";
-
   const sections = useMemo(
     () => [{ key: "news", data: displayedItems }],
     [displayedItems],
   );
 
-  const renderFilterRow = () => (
-    <View style={localStyles.filterRow}>
-      <Pressable
-        style={localStyles.filterChip}
-        onPress={() => onFilterSheetOpen("sort")}
-      >
-        <MaterialCommunityIcons
-          name="swap-vertical"
-          size={16}
-          color={MAIN.DEFAULT}
-        />
-        <Text style={localStyles.filterChipText}>
-          {PERFORMANCE_NEWS_SORT_LABEL[sortMode]}
-        </Text>
-      </Pressable>
-
-      <Pressable
-        style={[
-          localStyles.filterChip,
-          selectedGenre && localStyles.filterChipActive,
-        ]}
-        onPress={() => onFilterSheetOpen("genre")}
-      >
-        <Text
-          style={[
-            localStyles.filterChipText,
-            selectedGenre && localStyles.filterChipTextActive,
-          ]}
-        >
-          {genreLabel}
-        </Text>
-        <MaterialCommunityIcons
-          name="chevron-down"
-          size={16}
-          color={selectedGenre ? WHITE : MAIN.DEFAULT}
-        />
-      </Pressable>
-
-      <Pressable
-        style={[
-          localStyles.filterChip,
-          selectedRegion && localStyles.filterChipActive,
-        ]}
-        onPress={() => onFilterSheetOpen("region")}
-      >
-        <Text
-          style={[
-            localStyles.filterChipText,
-            selectedRegion && localStyles.filterChipTextActive,
-          ]}
-        >
-          {regionLabel}
-        </Text>
-        <MaterialCommunityIcons
-          name="chevron-down"
-          size={16}
-          color={selectedRegion ? WHITE : MAIN.DEFAULT}
-        />
-      </Pressable>
-    </View>
-  );
-
-  const renderStickyHeader = () => (
-    <View style={styles.loungeStickyHeader}>
-      {loungeTabHeader}
-      {renderFilterRow()}
-    </View>
-  );
-
   return (
     <View style={styles.newsSceneContainer}>
-      <SectionList
+      <AnimatedSectionList
         sections={sections}
         keyExtractor={(item) => item.newsId}
         style={localStyles.flatList}
         contentContainerStyle={localStyles.listContent}
+        onLayout={(event) => {
+          listHeightRef.current = event.nativeEvent.layout.height;
+        }}
+        onContentSizeChange={(_, contentHeight) => {
+          setBounceEnabled(contentHeight > listHeightRef.current + 1);
+        }}
+        bounces={bounceEnabled}
+        alwaysBounceVertical={bounceEnabled}
+        overScrollMode={bounceEnabled ? "auto" : "never"}
         renderItem={({ item }) => (
           <PerformanceNewsListCard
             item={item}
@@ -305,10 +207,9 @@ const MusicNewsScene = ({
           />
         )}
         ItemSeparatorComponent={() => <View style={localStyles.separator} />}
-        renderSectionHeader={renderStickyHeader}
-        stickySectionHeadersEnabled
-        ListHeaderComponent={<View>{scrollHeader}</View>}
         showsVerticalScrollIndicator={false}
+        onScroll={onListScroll}
+        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refresh} />
         }

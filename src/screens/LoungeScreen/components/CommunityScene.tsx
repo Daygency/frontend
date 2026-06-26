@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
   SectionList,
   StyleSheet,
   View,
   Text,
 } from "react-native";
+import Animated from "react-native-reanimated";
+import type { ScrollHandlerProcessed } from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
+import type { LoungeCommunityTagOption } from "./LoungeCommunityTagRow";
 import { RootRoutes } from "../../../navigations/routes";
 import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
 import type { CommunityCategory, CommunityListItem } from "../../../lib/apis/community/types";
@@ -18,44 +20,26 @@ import {
   pickCommunityAuthor,
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
-import SelectableTag from "../../../components/ui/SelectableTag";
 import { GRAY } from "../../../color";
 
-type TagOption =
-  | "전체"
-  | "자유게시판"
-  | "구인"
-  | "입시정보"
-  | "유학정보"
-  | "학원 운영"
-  | "학원/연습실 매매";
-
-const TAG_OPTIONS: TagOption[] = [
-  "전체",
-  "자유게시판",
-  "구인",
-  "입시정보",
-  "유학정보",
-  "학원 운영",
-  "학원/연습실 매매",
-];
-
-type PostTag = Exclude<TagOption, "전체">;
+type PostTag = Exclude<LoungeCommunityTagOption, "전체">;
 
 type CommunitySceneProps = {
-  scrollHeader: ReactNode;
-  loungeTabHeader: ReactNode;
+  selectedTag: LoungeCommunityTagOption;
+  onListScroll: ScrollHandlerProcessed<Record<string, unknown>>;
 };
 
-const CommunityScene = ({
-  scrollHeader,
-  loungeTabHeader,
-}: CommunitySceneProps) => {
-  const [selectedTag, setSelectedTag] = useState<TagOption>("전체");
+const AnimatedSectionList = Animated.createAnimatedComponent(
+  SectionList<CommunityListItem>,
+);
+
+const CommunityScene = ({ selectedTag, onListScroll }: CommunitySceneProps) => {
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [items, setItems] = useState<CommunityListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [bounceEnabled, setBounceEnabled] = useState(false);
+  const listHeightRef = useRef(0);
   const navigation = useNavigation<any>();
 
   const filteredPosts = useMemo(() => {
@@ -80,7 +64,7 @@ const CommunityScene = ({
     });
   }, [items, selectedTag]);
 
-  const findCategoryIdByTag = (tag: TagOption): string | undefined => {
+  const findCategoryIdByTag = (tag: LoungeCommunityTagOption): string | undefined => {
     if (tag === "전체") return undefined;
 
     const categoryNameByTag: Record<PostTag, string> = {
@@ -158,44 +142,27 @@ const CommunityScene = ({
     [filteredPosts],
   );
 
-  const renderStickyHeader = () => (
-    <View style={styles.loungeStickyHeader}>
-      {loungeTabHeader}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={localStyles.tagScroll}
-        contentContainerStyle={styles.sortFilterContainer}
-        nestedScrollEnabled
-        directionalLockEnabled
-        scrollEventThrottle={16}
-        bounces={false}
-      >
-        {TAG_OPTIONS.map((tag) => (
-          <SelectableTag
-            key={tag}
-            label={tag}
-            selected={selectedTag === tag}
-            onPress={() => setSelectedTag(tag)}
-          />
-        ))}
-      </ScrollView>
-    </View>
-  );
-
   return (
     <View style={styles.newsSceneContainer}>
-      <SectionList
+      <AnimatedSectionList
         sections={sections}
         keyExtractor={(item) => item.communityId}
         renderItem={renderItem}
-        renderSectionHeader={renderStickyHeader}
-        stickySectionHeadersEnabled
-        ListHeaderComponent={<View>{scrollHeader}</View>}
         contentContainerStyle={localStyles.listContent}
         style={localStyles.sectionList}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={false}
+        onLayout={(event) => {
+          listHeightRef.current = event.nativeEvent.layout.height;
+        }}
+        onContentSizeChange={(_, contentHeight) => {
+          setBounceEnabled(contentHeight > listHeightRef.current + 1);
+        }}
+        bounces={bounceEnabled}
+        alwaysBounceVertical={bounceEnabled}
+        overScrollMode={bounceEnabled ? "auto" : "never"}
+        onScroll={onListScroll}
+        scrollEventThrottle={16}
         ListEmptyComponent={
           error ? (
             <View style={localStyles.loaderContainer}>
@@ -249,10 +216,6 @@ function formatRelativeTime(createdAt?: string): string {
 const localStyles = StyleSheet.create({
   sectionList: {
     flex: 1,
-  },
-  tagScroll: {
-    flexGrow: 0,
-    flexShrink: 0,
   },
   listContent: {
     paddingBottom: 24,

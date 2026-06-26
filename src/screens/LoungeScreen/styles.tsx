@@ -24,8 +24,20 @@ const styles = StyleSheet.create({
   newsSceneContainer: {
     flex: 1,
   },
-  loungeStickyHeader: {
+  collapsibleTopBar: {
+    overflow: "hidden",
     backgroundColor: WHITE,
+  },
+  collapsibleTabBar: {
+    overflow: "hidden",
+    backgroundColor: WHITE,
+  },
+  filterBar: {
+    backgroundColor: WHITE,
+  },
+  communityTagScroll: {
+    flexGrow: 0,
+    flexShrink: 0,
   },
   sortFilterContainer: {
     flexDirection: "row",

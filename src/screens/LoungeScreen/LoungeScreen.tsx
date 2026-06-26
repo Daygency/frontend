@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
+import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute, RouteProp } from "@react-navigation/native";
 import { TabView } from "react-native-tab-view";
@@ -12,6 +13,10 @@ import MainHomeHeader, {
 import ContentRegistrationFabButton from "../../components/ui/FabButton/ContentRegistrationFabButton";
 import MusicNewsScene from "./components/MusicNewsScene";
 import CommunityScene from "./components/CommunityScene";
+import LoungePerformanceNewsFilterRow from "./components/LoungePerformanceNewsFilterRow";
+import LoungeCommunityTagRow, {
+  type LoungeCommunityTagOption,
+} from "./components/LoungeCommunityTagRow";
 import PerformanceNewsFilterSheet from "./components/PerformanceNewsFilterSheet";
 import {
   type PerformanceNewsFilterSheetType,
@@ -19,6 +24,7 @@ import {
 } from "./components/performanceNewsFilterOptions";
 import { ContentRoutes } from "../../navigations/routes";
 import { registerTabRetapHandler } from "../../lib/navigation/tabRetap";
+import { useLoungeCollapsibleHeader } from "./useLoungeCollapsibleHeader";
 
 type LoungeRouteParams = {
   initialTab?: LoungeTab | "음악계 소식";
@@ -52,9 +58,28 @@ const LoungeScreen = () => {
   const [sortMode, setSortMode] = useState<PerformanceNewsSortMode>("imminent");
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
+  const [selectedCommunityTag, setSelectedCommunityTag] =
+    useState<LoungeCommunityTagOption>("전체");
   const [filterSheet, setFilterSheet] = useState<PerformanceNewsFilterSheetType | null>(
     null,
   );
+
+  const activeTab = useMemo(
+    () => LOUNGE_TABS[index] ?? "공연 소식",
+    [index],
+  );
+
+  const {
+    setTopBarHeight,
+    setTabBarHeight,
+    topBarHeight,
+    tabBarHeight,
+    topBarAnimatedStyle,
+    tabBarAnimatedStyle,
+    scrollHandlerByTab,
+  } = useLoungeCollapsibleHeader(activeTab);
+  const topBarMeasuredRef = useRef(false);
+  const tabBarMeasuredRef = useRef(false);
 
   useEffect(() => {
     setIndex(tabToIndex(resolveInitialTab(route.params?.initialTab)));
@@ -63,11 +88,6 @@ const LoungeScreen = () => {
   useEffect(() => {
     setFilterSheet(null);
   }, [index]);
-
-  const activeTab = useMemo(
-    () => LOUNGE_TABS[index] ?? "공연 소식",
-    [index],
-  );
 
   const toggleSubTabRef = useRef(() => {});
   toggleSubTabRef.current = () => {
@@ -85,15 +105,24 @@ const LoungeScreen = () => {
       tabs={LOUNGE_TABS}
       activeTab={activeTab}
       onTabChange={(tab) => setIndex(tabToIndex(tab as LoungeTab))}
+      dense
     />
   );
 
-  const scrollHeader = (
-    <MainHomeTopBar
-      logoName="라운지"
-      initialTag={TAB_TO_SEARCH_TAG[activeTab]}
-    />
-  );
+  const filterRow =
+    activeTab === "공연 소식" ? (
+      <LoungePerformanceNewsFilterRow
+        sortMode={sortMode}
+        selectedGenre={selectedGenre}
+        selectedRegion={selectedRegion}
+        onFilterSheetOpen={setFilterSheet}
+      />
+    ) : (
+      <LoungeCommunityTagRow
+        selectedTag={selectedCommunityTag}
+        onSelectTag={setSelectedCommunityTag}
+      />
+    );
 
   const renderScene = ({ route: sceneRoute }: { route: { key: string } }) => {
     switch (sceneRoute.key) {
@@ -103,16 +132,14 @@ const LoungeScreen = () => {
             sortMode={sortMode}
             selectedGenre={selectedGenre}
             selectedRegion={selectedRegion}
-            onFilterSheetOpen={setFilterSheet}
-            scrollHeader={scrollHeader}
-            loungeTabHeader={loungeTabHeader}
+            onListScroll={scrollHandlerByTab["공연 소식"]}
           />
         );
       case "커뮤니티":
         return (
           <CommunityScene
-            scrollHeader={scrollHeader}
-            loungeTabHeader={loungeTabHeader}
+            selectedTag={selectedCommunityTag}
+            onListScroll={scrollHandlerByTab.커뮤니티}
           />
         );
       default:
@@ -122,6 +149,42 @@ const LoungeScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
+      <View style={[styles.collapsibleTopBar, { height: topBarHeight }]}>
+        <Animated.View style={topBarAnimatedStyle}>
+          <View
+            onLayout={(event) => {
+              if (topBarMeasuredRef.current) return;
+              const nextHeight = event.nativeEvent.layout.height;
+              if (nextHeight > 0) {
+                topBarMeasuredRef.current = true;
+                setTopBarHeight(nextHeight);
+              }
+            }}
+          >
+            <MainHomeTopBar
+              logoName="라운지"
+              initialTag={TAB_TO_SEARCH_TAG[activeTab]}
+            />
+          </View>
+        </Animated.View>
+      </View>
+      <View style={[styles.collapsibleTabBar, { height: tabBarHeight }]}>
+        <Animated.View style={tabBarAnimatedStyle}>
+          <View
+            onLayout={(event) => {
+              if (tabBarMeasuredRef.current) return;
+              const nextHeight = event.nativeEvent.layout.height;
+              if (nextHeight > 0) {
+                tabBarMeasuredRef.current = true;
+                setTabBarHeight(nextHeight);
+              }
+            }}
+          >
+            {loungeTabHeader}
+          </View>
+        </Animated.View>
+      </View>
+      <View style={styles.filterBar}>{filterRow}</View>
       <View style={styles.body}>
         <TabView
           navigationState={{ index, routes: LOUNGE_ROUTES }}

@@ -18,6 +18,7 @@ import {
 import { useCurationBackgroundTransition } from "./useCurationBackgroundTransition";
 import { useCurationContentFade } from "./useCurationContentFade";
 import CurationBottomGradient from "./CurationBottomGradient";
+import ContentRegistrationFabButton from "../../components/ui/FabButton/ContentRegistrationFabButton";
 import styles from "./styles";
 import { ContentRoutes } from "../../navigations/routes";
 import { registerTabRetapHandler } from "../../lib/navigation/tabRetap";
@@ -166,6 +167,7 @@ const MainHomeScreen = () => {
         </Animated.View>
       </View>
       {isCuration ? <CurationBottomGradient /> : null}
+      <ContentRegistrationFabButton containerStyle={styles.fab} />
     </Animated.View>
   );
 };
