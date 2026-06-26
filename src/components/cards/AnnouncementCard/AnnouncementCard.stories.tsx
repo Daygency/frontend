@@ -23,7 +23,7 @@ export const Default: Story = {
     status: "모집중",
     daysLeft: 12,
     authorName: "데이전시",
-    address: "서울특별시 강남구",
+    address: "서울 서초구 예술의전당",
     viewCount: 128,
   },
 };

@@ -30,6 +30,7 @@ import {
 import ImageCarousel from "../../components/media/ImageCarousel/ImageCarousel";
 import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
 import { parseCoord } from "../../lib/kakao/location";
+import { formatAnnouncementDistrictLabel } from "../../lib/announcement/announcementAddress";
 import { extractAnnouncementAuthorFromDetail } from "../../lib/announcement/extractAnnouncementAuthor";
 import type { AnnouncementAuthor } from "../../lib/announcement/extractAnnouncementAuthor";
 import { useAnnouncementAuthorLabel } from "../../lib/announcement/useAnnouncementAuthorLabel";
@@ -134,14 +135,6 @@ function parseAnnouncementAttachments(
     out.push({ name, size: sizeStr });
   }
   return out;
-}
-
-function locationBadgeLabel(address: string): string {
-  const trimmed = address.trim();
-  if (!trimmed) return "";
-  const parts = trimmed.split(/\s+/).filter(Boolean);
-  if (parts.length <= 2) return trimmed;
-  return parts.slice(2).join(" ") || trimmed;
 }
 
 const AnnouncementDetailScreen = () => {
@@ -735,7 +728,7 @@ const AnnouncementDetailScreen = () => {
     displayDaysLeft,
     displayStatus,
   );
-  const venueLabel = locationBadgeLabel(addressLabel);
+  const venueLabel = formatAnnouncementDistrictLabel(addressLabel);
   const recruitmentMajorNames = useMemo(
     () =>
       resolveRecruitmentMajorDisplayNames(

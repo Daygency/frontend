@@ -6,16 +6,9 @@ import {
   formatAnnouncementDDayLabel,
   isAnnouncementDeadlinePassed,
 } from "../../../lib/announcement/announcementDeadline";
+import { formatAnnouncementDistrictLabel } from "../../../lib/announcement/announcementAddress";
 import { sharedAnnouncementStyles } from "../../shared/AnnouncementShared/sharedAnnouncementStyles";
 import styles from "./styles";
-
-const LOCATION_LABEL_MAX_LENGTH = 15;
-
-function formatLocationLabel(address: string): string {
-  const trimmed = address.trim();
-  if (trimmed.length <= LOCATION_LABEL_MAX_LENGTH) return trimmed;
-  return `${trimmed.slice(0, LOCATION_LABEL_MAX_LENGTH)}…`;
-}
 
 interface AnnouncementCardProps {
   title: string;
@@ -108,7 +101,7 @@ const AnnouncementCard = ({
             </View>
             {address?.trim() ? (
               <Text style={styles.locationTagText} numberOfLines={1}>
-                {formatLocationLabel(address)}
+                {formatAnnouncementDistrictLabel(address)}
               </Text>
             ) : null}
           </View>
