@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -42,11 +42,7 @@ const TAG_OPTIONS: TagOption[] = [
 
 type PostTag = Exclude<TagOption, "전체">;
 
-type CommunitySceneProps = {
-  listHeaderComponent?: ReactNode;
-};
-
-const CommunityScene = ({ listHeaderComponent }: CommunitySceneProps) => {
+const CommunityScene = () => {
   const [selectedTag, setSelectedTag] = useState<TagOption>("전체");
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
@@ -186,11 +182,6 @@ const CommunityScene = ({ listHeaderComponent }: CommunitySceneProps) => {
         renderItem={renderItem}
         renderSectionHeader={renderTagBar}
         stickySectionHeadersEnabled
-        ListHeaderComponent={
-          listHeaderComponent ? (
-            <View>{listHeaderComponent}</View>
-          ) : undefined
-        }
         contentContainerStyle={localStyles.listContent}
         style={localStyles.sectionList}
         showsVerticalScrollIndicator={false}

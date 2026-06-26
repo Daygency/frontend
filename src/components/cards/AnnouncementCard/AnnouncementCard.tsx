@@ -1,7 +1,4 @@
-import { Text, View } from "react-native";
-import ShadowCardButton from "../../cards/ShadowCardButton";
-import shadowCardStyles from "../../cards/ShadowCardButton/styles";
-import NewBadge from "../../ui/NewBadge";
+import { Pressable, Text, View } from "react-native";
 import CommentAuthorAvatar from "../../comments/CommentAuthorAvatar/CommentAuthorAvatar";
 import type { AnnouncementPriceType } from "../../../lib/apis/announcement/types";
 import {
@@ -9,7 +6,6 @@ import {
   formatAnnouncementDDayLabel,
   isAnnouncementDeadlinePassed,
 } from "../../../lib/announcement/announcementDeadline";
-import { formatAnnouncementPriceLineList } from "../../../lib/announcement/announcementPrice";
 import { sharedAnnouncementStyles } from "../../shared/AnnouncementShared/sharedAnnouncementStyles";
 import styles from "./styles";
 
@@ -49,19 +45,12 @@ const AnnouncementCard = ({
   status = "모집중",
   daysLeft = 20,
   deadlineAt,
-  priceType,
-  price,
   viewCount,
   address,
   authorName = "작성자",
   profileImgUrl,
-  showNew = false,
   onPress,
 }: AnnouncementCardProps) => {
-  const showPrice =
-    priceType !== undefined ||
-    (typeof price === "number" && Number.isFinite(price));
-
   const effectiveDaysLeft = effectiveAnnouncementDaysLeft(
     deadlineAt,
     daysLeft,
@@ -77,94 +66,69 @@ const AnnouncementCard = ({
     displayStatus,
   );
 
-  const inner = (
-    <View style={styles.container}>
-      <View style={styles.profileRow}>
-        <CommentAuthorAvatar
-          profileImgUrl={profileImgUrl}
-          size={28}
-          style={styles.profileAvatar}
-        />
-        <Text style={styles.authorName} numberOfLines={1} ellipsizeMode="tail">
-          {authorName}
-        </Text>
-        <Text
-          style={[
-            sharedAnnouncementStyles.dDayText,
-            styles.dDayOnRow,
-            isDeadlinePassed && sharedAnnouncementStyles.dDayTextGray,
-            !isDeadlinePassed &&
-              effectiveDaysLeft >= 0 &&
-              effectiveDaysLeft <= 7 &&
-              sharedAnnouncementStyles.dDayTextRed,
-          ]}
-        >
-          {dDayLabel}
-        </Text>
-      </View>
-
-      <View style={styles.titleWrap}>
-        <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
-          {title}
-        </Text>
-        {/* {showNew ? <NewBadge /> : null} */}
-      </View>
-
-      <View style={styles.tagsRow}>
-        <View style={sharedAnnouncementStyles.typeTag}>
-          <Text style={sharedAnnouncementStyles.typeTagText}>{type}</Text>
-        </View>
-        <View style={sharedAnnouncementStyles.statusTag}>
-          <Text style={sharedAnnouncementStyles.statusTagText}>
-            {displayStatus}
+  const content = (
+    <>
+      <View style={styles.topSection}>
+        <View style={styles.profileRow}>
+          <CommentAuthorAvatar
+            profileImgUrl={profileImgUrl}
+            size={28}
+            style={styles.profileAvatar}
+          />
+          <Text style={styles.authorName} numberOfLines={1} ellipsizeMode="tail">
+            {authorName}
+          </Text>
+          <Text
+            style={[
+              sharedAnnouncementStyles.dDayText,
+              styles.dDayOnRow,
+              isDeadlinePassed && sharedAnnouncementStyles.dDayTextGray,
+              !isDeadlinePassed &&
+                effectiveDaysLeft >= 0 &&
+                effectiveDaysLeft <= 7 &&
+                sharedAnnouncementStyles.dDayTextRed,
+            ]}
+          >
+            {dDayLabel}
           </Text>
         </View>
-        {address?.trim() ? (
-          // <View style={styles.locationTag}>
-            <Text style={styles.locationTagText} numberOfLines={1}>
-              {formatLocationLabel(address)}
-            </Text>
-          // </View>
-        ) : null}
+
+        <View style={styles.titleWrap}>
+          <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
+            {title}
+          </Text>
+        </View>
       </View>
 
-      {showPrice || typeof viewCount === "number" ? (
-        <View style={sharedAnnouncementStyles.priceAndViewRow}>
-          {showPrice ? (
-            <Text
-              style={[
-                sharedAnnouncementStyles.priceLine,
-                sharedAnnouncementStyles.priceLineFlex,
-              ]}
-              numberOfLines={2}
-            >
-              {formatAnnouncementPriceLineList(
-                priceType ?? "PENDING",
-                typeof price === "number" ? price : 0,
-              )}
-            </Text>
-          ) : (
-            <View style={sharedAnnouncementStyles.priceLineFlex} />
-          )}
+      <View style={styles.footerSection}>
+        <View style={styles.tagsRow}>
+          <View style={styles.tagsGroup}>
+            <View style={sharedAnnouncementStyles.typeTag}>
+              <Text style={sharedAnnouncementStyles.typeTagText}>{type}</Text>
+            </View>
+            {address?.trim() ? (
+              <Text style={styles.locationTagText} numberOfLines={1}>
+                {formatLocationLabel(address)}
+              </Text>
+            ) : null}
+          </View>
           {typeof viewCount === "number" ? (
-            <Text style={sharedAnnouncementStyles.viewCountText}>
-              조회 {viewCount}
-            </Text>
+            <Text style={styles.viewCountText}>조회 {viewCount}</Text>
           ) : null}
         </View>
-      ) : null}
-    </View>
+      </View>
+    </>
   );
 
   if (onPress) {
-    return <ShadowCardButton onPress={onPress}>{inner}</ShadowCardButton>;
+    return (
+      <Pressable style={styles.card} onPress={onPress}>
+        {content}
+      </Pressable>
+    );
   }
 
-  return (
-    <View style={[shadowCardStyles.container, shadowCardStyles.shadow]}>
-      {inner}
-    </View>
-  );
+  return <View style={styles.card}>{content}</View>;
 };
 
 export default AnnouncementCard;

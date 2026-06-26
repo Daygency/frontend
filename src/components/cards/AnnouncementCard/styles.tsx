@@ -1,9 +1,20 @@
 import { StyleSheet } from "react-native";
-import { BLACK } from "../../../color";
+import { BLACK, GRAY, WHITE } from "../../../color";
 
 export default StyleSheet.create({
-  container: {
+  card: {
     width: "100%",
+    backgroundColor: WHITE,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: GRAY.MEDIUM,
+    overflow: "hidden",
+  },
+  topSection: {
+    paddingHorizontal: 15,
+    paddingTop: 12,
+    paddingBottom: 10,
+    backgroundColor: WHITE,
   },
   profileRow: {
     flexDirection: "row",
@@ -34,7 +45,6 @@ export default StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-    marginBottom: 8,
     width: "100%",
   },
   title: {
@@ -47,12 +57,25 @@ export default StyleSheet.create({
     color: BLACK,
     fontWeight: "600",
   },
+  footerSection: {
+    backgroundColor: GRAY.DEFAULT_1,
+    paddingHorizontal: 15,
+    paddingTop: 10,
+    paddingBottom: 12,
+  },
   tagsRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    width: "100%",
+    gap: 8,
+  },
+  tagsGroup: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
     gap: 6,
-    width: "100%",
+    minWidth: 0,
   },
   locationTagText: {
     fontSize: 11,
@@ -60,5 +83,12 @@ export default StyleSheet.create({
     letterSpacing: 0.2,
     color: BLACK,
     fontWeight: "500",
+  },
+  viewCountText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: GRAY.MEDIUM_100,
+    fontWeight: "400",
+    flexShrink: 0,
   },
 });

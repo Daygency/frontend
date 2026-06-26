@@ -606,10 +606,10 @@ const AnnouncementRegistrationScreen = () => {
     }
 
     let resolvedPrice = 0;
-    if (priceType === "EXPENSE" || priceType === "INCOME") {
+    if (priceType === "INCOME") {
       const trimmed = priceInput.trim().replace(/,/g, "");
       if (!trimmed) {
-        Alert.alert("입력 확인", "참가비·수입 유형일 때는 금액(원)을 입력해주세요.");
+        Alert.alert("입력 확인", "페이 유형일 때는 금액(원)을 입력해주세요.");
         return;
       }
       const n = parseInt(trimmed, 10);
@@ -1009,7 +1009,7 @@ const AnnouncementRegistrationScreen = () => {
                         setPriceType(item.value as AnnouncementPriceType)
                       }
                     />
-                    {(priceType === "EXPENSE" || priceType === "INCOME") ? (
+                    {priceType === "INCOME" ? (
                       <View style={{ marginTop: 12 }}>
                         <FormTextInput
                           placeholder="금액(원)을 입력하세요"

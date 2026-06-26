@@ -67,22 +67,6 @@ const LoungeScreen = () => {
     [index],
   );
 
-  const isCommunityTab = activeTab === "커뮤니티";
-
-  const communityScrollHeader = (
-    <>
-      <MainHomeTopBar
-        logoName="라운지"
-        initialTag={TAB_TO_SEARCH_TAG[activeTab]}
-      />
-      <MainHomeHeader
-        tabs={LOUNGE_TABS}
-        activeTab={activeTab}
-        onTabChange={(tab) => setIndex(tabToIndex(tab as LoungeTab))}
-      />
-    </>
-  );
-
   const renderScene = ({ route: sceneRoute }: { route: { key: string } }) => {
     switch (sceneRoute.key) {
       case "공연 소식":
@@ -95,7 +79,7 @@ const LoungeScreen = () => {
           />
         );
       case "커뮤니티":
-        return <CommunityScene listHeaderComponent={communityScrollHeader} />;
+        return <CommunityScene />;
       default:
         return null;
     }
@@ -103,27 +87,23 @@ const LoungeScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      {!isCommunityTab ? (
-        <MainHomeTopBar
-          logoName="라운지"
-          initialTag={TAB_TO_SEARCH_TAG[activeTab]}
-        />
-      ) : null}
+      <MainHomeTopBar
+        logoName="라운지"
+        initialTag={TAB_TO_SEARCH_TAG[activeTab]}
+      />
       <View style={styles.body}>
         <TabView
           navigationState={{ index, routes: LOUNGE_ROUTES }}
           renderScene={renderScene}
           onIndexChange={setIndex}
           initialLayout={{ width: layout.width }}
-          renderTabBar={() =>
-            isCommunityTab ? null : (
-              <MainHomeHeader
-                tabs={LOUNGE_TABS}
-                activeTab={activeTab}
-                onTabChange={(tab) => setIndex(tabToIndex(tab as LoungeTab))}
-              />
-            )
-          }
+          renderTabBar={() => (
+            <MainHomeHeader
+              tabs={LOUNGE_TABS}
+              activeTab={activeTab}
+              onTabChange={(tab) => setIndex(tabToIndex(tab as LoungeTab))}
+            />
+          )}
           style={styles.tabView}
         />
         <ContentRegistrationFabButton containerStyle={styles.fab} />

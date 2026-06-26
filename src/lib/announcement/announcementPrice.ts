@@ -29,7 +29,7 @@ export function priceTypeLabel(t: AnnouncementPriceType): string {
     case "EXPENSE":
       return "참가비";
     case "INCOME":
-      return "수입";
+      return "페이";
     case "FREE":
       return "무료";
     case "PENDING":
@@ -66,8 +66,7 @@ export function formatAnnouncementPriceLineList(
 export const PRICE_TYPE_OPTIONS: { label: string; value: AnnouncementPriceType }[] =
   [
     { label: "무료", value: "FREE" },
-    { label: "참가비", value: "EXPENSE" },
-    { label: "수입", value: "INCOME" },
+    { label: "페이", value: "INCOME" },
     { label: "비용협의", value: "PENDING" },
   ];
 
@@ -86,6 +85,8 @@ function labelToPriceEnum(label: string): AnnouncementPriceType | undefined {
   const t = label.trim();
   const byLabel = PRICE_TYPE_OPTIONS.find((o) => o.label === t)?.value;
   if (byLabel) return byLabel;
+  if (t === "수입") return "INCOME";
+  if (t === "참가비") return "EXPENSE";
   if (t === "비용협의" || t === "협의가능" || t === "협의 가능") {
     return "PENDING";
   }
