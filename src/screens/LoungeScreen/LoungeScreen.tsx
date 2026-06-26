@@ -67,6 +67,21 @@ const LoungeScreen = () => {
     [index],
   );
 
+  const loungeTabHeader = (
+    <MainHomeHeader
+      tabs={LOUNGE_TABS}
+      activeTab={activeTab}
+      onTabChange={(tab) => setIndex(tabToIndex(tab as LoungeTab))}
+    />
+  );
+
+  const scrollHeader = (
+    <MainHomeTopBar
+      logoName="라운지"
+      initialTag={TAB_TO_SEARCH_TAG[activeTab]}
+    />
+  );
+
   const renderScene = ({ route: sceneRoute }: { route: { key: string } }) => {
     switch (sceneRoute.key) {
       case "공연 소식":
@@ -76,10 +91,17 @@ const LoungeScreen = () => {
             selectedGenre={selectedGenre}
             selectedRegion={selectedRegion}
             onFilterSheetOpen={setFilterSheet}
+            scrollHeader={scrollHeader}
+            loungeTabHeader={loungeTabHeader}
           />
         );
       case "커뮤니티":
-        return <CommunityScene />;
+        return (
+          <CommunityScene
+            scrollHeader={scrollHeader}
+            loungeTabHeader={loungeTabHeader}
+          />
+        );
       default:
         return null;
     }
@@ -87,23 +109,15 @@ const LoungeScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <MainHomeTopBar
-        logoName="라운지"
-        initialTag={TAB_TO_SEARCH_TAG[activeTab]}
-      />
       <View style={styles.body}>
         <TabView
           navigationState={{ index, routes: LOUNGE_ROUTES }}
           renderScene={renderScene}
           onIndexChange={setIndex}
           initialLayout={{ width: layout.width }}
-          renderTabBar={() => (
-            <MainHomeHeader
-              tabs={LOUNGE_TABS}
-              activeTab={activeTab}
-              onTabChange={(tab) => setIndex(tabToIndex(tab as LoungeTab))}
-            />
-          )}
+          renderTabBar={() => null}
+          swipeEnabled={false}
+          animationEnabled={false}
           style={styles.tabView}
         />
         <ContentRegistrationFabButton containerStyle={styles.fab} />

@@ -559,16 +559,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
   }
 
   if (isOtherProfile && isPortfolioPrivateBlocked) {
-    return (
-      <View style={[styles.container, { paddingVertical: 24, paddingHorizontal: 16 }]}>
-        <Text style={{ color: GRAY.DARK_100, textAlign: "center", fontSize: 15, fontWeight: "600" }}>
-          비공개 프로필입니다
-        </Text>
-        <Text style={{ color: GRAY.DARK, textAlign: "center", marginTop: 8, fontSize: 13 }}>
-          이 사용자는 포트폴리오를 비공개로 설정했습니다.
-        </Text>
-      </View>
-    );
+    return null;
   }
 
   const roleLabel =

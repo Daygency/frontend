@@ -13,6 +13,8 @@ interface MainHomeHeaderProps<T extends string = MainHomeTab> {
   activeTab: T;
   onTabChange: (tab: T) => void;
   variant?: "light" | "dark";
+  /** 라운지 등 탭-필터 간격을 좁힐 때 */
+  dense?: boolean;
 }
 
 const MainHomeHeader = <T extends string = MainHomeTab>({
@@ -20,6 +22,7 @@ const MainHomeHeader = <T extends string = MainHomeTab>({
   activeTab,
   onTabChange,
   variant = "light",
+  dense = false,
 }: MainHomeHeaderProps<T>) => {
   const [labelWidths, setLabelWidths] = useState<Partial<Record<string, number>>>(
     {},
@@ -33,7 +36,7 @@ const MainHomeHeader = <T extends string = MainHomeTab>({
   const isDark = variant === "dark";
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, dense && styles.containerDense]}>
       {tabs.map((tab) => {
         const selected = activeTab === tab;
         const indicatorWidth = labelWidths[tab];

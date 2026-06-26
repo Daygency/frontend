@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -19,7 +19,7 @@ import {
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
 import SelectableTag from "../../../components/ui/SelectableTag";
-import { GRAY, WHITE } from "../../../color";
+import { GRAY } from "../../../color";
 
 type TagOption =
   | "전체"
@@ -42,7 +42,15 @@ const TAG_OPTIONS: TagOption[] = [
 
 type PostTag = Exclude<TagOption, "전체">;
 
-const CommunityScene = () => {
+type CommunitySceneProps = {
+  scrollHeader: ReactNode;
+  loungeTabHeader: ReactNode;
+};
+
+const CommunityScene = ({
+  scrollHeader,
+  loungeTabHeader,
+}: CommunitySceneProps) => {
   const [selectedTag, setSelectedTag] = useState<TagOption>("전체");
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
@@ -150,8 +158,9 @@ const CommunityScene = () => {
     [filteredPosts],
   );
 
-  const renderTagBar = () => (
-    <View style={localStyles.stickyTagBar}>
+  const renderStickyHeader = () => (
+    <View style={styles.loungeStickyHeader}>
+      {loungeTabHeader}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -180,8 +189,9 @@ const CommunityScene = () => {
         sections={sections}
         keyExtractor={(item) => item.communityId}
         renderItem={renderItem}
-        renderSectionHeader={renderTagBar}
+        renderSectionHeader={renderStickyHeader}
         stickySectionHeadersEnabled
+        ListHeaderComponent={<View>{scrollHeader}</View>}
         contentContainerStyle={localStyles.listContent}
         style={localStyles.sectionList}
         showsVerticalScrollIndicator={false}
@@ -239,10 +249,6 @@ function formatRelativeTime(createdAt?: string): string {
 const localStyles = StyleSheet.create({
   sectionList: {
     flex: 1,
-  },
-  stickyTagBar: {
-    backgroundColor: WHITE,
-    paddingTop: 4,
   },
   tagScroll: {
     flexGrow: 0,

@@ -11,6 +11,9 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 8,
   },
+  containerDense: {
+    paddingBottom: 4,
+  },
   tabButton: {
     alignItems: "center",
   },

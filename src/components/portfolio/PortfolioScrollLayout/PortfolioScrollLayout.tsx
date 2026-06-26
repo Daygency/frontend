@@ -1,7 +1,9 @@
 import React, { isValidElement, cloneElement, useRef, useCallback } from "react";
 import type { ReactElement, ReactNode } from "react";
 import {
+  ActivityIndicator,
   Animated,
+  Text,
   View,
   StyleSheet,
   useWindowDimensions,
@@ -21,6 +23,8 @@ import Section from "../../ui/Section";
 import portfolioStyles, { portfolioSectionStyles } from "../styles";
 import { PORTFOLIO_IMMERSIVE_BG } from "../../../constants/portfolio";
 import { RootRoutes } from "../../../navigations/routes";
+import { usePortfolioProfile } from "../../../hooks/usePortfolioProfile";
+import { GRAY, MAIN } from "../../../color";
 
 type Props = {
   header: ReactNode;
@@ -49,6 +53,13 @@ const PortfolioScrollLayout = ({
   const routeParams = (route.params ?? {}) as { userId?: string };
   const viewingUserId =
     portfolioUserId?.trim() || routeParams.userId?.trim() || "";
+  const {
+    isLoading: profileLoading,
+    isOtherProfile,
+    isPortfolioPrivateBlocked,
+  } = usePortfolioProfile();
+  const showPrivateNotice =
+    isOtherProfile && isPortfolioPrivateBlocked && !profileLoading;
   const hasPhotos = PORTFOLIO_PHOTOS.length > 0;
   const hasMorePhotos = PORTFOLIO_PHOTOS.length > PHOTO_PREVIEW_LIMIT;
   const coverExtendTop = immersiveCover ? top + 44 : 0;
@@ -115,26 +126,47 @@ const PortfolioScrollLayout = ({
           clampScrollTop(event.nativeEvent.contentOffset.y);
         }}
       >
-        <Profile coverExtendTop={coverExtendTop} />
-        <ProfileDetail embedded />
-        {hasPhotos ? (
-          <View style={portfolioStyles.contentSheet}>
-            <Section
-              title="사진"
-              onPressMore={
-                hasMorePhotos
-                  ? () => navigation.navigate(RootRoutes.PORTFOLIO_PHOTO_GALLERY)
-                  : undefined
-              }
-              styles={portfolioSectionStyles}
-            >
-              <Photo embedded limit={PHOTO_PREVIEW_LIMIT} />
-            </Section>
+        {profileLoading ? (
+          <View style={layoutStyles.loadingWrap}>
+            <ActivityIndicator size="small" color={MAIN.DEFAULT} />
           </View>
-        ) : null}
-        <View style={portfolioStyles.contentSheet}>
-          <Activity embedded userId={viewingUserId || undefined} />
-        </View>
+        ) : showPrivateNotice ? (
+          <View
+            style={[
+              layoutStyles.privateNotice,
+              { minHeight: Math.round(windowHeight * 0.55) },
+            ]}
+          >
+            <Text style={layoutStyles.privateTitle}>비공개 프로필입니다</Text>
+            <Text style={layoutStyles.privateDescription}>
+              이 사용자는 포트폴리오를 비공개로 설정했습니다.
+            </Text>
+          </View>
+        ) : (
+          <>
+            <Profile coverExtendTop={coverExtendTop} />
+            <ProfileDetail embedded />
+            {hasPhotos ? (
+              <View style={portfolioStyles.contentSheet}>
+                <Section
+                  title="사진"
+                  onPressMore={
+                    hasMorePhotos
+                      ? () =>
+                          navigation.navigate(RootRoutes.PORTFOLIO_PHOTO_GALLERY)
+                      : undefined
+                  }
+                  styles={portfolioSectionStyles}
+                >
+                  <Photo embedded limit={PHOTO_PREVIEW_LIMIT} />
+                </Section>
+              </View>
+            ) : null}
+            <View style={portfolioStyles.contentSheet}>
+              <Activity embedded userId={viewingUserId || undefined} />
+            </View>
+          </>
+        )}
       </Animated.ScrollView>
       {immersiveCover ? (
         <View style={layoutStyles.headerOverlay} pointerEvents="box-none">
@@ -161,6 +193,30 @@ const layoutStyles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
+  },
+  loadingWrap: {
+    paddingVertical: 80,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  privateNotice: {
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+    paddingVertical: 48,
+  },
+  privateTitle: {
+    color: GRAY.DARK_100,
+    textAlign: "center",
+    fontSize: 16,
+    fontWeight: "600",
+  },
+  privateDescription: {
+    color: GRAY.DARK,
+    textAlign: "center",
+    marginTop: 8,
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
 

@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   RefreshControl,
+  SectionList,
   StyleSheet,
   Text,
   View,
@@ -90,7 +90,6 @@ const localStyles = StyleSheet.create({
     flex: 1,
   },
   listContent: {
-    paddingTop: 4,
     paddingBottom: 24,
     flexGrow: 1,
   },
@@ -124,6 +123,8 @@ type MusicNewsSceneProps = {
   selectedGenre: string | null;
   selectedRegion: string | null;
   onFilterSheetOpen: (sheet: PerformanceNewsFilterSheetType) => void;
+  scrollHeader: ReactNode;
+  loungeTabHeader: ReactNode;
 };
 
 const MusicNewsScene = ({
@@ -131,6 +132,8 @@ const MusicNewsScene = ({
   selectedGenre,
   selectedRegion,
   onFilterSheetOpen,
+  scrollHeader,
+  loungeTabHeader,
 }: MusicNewsSceneProps) => {
   const navigation = useNavigation<any>();
   const [items, setItems] = useState<NewsListItem[]>([]);
@@ -210,115 +213,133 @@ const MusicNewsScene = ({
   const genreLabel = selectedGenre ?? "장르";
   const regionLabel = selectedRegion ?? "지역";
 
+  const sections = useMemo(
+    () => [{ key: "news", data: displayedItems }],
+    [displayedItems],
+  );
+
+  const renderFilterRow = () => (
+    <View style={localStyles.filterRow}>
+      <Pressable
+        style={localStyles.filterChip}
+        onPress={() => onFilterSheetOpen("sort")}
+      >
+        <MaterialCommunityIcons
+          name="swap-vertical"
+          size={16}
+          color={MAIN.DEFAULT}
+        />
+        <Text style={localStyles.filterChipText}>
+          {PERFORMANCE_NEWS_SORT_LABEL[sortMode]}
+        </Text>
+      </Pressable>
+
+      <Pressable
+        style={[
+          localStyles.filterChip,
+          selectedGenre && localStyles.filterChipActive,
+        ]}
+        onPress={() => onFilterSheetOpen("genre")}
+      >
+        <Text
+          style={[
+            localStyles.filterChipText,
+            selectedGenre && localStyles.filterChipTextActive,
+          ]}
+        >
+          {genreLabel}
+        </Text>
+        <MaterialCommunityIcons
+          name="chevron-down"
+          size={16}
+          color={selectedGenre ? WHITE : MAIN.DEFAULT}
+        />
+      </Pressable>
+
+      <Pressable
+        style={[
+          localStyles.filterChip,
+          selectedRegion && localStyles.filterChipActive,
+        ]}
+        onPress={() => onFilterSheetOpen("region")}
+      >
+        <Text
+          style={[
+            localStyles.filterChipText,
+            selectedRegion && localStyles.filterChipTextActive,
+          ]}
+        >
+          {regionLabel}
+        </Text>
+        <MaterialCommunityIcons
+          name="chevron-down"
+          size={16}
+          color={selectedRegion ? WHITE : MAIN.DEFAULT}
+        />
+      </Pressable>
+    </View>
+  );
+
+  const renderStickyHeader = () => (
+    <View style={styles.loungeStickyHeader}>
+      {loungeTabHeader}
+      {renderFilterRow()}
+    </View>
+  );
+
   return (
     <View style={styles.newsSceneContainer}>
-      <View style={localStyles.filterRow}>
-        <Pressable
-          style={localStyles.filterChip}
-          onPress={() => onFilterSheetOpen("sort")}
-        >
-          <MaterialCommunityIcons
-            name="swap-vertical"
-            size={16}
-            color={MAIN.DEFAULT}
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.newsId}
+        style={localStyles.flatList}
+        contentContainerStyle={localStyles.listContent}
+        renderItem={({ item }) => (
+          <PerformanceNewsListCard
+            item={item}
+            onPress={() =>
+              navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
+                newsId: item.newsId,
+              })
+            }
           />
-          <Text style={localStyles.filterChipText}>
-            {PERFORMANCE_NEWS_SORT_LABEL[sortMode]}
-          </Text>
-        </Pressable>
-
-        <Pressable
-          style={[
-            localStyles.filterChip,
-            selectedGenre && localStyles.filterChipActive,
-          ]}
-          onPress={() => onFilterSheetOpen("genre")}
-        >
-          <Text
-            style={[
-              localStyles.filterChipText,
-              selectedGenre && localStyles.filterChipTextActive,
-            ]}
-          >
-            {genreLabel}
-          </Text>
-          <MaterialCommunityIcons
-            name="chevron-down"
-            size={16}
-            color={selectedGenre ? WHITE : MAIN.DEFAULT}
-          />
-        </Pressable>
-
-        <Pressable
-          style={[
-            localStyles.filterChip,
-            selectedRegion && localStyles.filterChipActive,
-          ]}
-          onPress={() => onFilterSheetOpen("region")}
-        >
-          <Text
-            style={[
-              localStyles.filterChipText,
-              selectedRegion && localStyles.filterChipTextActive,
-            ]}
-          >
-            {regionLabel}
-          </Text>
-          <MaterialCommunityIcons
-            name="chevron-down"
-            size={16}
-            color={selectedRegion ? WHITE : MAIN.DEFAULT}
-          />
-        </Pressable>
-      </View>
-
-      {loading && items.length === 0 ? (
-        <View style={localStyles.loaderContainer}>
-          <ActivityIndicator size="small" />
-        </View>
-      ) : error ? (
-        <View style={localStyles.loaderContainer}>
-          <Text style={localStyles.errorText}>{error}</Text>
-        </View>
-      ) : displayedItems.length === 0 ? (
-        <View style={localStyles.loaderContainer}>
-          <Text style={localStyles.emptyText}>등록된 공연소식이 없습니다.</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={displayedItems}
-          keyExtractor={(item) => item.newsId}
-          style={localStyles.flatList}
-          contentContainerStyle={localStyles.listContent}
-          renderItem={({ item }) => (
-            <PerformanceNewsListCard
-              item={item}
-              onPress={() =>
-                navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
-                  newsId: item.newsId,
-                })
-              }
-            />
-          )}
-          ItemSeparatorComponent={() => <View style={localStyles.separator} />}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={refresh} />
-          }
-          onMomentumScrollBegin={() => {
-            endReachReadyRef.current = true;
-          }}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.5}
-          ListFooterComponent={
-            loadingMore ? (
-              <View style={localStyles.footerLoader}>
-                <ActivityIndicator size="small" />
-              </View>
-            ) : null
-          }
-        />
-      )}
+        )}
+        ItemSeparatorComponent={() => <View style={localStyles.separator} />}
+        renderSectionHeader={renderStickyHeader}
+        stickySectionHeadersEnabled
+        ListHeaderComponent={<View>{scrollHeader}</View>}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+        }
+        onMomentumScrollBegin={() => {
+          endReachReadyRef.current = true;
+        }}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={localStyles.footerLoader}>
+              <ActivityIndicator size="small" />
+            </View>
+          ) : null
+        }
+        ListEmptyComponent={
+          loading && items.length === 0 ? (
+            <View style={localStyles.loaderContainer}>
+              <ActivityIndicator size="small" />
+            </View>
+          ) : error ? (
+            <View style={localStyles.loaderContainer}>
+              <Text style={localStyles.errorText}>{error}</Text>
+            </View>
+          ) : (
+            <View style={localStyles.loaderContainer}>
+              <Text style={localStyles.emptyText}>등록된 공연소식이 없습니다.</Text>
+            </View>
+          )
+        }
+      />
     </View>
   );
 };

@@ -107,21 +107,7 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
   }
 
   if (isOtherProfile && isPortfolioPrivateBlocked) {
-    return (
-      <View
-        style={[
-          embedded ? styles.embeddedRoot : styles.container,
-          embedded ? undefined : styles.contentContainer,
-          { padding: 24, justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <Text
-          style={{ color: GRAY.DARK_100, textAlign: "center", fontWeight: "600" }}
-        >
-          비공개 프로필입니다
-        </Text>
-      </View>
-    );
+    return null;
   }
 
   const sections = getProfileDetailSections(profile);

@@ -10,6 +10,8 @@ import ReceivedReviewsList, {
 } from "../ReceivedReviewsList";
 import { RootRoutes } from "../../../navigations/routes";
 
+import { usePortfolioProfile } from "../../../hooks/usePortfolioProfile";
+
 type ActivityProps = {
   embedded?: boolean;
   /** 타인 포트폴리오 — 해당 유저가 받은 후기 */
@@ -18,6 +20,7 @@ type ActivityProps = {
 
 const Activity = ({ embedded = false, userId }: ActivityProps) => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const { isOtherProfile, isPortfolioPrivateBlocked } = usePortfolioProfile();
   const [showMore, setShowMore] = useState(false);
   const isOwnProfile = !userId?.trim();
 
@@ -31,6 +34,10 @@ const Activity = ({ embedded = false, userId }: ActivityProps) => {
   const openHiddenList = useCallback(() => {
     navigation.navigate(RootRoutes.RECEIVED_REVIEWS, { hiddenOnly: true });
   }, [navigation]);
+
+  if (isOtherProfile && isPortfolioPrivateBlocked) {
+    return null;
+  }
 
   const inner = (
     <View style={embedded ? styles.embeddedContainer : styles.container}>

@@ -23,7 +23,9 @@ const styles = StyleSheet.create({
   },
   newsSceneContainer: {
     flex: 1,
-    paddingTop: 4,
+  },
+  loungeStickyHeader: {
+    backgroundColor: WHITE,
   },
   sortFilterContainer: {
     flexDirection: "row",
