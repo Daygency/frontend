@@ -1,5 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, ScrollView, StyleSheet, View, Text } from "react-native";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  ActivityIndicator,
+  ScrollView,
+  SectionList,
+  StyleSheet,
+  View,
+  Text,
+} from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
@@ -12,6 +19,7 @@ import {
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
 import SelectableTag from "../../../components/ui/SelectableTag";
+import { GRAY, WHITE } from "../../../color";
 
 type TagOption =
   | "전체"
@@ -34,7 +42,11 @@ const TAG_OPTIONS: TagOption[] = [
 
 type PostTag = Exclude<TagOption, "전체">;
 
-const CommunityScene = () => {
+type CommunitySceneProps = {
+  listHeaderComponent?: ReactNode;
+};
+
+const CommunityScene = ({ listHeaderComponent }: CommunitySceneProps) => {
   const [selectedTag, setSelectedTag] = useState<TagOption>("전체");
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
@@ -137,8 +149,13 @@ const CommunityScene = () => {
     );
   };
 
-  return (
-    <View style={styles.newsSceneContainer}>
+  const sections = useMemo(
+    () => [{ key: "posts", data: filteredPosts }],
+    [filteredPosts],
+  );
+
+  const renderTagBar = () => (
+    <View style={localStyles.stickyTagBar}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -158,24 +175,42 @@ const CommunityScene = () => {
           />
         ))}
       </ScrollView>
-      {error ? (
-        <View style={localStyles.loaderContainer}>
-          <Text>{error}</Text>
-        </View>
-      ) : loading && (!Array.isArray(items) || items.length === 0) ? (
-        <View style={localStyles.loaderContainer}>
-          <ActivityIndicator size="small" />
-        </View>
-      ) : (
-        <FlatList
-          data={filteredPosts}
-          keyExtractor={(item) => item.communityId}
-          renderItem={renderItem}
-          contentContainerStyle={localStyles.listContent}
-          showsVerticalScrollIndicator={false}
-          removeClippedSubviews={false}
-        />
-      )}
+    </View>
+  );
+
+  return (
+    <View style={styles.newsSceneContainer}>
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.communityId}
+        renderItem={renderItem}
+        renderSectionHeader={renderTagBar}
+        stickySectionHeadersEnabled
+        ListHeaderComponent={
+          listHeaderComponent ? (
+            <View>{listHeaderComponent}</View>
+          ) : undefined
+        }
+        contentContainerStyle={localStyles.listContent}
+        style={localStyles.sectionList}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={false}
+        ListEmptyComponent={
+          error ? (
+            <View style={localStyles.loaderContainer}>
+              <Text>{error}</Text>
+            </View>
+          ) : loading ? (
+            <View style={localStyles.loaderContainer}>
+              <ActivityIndicator size="small" />
+            </View>
+          ) : (
+            <View style={localStyles.loaderContainer}>
+              <Text style={localStyles.emptyText}>게시글이 없습니다.</Text>
+            </View>
+          )
+        }
+      />
     </View>
   );
 };
@@ -211,19 +246,29 @@ function formatRelativeTime(createdAt?: string): string {
 }
 
 const localStyles = StyleSheet.create({
+  sectionList: {
+    flex: 1,
+  },
+  stickyTagBar: {
+    backgroundColor: WHITE,
+    paddingTop: 4,
+  },
   tagScroll: {
     flexGrow: 0,
     flexShrink: 0,
   },
   listContent: {
-    paddingTop: 4,
     paddingBottom: 24,
+    flexGrow: 1,
   },
   loaderContainer: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 24,
+  },
+  emptyText: {
+    fontSize: 14,
+    color: GRAY.DARK,
   },
 });
 

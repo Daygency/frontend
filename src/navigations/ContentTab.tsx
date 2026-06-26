@@ -17,6 +17,7 @@ import {
   MaterialIcons,
   Octicons,
 } from "@expo/vector-icons";
+import { BLACK, WHITE } from "../color";
 
 const Tab = createBottomTabNavigator();
 
@@ -24,7 +25,7 @@ const TAB_BAR_STYLE = {
   paddingTop: 8,
   paddingBottom: 10,
   height: 90,
-  backgroundColor: "#000000",
+  backgroundColor: BLACK,
   borderTopWidth: 0,
 } as const;
 
@@ -44,7 +45,7 @@ const ContentTab = () => {
       screenOptions={{
         headerShown: false,
         tabBarStyle: TAB_BAR_STYLE,
-        tabBarActiveTintColor: "#ffffff",
+        tabBarActiveTintColor: WHITE,
         tabBarInactiveTintColor: "rgba(255,255,255,0.45)",
       }}
     >

@@ -180,10 +180,10 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   content: {
-    fontSize: 15,
+    fontSize: 13,
     fontWeight: "400",
-    color: BLACK,
-    lineHeight: 21,
+    color: GRAY.DARK_100,
+    lineHeight: 18,
     marginBottom: 8,
   },
   thumbnailWrap: {

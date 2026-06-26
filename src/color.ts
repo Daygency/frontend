@@ -1,5 +1,5 @@
 export const WHITE = "#ffffff";
-export const BLACK = "#000000";
+export const BLACK = "#111113";
 export const GRAY = {
   DEFAULT_1: "#F8F8F8",
   DEFAULT: "#F5F5F5",
