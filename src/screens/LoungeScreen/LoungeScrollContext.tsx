@@ -45,6 +45,32 @@ type LoungeScrollProviderProps = {
   activeTabIndex: number;
 };
 
+function useLoungeScrollHandler(
+  scrollY: SharedValue<number>,
+  lastScrollY: SharedValue<number>,
+  headerCollapse: SharedValue<number>,
+  maxCollapse: number,
+) {
+  return useAnimatedScrollHandler({
+    onScroll: (event) => {
+      "worklet";
+      const y = Math.max(0, event.contentOffset.y);
+      const delta = y - lastScrollY.value;
+
+      if (y <= 0) {
+        headerCollapse.value = 0;
+      } else if (delta > 0) {
+        headerCollapse.value = Math.min(headerCollapse.value + delta, maxCollapse);
+      } else if (delta < 0) {
+        headerCollapse.value = Math.max(0, headerCollapse.value + delta);
+      }
+
+      lastScrollY.value = y;
+      scrollY.value = y;
+    },
+  });
+}
+
 export function LoungeScrollProvider({
   children,
   topBar,
@@ -54,6 +80,10 @@ export function LoungeScrollProvider({
 }: LoungeScrollProviderProps) {
   const scrollYNews = useSharedValue(0);
   const scrollYCommunity = useSharedValue(0);
+  const lastScrollYNews = useSharedValue(0);
+  const lastScrollYCommunity = useSharedValue(0);
+  const headerCollapseNews = useSharedValue(0);
+  const headerCollapseCommunity = useSharedValue(0);
   const activeTabIndex = useSharedValue(activeTabIndexProp);
 
   const [topBarHeight, setTopBarHeight] = useState(DEFAULT_TOP_BAR_HEIGHT);
@@ -62,26 +92,25 @@ export function LoungeScrollProvider({
 
   const headerTotalHeight = topBarHeight + tabBarHeight;
   const listTopInset = headerTotalHeight + filterBarHeight;
+  const maxHeaderCollapse = headerTotalHeight;
 
   useLayoutEffect(() => {
     activeTabIndex.value = activeTabIndexProp;
   }, [activeTabIndex, activeTabIndexProp]);
 
-  const newsScrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      "worklet";
-      const y = event.contentOffset.y;
-      scrollYNews.value = y > 0 ? y : 0;
-    },
-  });
+  const newsScrollHandler = useLoungeScrollHandler(
+    scrollYNews,
+    lastScrollYNews,
+    headerCollapseNews,
+    maxHeaderCollapse,
+  );
 
-  const communityScrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      "worklet";
-      const y = event.contentOffset.y;
-      scrollYCommunity.value = y > 0 ? y : 0;
-    },
-  });
+  const communityScrollHandler = useLoungeScrollHandler(
+    scrollYCommunity,
+    lastScrollYCommunity,
+    headerCollapseCommunity,
+    maxHeaderCollapse,
+  );
 
   const value = useMemo(
     () => ({
@@ -98,8 +127,8 @@ export function LoungeScrollProvider({
         {children}
         <LoungeCollapsibleChrome
           activeTabIndex={activeTabIndex}
-          scrollYNews={scrollYNews}
-          scrollYCommunity={scrollYCommunity}
+          headerCollapseNews={headerCollapseNews}
+          headerCollapseCommunity={headerCollapseCommunity}
           topBarHeight={topBarHeight}
           tabBarHeight={tabBarHeight}
           headerTotalHeight={headerTotalHeight}
@@ -120,8 +149,8 @@ type LoungeCollapsibleChromeProps = {
   tabBar: ReactNode;
   filterBar: ReactNode;
   activeTabIndex: SharedValue<number>;
-  scrollYNews: SharedValue<number>;
-  scrollYCommunity: SharedValue<number>;
+  headerCollapseNews: SharedValue<number>;
+  headerCollapseCommunity: SharedValue<number>;
   topBarHeight: number;
   tabBarHeight: number;
   headerTotalHeight: number;
@@ -130,13 +159,22 @@ type LoungeCollapsibleChromeProps = {
   onFilterBarLayout: (height: number) => void;
 };
 
+function getHeaderCollapse(
+  tabIndex: number,
+  newsCollapse: number,
+  communityCollapse: number,
+) {
+  "worklet";
+  return tabIndex === 0 ? newsCollapse : communityCollapse;
+}
+
 function LoungeCollapsibleChrome({
   topBar,
   tabBar,
   filterBar,
   activeTabIndex,
-  scrollYNews,
-  scrollYCommunity,
+  headerCollapseNews,
+  headerCollapseCommunity,
   topBarHeight,
   tabBarHeight,
   headerTotalHeight,
@@ -147,22 +185,17 @@ function LoungeCollapsibleChrome({
   const topBarMeasured = useRef(false);
   const tabBarMeasured = useRef(false);
 
-  const getScrollY = (tabIndex: number, newsY: number, communityY: number) => {
-    "worklet";
-    return tabIndex === 0 ? newsY : communityY;
-  };
-
   const topBarStyle = useAnimatedStyle(() => {
-    const scrollY = getScrollY(
+    const collapse = getHeaderCollapse(
       activeTabIndex.value,
-      scrollYNews.value,
-      scrollYCommunity.value,
+      headerCollapseNews.value,
+      headerCollapseCommunity.value,
     );
     return {
       transform: [
         {
           translateY: -interpolate(
-            scrollY,
+            collapse,
             [0, topBarHeight],
             [0, topBarHeight],
             Extrapolation.CLAMP,
@@ -173,16 +206,16 @@ function LoungeCollapsibleChrome({
   }, [topBarHeight]);
 
   const tabBarStyle = useAnimatedStyle(() => {
-    const scrollY = getScrollY(
+    const collapse = getHeaderCollapse(
       activeTabIndex.value,
-      scrollYNews.value,
-      scrollYCommunity.value,
+      headerCollapseNews.value,
+      headerCollapseCommunity.value,
     );
     return {
       transform: [
         {
           translateY: -interpolate(
-            scrollY,
+            collapse,
             [0, headerTotalHeight],
             [0, headerTotalHeight],
             Extrapolation.CLAMP,
@@ -193,16 +226,16 @@ function LoungeCollapsibleChrome({
   }, [headerTotalHeight]);
 
   const filterBarStyle = useAnimatedStyle(() => {
-    const scrollY = getScrollY(
+    const collapse = getHeaderCollapse(
       activeTabIndex.value,
-      scrollYNews.value,
-      scrollYCommunity.value,
+      headerCollapseNews.value,
+      headerCollapseCommunity.value,
     );
     return {
       transform: [
         {
           translateY: -interpolate(
-            scrollY,
+            collapse,
             [0, headerTotalHeight],
             [0, headerTotalHeight],
             Extrapolation.CLAMP,
