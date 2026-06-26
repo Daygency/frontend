@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  FlatList,
   RefreshControl,
-  SectionList,
   StyleSheet,
   Text,
   View,
 } from "react-native";
 import Animated from "react-native-reanimated";
-import type { ScrollHandlerProcessed } from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import PerformanceNewsListCard from "./PerformanceNewsListCard";
@@ -17,6 +16,7 @@ import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
 import { GRAY } from "../../../color";
 import type { PerformanceNewsSortMode } from "./performanceNewsFilterOptions";
+import { useLoungeScroll } from "../LoungeScrollContext";
 
 const POSTER_WIDTH = 112;
 
@@ -28,7 +28,7 @@ function sortNewsItems(items: NewsListItem[], mode: PerformanceNewsSortMode) {
       if (Number.isFinite(ta) && Number.isFinite(tb) && ta !== tb) {
         return tb - ta;
       }
-      return String(b.newsId).localeCompare(String(a.newsId));
+      return String(b.newsId).localeCompare(String(b.newsId));
     }
 
     const ta = new Date(a.startedAt).getTime();
@@ -87,18 +87,17 @@ type MusicNewsSceneProps = {
   sortMode: PerformanceNewsSortMode;
   selectedGenre: string | null;
   selectedRegion: string | null;
-  onListScroll: ScrollHandlerProcessed<Record<string, unknown>>;
 };
 
-const AnimatedSectionList = Animated.createAnimatedComponent(SectionList<NewsListItem>);
+const AnimatedFlatList = Animated.createAnimatedComponent(FlatList<NewsListItem>);
 
 const MusicNewsScene = ({
   sortMode,
   selectedGenre,
   selectedRegion,
-  onListScroll,
 }: MusicNewsSceneProps) => {
   const navigation = useNavigation<any>();
+  const { listTopInset, newsScrollHandler } = useLoungeScroll();
   const [items, setItems] = useState<NewsListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -106,8 +105,6 @@ const MusicNewsScene = ({
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [bounceEnabled, setBounceEnabled] = useState(false);
-  const listHeightRef = useRef(0);
 
   const searchKeyword = useMemo(() => {
     return selectedRegion ?? selectedGenre ?? undefined;
@@ -175,27 +172,18 @@ const MusicNewsScene = ({
     void loadPage(nextCursor, true, "more");
   }, [loadPage, loadingMore, refreshing, loading, hasMore, nextCursor]);
 
-  const sections = useMemo(
-    () => [{ key: "news", data: displayedItems }],
-    [displayedItems],
-  );
-
   return (
     <View style={styles.newsSceneContainer}>
-      <AnimatedSectionList
-        sections={sections}
+      <AnimatedFlatList
+        data={displayedItems}
         keyExtractor={(item) => item.newsId}
         style={localStyles.flatList}
-        contentContainerStyle={localStyles.listContent}
-        onLayout={(event) => {
-          listHeightRef.current = event.nativeEvent.layout.height;
-        }}
-        onContentSizeChange={(_, contentHeight) => {
-          setBounceEnabled(contentHeight > listHeightRef.current + 1);
-        }}
-        bounces={bounceEnabled}
-        alwaysBounceVertical={bounceEnabled}
-        overScrollMode={bounceEnabled ? "auto" : "never"}
+        contentContainerStyle={[
+          localStyles.listContent,
+          { paddingTop: listTopInset },
+        ]}
+        onScroll={newsScrollHandler}
+        scrollEventThrottle={16}
         renderItem={({ item }) => (
           <PerformanceNewsListCard
             item={item}
@@ -208,8 +196,6 @@ const MusicNewsScene = ({
         )}
         ItemSeparatorComponent={() => <View style={localStyles.separator} />}
         showsVerticalScrollIndicator={false}
-        onScroll={onListScroll}
-        scrollEventThrottle={16}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refresh} />
         }

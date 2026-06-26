@@ -16,6 +16,21 @@ const styles = StyleSheet.create({
   tabView: {
     flex: 1,
   },
+  floatingHeader: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 20,
+    backgroundColor: WHITE,
+    overflow: "hidden",
+  },
+  floatingFilter: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    zIndex: 15,
+  },
   fab: {
     position: "absolute",
     zIndex: 50,
@@ -24,12 +39,7 @@ const styles = StyleSheet.create({
   newsSceneContainer: {
     flex: 1,
   },
-  collapsibleTopBar: {
-    overflow: "hidden",
-    backgroundColor: WHITE,
-  },
-  collapsibleTabBar: {
-    overflow: "hidden",
+  stickyHeader: {
     backgroundColor: WHITE,
   },
   filterBar: {

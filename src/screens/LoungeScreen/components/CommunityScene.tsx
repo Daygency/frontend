@@ -1,13 +1,12 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  SectionList,
+  FlatList,
   StyleSheet,
   View,
   Text,
 } from "react-native";
 import Animated from "react-native-reanimated";
-import type { ScrollHandlerProcessed } from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
@@ -21,25 +20,24 @@ import {
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
 import { GRAY } from "../../../color";
+import { useLoungeScroll } from "../LoungeScrollContext";
 
 type PostTag = Exclude<LoungeCommunityTagOption, "전체">;
 
 type CommunitySceneProps = {
   selectedTag: LoungeCommunityTagOption;
-  onListScroll: ScrollHandlerProcessed<Record<string, unknown>>;
 };
 
-const AnimatedSectionList = Animated.createAnimatedComponent(
-  SectionList<CommunityListItem>,
+const AnimatedFlatList = Animated.createAnimatedComponent(
+  FlatList<CommunityListItem>,
 );
 
-const CommunityScene = ({ selectedTag, onListScroll }: CommunitySceneProps) => {
+const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
+  const { listTopInset, communityScrollHandler } = useLoungeScroll();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [items, setItems] = useState<CommunityListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [bounceEnabled, setBounceEnabled] = useState(false);
-  const listHeightRef = useRef(0);
   const navigation = useNavigation<any>();
 
   const filteredPosts = useMemo(() => {
@@ -137,36 +135,25 @@ const CommunityScene = ({ selectedTag, onListScroll }: CommunitySceneProps) => {
     );
   };
 
-  const sections = useMemo(
-    () => [{ key: "posts", data: filteredPosts }],
-    [filteredPosts],
-  );
-
   return (
     <View style={styles.newsSceneContainer}>
-      <AnimatedSectionList
-        sections={sections}
+      <AnimatedFlatList
+        data={filteredPosts}
         keyExtractor={(item) => item.communityId}
         renderItem={renderItem}
-        contentContainerStyle={localStyles.listContent}
+        contentContainerStyle={[
+          localStyles.listContent,
+          { paddingTop: listTopInset },
+        ]}
         style={localStyles.sectionList}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews={false}
-        onLayout={(event) => {
-          listHeightRef.current = event.nativeEvent.layout.height;
-        }}
-        onContentSizeChange={(_, contentHeight) => {
-          setBounceEnabled(contentHeight > listHeightRef.current + 1);
-        }}
-        bounces={bounceEnabled}
-        alwaysBounceVertical={bounceEnabled}
-        overScrollMode={bounceEnabled ? "auto" : "never"}
-        onScroll={onListScroll}
+        onScroll={communityScrollHandler}
         scrollEventThrottle={16}
         ListEmptyComponent={
           error ? (
             <View style={localStyles.loaderContainer}>
-              <Text>{error}</Text>
+              <Text style={localStyles.errorText}>{error}</Text>
             </View>
           ) : loading ? (
             <View style={localStyles.loaderContainer}>
@@ -222,9 +209,14 @@ const localStyles = StyleSheet.create({
     flexGrow: 1,
   },
   loaderContainer: {
+    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 24,
+  },
+  errorText: {
+    fontSize: 14,
+    color: GRAY.DARK,
   },
   emptyText: {
     fontSize: 14,
