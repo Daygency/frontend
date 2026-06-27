@@ -14,10 +14,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 10,
     paddingTop: 6,
-  },
-  headerSearchMode: {
-    paddingTop: 4,
-    paddingBottom: 4,
+    minHeight: 60,
   },
   headerTitleWrap: {
     flex: 1,
@@ -42,7 +39,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    height: 36,
+    height: 40,
+    marginRight: 12,
     backgroundColor: GRAY.DEFAULT_1,
     borderRadius: 10,
     paddingHorizontal: 12,

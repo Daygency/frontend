@@ -128,6 +128,9 @@ const localStyles = StyleSheet.create({
     position: "relative",
     overflow: "hidden",
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    backgroundColor: GRAY.DEFAULT,
   },
   imageFill: {
     width: "100%",
@@ -140,6 +143,8 @@ const localStyles = StyleSheet.create({
   },
   noImagePlaceholder: {
     backgroundColor: GRAY.MEDIUM,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
     justifyContent: "center",
     alignItems: "center",
     overflow: "hidden",

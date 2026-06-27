@@ -34,7 +34,7 @@ const ChatScreen = () => {
 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
-      <View style={[styles.header, isSearchOpen && styles.headerSearchMode]}>
+      <View style={styles.header}>
         {isSearchOpen ? (
           <View style={styles.headerSearchWrap}>
             <Feather name="search" size={18} color={GRAY.DARK_2} />

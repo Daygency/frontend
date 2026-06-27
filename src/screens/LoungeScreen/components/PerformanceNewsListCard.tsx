@@ -179,11 +179,15 @@ const styles = StyleSheet.create({
   posterWrap: {
     width: POSTER_WIDTH,
     flexShrink: 0,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    overflow: "hidden",
+    backgroundColor: GRAY.DEFAULT,
   },
   poster: {
     width: POSTER_WIDTH,
     height: POSTER_HEIGHT,
-    borderRadius: 8,
     backgroundColor: GRAY.MEDIUM,
   },
   posterPlaceholder: {
