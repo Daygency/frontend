@@ -15,6 +15,12 @@ export type HomeBannerDetail = {
   createdAt?: string;
 };
 
+export type HomeBannerFeedResponse = {
+  items: HomeBannerListItem[];
+  nextCursor: string | null;
+  hasMore: boolean;
+};
+
 export async function getHomeBanners(): Promise<HomeBannerListItem[]> {
   try {
     const res = await fetch(`${API_BASE}/home-banners/all`);
@@ -23,6 +29,27 @@ export async function getHomeBanners(): Promise<HomeBannerListItem[]> {
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
+  }
+}
+
+export async function getHomeBannerFeed(params?: {
+  cursor?: string;
+  limit?: number;
+}): Promise<HomeBannerFeedResponse | null> {
+  try {
+    const search = new URLSearchParams();
+    if (params?.cursor) search.set("cursor", params.cursor);
+    if (params?.limit) search.set("limit", String(params.limit));
+    const qs = search.toString();
+    const res = await fetch(
+      `${API_BASE}/home-banners/feed${qs ? `?${qs}` : ""}`,
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as HomeBannerFeedResponse;
+    if (!data || !Array.isArray(data.items)) return null;
+    return data;
+  } catch {
+    return null;
   }
 }
 

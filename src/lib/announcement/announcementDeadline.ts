@@ -31,18 +31,42 @@ export function effectiveAnnouncementDaysLeft(
   return cal !== null ? cal : parsedDaysLeft;
 }
 
+export function resolveAnnouncementRecruitmentStatus(
+  isRecruiting: boolean,
+  options?: {
+    completed?: boolean;
+    deadlineAt?: string | null;
+  },
+): "모집중" | "모집마감" {
+  if (options?.completed) return "모집마감";
+  if (!isRecruiting) return "모집마감";
+  if (isRecruitmentDeadlineDatePassed(options?.deadlineAt ?? null)) {
+    return "모집마감";
+  }
+  return "모집중";
+}
+
+export function isAnnouncementRecruitingOpen(
+  isRecruiting: boolean,
+  completed?: boolean,
+): boolean {
+  if (completed) return false;
+  return isRecruiting;
+}
+
 export function isAnnouncementDeadlinePassed(
   daysLeft: number,
   status: string,
 ): boolean {
-  return daysLeft < 0 || (daysLeft === 0 && status === "모집마감");
+  return status === "모집마감" || daysLeft < 0;
 }
 
 export function formatAnnouncementDDayLabel(
   daysLeft: number,
   status: string,
+  completed?: boolean,
 ): string {
-  if (isAnnouncementDeadlinePassed(daysLeft, status)) return "마감";
+  if (completed || status === "모집마감" || daysLeft < 0) return "마감";
   if (daysLeft === 0) return "오늘마감";
   return `D-${daysLeft}`;
 }

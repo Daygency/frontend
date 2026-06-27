@@ -112,7 +112,7 @@ const ArtistScene = () => {
     setHasMore(res.hasMore);
   }, [hasMore, cursor, loadingMore, loading, majorIdsQuery]);
 
-  const isEmpty = !loading && users.length === 0;
+  const isEmpty = users.length === 0;
 
   return (
     <View style={styles.container}>
@@ -139,24 +139,13 @@ const ArtistScene = () => {
         onComplete={() => setIsMajorModalVisible(false)}
       />
 
-      {loading && users.length === 0 ? (
-        <View
-          style={{
-            flex: 1,
-            justifyContent: "center",
-            alignItems: "center",
-          }}
-        >
-          <ActivityIndicator size="large" color="#1F2A44" />
-        </View>
-      ) : (
-        <FlatList
-          style={{ flex: 1 }}
-          data={users}
-          keyExtractor={(item) => item.userId}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
+      <FlatList
+        style={{ flex: 1 }}
+        data={users}
+        keyExtractor={(item) => item.userId}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
           onEndReached={onEndReached}
           onEndReachedThreshold={0.35}
           ListFooterComponent={
@@ -167,7 +156,13 @@ const ArtistScene = () => {
             ) : null
           }
           ListEmptyComponent={
-            <EmptyState message="유저가 없습니다." />
+            loading && !refreshing ? (
+              <View style={{ paddingVertical: 48, alignItems: "center" }}>
+                <ActivityIndicator size="small" color="#1F2A44" />
+              </View>
+            ) : (
+              <EmptyState message="유저가 없습니다." />
+            )
           }
           renderItem={({ item }) => (
             <View style={styles.cardWrapper}>
@@ -191,7 +186,6 @@ const ArtistScene = () => {
             styles.scrollContent,
           )}
         />
-      )}
     </View>
   );
 };

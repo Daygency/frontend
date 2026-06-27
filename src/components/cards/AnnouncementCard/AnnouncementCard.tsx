@@ -5,6 +5,7 @@ import {
   effectiveAnnouncementDaysLeft,
   formatAnnouncementDDayLabel,
   isAnnouncementDeadlinePassed,
+  resolveAnnouncementRecruitmentStatus,
 } from "../../../lib/announcement/announcementDeadline";
 import { formatAnnouncementPriceLineList } from "../../../lib/announcement/announcementPrice";
 import { formatAnnouncementDistrictLabel } from "../../../lib/announcement/announcementAddress";
@@ -23,6 +24,8 @@ interface AnnouncementCardProps {
   price?: number;
   /** 목록·홈 등에서 내려온 누적 조회수 */
   viewCount?: number;
+  /** 공연·일정 종료 여부 */
+  completed?: boolean;
   /** 장소 (목록에서 태그 오른쪽에 표시) */
   address?: string;
   /** 작성자 활동명 */
@@ -42,6 +45,7 @@ const AnnouncementCard = ({
   priceType,
   price,
   viewCount,
+  completed,
   address,
   authorName = "작성자",
   profileImgUrl,
@@ -51,8 +55,10 @@ const AnnouncementCard = ({
     deadlineAt,
     daysLeft,
   );
-  const displayStatus =
-    effectiveDaysLeft < 0 ? "모집마감" : status;
+  const displayStatus = resolveAnnouncementRecruitmentStatus(
+    status === "모집중",
+    { completed, deadlineAt },
+  );
   const isDeadlinePassed = isAnnouncementDeadlinePassed(
     effectiveDaysLeft,
     displayStatus,
@@ -60,6 +66,7 @@ const AnnouncementCard = ({
   const dDayLabel = formatAnnouncementDDayLabel(
     effectiveDaysLeft,
     displayStatus,
+    completed,
   );
 
   const showPrice =

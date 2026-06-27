@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 import Animated from "react-native-reanimated";
 import { StatusBar } from "expo-status-bar";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
@@ -14,7 +14,6 @@ import AllContentScene, {
 } from "../../components/layout/AllContentScene";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import {
-  CURATION_LOADING_BACKGROUND,
   type CurationThemeState,
 } from "./curationTheme";
 import { useCurationBackgroundTransition } from "./useCurationBackgroundTransition";
@@ -73,7 +72,6 @@ const MainHomeScreen = () => {
   activeTabRef.current = activeTab;
 
   const isCuration = activeTab === "큐레이션";
-  const isCurationLoading = isCuration && (curationTheme?.loading ?? true);
 
   const animatedBackgroundStyle = useCurationBackgroundTransition(
     isCuration,
@@ -85,12 +83,7 @@ const MainHomeScreen = () => {
   const handleIndexChange = useCallback((newIndex: number) => {
     setIndex(newIndex);
     const tab = MAIN_HOME_TABS[newIndex];
-    if (tab === "큐레이션") {
-      setCurationTheme({
-        loading: true,
-        backgroundColor: CURATION_LOADING_BACKGROUND,
-      });
-    } else {
+    if (tab !== "큐레이션") {
       setCurationTheme(null);
     }
   }, []);
@@ -180,16 +173,10 @@ const MainHomeScreen = () => {
           pointerEvents={isCuration ? "auto" : "none"}
         >
           <View style={styles.content}>
-            {isCurationLoading ? (
-              <View style={styles.curationLoading}>
-                <ActivityIndicator size="small" color={WHITE} />
-              </View>
-            ) : null}
             <AllContentScene
               ref={curationSceneRef}
               tab="큐레이션"
               onCurationThemeChange={handleCurationThemeChange}
-              hideWhileCurationLoading={isCurationLoading}
             />
           </View>
         </Animated.View>

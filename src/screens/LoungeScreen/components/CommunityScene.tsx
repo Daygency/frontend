@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  RefreshControl,
   StyleSheet,
   View,
   Text,
@@ -19,7 +20,7 @@ import {
   pickCommunityAuthor,
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
-import { GRAY } from "../../../color";
+import { GRAY, MAIN } from "../../../color";
 import { useLoungeScroll } from "../LoungeScrollContext";
 
 type PostTag = Exclude<LoungeCommunityTagOption, "전체">;
@@ -36,6 +37,7 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
   const { listTopInset, communityScrollHandler, setCommunityListRef } =
     useLoungeScroll();
   const [loading, setLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [items, setItems] = useState<CommunityListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -81,10 +83,14 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
     return category?.categoryId;
   };
 
-  const loadCommunities = useCallback(async () => {
+  const loadCommunities = useCallback(async (mode: "initial" | "refresh" = "initial") => {
     try {
       setError(null);
-      setLoading(true);
+      if (mode === "refresh") {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
+      }
 
       const categoryId = findCategoryIdByTag(selectedTag);
       const res = await getCommunityList({
@@ -99,9 +105,17 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
       const nextItems = Array.isArray(res) ? res : [];
       setItems(nextItems);
     } finally {
-      setLoading(false);
+      if (mode === "refresh") {
+        setRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, [categories, selectedTag]);
+
+  const onRefresh = useCallback(() => {
+    void loadCommunities("refresh");
+  }, [loadCommunities]);
 
   useEffect(() => {
     (async () => {
@@ -152,12 +166,21 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
         removeClippedSubviews={false}
         onScroll={communityScrollHandler}
         scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={MAIN.DEFAULT}
+            colors={[MAIN.DEFAULT]}
+            progressViewOffset={listTopInset}
+          />
+        }
         ListEmptyComponent={
           error ? (
             <View style={localStyles.loaderContainer}>
               <Text style={localStyles.errorText}>{error}</Text>
             </View>
-          ) : loading ? (
+          ) : loading && !refreshing ? (
             <View style={localStyles.loaderContainer}>
               <ActivityIndicator size="small" />
             </View>

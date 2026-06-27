@@ -25,7 +25,9 @@ import type { AnnouncementListItem } from "../../../lib/apis/announcement/types"
 import { formatChatListTime } from "../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../lib/chat/chatRoomNavigation";
 import { resolveAnnouncementAuthorLabel } from "../../../lib/announcement/announcementAuthor";
+import { announcementListRecruitmentStatus } from "../../../lib/announcement/announcementListStatus";
 import { parseAnnouncementDaysLeft } from "../../../lib/announcement/parseAnnouncementDaysLeft";
+import { MAIN } from "../../../color";
 
 type Params = {
   announcement: AnnouncementListItem;
@@ -46,13 +48,13 @@ export default function MyPostedChatRoomsScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const fetchFirst = useCallback(async () => {
+  const fetchFirst = useCallback(async (opts?: { refresh?: boolean }) => {
     if (!postId) {
       setRooms([]);
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!opts?.refresh) setLoading(true);
     const res = await getRoomsByPost(postId, { limit: 30 });
     if (res) {
       setRooms(res.items);
@@ -63,7 +65,7 @@ export default function MyPostedChatRoomsScreen() {
       setCursor(null);
       setHasMore(false);
     }
-    setLoading(false);
+    if (!opts?.refresh) setLoading(false);
   }, [postId]);
 
   useFocusEffect(
@@ -74,7 +76,7 @@ export default function MyPostedChatRoomsScreen() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchFirst();
+    await fetchFirst({ refresh: true });
     setRefreshing(false);
   };
 
@@ -106,7 +108,7 @@ export default function MyPostedChatRoomsScreen() {
     navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
       title: announcement.title,
       type: announcement.type,
-      status: announcement.isRecruiting ? "모집중" : "모집마감",
+      status: announcementListRecruitmentStatus(announcement),
       daysLeft: parseAnnouncementDaysLeft(announcement.dDay),
       postId: announcement.postId,
       viewCount: announcement.viewCount,
@@ -118,9 +120,10 @@ export default function MyPostedChatRoomsScreen() {
       <AnnouncementCard
         title={announcement.title}
         type={announcement.type}
-        status={announcement.isRecruiting ? "모집중" : "모집마감"}
+        status={announcementListRecruitmentStatus(announcement)}
         daysLeft={parseAnnouncementDaysLeft(announcement.dDay)}
         deadlineAt={announcement.deadlineAt}
+        completed={announcement.completed}
         viewCount={announcement.viewCount}
         priceType={announcement.priceType}
         price={announcement.price}
@@ -131,19 +134,6 @@ export default function MyPostedChatRoomsScreen() {
       />
     </View>
   );
-
-  if (loading && rooms.length === 0) {
-    return (
-      <View style={styles.container}>
-        {announcementCard}
-        <View
-          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
-        >
-          <ActivityIndicator size="large" color="#1F2A44" />
-        </View>
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
@@ -159,7 +149,12 @@ export default function MyPostedChatRoomsScreen() {
         data={rooms}
         keyExtractor={(i) => i.id}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={MAIN.DEFAULT}
+            colors={[MAIN.DEFAULT]}
+          />
         }
         onEndReached={onEndReached}
         onEndReachedThreshold={0.4}
@@ -171,7 +166,13 @@ export default function MyPostedChatRoomsScreen() {
           ) : null
         }
         ListEmptyComponent={
-          <EmptyState message="이 공고에 열린 채팅방이 없습니다." />
+          loading && !refreshing ? (
+            <View style={{ paddingVertical: 48, alignItems: "center" }}>
+              <ActivityIndicator size="small" color="#1F2A44" />
+            </View>
+          ) : (
+            <EmptyState message="이 공고에 열린 채팅방이 없습니다." />
+          )
         }
         renderItem={({ item }) => {
           const peer = item.peer;

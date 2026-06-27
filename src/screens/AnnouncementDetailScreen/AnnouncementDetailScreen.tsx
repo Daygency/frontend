@@ -56,7 +56,9 @@ import {
 import {
   effectiveAnnouncementDaysLeft,
   formatAnnouncementDDayLabel,
+  isAnnouncementRecruitingOpen,
   isRecruitmentDeadlineDatePassed,
+  resolveAnnouncementRecruitmentStatus,
 } from "../../lib/announcement/announcementDeadline";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
 import { pickMajorsFromAnnouncementRaw, resolveRecruitmentMajorDisplayNames } from "../../lib/announcement/recruitmentMajors";
@@ -316,15 +318,15 @@ const AnnouncementDetailScreen = () => {
         typeof deadlineAt === "string" ? deadlineAt : undefined,
         parsedDays,
       );
-      let status =
-        typeof isRecruiting === "boolean"
-          ? isRecruiting
-            ? "모집중"
-            : "모집마감"
-          : (params.status ?? "모집중");
-      if (daysLeft < 0) {
-        status = "모집마감";
-      }
+      const completedRaw = d.completed ?? d.completed_manually;
+      const completedFlag =
+        typeof completedRaw === "boolean" ? completedRaw : false;
+      const recruitingOpen =
+        typeof isRecruiting === "boolean" ? isRecruiting : true;
+      const status = resolveAnnouncementRecruitmentStatus(recruitingOpen, {
+        completed: completedFlag,
+        deadlineAt: typeof deadlineAt === "string" ? deadlineAt : undefined,
+      });
       const applicationConfig = parseApplicationConfig(
         extractApplicationConfigRaw(d),
       );
@@ -369,9 +371,6 @@ const AnnouncementDetailScreen = () => {
           ? Math.floor(viewCountRaw)
           : undefined;
 
-      const completedRaw = d.completed ?? d.completed_manually;
-      const completedFlag =
-        typeof completedRaw === "boolean" ? completedRaw : false;
       const createdAt =
         get("createdAt") ?? get("created_at") ?? undefined;
 
@@ -529,11 +528,15 @@ const AnnouncementDetailScreen = () => {
   const displayDaysLeft = detailData?.daysLeft ?? params.daysLeft ?? 0;
   const displayViewCount =
     detailData?.viewCount ?? params.viewCount;
-
-  const deadlineAtForUi = detailData?.deadlineAt;
   const displayCompleted = detailData?.completed ?? false;
 
-  const isRecruitingOpen = displayStatus === "모집중";
+  const deadlineAtForUi = detailData?.deadlineAt;
+
+  const isRecruitingOpen =
+    isAnnouncementRecruitingOpen(
+      displayStatus === "모집중",
+      displayCompleted,
+    );
   const showApplicantReviewBar =
     !isMine &&
     displayCompleted &&
@@ -735,6 +738,7 @@ const AnnouncementDetailScreen = () => {
   const dDayLabel = formatAnnouncementDDayLabel(
     displayDaysLeft,
     displayStatus,
+    displayCompleted,
   );
   const venueLabel = formatAnnouncementDistrictLabel(addressLabel);
   const recruitmentMajorNames = useMemo(
@@ -1004,13 +1008,6 @@ const AnnouncementDetailScreen = () => {
                 <View style={sharedAnnouncementStyles.typeTag}>
                   <Text style={sharedAnnouncementStyles.typeTagText}>
                     {displayType}
-                  </Text>
-                </View>
-              ) : null}
-              {displayStatus !== "모집마감" ? (
-                <View style={sharedAnnouncementStyles.statusTag}>
-                  <Text style={sharedAnnouncementStyles.statusTagText}>
-                    {displayStatus}
                   </Text>
                 </View>
               ) : null}

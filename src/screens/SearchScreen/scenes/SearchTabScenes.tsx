@@ -25,6 +25,7 @@ import { RootRoutes } from "../../../navigations/routes";
 import { getAnnouncementList } from "../../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../../lib/apis/announcement/types";
 import { parseAnnouncementDaysLeft } from "../../../lib/announcement/parseAnnouncementDaysLeft";
+import { announcementListRecruitmentStatus } from "../../../lib/announcement/announcementListStatus";
 import { resolveAnnouncementAuthorLabel } from "../../../lib/announcement/announcementAuthor";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
@@ -153,9 +154,10 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
           <AnnouncementCard
             title={item.title}
             type={item.type}
-            status={item.isRecruiting ? "모집중" : "모집마감"}
+            status={announcementListRecruitmentStatus(item)}
             daysLeft={parseAnnouncementDaysLeft(item.dDay)}
             deadlineAt={item.deadlineAt}
+            completed={item.completed}
             viewCount={item.viewCount}
             priceType={item.priceType}
             price={item.price}
@@ -166,7 +168,7 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
               navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                 title: item.title,
                 type: item.type,
-                status: item.isRecruiting ? "모집중" : "모집마감",
+                status: announcementListRecruitmentStatus(item),
                 daysLeft: parseAnnouncementDaysLeft(item.dDay),
                 postId: item.postId,
                 viewCount: item.viewCount,
@@ -553,9 +555,10 @@ export function SearchAllScene({ query }: SceneProps) {
               <AnnouncementCard
                 title={item.title}
                 type={item.type}
-                status={item.isRecruiting ? "모집중" : "모집마감"}
+                status={announcementListRecruitmentStatus(item)}
                 daysLeft={parseAnnouncementDaysLeft(item.dDay)}
                 deadlineAt={item.deadlineAt}
+                completed={item.completed}
                 viewCount={item.viewCount}
                 priceType={item.priceType}
                 price={item.price}
@@ -566,7 +569,7 @@ export function SearchAllScene({ query }: SceneProps) {
                   navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
                     title: item.title,
                     type: item.type,
-                    status: item.isRecruiting ? "모집중" : "모집마감",
+                    status: announcementListRecruitmentStatus(item),
                     daysLeft: parseAnnouncementDaysLeft(item.dDay),
                     postId: item.postId,
                     viewCount: item.viewCount,

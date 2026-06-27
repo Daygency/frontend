@@ -23,13 +23,6 @@ export type FabMenuItem = {
 const COMMUNITY_MENU_ICON_COLOR = "#F64A5B";
 const MEGAPHONE_ICON = require("../../../../assets/megaphone.png");
 const MUSIC_ICON = require("../../../../assets/music.png");
-const THUMBS_UP_ICON = require("../../../../assets/thumbs-up.png");
-const TODO_LIST_ICON = require("../../../../assets/to-do-list.png");
-
-const DEFAULT_UTILITY_MENU_ITEMS: FabMenuItem[] = [
-  { label: "피드백 받기", onPress: () => {} },
-  { label: "투두 리스트 추가", onPress: () => {} },
-];
 
 type FabButtonProps = {
   onPress?: () => void;
@@ -51,7 +44,7 @@ const TAB_BAR_HEIGHT = 90;
 const FabButton = ({
   onPress,
   menuItems,
-  utilityMenuItems = DEFAULT_UTILITY_MENU_ITEMS,
+  utilityMenuItems = [],
   icon = "plus",
   size = 28,
   containerStyle,
@@ -199,10 +192,6 @@ const FabButton = ({
             color={COMMUNITY_MENU_ICON_COLOR}
           />
         );
-      case "피드백 받기":
-        return renderMenuImage(THUMBS_UP_ICON);
-      case "투두 리스트 추가":
-        return renderMenuImage(TODO_LIST_ICON);
       default:
         return null;
     }

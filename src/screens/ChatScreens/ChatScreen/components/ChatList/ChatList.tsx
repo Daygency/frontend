@@ -26,6 +26,7 @@ import EmptyState, {
   contentContainerWhenEmpty,
   emptyScreenStyle,
 } from "../../../../../components/ui/EmptyState";
+import { MAIN } from "../../../../../color";
 import MyAnnouncementListItem from "./MyAnnouncementListItem";
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
@@ -59,7 +60,7 @@ function ChatRoomsFlatList({
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const fetchFirst = useCallback(async () => {
+  const fetchFirst = useCallback(async (opts?: { refresh?: boolean }) => {
     if (!isLoggedIn) {
       setItems([]);
       setCursor(null);
@@ -67,7 +68,7 @@ function ChatRoomsFlatList({
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!opts?.refresh) setLoading(true);
     const fn = mode === "coffee" ? getCoffeeRooms : getAppliedRooms;
     const res = await fn({ limit: 30 });
     if (res) {
@@ -79,7 +80,7 @@ function ChatRoomsFlatList({
       setCursor(null);
       setHasMore(false);
     }
-    setLoading(false);
+    if (!opts?.refresh) setLoading(false);
   }, [isLoggedIn, mode]);
 
   useFocusEffect(
@@ -99,7 +100,7 @@ function ChatRoomsFlatList({
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchFirst();
+    await fetchFirst({ refresh: true });
     setRefreshing(false);
   };
 
@@ -143,20 +144,6 @@ function ChatRoomsFlatList({
     );
   }
 
-  if (loading && items.length === 0) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <ActivityIndicator size="large" color="#1F2A44" />
-      </View>
-    );
-  }
-
   if (filter === "안읽음") {
     return (
       <View style={emptyScreenStyle}>
@@ -173,7 +160,12 @@ function ChatRoomsFlatList({
       data={filteredItems}
       keyExtractor={(r) => r.id}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={MAIN.DEFAULT}
+          colors={[MAIN.DEFAULT]}
+        />
       }
       onEndReached={onEndReached}
       onEndReachedThreshold={0.4}
@@ -185,13 +177,19 @@ function ChatRoomsFlatList({
         ) : null
       }
       ListEmptyComponent={
-        <EmptyState
-          message={
-            searchQuery.trim()
-              ? "검색 결과가 없습니다."
-              : "채팅방이 없습니다."
-          }
-        />
+        loading && !refreshing ? (
+          <View style={{ paddingVertical: 48, alignItems: "center" }}>
+            <ActivityIndicator size="small" color="#1F2A44" />
+          </View>
+        ) : (
+          <EmptyState
+            message={
+              searchQuery.trim()
+                ? "검색 결과가 없습니다."
+                : "채팅방이 없습니다."
+            }
+          />
+        )
       }
       renderItem={({ item }) => {
         const peer = item.peer;
@@ -239,13 +237,13 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const fetchFirst = useCallback(async () => {
+  const fetchFirst = useCallback(async (opts?: { refresh?: boolean }) => {
     if (!isLoggedIn) {
       setPosts([]);
       setLoading(false);
       return;
     }
-    setLoading(true);
+    if (!opts?.refresh) setLoading(true);
     const res = await getMyAnnouncementList({ limit: 20 });
     if (res) {
       setPosts(res.items);
@@ -256,7 +254,7 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
       setCursor(null);
       setHasMore(false);
     }
-    setLoading(false);
+    if (!opts?.refresh) setLoading(false);
   }, [isLoggedIn]);
 
   useFocusEffect(
@@ -267,7 +265,7 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchFirst();
+    await fetchFirst({ refresh: true });
     setRefreshing(false);
   };
 
@@ -297,20 +295,6 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
     );
   }
 
-  if (loading && posts.length === 0) {
-    return (
-      <View
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <ActivityIndicator size="large" color="#1F2A44" />
-      </View>
-    );
-  }
-
   const isEmpty = filteredPosts.length === 0;
 
   return (
@@ -319,7 +303,12 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
       data={filteredPosts}
       keyExtractor={(p) => p.postId}
       refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={MAIN.DEFAULT}
+          colors={[MAIN.DEFAULT]}
+        />
       }
       onEndReached={onEndReached}
       onEndReachedThreshold={0.4}
@@ -331,13 +320,19 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
         ) : null
       }
       ListEmptyComponent={
-        <EmptyState
-          message={
-            searchQuery.trim()
-              ? "검색 결과가 없습니다."
-              : "작성한 공고가 없습니다."
-          }
-        />
+        loading && !refreshing ? (
+          <View style={{ paddingVertical: 48, alignItems: "center" }}>
+            <ActivityIndicator size="small" color="#1F2A44" />
+          </View>
+        ) : (
+          <EmptyState
+            message={
+              searchQuery.trim()
+                ? "검색 결과가 없습니다."
+                : "작성한 공고가 없습니다."
+            }
+          />
+        )
       }
       renderItem={({ item }) => (
         <MyAnnouncementListItem

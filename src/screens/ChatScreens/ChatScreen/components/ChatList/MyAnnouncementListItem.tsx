@@ -6,6 +6,7 @@ import {
   formatAnnouncementDDayLabel,
   isAnnouncementDeadlinePassed,
 } from "../../../../../lib/announcement/announcementDeadline";
+import { announcementListRecruitmentStatus } from "../../../../../lib/announcement/announcementListStatus";
 import { parseAnnouncementDaysLeft } from "../../../../../lib/announcement/parseAnnouncementDaysLeft";
 import { sharedAnnouncementStyles } from "../../../../../components/shared/AnnouncementShared/sharedAnnouncementStyles";
 import announcementCardStyles from "../../../../../components/cards/AnnouncementCard/styles";
@@ -21,12 +22,7 @@ export default function MyAnnouncementListItem({ item, onPress }: Props) {
     item.deadlineAt,
     parseAnnouncementDaysLeft(item.dDay),
   );
-  const displayStatus =
-    effectiveDaysLeft < 0
-      ? "모집마감"
-      : item.isRecruiting
-        ? "모집중"
-        : "모집마감";
+  const displayStatus = announcementListRecruitmentStatus(item);
   const isDeadlinePassed = isAnnouncementDeadlinePassed(
     effectiveDaysLeft,
     displayStatus,
@@ -34,6 +30,7 @@ export default function MyAnnouncementListItem({ item, onPress }: Props) {
   const dDayLabel = formatAnnouncementDDayLabel(
     effectiveDaysLeft,
     displayStatus,
+    item.completed,
   );
 
   return (
@@ -70,11 +67,6 @@ export default function MyAnnouncementListItem({ item, onPress }: Props) {
       </View>
 
       <View style={styles.tagsRow}>
-        <View style={sharedAnnouncementStyles.statusTag}>
-          <Text style={sharedAnnouncementStyles.statusTagText}>
-            {displayStatus}
-          </Text>
-        </View>
         <View style={sharedAnnouncementStyles.typeTag}>
           <Text style={sharedAnnouncementStyles.typeTagText}>
             {item.type}

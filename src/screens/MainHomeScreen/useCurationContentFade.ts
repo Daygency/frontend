@@ -8,8 +8,8 @@ import {
 } from "react-native-reanimated";
 
 const HOME_FADE_OUT_MS = 180;
-const CURATION_FADE_IN_DELAY_MS = 120;
-const CURATION_FADE_IN_MS = 700;
+const CURATION_FADE_IN_DELAY_MS = 0;
+const CURATION_FADE_IN_MS = 320;
 const CURATION_FADE_OUT_MS = 180;
 const HOME_FADE_IN_DELAY_MS = 100;
 const HOME_FADE_IN_MS = 400;

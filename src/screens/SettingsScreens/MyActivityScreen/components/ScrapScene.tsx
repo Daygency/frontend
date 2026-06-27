@@ -25,6 +25,7 @@ import {
   getMyScrappedHighlights,
 } from "../../../../lib/apis/scrap/scrapApi";
 import { parseAnnouncementDaysLeft } from "../../../../lib/announcement/parseAnnouncementDaysLeft";
+import { announcementListRecruitmentStatus } from "../../../../lib/announcement/announcementListStatus";
 import type {
   MyScrappedAnnouncementItem,
   MyScrappedCommunityItem,
@@ -217,9 +218,10 @@ const ScrapScene = () => {
             <AnnouncementCard
               title={item.title}
               type={item.type}
-              status={item.isRecruiting ? "모집중" : "모집마감"}
+              status={announcementListRecruitmentStatus(item)}
               daysLeft={parseAnnouncementDaysLeft(item.dDay)}
               deadlineAt={item.deadlineAt}
+              completed={item.completed}
               viewCount={item.viewCount}
               address={item.address}
               onPress={() => {
@@ -227,7 +229,7 @@ const ScrapScene = () => {
                   postId: item.postId,
                   title: item.title,
                   type: item.type,
-                  status: item.isRecruiting ? "모집중" : "모집마감",
+                  status: announcementListRecruitmentStatus(item),
                   daysLeft: parseAnnouncementDaysLeft(item.dDay),
                   viewCount: item.viewCount,
                 });

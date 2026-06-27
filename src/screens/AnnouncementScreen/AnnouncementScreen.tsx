@@ -42,6 +42,7 @@ import {
   selectedPriceLabelsToApiParam,
 } from "../../lib/announcement/announcementPrice";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
+import { announcementListRecruitmentStatus } from "../../lib/announcement/announcementListStatus";
 import { resolveAnnouncementAuthorLabel } from "../../lib/announcement/announcementAuthor";
 import { isContentNew } from "../../lib/content/newBadge";
 import { MAIN, WHITE } from "../../color";
@@ -60,16 +61,16 @@ type RootStackParamList = {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-type AnnouncementFeedView = "전체" | "내가 올린 공고" | "지원공고";
+type AnnouncementFeedView = "전체" | "내가 올린 공고" | "지원한 공고";
 
 const FEED_VIEW_OPTIONS: AnnouncementFeedView[] = [
   "전체",
   "내가 올린 공고",
-  "지원공고",
+  "지원한 공고",
 ];
 
 function feedViewRequiresLogin(view: AnnouncementFeedView): boolean {
-  return view === "내가 올린 공고" || view === "지원공고";
+  return view === "내가 올린 공고" || view === "지원한 공고";
 }
 
 function sortTabToApiParam(tab: AnnouncementSortOption): "imminent" | "created" {
@@ -92,13 +93,14 @@ type AnnouncementListBodyProps = {
 function AnnouncementListContent({
   items,
   loading,
+  refreshing,
   emptyMessage,
   onPressItem,
 }: AnnouncementListBodyProps) {
-  if (loading && items.length === 0) {
+  if (loading && !refreshing && items.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#666" />
+        <ActivityIndicator size="small" color="#666" />
       </View>
     );
   }
@@ -114,9 +116,10 @@ function AnnouncementListContent({
           <AnnouncementCard
             title={item.title}
             type={item.type}
-            status={item.isRecruiting ? "모집중" : "모집마감"}
+            status={announcementListRecruitmentStatus(item)}
             daysLeft={parseAnnouncementDaysLeft(item.dDay)}
             deadlineAt={item.deadlineAt}
+            completed={item.completed}
             viewCount={item.viewCount}
             priceType={item.priceType}
             price={item.price}
@@ -159,6 +162,7 @@ const CollapsibleAnnouncementList = ({
             onRefresh={onRefresh}
             tintColor={MAIN.DEFAULT}
             colors={[MAIN.DEFAULT]}
+            progressViewOffset={listTopInset}
           />
         }
       >
@@ -304,7 +308,10 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   ]);
 
   const loadData = useCallback(
-    async (cursor?: string) => {
+    async (cursor?: string, options?: { refresh?: boolean }) => {
+      const isRefresh = options?.refresh ?? false;
+      const isLoadMore = Boolean(cursor);
+
       if (feedViewRequiresLogin(feedView) && !isLoggedIn) {
         setItems([]);
         setNextCursor(null);
@@ -313,7 +320,9 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         return;
       }
       const seq = ++loadListSeqRef.current;
-      setLoading(true);
+      if (!isLoadMore && !isRefresh) {
+        setLoading(true);
+      }
       try {
         const { status, categoryId, majorIds, priceType, sort } = buildListParams();
         const params = {
@@ -328,7 +337,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         const res =
           feedView === "내가 올린 공고"
             ? await getMyAnnouncementList(params)
-            : feedView === "지원공고"
+            : feedView === "지원한 공고"
               ? await getMyAppliedAnnouncementList(params)
               : await getAnnouncementList(params);
         if (seq !== loadListSeqRef.current) return;
@@ -346,7 +355,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         setNextCursor(res.nextCursor);
         setHasMore(res.hasMore ?? false);
       } finally {
-        if (seq === loadListSeqRef.current) {
+        if (!isLoadMore && !isRefresh && seq === loadListSeqRef.current) {
           setLoading(false);
         }
       }
@@ -395,7 +404,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     try {
-      await loadData(undefined);
+      await loadData(undefined, { refresh: true });
     } finally {
       setRefreshing(false);
     }
@@ -477,7 +486,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       ? "로그인이 필요합니다"
       : feedView === "내가 올린 공고"
         ? "작성한 공고가 없습니다"
-        : feedView === "지원공고"
+        : feedView === "지원한 공고"
           ? "지원한 공고가 없습니다"
           : "모집공고가 없습니다";
 
@@ -486,7 +495,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
         title: item.title,
         type: item.type,
-        status: item.isRecruiting ? "모집중" : "모집마감",
+        status: announcementListRecruitmentStatus(item),
         daysLeft: parseAnnouncementDaysLeft(item.dDay),
         postId: item.postId,
         viewCount: item.viewCount,
