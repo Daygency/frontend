@@ -195,7 +195,9 @@ const MainHomeScreen = () => {
         </Animated.View>
       </View>
       {isCuration ? <CurationBottomGradient /> : null}
-      <ContentRegistrationFabButton containerStyle={styles.fab} />
+      {!isCuration ? (
+        <ContentRegistrationFabButton containerStyle={styles.fab} />
+      ) : null}
     </Animated.View>
   );
 };

@@ -14,6 +14,7 @@ import { BLACK, GRAY, WHITE } from "../../color";
 interface AnnouncementDetailOptionsMenuProps {
   isMine: boolean;
   postId?: string;
+  canEdit?: boolean;
   onEdit?: () => void;
   onDelete?: () => void;
   onReport?: () => void;
@@ -22,6 +23,7 @@ interface AnnouncementDetailOptionsMenuProps {
 const AnnouncementDetailOptionsMenu = ({
   isMine,
   postId,
+  canEdit = true,
   onEdit,
   onDelete,
   onReport,
@@ -53,7 +55,9 @@ const AnnouncementDetailOptionsMenu = ({
 
   const menuItems: { label: string; onPress: () => void }[] = [];
   if (isMine) {
-    menuItems.push({ label: "수정", onPress: handleEdit });
+    if (canEdit) {
+      menuItems.push({ label: "수정", onPress: handleEdit });
+    }
     menuItems.push({ label: "삭제", onPress: handleDelete });
   } else {
     menuItems.push({ label: "신고", onPress: handleReport });

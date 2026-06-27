@@ -354,6 +354,16 @@ const AnnouncementRegistrationScreen = () => {
           return;
         }
         const d = res as Record<string, unknown>;
+        const completedRaw = d.completed ?? d.completed_manually;
+        const isCompleted =
+          typeof completedRaw === "boolean" ? completedRaw : false;
+        if (isCompleted) {
+          setLoadingEdit(false);
+          Alert.alert("알림", "종료된 공고는 수정할 수 없습니다.", [
+            { text: "확인", onPress: () => navigation.goBack() },
+          ]);
+          return;
+        }
         const get = (k: string, alt?: string) =>
           (d[k] ?? d[k.replace(/([A-Z])/g, "_$1").toLowerCase() ?? ""] ?? alt) as
             | string

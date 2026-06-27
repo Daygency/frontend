@@ -669,7 +669,12 @@ const AnnouncementDetailScreen = () => {
         <AnnouncementDetailOptionsMenu
           isMine={isMine}
           postId={params.postId}
+          canEdit={!displayCompleted && !hasApplicants}
           onEdit={() => {
+            if (displayCompleted) {
+              Alert.alert("알림", "종료된 공고는 수정할 수 없습니다.");
+              return;
+            }
             if (hasApplicants) {
               Alert.alert(
                 "알림",
@@ -719,7 +724,7 @@ const AnnouncementDetailScreen = () => {
         />
       ),
     });
-  }, [navigation, isMine, params.postId, hasApplicants, handleOpenReport]);
+  }, [navigation, isMine, params.postId, hasApplicants, displayCompleted, handleOpenReport]);
 
   const imageList = detailData?.imageUrls ?? [];
   const attachmentList = detailData?.attachments ?? [];
