@@ -535,13 +535,6 @@ const Navigation = () => {
               <View style={styles.rightItemsWrap}>
                 <Pressable hitSlop={10}>
                   <MaterialCommunityIcons
-                    name="bookmark-outline"
-                    size={21}
-                    color="#000"
-                  />
-                </Pressable>
-                <Pressable hitSlop={10}>
-                  <MaterialCommunityIcons
                     name="dots-vertical"
                     size={21}
                     color="#000"

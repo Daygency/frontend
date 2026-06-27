@@ -6,7 +6,6 @@ import styles from "./styles";
 
 interface CommentInputBarProps {
   placeholder?: string;
-  paddingBottom?: number;
   onSubmit?: (content: string) => void | Promise<void>;
   editMode?: { commentId: string; initialContent: string } | null;
   onCancelEdit?: () => void;
@@ -14,7 +13,6 @@ interface CommentInputBarProps {
 
 const CommentInputBar = ({
   placeholder = "댓글을 입력해주세요",
-  paddingBottom = 0,
   onSubmit,
   editMode = null,
   onCancelEdit,
@@ -40,7 +38,7 @@ const CommentInputBar = ({
   };
 
   return (
-    <View style={[styles.container, { paddingBottom }]}>
+    <View style={styles.container}>
       {editMode ? (
         <View style={styles.editBanner}>
           <Text style={styles.editBannerText}>댓글 수정 중</Text>
@@ -57,6 +55,12 @@ const CommentInputBar = ({
           placeholder={editMode ? "수정할 댓글을 입력하세요" : placeholder}
           placeholderTextColor={GRAY.DARK_2}
           multiline
+          autoCorrect={false}
+          spellCheck={false}
+          autoComplete="off"
+          autoCapitalize="sentences"
+          textContentType="none"
+          importantForAutofill="no"
         />
         <Pressable
           style={[styles.sendButton, !hasText && styles.sendButtonDisabled]}

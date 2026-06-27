@@ -6,8 +6,6 @@ import {
   TextInput,
   ScrollView,
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   NativeSyntheticEvent,
   TextInputKeyPressEventData,
   ActivityIndicator,
@@ -21,6 +19,10 @@ import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { useAuth } from "../../../contexts/AuthContext";
 import { RootRoutes } from "../../../navigations/routes";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  commentInputBarPaddingBottom,
+  useKeyboardHeight,
+} from "../../../hooks/useKeyboardHeight";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../color";
 import styles from "./styles";
@@ -102,6 +104,8 @@ const ChatRoomScreen = () => {
   const route = useRoute<RouteProp<{ ChatRoom: ChatRoomParams }, "ChatRoom">>();
   const { user } = useAuth();
   const { top, bottom } = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
+  const isKeyboardVisible = keyboardHeight > 0;
   const {
     chatRoomId = "",
     peerUserId: peerUserIdParam = "",
@@ -143,7 +147,6 @@ const ChatRoomScreen = () => {
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [sendReady, setSendReady] = useState(false);
-  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -431,25 +434,7 @@ const ChatRoomScreen = () => {
 
   const displayHandle = handle.startsWith("@") ? handle : `@${handle}`;
 
-  const baseBottomPadding = bottom || 16;
-  const inputBarPaddingBottom = isKeyboardVisible
-    ? Math.max(6, baseBottomPadding - 23)
-    : baseBottomPadding;
-
-  useEffect(() => {
-    const showSub = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      () => setIsKeyboardVisible(true),
-    );
-    const hideSub = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => setIsKeyboardVisible(false),
-    );
-    return () => {
-      showSub.remove();
-      hideSub.remove();
-    };
-  }, []);
+  const inputBarPaddingBottom = commentInputBarPaddingBottom(keyboardHeight, bottom);
 
   if (!chatRoomId || !peerUserId) {
     return (
@@ -465,11 +450,7 @@ const ChatRoomScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={[styles.container, { paddingTop: top }]}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
-    >
+    <View style={[styles.container, { paddingTop: top }]}>
       {/* Header */}
       <View style={styles.header}>
         <Pressable
@@ -734,7 +715,7 @@ const ChatRoomScreen = () => {
 
       {/* Attachment menu */}
       {isAttachmentMenuOpen && (
-        <View style={[styles.attachmentMenu, { paddingBottom: bottom || 16 }]}>
+        <View style={[styles.attachmentMenu, { paddingBottom: Math.max(bottom, 8) }]}>
           <Pressable
             style={styles.attachmentOption}
             onPress={handlePickAlbum}
@@ -813,7 +794,7 @@ const ChatRoomScreen = () => {
           />
         </Pressable>
       </View>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

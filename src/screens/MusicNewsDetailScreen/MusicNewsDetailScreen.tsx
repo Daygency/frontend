@@ -9,12 +9,14 @@ import {
   ScrollView,
   Text,
   View,
-  Pressable,
   Alert,
-  KeyboardAvoidingView,
-  Platform,
+  Pressable,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  commentInputBarPaddingBottom,
+  useKeyboardHeight,
+} from "../../hooks/useKeyboardHeight";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
 import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
@@ -40,6 +42,11 @@ import {
   deleteLikeByTarget,
   getLikes,
 } from "../../lib/apis/like/likeApi";
+import {
+  createScrap,
+  deleteScrapByTarget,
+  getScraps,
+} from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRequireLogin } from "../../hooks/useRequireLogin";
 import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
@@ -259,6 +266,7 @@ const MusicNewsDetailScreen = () => {
   const { user, isLoggedIn } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
   const { bottom } = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
   const newsId = route.params?.newsId;
   const newsFromParams = route.params?.news;
 
@@ -273,6 +281,8 @@ const MusicNewsDetailScreen = () => {
   } | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const [scraped, setScraped] = useState(false);
+  const [scrapCount, setScrapCount] = useState(0);
   const [loading, setLoading] = useState(!!newsId);
   const [error, setError] = useState<string | null>(null);
   const [newsAuthorUserId, setNewsAuthorUserId] = useState<string | null>(null);
@@ -378,6 +388,23 @@ const MusicNewsDetailScreen = () => {
       setLikeCount(res.count);
       const myId = user?.socialId;
       setLiked(
+        !!myId &&
+          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+      );
+    })();
+  }, [targetNewsId, user?.socialId]);
+
+  useEffect(() => {
+    if (!targetNewsId) return;
+    (async () => {
+      const res = await getScraps({
+        targetType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (!res) return;
+      setScrapCount(res.count);
+      const myId = user?.socialId;
+      setScraped(
         !!myId &&
           res.items.some((item) => String(item.user?.userId ?? "") === myId),
       );
@@ -556,6 +583,34 @@ const MusicNewsDetailScreen = () => {
     setLikeCount((prev) => prev + 1);
   };
 
+  const handleToggleScrap = async () => {
+    if (!ensureLoggedIn()) return;
+    if (!targetNewsId) return;
+    if (scraped) {
+      const res = await deleteScrapByTarget({
+        targetType: "NEWS",
+        targetId: targetNewsId,
+      });
+      if (!res.success) {
+        Alert.alert("알림", "스크랩 취소에 실패했습니다.");
+        return;
+      }
+      setScraped(false);
+      setScrapCount((prev) => Math.max(0, prev - 1));
+      return;
+    }
+    const created = await createScrap({
+      targetType: "NEWS",
+      targetId: targetNewsId,
+    });
+    if (!created) {
+      Alert.alert("알림", "스크랩에 실패했습니다.");
+      return;
+    }
+    setScraped(true);
+    setScrapCount((prev) => prev + 1);
+  };
+
   const handleCreateComment = async (content: string) => {
     if (!ensureLoggedIn()) return;
     if (!targetNewsId) return;
@@ -688,11 +743,7 @@ const MusicNewsDetailScreen = () => {
   const ticketPriceLabel = formatNewsTicketPrice(news.ticketPrice);
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={0}
-    >
+    <View style={styles.container}>
       <View style={styles.detailInner}>
         <ScrollView
           style={styles.detailScroll}
@@ -828,6 +879,16 @@ const MusicNewsDetailScreen = () => {
               <View style={styles.actionItem}>
                 <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
                 <Text style={styles.actionCount}>{commentCount}</Text>
+              </View>
+              <View style={styles.actionItem}>
+                <Pressable onPress={handleToggleScrap} hitSlop={8}>
+                  <Ionicons
+                    name={scraped ? "bookmark" : "bookmark-outline"}
+                    size={21}
+                    color={BLACK}
+                  />
+                </Pressable>
+                <Text style={styles.actionCount}>{scrapCount}</Text>
               </View>
             </View>
 
@@ -1023,7 +1084,7 @@ const MusicNewsDetailScreen = () => {
         <View
           style={[
             styles.commentInputWrapper,
-            { paddingBottom: bottom || 16 },
+            { paddingBottom: commentInputBarPaddingBottom(keyboardHeight, bottom) },
           ]}
         >
           {!!replyTarget && (
@@ -1033,7 +1094,7 @@ const MusicNewsDetailScreen = () => {
                 alignItems: "center",
                 justifyContent: "space-between",
                 paddingHorizontal: 20,
-                paddingTop: 10,
+                paddingTop: 4,
               }}
             >
               <Text style={{ fontSize: 12, color: GRAY.DARK_100 }}>
@@ -1066,7 +1127,7 @@ const MusicNewsDetailScreen = () => {
         onSelect={handlePickReportCategory}
         submitting={reportSubmitting}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 

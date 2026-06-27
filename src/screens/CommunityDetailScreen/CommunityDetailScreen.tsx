@@ -11,10 +11,12 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  KeyboardAvoidingView,
-  Platform,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  commentInputBarPaddingBottom,
+  useKeyboardHeight,
+} from "../../hooks/useKeyboardHeight";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
 import CommentInputBar from "../../components/comments/CommentInputBar";
@@ -203,6 +205,7 @@ const CommunityDetailScreen = () => {
   const { user, isLoggedIn } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
   const { bottom } = useSafeAreaInsets();
+  const keyboardHeight = useKeyboardHeight();
   const [data, setData] = useState<CommunityDetailResponse | null>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
   const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
@@ -621,11 +624,7 @@ const CommunityDetailScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={0}
-    >
+    <View style={styles.container}>
       <View style={styles.detailInner}>
         <ScrollView
           style={styles.detailScroll}
@@ -894,7 +893,7 @@ const CommunityDetailScreen = () => {
         <View
           style={[
             styles.commentInputContainer,
-            { paddingBottom: bottom || 16 },
+            { paddingBottom: commentInputBarPaddingBottom(keyboardHeight, bottom) },
           ]}
         >
           {!!replyTarget && (
@@ -927,7 +926,7 @@ const CommunityDetailScreen = () => {
         onSelect={handlePickReportCategory}
         submitting={reportSubmitting}
       />
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
