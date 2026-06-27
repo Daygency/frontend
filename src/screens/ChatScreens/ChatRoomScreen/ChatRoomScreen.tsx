@@ -778,6 +778,12 @@ const ChatRoomScreen = () => {
           scrollEnabled={isKeyboardVisible}
           blurOnSubmit={false}
           returnKeyType="send"
+          autoCorrect={false}
+          spellCheck={false}
+          autoComplete="off"
+          autoCapitalize="sentences"
+          textContentType="none"
+          importantForAutofill="no"
         />
         <Pressable
           style={[
