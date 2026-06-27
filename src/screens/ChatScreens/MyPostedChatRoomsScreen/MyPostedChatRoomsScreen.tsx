@@ -15,21 +15,20 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import ChatItem from "../ChatScreen/components/ChatItem/ChatItem";
+import AnnouncementCard from "../../../components/cards/AnnouncementCard";
 import EmptyState, { contentContainerWhenEmpty } from "../../../components/ui/EmptyState";
 import styles from "./styles";
 import { RootRoutes } from "../../../navigations/routes";
 import { getRoomsByPost } from "../../../lib/apis/chat/chatApi";
 import type { ChatRoomListItem } from "../../../lib/apis/chat/types";
+import type { AnnouncementListItem } from "../../../lib/apis/announcement/types";
 import { formatChatListTime } from "../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../lib/chat/chatRoomNavigation";
-import { shouldShowAnnouncementDDayChip } from "../../../lib/announcement/announcementDeadline";
+import { resolveAnnouncementAuthorLabel } from "../../../lib/announcement/announcementAuthor";
+import { parseAnnouncementDaysLeft } from "../../../lib/announcement/parseAnnouncementDaysLeft";
 
 type Params = {
-  postId: string;
-  title: string;
-  typeTag?: string;
-  statusTag?: string;
-  dDay?: string;
+  announcement: AnnouncementListItem;
 };
 
 type RouteParams = RouteProp<{ MyPostedChatRooms: Params }, "MyPostedChatRooms">;
@@ -37,11 +36,8 @@ type RouteParams = RouteProp<{ MyPostedChatRooms: Params }, "MyPostedChatRooms">
 export default function MyPostedChatRoomsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteParams>();
-  const { postId, title, typeTag, statusTag, dDay } = route.params;
-  const showDDayChip = shouldShowAnnouncementDDayChip(
-    statusTag === "모집중",
-    dDay,
-  );
+  const { announcement } = route.params;
+  const postId = announcement.postId;
 
   const [rooms, setRooms] = useState<ChatRoomListItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -106,46 +102,52 @@ export default function MyPostedChatRoomsScreen() {
     navigation.navigate(RootRoutes.CHAT_ROOM, params);
   };
 
+  const openAnnouncementDetail = useCallback(() => {
+    navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
+      title: announcement.title,
+      type: announcement.type,
+      status: announcement.isRecruiting ? "모집중" : "모집마감",
+      daysLeft: parseAnnouncementDaysLeft(announcement.dDay),
+      postId: announcement.postId,
+      viewCount: announcement.viewCount,
+    });
+  }, [navigation, announcement]);
+
+  const announcementCard = (
+    <View style={styles.announcementCardWrap}>
+      <AnnouncementCard
+        title={announcement.title}
+        type={announcement.type}
+        status={announcement.isRecruiting ? "모집중" : "모집마감"}
+        daysLeft={parseAnnouncementDaysLeft(announcement.dDay)}
+        deadlineAt={announcement.deadlineAt}
+        viewCount={announcement.viewCount}
+        priceType={announcement.priceType}
+        price={announcement.price}
+        address={announcement.address}
+        authorName={resolveAnnouncementAuthorLabel(announcement.user)}
+        profileImgUrl={announcement.user?.profileImgUrl}
+        onPress={openAnnouncementDetail}
+      />
+    </View>
+  );
+
   if (loading && rooms.length === 0) {
     return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: "center", alignItems: "center" },
-        ]}
-      >
-        <ActivityIndicator size="large" color="#1F2A44" />
+      <View style={styles.container}>
+        {announcementCard}
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ActivityIndicator size="large" color="#1F2A44" />
+        </View>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.postCard}>
-        <View style={styles.postThumb} />
-        <View style={styles.postContent}>
-          <Text style={styles.postTitle} numberOfLines={1}>
-            {title}
-          </Text>
-          <View style={styles.postTagsRow}>
-            {typeTag ? (
-              <View style={[styles.tagChip, styles.tagChipOrange]}>
-                <Text style={[styles.tagText, styles.tagTextOrange]}>{typeTag}</Text>
-              </View>
-            ) : null}
-            {statusTag ? (
-              <View style={[styles.tagChip, styles.tagChipGray]}>
-                <Text style={[styles.tagText, styles.tagTextGray]}>{statusTag}</Text>
-              </View>
-            ) : null}
-            {showDDayChip ? (
-              <View style={[styles.tagChip, styles.tagChipNavy]}>
-                <Text style={[styles.tagText, styles.tagTextNavy]}>{dDay}</Text>
-              </View>
-            ) : null}
-          </View>
-        </View>
-      </View>
+      {announcementCard}
 
       <Text style={styles.roomsCountLabel}>
         채팅방 {rooms.length}

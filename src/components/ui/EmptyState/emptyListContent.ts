@@ -26,6 +26,11 @@ export function contentContainerWhenEmpty(
   isEmpty: boolean,
   base?: StyleProp<ViewStyle>,
 ): StyleProp<ViewStyle> {
-  if (!isEmpty) return base;
-  return base ? [base, emptyListContentStyle] : emptyListContentStyle;
+  const flexFill: ViewStyle = { flexGrow: 1 };
+  if (!isEmpty) {
+    return base ? [flexFill, base] : flexFill;
+  }
+  return base
+    ? [flexFill, base, emptyListContentStyle]
+    : [flexFill, emptyListContentStyle];
 }

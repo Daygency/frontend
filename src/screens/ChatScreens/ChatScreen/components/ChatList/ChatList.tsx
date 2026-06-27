@@ -13,7 +13,6 @@ import ChatItem from "../ChatItem/ChatItem";
 import { RootRoutes } from "../../../../../navigations/routes";
 import type { ChatFilter } from "../../types";
 import { Text } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
 import { useAuth } from "../../../../../contexts/AuthContext";
 import { getCoffeeRooms, getAppliedRooms } from "../../../../../lib/apis/chat/chatApi";
 import type { ChatRoomListItem } from "../../../../../lib/apis/chat/types";
@@ -23,11 +22,11 @@ import { formatChatListTime } from "../../../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../../../lib/chat/chatRoomNavigation";
 import { CHAT_APPLIED_ROOMS_REFRESH } from "../../../../../lib/chat/chatRoomsEvents";
 import { matchesAnnouncement, matchesChatRoom } from "../../../../../lib/chat/chatSearch";
-import { shouldShowAnnouncementDDayChip } from "../../../../../lib/announcement/announcementDeadline";
 import EmptyState, {
   contentContainerWhenEmpty,
   emptyScreenStyle,
 } from "../../../../../components/ui/EmptyState";
+import MyAnnouncementListItem from "./MyAnnouncementListItem";
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
 
@@ -340,158 +339,16 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
           }
         />
       }
-      renderItem={({ item }) => {
-        const showDDayChip = shouldShowAnnouncementDDayChip(
-          item.isRecruiting,
-          item.dDay,
-        );
-
-        return (
-        <Pressable
+      renderItem={({ item }) => (
+        <MyAnnouncementListItem
+          item={item}
           onPress={() =>
             navigation.navigate(RootRoutes.MY_POSTED_CHAT_ROOMS, {
-              postId: item.postId,
-              title: item.title,
-              typeTag: item.type,
-              statusTag: item.isRecruiting ? "모집중" : "마감",
-              dDay: showDDayChip ? item.dDay : undefined,
+              announcement: item,
             })
           }
-          style={{
-            paddingHorizontal: 16,
-            paddingVertical: 14,
-            backgroundColor: "#FFFFFF",
-            borderBottomWidth: 1,
-            borderBottomColor: "#EFEFEF",
-          }}
-        >
-          <View
-            style={{ flexDirection: "row", alignItems: "center", gap: 12 }}
-          >
-            <View
-              style={{
-                width: 44,
-                height: 44,
-                borderRadius: 10,
-                backgroundColor: "#D1D5DB",
-              }}
-            />
-            <View style={{ flex: 1, minWidth: 0 }}>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 10,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    gap: 8,
-                    flex: 1,
-                    minWidth: 0,
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontSize: 15,
-                      fontWeight: "600",
-                      color: "#111827",
-                    }}
-                    numberOfLines={1}
-                  >
-                    {item.title}
-                  </Text>
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
-                      gap: 2,
-                      flexShrink: 0,
-                    }}
-                  >
-                    <MaterialIcons name="person" size={18} color="#000000" />
-                    <Text
-                      style={{
-                        fontSize: 16,
-                        fontWeight: "500",
-                        color: "#000000",
-                      }}
-                    >
-                      {item.chatRoomCount ?? 0}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "flex-end",
-                  justifyContent: "space-between",
-                  gap: 8,
-                  marginTop: 8,
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: 8,
-                    flexWrap: "wrap",
-                    flex: 1,
-                    minWidth: 0,
-                  }}
-                >
-                  <View
-                    style={{
-                      backgroundColor: "#FFFFFF",
-                      borderRadius: 12,
-                      height: 24,
-                      paddingHorizontal: 8,
-                      justifyContent: "center",
-                      borderWidth: 1,
-                      borderColor: "#D1D5DB",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#111827",
-                        fontSize: 12,
-                        fontWeight: "600",
-                      }}
-                    >
-                      {item.isRecruiting ? "모집중" : "마감"}
-                    </Text>
-                  </View>
-                  {showDDayChip ? (
-                  <View
-                    style={{
-                      backgroundColor: "#1F2A44",
-                      borderRadius: 12,
-                      height: 24,
-                      paddingHorizontal: 8,
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#FFFFFF",
-                        fontSize: 12,
-                        fontWeight: "700",
-                      }}
-                    >
-                      {item.dDay}
-                    </Text>
-                  </View>
-                  ) : null}
-                </View>
-              </View>
-            </View>
-          </View>
-        </Pressable>
-        );
-      }}
+        />
+      )}
       contentContainerStyle={contentContainerWhenEmpty(isEmpty, {
         paddingBottom: 20,
       })}
