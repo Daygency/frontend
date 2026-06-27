@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../color";
+import { SMOOTH_CORNERS } from "../../cornerSmoothing";
 
 const ORANGE = "#F97316";
 
@@ -36,6 +37,7 @@ export default StyleSheet.create({
     minWidth: 0,
   },
   statusTag: {
+    ...SMOOTH_CORNERS,
     paddingHorizontal: 8,
     height: 24,
     borderRadius: 12,

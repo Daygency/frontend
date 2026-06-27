@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../color";
+import { SMOOTH_CORNERS } from "../../cornerSmoothing";
 
 const styles = StyleSheet.create({
   container: {
@@ -43,6 +44,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   searchTagChip: {
+    ...SMOOTH_CORNERS,
     flexDirection: "row",
     alignItems: "center",
     flexShrink: 0,
@@ -68,6 +70,7 @@ const styles = StyleSheet.create({
     paddingBottom: 9,
   },
   suggestedTag: {
+    ...SMOOTH_CORNERS,
     paddingHorizontal: 10,
     paddingVertical: 6,
     backgroundColor: GRAY.DEFAULT_1,

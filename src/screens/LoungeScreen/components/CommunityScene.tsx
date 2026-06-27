@@ -33,7 +33,8 @@ const AnimatedFlatList = Animated.createAnimatedComponent(
 );
 
 const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
-  const { listTopInset, communityScrollHandler } = useLoungeScroll();
+  const { listTopInset, communityScrollHandler, setCommunityListRef } =
+    useLoungeScroll();
   const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [items, setItems] = useState<CommunityListItem[]>([]);
@@ -138,6 +139,7 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
   return (
     <View style={styles.newsSceneContainer}>
       <AnimatedFlatList
+        ref={setCommunityListRef}
         data={filteredPosts}
         keyExtractor={(item) => item.communityId}
         renderItem={renderItem}

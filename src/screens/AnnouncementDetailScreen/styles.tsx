@@ -100,6 +100,12 @@ const styles = StyleSheet.create({
     color: BLACK,
     fontWeight: "500",
   },
+  priceText: {
+    fontSize: 14,
+    lineHeight: 22,
+    color: MAIN.DEFAULT,
+    fontWeight: "600",
+  },
   recruitmentMajorsChips: {
     flexDirection: "row",
     flexWrap: "wrap",

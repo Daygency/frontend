@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
+import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
 const styles = StyleSheet.create({
   container: {
@@ -18,6 +19,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   tag: {
+    ...SMOOTH_CORNERS,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 100,

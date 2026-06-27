@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, RED, WHITE } from "../../../color";
+import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
 export const sharedAnnouncementStyles = StyleSheet.create({
   title: {
@@ -53,6 +54,7 @@ export const sharedAnnouncementStyles = StyleSheet.create({
     alignItems: "center",
   },
   typeTag: {
+    ...SMOOTH_CORNERS,
     // backgroundColor: GRAY.DEFAULT,
     backgroundColor: "#EDF2F7", // 하늘색
     borderRadius: 4,
@@ -67,6 +69,7 @@ export const sharedAnnouncementStyles = StyleSheet.create({
     fontWeight: "400",
   },
   statusTag: {
+    ...SMOOTH_CORNERS,
     backgroundColor: WHITE,
     borderRadius: 4,
     borderWidth: 1,

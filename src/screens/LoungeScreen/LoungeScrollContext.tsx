@@ -1,5 +1,6 @@
 import {
   createContext,
+  useCallback,
   useContext,
   useLayoutEffect,
   useMemo,
@@ -7,15 +8,17 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { View, type LayoutChangeEvent } from "react-native";
+import { View, type FlatList, type LayoutChangeEvent } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
+  runOnJS,
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
   type SharedValue,
 } from "react-native-reanimated";
+import { TAB_RESCROLL_THRESHOLD } from "../../lib/navigation/tabRetap";
 
 const DEFAULT_TOP_BAR_HEIGHT = 50;
 const DEFAULT_TAB_BAR_HEIGHT = 42;
@@ -25,6 +28,10 @@ type LoungeScrollContextValue = {
   listTopInset: number;
   newsScrollHandler: ReturnType<typeof useAnimatedScrollHandler>;
   communityScrollHandler: ReturnType<typeof useAnimatedScrollHandler>;
+  setNewsListRef: (node: FlatList | null) => void;
+  setCommunityListRef: (node: FlatList | null) => void;
+  scrollActiveTabToTop: () => void;
+  isActiveTabScrolledDown: () => boolean;
 };
 
 const LoungeScrollContext = createContext<LoungeScrollContextValue | null>(null);
@@ -50,6 +57,7 @@ function useLoungeScrollHandler(
   lastScrollY: SharedValue<number>,
   headerCollapse: SharedValue<number>,
   maxCollapse: number,
+  onOffsetChange: (offsetY: number) => void,
 ) {
   return useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -67,6 +75,7 @@ function useLoungeScrollHandler(
 
       lastScrollY.value = y;
       scrollY.value = y;
+      runOnJS(onOffsetChange)(y);
     },
   });
 }
@@ -86,6 +95,27 @@ export function LoungeScrollProvider({
   const headerCollapseCommunity = useSharedValue(0);
   const activeTabIndex = useSharedValue(activeTabIndexProp);
 
+  const newsListRef = useRef<FlatList | null>(null);
+  const communityListRef = useRef<FlatList | null>(null);
+  const scrollOffsetNewsRef = useRef(0);
+  const scrollOffsetCommunityRef = useRef(0);
+
+  const onNewsOffsetChange = useCallback((offsetY: number) => {
+    scrollOffsetNewsRef.current = offsetY;
+  }, []);
+
+  const onCommunityOffsetChange = useCallback((offsetY: number) => {
+    scrollOffsetCommunityRef.current = offsetY;
+  }, []);
+
+  const setNewsListRef = useCallback((node: FlatList | null) => {
+    newsListRef.current = node;
+  }, []);
+
+  const setCommunityListRef = useCallback((node: FlatList | null) => {
+    communityListRef.current = node;
+  }, []);
+
   const [topBarHeight, setTopBarHeight] = useState(DEFAULT_TOP_BAR_HEIGHT);
   const [tabBarHeight, setTabBarHeight] = useState(DEFAULT_TAB_BAR_HEIGHT);
   const [filterBarHeight, setFilterBarHeight] = useState(DEFAULT_FILTER_BAR_HEIGHT);
@@ -103,6 +133,7 @@ export function LoungeScrollProvider({
     lastScrollYNews,
     headerCollapseNews,
     maxHeaderCollapse,
+    onNewsOffsetChange,
   );
 
   const communityScrollHandler = useLoungeScrollHandler(
@@ -110,15 +141,65 @@ export function LoungeScrollProvider({
     lastScrollYCommunity,
     headerCollapseCommunity,
     maxHeaderCollapse,
+    onCommunityOffsetChange,
   );
+
+  const resetNewsScroll = useCallback(() => {
+    scrollYNews.value = 0;
+    lastScrollYNews.value = 0;
+    headerCollapseNews.value = 0;
+    scrollOffsetNewsRef.current = 0;
+  }, [headerCollapseNews, lastScrollYNews, scrollYNews]);
+
+  const resetCommunityScroll = useCallback(() => {
+    scrollYCommunity.value = 0;
+    lastScrollYCommunity.value = 0;
+    headerCollapseCommunity.value = 0;
+    scrollOffsetCommunityRef.current = 0;
+  }, [headerCollapseCommunity, lastScrollYCommunity, scrollYCommunity]);
+
+  const scrollActiveTabToTop = useCallback(() => {
+    if (activeTabIndexProp === 0) {
+      newsListRef.current?.scrollToOffset({ offset: 0, animated: true });
+      resetNewsScroll();
+      return;
+    }
+    communityListRef.current?.scrollToOffset({ offset: 0, animated: true });
+    resetCommunityScroll();
+  }, [activeTabIndexProp, resetCommunityScroll, resetNewsScroll]);
+
+  const isActiveTabScrolledDown = useCallback(() => {
+    if (activeTabIndexProp === 0) {
+      return (
+        scrollOffsetNewsRef.current > TAB_RESCROLL_THRESHOLD ||
+        headerCollapseNews.value > TAB_RESCROLL_THRESHOLD
+      );
+    }
+    return (
+      scrollOffsetCommunityRef.current > TAB_RESCROLL_THRESHOLD ||
+      headerCollapseCommunity.value > TAB_RESCROLL_THRESHOLD
+    );
+  }, [activeTabIndexProp, headerCollapseCommunity, headerCollapseNews]);
 
   const value = useMemo(
     () => ({
       listTopInset,
       newsScrollHandler,
       communityScrollHandler,
+      setNewsListRef,
+      setCommunityListRef,
+      scrollActiveTabToTop,
+      isActiveTabScrolledDown,
     }),
-    [communityScrollHandler, listTopInset, newsScrollHandler],
+    [
+      communityScrollHandler,
+      isActiveTabScrolledDown,
+      listTopInset,
+      newsScrollHandler,
+      scrollActiveTabToTop,
+      setCommunityListRef,
+      setNewsListRef,
+    ],
   );
 
   return (

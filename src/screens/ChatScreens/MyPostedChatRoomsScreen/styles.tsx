@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { GRAY, WHITE } from "../../../color";
+import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
 const NAVY = "#1F2A44";
 const ORANGE = "#F97316";
@@ -44,6 +45,7 @@ export default StyleSheet.create({
     flexWrap: "wrap",
   },
   tagChip: {
+    ...SMOOTH_CORNERS,
     paddingHorizontal: 8,
     height: 24,
     borderRadius: 12,

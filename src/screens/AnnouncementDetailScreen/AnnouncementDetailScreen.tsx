@@ -48,6 +48,7 @@ import type {
 import {
   normalizeAnnouncementPriceType,
   parseAnnouncementPrice,
+  formatAnnouncementPriceLine,
 } from "../../lib/announcement/announcementPrice";
 import {
   effectiveAnnouncementDaysLeft,
@@ -740,6 +741,13 @@ const AnnouncementDetailScreen = () => {
       ),
     [detailData?.majors, majorsCatalog],
   );
+  const priceLabel = useMemo(() => {
+    if (!detailData) return null;
+    return formatAnnouncementPriceLine(
+      detailData.priceType ?? "PENDING",
+      detailData.price ?? 0,
+    );
+  }, [detailData]);
 
   const showBottomBar =
     showOwnerActionBar || showOwnerCompletedBar || visitorBottomBar;
@@ -986,11 +994,13 @@ const AnnouncementDetailScreen = () => {
                   </Text>
                 </View>
               ) : null}
-              <View style={sharedAnnouncementStyles.statusTag}>
-                <Text style={sharedAnnouncementStyles.statusTagText}>
-                  {displayStatus}
-                </Text>
-              </View>
+              {displayStatus !== "모집마감" ? (
+                <View style={sharedAnnouncementStyles.statusTag}>
+                  <Text style={sharedAnnouncementStyles.statusTagText}>
+                    {displayStatus}
+                  </Text>
+                </View>
+              ) : null}
               {venueLabel ? (
                 <Text style={styles.locationText} numberOfLines={1}>
                   {venueLabel}
@@ -1013,6 +1023,13 @@ const AnnouncementDetailScreen = () => {
                     </View>
                   ))}
                 </View>
+              </View>
+            ) : null}
+
+            {priceLabel ? (
+              <View style={styles.sectionBlock}>
+                <Text style={styles.sectionHeading}>비용</Text>
+                <Text style={styles.priceText}>{priceLabel}</Text>
               </View>
             ) : null}
 

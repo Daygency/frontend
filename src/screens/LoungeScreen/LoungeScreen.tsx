@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute, RouteProp } from "@react-navigation/native";
@@ -22,8 +22,11 @@ import {
   type PerformanceNewsSortMode,
 } from "./components/performanceNewsFilterOptions";
 import { ContentRoutes } from "../../navigations/routes";
-import { registerTabRetapHandler } from "../../lib/navigation/tabRetap";
-import { LoungeScrollProvider } from "./LoungeScrollContext";
+import {
+  createSubTabRetapHandler,
+  registerTabRetapHandler,
+} from "../../lib/navigation/tabRetap";
+import { LoungeScrollProvider, useLoungeScroll } from "./LoungeScrollContext";
 
 type LoungeRouteParams = {
   initialTab?: LoungeTab | "음악계 소식";
@@ -35,6 +38,23 @@ const TAB_TO_SEARCH_TAG: Record<LoungeTab, string> = {
 };
 
 const LOUNGE_ROUTES = LOUNGE_TABS.map((key) => ({ key, title: key }));
+
+function LoungeTabRetapBridge({ onToggleSubTab }: { onToggleSubTab: () => void }) {
+  const { scrollActiveTabToTop, isActiveTabScrolledDown } = useLoungeScroll();
+
+  useEffect(() => {
+    return registerTabRetapHandler(
+      ContentRoutes.CHAT,
+      createSubTabRetapHandler({
+        isScrolledDown: isActiveTabScrolledDown,
+        scrollToTop: scrollActiveTabToTop,
+        toggleSubTab: onToggleSubTab,
+      }),
+    );
+  }, [isActiveTabScrolledDown, onToggleSubTab, scrollActiveTabToTop]);
+
+  return null;
+}
 
 function resolveInitialTab(initialTab?: LoungeRouteParams["initialTab"]): LoungeTab {
   if (initialTab === "음악계 소식") return "공연 소식";
@@ -162,16 +182,9 @@ const LoungeScreen = () => {
     [index],
   );
 
-  const toggleSubTabRef = useRef(() => {});
-  toggleSubTabRef.current = () => {
+  const toggleSubTab = () => {
     setIndex((prev) => (prev === 0 ? 1 : 0));
   };
-
-  useEffect(() => {
-    return registerTabRetapHandler(ContentRoutes.CHAT, () => {
-      toggleSubTabRef.current();
-    });
-  }, []);
 
   const filterRow =
     activeTab === "공연 소식" ? (
@@ -208,6 +221,7 @@ const LoungeScreen = () => {
         }
         filterBar={<View style={styles.filterBar}>{filterRow}</View>}
       >
+        <LoungeTabRetapBridge onToggleSubTab={toggleSubTab} />
         <LoungeTabBody
           index={index}
           setIndex={setIndex}

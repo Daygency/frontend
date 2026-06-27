@@ -1,4 +1,5 @@
 import { StyleSheet } from "react-native";
+import { SMOOTH_CORNERS } from "../../cornerSmoothing";
 
 export const REVIEW_COLORS = {
   disappointing: "#FF5A5A",
@@ -58,6 +59,7 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   tagPill: {
+    ...SMOOTH_CORNERS,
     alignSelf: "flex-start",
     marginTop: 12,
     backgroundColor: REVIEW_COLORS.tagBg,
@@ -185,6 +187,7 @@ const styles = StyleSheet.create({
     color: "#374151",
   },
   reasonChip: {
+    ...SMOOTH_CORNERS,
     alignSelf: "stretch",
     marginTop: 8,
     backgroundColor: REVIEW_COLORS.tagReasonBg,

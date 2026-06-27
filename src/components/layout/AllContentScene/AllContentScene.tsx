@@ -1,7 +1,15 @@
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { WHITE } from "../../../color";
 import Section from "../../ui/Section";
 import AnnouncementCard from "../../cards/AnnouncementCard";
@@ -41,18 +49,29 @@ const HOME_ANNOUNCEMENT_PREVIEW_LIMIT = 3;
 
 type MainHomeContentTab = "홈" | "큐레이션";
 
+export type AllContentSceneHandle = {
+  scrollToTop: () => void;
+  getScrollOffset: () => number;
+};
+
 interface AllContentSceneProps {
   tab?: MainHomeContentTab;
   onCurationThemeChange?: (theme: CurationThemeState | null) => void;
   hideWhileCurationLoading?: boolean;
 }
 
-const AllContentScene = ({
-  tab = "홈",
-  onCurationThemeChange,
-  hideWhileCurationLoading = false,
-}: AllContentSceneProps) => {
+const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
+  function AllContentScene(
+    {
+      tab = "홈",
+      onCurationThemeChange,
+      hideWhileCurationLoading = false,
+    },
+    ref,
+  ) {
   const navigation = useNavigation<NavigationProp>();
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollOffsetRef = useRef(0);
   const [announcements, setAnnouncements] = useState<HomeAnnouncementItem[]>([]);
   const [banners, setBanners] = useState<HomeBannerItem[]>([]);
   const [newsItems, setNewsItems] = useState<HomeNewsItem[]>([]);
@@ -66,6 +85,25 @@ const AllContentScene = ({
   >([]);
   const [loading, setLoading] = useState(true);
   const activeCurationBannerIndexRef = useRef(0);
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      scrollToTop: () => {
+        scrollRef.current?.scrollTo({ y: 0, animated: true });
+        scrollOffsetRef.current = 0;
+      },
+      getScrollOffset: () => scrollOffsetRef.current,
+    }),
+    [],
+  );
+
+  const handleVerticalScroll = useCallback(
+    (offsetY: number) => {
+      scrollOffsetRef.current = offsetY;
+    },
+    [],
+  );
 
   const loadHome = useCallback(async () => {
     setLoading(true);
@@ -243,7 +281,12 @@ const AllContentScene = ({
     }
 
     return (
-      <ScrollView style={{ flex: 1, backgroundColor: "transparent" }}>
+      <ScrollView
+        ref={scrollRef}
+        style={{ flex: 1, backgroundColor: "transparent" }}
+        onScroll={(event) => handleVerticalScroll(event.nativeEvent.contentOffset.y)}
+        scrollEventThrottle={16}
+      >
         {carouselBanners.length === 0 ? (
           <Text
             style={{
@@ -275,7 +318,11 @@ const AllContentScene = ({
   }
 
   return (
-    <ScrollView>
+    <ScrollView
+      ref={scrollRef}
+      onScroll={(event) => handleVerticalScroll(event.nativeEvent.contentOffset.y)}
+      scrollEventThrottle={16}
+    >
       <ImageCarousel
         gap={12}
         banners={carouselBanners}
@@ -384,6 +431,6 @@ const AllContentScene = ({
       </Section>
     </ScrollView>
   );
-};
+});
 
 export default AllContentScene;

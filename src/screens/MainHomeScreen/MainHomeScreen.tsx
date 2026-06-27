@@ -9,7 +9,9 @@ import MainHomeHeader, {
   type MainHomeTab,
 } from "../../components/layout/MainHomeHeader";
 import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
-import AllContentScene from "../../components/layout/AllContentScene";
+import AllContentScene, {
+  type AllContentSceneHandle,
+} from "../../components/layout/AllContentScene";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import {
   CURATION_LOADING_BACKGROUND,
@@ -21,7 +23,11 @@ import CurationBottomGradient from "./CurationBottomGradient";
 import ContentRegistrationFabButton from "../../components/ui/FabButton/ContentRegistrationFabButton";
 import styles from "./styles";
 import { ContentRoutes } from "../../navigations/routes";
-import { registerTabRetapHandler } from "../../lib/navigation/tabRetap";
+import {
+  createSubTabRetapHandler,
+  registerTabRetapHandler,
+  TAB_RESCROLL_THRESHOLD,
+} from "../../lib/navigation/tabRetap";
 
 const MAIN_LOGO = require("../../../assets/daygency_logo_main.png");
 const WHITE_LOGO = require("../../../assets/daygency_logo_white.png");
@@ -57,6 +63,8 @@ const MainHomeScreen = () => {
     null,
   );
   const activeTabRef = useRef<MainHomeTab>("홈");
+  const homeSceneRef = useRef<AllContentSceneHandle>(null);
+  const curationSceneRef = useRef<AllContentSceneHandle>(null);
 
   const activeTab = useMemo(
     () => MAIN_HOME_TABS[index] ?? "홈",
@@ -98,9 +106,28 @@ const MainHomeScreen = () => {
   };
 
   useEffect(() => {
-    return registerTabRetapHandler(ContentRoutes.HOME, () => {
-      toggleSubTabRef.current();
-    });
+    return registerTabRetapHandler(
+      ContentRoutes.HOME,
+      createSubTabRetapHandler({
+        isScrolledDown: () => {
+          const sceneRef =
+            activeTabRef.current === "큐레이션"
+              ? curationSceneRef
+              : homeSceneRef;
+          return (sceneRef.current?.getScrollOffset() ?? 0) > TAB_RESCROLL_THRESHOLD;
+        },
+        scrollToTop: () => {
+          const sceneRef =
+            activeTabRef.current === "큐레이션"
+              ? curationSceneRef
+              : homeSceneRef;
+          sceneRef.current?.scrollToTop();
+        },
+        toggleSubTab: () => {
+          toggleSubTabRef.current();
+        },
+      }),
+    );
   }, []);
 
   useFocusEffect(
@@ -145,7 +172,7 @@ const MainHomeScreen = () => {
           pointerEvents={isCuration ? "none" : "auto"}
         >
           <View style={styles.content}>
-            <AllContentScene tab="홈" />
+            <AllContentScene ref={homeSceneRef} tab="홈" />
           </View>
         </Animated.View>
         <Animated.View
@@ -159,6 +186,7 @@ const MainHomeScreen = () => {
               </View>
             ) : null}
             <AllContentScene
+              ref={curationSceneRef}
               tab="큐레이션"
               onCurationThemeChange={handleCurationThemeChange}
               hideWhileCurationLoading={isCurationLoading}

@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
 export const styles = StyleSheet.create({
   container: {
@@ -7,6 +8,7 @@ export const styles = StyleSheet.create({
   },
   /** 모집공고 상단 필터 */
   triggerButton: {
+    ...SMOOTH_CORNERS,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -39,6 +41,7 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   tag: {
+    ...SMOOTH_CORNERS,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 100,

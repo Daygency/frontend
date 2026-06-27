@@ -97,7 +97,7 @@ const MusicNewsScene = ({
   selectedRegion,
 }: MusicNewsSceneProps) => {
   const navigation = useNavigation<any>();
-  const { listTopInset, newsScrollHandler } = useLoungeScroll();
+  const { listTopInset, newsScrollHandler, setNewsListRef } = useLoungeScroll();
   const [items, setItems] = useState<NewsListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -175,6 +175,7 @@ const MusicNewsScene = ({
   return (
     <View style={styles.newsSceneContainer}>
       <AnimatedFlatList
+        ref={setNewsListRef}
         data={displayedItems}
         keyExtractor={(item) => item.newsId}
         style={localStyles.flatList}

@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
+import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
 const styles = StyleSheet.create({
   container: {
@@ -28,6 +29,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   tag: {
+    ...SMOOTH_CORNERS,
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 100,

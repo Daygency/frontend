@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
 const styles = StyleSheet.create({
   container: {
@@ -7,6 +8,7 @@ const styles = StyleSheet.create({
     // flexShrink: 0,
   },
   button: {
+    ...SMOOTH_CORNERS,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -30,6 +32,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   sortButton: {
+    ...SMOOTH_CORNERS,
     backgroundColor: WHITE,
     borderRadius: 100,
     borderWidth: 1,
@@ -74,6 +77,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   tag: {
+    ...SMOOTH_CORNERS,
     paddingHorizontal: 18,
     paddingVertical: 12,
     borderRadius: 100,
