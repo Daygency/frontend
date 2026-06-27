@@ -1,13 +1,21 @@
 import { useEffect, useMemo, useState } from "react";
-import { getUserPublicProfile } from "../apis/portfolio/profileApi";
+import { getMyProfile, getUserPublicProfile } from "../apis/portfolio/profileApi";
 import type { AnnouncementAuthor } from "./extractAnnouncementAuthor";
+import { pickUserNickname } from "../user/pickUserNickname";
+
+type UseAnnouncementAuthorLabelOptions = {
+  /** 본인 글 — 공개 프로필 API 대신 내 프로필 API 사용 (비공개 설정이어도 표시) */
+  isViewerAuthor?: boolean;
+};
 
 /**
- * 활동명(@) 우선, 없으면 이름. 둘 다 없으면 공개 프로필로 보강 후에도 없을 때만 userId.
+ * 활동 아이디(activityName) 우선, 없으면 프로필 이름. userId는 표시하지 않음.
  */
 export function useAnnouncementAuthorLabel(
   author: AnnouncementAuthor | null,
+  options?: UseAnnouncementAuthorLabelOptions,
 ): string {
+  const isViewerAuthor = options?.isViewerAuthor ?? false;
   const [fromProfile, setFromProfile] = useState<{
     name?: string;
     activityName?: string;
@@ -19,10 +27,21 @@ export function useAnnouncementAuthorLabel(
     const uid = author.userId.trim();
     const hasActivity = Boolean(author.activityName?.trim());
     const hasNick = Boolean(author.name?.trim());
-    if (hasActivity || hasNick) return;
+    if (hasActivity && hasNick) return;
 
     let cancelled = false;
-    void getUserPublicProfile(uid).then((p) => {
+    const loadProfile = async () => {
+      if (isViewerAuthor) {
+        return getMyProfile();
+      }
+      try {
+        return await getUserPublicProfile(uid);
+      } catch {
+        return null;
+      }
+    };
+
+    void loadProfile().then((p) => {
       if (cancelled || !p) return;
       const n = p.name?.trim();
       const act = p.activityName?.trim();
@@ -36,20 +55,16 @@ export function useAnnouncementAuthorLabel(
     return () => {
       cancelled = true;
     };
-  }, [author?.userId, author?.name, author?.activityName]);
+  }, [author?.userId, author?.name, author?.activityName, isViewerAuthor]);
 
   return useMemo(() => {
     if (!author) return "";
-    const activity =
-      author.activityName?.trim() ||
-      fromProfile?.activityName?.trim() ||
-      "";
-    const nick =
-      author.name?.trim() ||
-      fromProfile?.name?.trim() ||
-      "";
-    if (activity) return `@${activity}`;
-    if (nick) return nick;
-    return author.userId;
+    return pickUserNickname({
+      activityName:
+        author.activityName?.trim() ||
+        fromProfile?.activityName?.trim() ||
+        undefined,
+      name: author.name?.trim() || fromProfile?.name?.trim() || undefined,
+    });
   }, [author, fromProfile]);
 }

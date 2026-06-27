@@ -33,8 +33,11 @@ import { parseCoord } from "../../lib/kakao/location";
 import { formatAnnouncementDistrictLabel } from "../../lib/announcement/announcementAddress";
 import { extractAnnouncementAuthorFromDetail } from "../../lib/announcement/extractAnnouncementAuthor";
 import type { AnnouncementAuthor } from "../../lib/announcement/extractAnnouncementAuthor";
+import { mergeAnnouncementDetailAuthor } from "../../lib/announcement/mergeAnnouncementDetailAuthor";
 import { useAnnouncementAuthorLabel } from "../../lib/announcement/useAnnouncementAuthorLabel";
-import { RootRoutes } from "../../navigations/routes";
+import { getMyProfile } from "../../lib/apis/portfolio/profileApi";
+import { getProfileCache } from "../../lib/profileCache";
+import { ContentRoutes, RootRoutes } from "../../navigations/routes";
 import {
   deleteAnnouncement,
   getAnnouncementDetail,
@@ -186,7 +189,9 @@ const AnnouncementDetailScreen = () => {
   const [majorsCatalog, setMajorsCatalog] = useState<
     { name: string; majorId: string }[]
   >([]);
-  const authorDisplayLabel = useAnnouncementAuthorLabel(author);
+  const authorDisplayLabel = useAnnouncementAuthorLabel(author, {
+    isViewerAuthor: isMine,
+  });
 
   useEffect(() => {
     void getMajors().then((list) => {
@@ -260,7 +265,7 @@ const AnnouncementDetailScreen = () => {
       userId: user?.socialId ?? "(없음)",
       name: user?.name ?? "(없음)",
     });
-    return getAnnouncementDetail(params.postId).then((res) => {
+    return getAnnouncementDetail(params.postId).then(async (res) => {
       console.log(
         "[AnnouncementDetail] API 응답:",
         JSON.stringify(res, null, 2),
@@ -274,31 +279,28 @@ const AnnouncementDetailScreen = () => {
       const mine =
         (d.isMine as boolean | undefined) ?? (d.is_mine as boolean | undefined);
       const extractedAuthor = extractAnnouncementAuthorFromDetail(d);
-      if (typeof mine === "boolean") {
-        setIsMine(mine);
-      } else if (
-        user?.socialId?.trim() &&
-        extractedAuthor?.userId?.trim() === user.socialId.trim()
-      ) {
-        setIsMine(true);
-      } else {
-        setIsMine(false);
-      }
+      const mineFlag =
+        typeof mine === "boolean"
+          ? mine
+          : Boolean(
+              user?.socialId?.trim() &&
+                extractedAuthor?.userId?.trim() === user.socialId.trim(),
+            );
+      setIsMine(mineFlag);
 
-      if (extractedAuthor) {
-        setAuthor(extractedAuthor);
-      } else if (
-        mine &&
-        user?.socialId?.trim()
-      ) {
-        setAuthor({
+      let resolvedAuthor = extractedAuthor;
+      if (mineFlag && user?.socialId?.trim()) {
+        const myProfile =
+          (await getMyProfile().catch(() => null)) ??
+          (await getProfileCache());
+        resolvedAuthor = mergeAnnouncementDetailAuthor(extractedAuthor, {
           userId: user.socialId.trim(),
-          name: user.name?.trim() || undefined,
-          profileImgUrl: user.profileImgUrl?.trim() || undefined,
+          activityName: myProfile?.activityName,
+          name: myProfile?.name ?? user.name,
+          profileImgUrl: myProfile?.profileImgUrl ?? user.profileImgUrl,
         });
-      } else {
-        setAuthor(null);
       }
+      setAuthor(resolvedAuthor);
 
       const title = get("title") ?? params.title ?? "";
       const type = get("type") ?? params.type ?? "";
@@ -755,6 +757,12 @@ const AnnouncementDetailScreen = () => {
 
   const navigateToAuthorPortfolio = () => {
     if (!author) return;
+    if (isMine) {
+      navigation.navigate(RootRoutes.CONTENT_TAB, {
+        screen: ContentRoutes.LOUNGE,
+      });
+      return;
+    }
     navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
       userId: author.userId,
       activityName: author.activityName?.trim() ?? "",

@@ -19,6 +19,8 @@ function pickNullableString(...vals: unknown[]): string | null | undefined {
   return undefined;
 }
 
+import { pickUserNickname } from "../user/pickUserNickname";
+
 export function pickAnnouncementAuthorFromRaw(
   raw: unknown,
 ): AnnouncementAuthorInfo | null {
@@ -52,9 +54,9 @@ export function pickAnnouncementAuthorFromRaw(
 export function resolveAnnouncementAuthorLabel(
   author?: AnnouncementAuthorInfo | null,
 ): string {
-  return (
-    author?.activityName?.trim() ||
-    author?.name?.trim() ||
-    "작성자"
-  );
+  if (!author) return "작성자";
+  return pickUserNickname({
+    activityName: author.activityName,
+    name: author.name,
+  });
 }

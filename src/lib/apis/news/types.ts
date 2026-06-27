@@ -51,7 +51,8 @@ export type NewsAttachmentItem = {
 
 export type NewsUserInfo = {
   userId?: string;
-  name?: string;
+  name?: string | null;
+  activityName?: string | null;
   [key: string]: unknown;
 };
 

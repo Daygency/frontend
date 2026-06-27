@@ -63,6 +63,9 @@ import ImageCarousel from "../../components/media/ImageCarousel";
 import { parseCoord } from "../../lib/kakao/location";
 import { formatPerformanceDetailDateLabel } from "../../lib/news/formatPerformanceOpenLabel";
 import { formatNewsTicketPrice } from "../../lib/news/buildPerformanceNewsDisplay";
+import { pickUserNickname } from "../../lib/user/pickUserNickname";
+import { getMyProfile } from "../../lib/apis/portfolio/profileApi";
+import { getProfileCache } from "../../lib/profileCache";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -74,7 +77,7 @@ export type MusicNewsDetailItem = {
   time: string;
   contact: string;
   ticketPrice?: number | null;
-  authorId?: string;
+  authorName?: string;
   uploadedAt: string;
   description: string;
   /** @deprecated 첫 이미지 — `imageUrls[0]`과 동일 */
@@ -153,7 +156,11 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     time: timeStr || "00:00",
     contact: res.contact ?? "",
     ticketPrice: res.ticketPrice,
-    authorId: res.user?.name ?? res.user?.userId,
+    authorName: pickUserNickname(
+      res.user && typeof res.user === "object"
+        ? (res.user as Record<string, unknown>)
+        : null,
+    ),
     uploadedAt: uploadedStr,
     description: res.content,
     imageUrl: imageUrls[0],
@@ -293,15 +300,46 @@ const MusicNewsDetailScreen = () => {
     const res = await getNewsDetail(newsId);
     setLoading(false);
     if (res) {
-      setNews(mapApiToItem(res));
-      setNewsAuthorUserId(pickReportedUserIdFromUnknown(res.user) ?? null);
+      let mapped = mapApiToItem(res);
+      const authorUserId = pickReportedUserIdFromUnknown(res.user) ?? null;
+      const mine =
+        Boolean(res.isMine) ||
+        Boolean(
+          authorUserId &&
+            user?.socialId?.trim() &&
+            authorUserId === user.socialId.trim(),
+        );
+      if (mine && user?.socialId?.trim()) {
+        const myProfile =
+          (await getMyProfile().catch(() => null)) ??
+          (await getProfileCache());
+        const userRaw =
+          res.user && typeof res.user === "object"
+            ? (res.user as Record<string, unknown>)
+            : null;
+        mapped = {
+          ...mapped,
+          authorName: pickUserNickname({
+            activityName:
+              (typeof userRaw?.activityName === "string"
+                ? userRaw.activityName
+                : undefined) ?? myProfile?.activityName,
+            name:
+              (typeof userRaw?.name === "string" ? userRaw.name : undefined) ??
+              myProfile?.name ??
+              user.name,
+          }),
+        };
+      }
+      setNews(mapped);
+      setNewsAuthorUserId(authorUserId);
       setIsMineFromApi(Boolean(res.isMine));
     } else {
       setError("음악계 소식을 불러오지 못했습니다.");
       setNewsAuthorUserId(null);
       setIsMineFromApi(false);
     }
-  }, [newsId]);
+  }, [newsId, user?.socialId, user?.name]);
 
   useEffect(() => {
     if (newsId) {
@@ -738,11 +776,11 @@ const MusicNewsDetailScreen = () => {
               <Text style={styles.uploadedAt}>{news.uploadedAt}</Text>
             </View>
 
-            {news.authorId ? (
+            {news.authorName ? (
               <>
                 <View style={styles.infoBlock}>
                   <Text style={styles.infoLabel}>작성자</Text>
-                  <Text style={styles.infoValue}>{news.authorId}</Text>
+                  <Text style={styles.infoValue}>{news.authorName}</Text>
                 </View>
                 <View style={styles.divider} />
               </>

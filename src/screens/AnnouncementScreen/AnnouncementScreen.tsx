@@ -5,12 +5,14 @@ import {
   ScrollView,
   Text,
   View,
+  type NativeScrollEvent,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated from "react-native-reanimated";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import { ContentRegistrationFabButton } from "../../components/ui/FabButton";
 import EmptyState, { emptyListContentStyle } from "../../components/ui/EmptyState";
@@ -43,6 +45,12 @@ import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncem
 import { resolveAnnouncementAuthorLabel } from "../../lib/announcement/announcementAuthor";
 import { isContentNew } from "../../lib/content/newBadge";
 import { MAIN, WHITE } from "../../color";
+import {
+  AnnouncementScrollProvider,
+  useAnnouncementScroll,
+} from "./AnnouncementScrollContext";
+
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 type RootStackParamList = {
   ContentTab: undefined;
@@ -71,6 +79,142 @@ function sortTabToApiParam(tab: AnnouncementSortOption): "imminent" | "created" 
 interface AnnouncementScreenProps {
   hideTopBar?: boolean;
 }
+
+type AnnouncementListBodyProps = {
+  items: AnnouncementListItem[];
+  loading: boolean;
+  refreshing: boolean;
+  emptyMessage: string;
+  onRefresh: () => void;
+  onPressItem: (item: AnnouncementListItem) => void;
+};
+
+function AnnouncementListContent({
+  items,
+  loading,
+  emptyMessage,
+  onPressItem,
+}: AnnouncementListBodyProps) {
+  if (loading && items.length === 0) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#666" />
+      </View>
+    );
+  }
+
+  if (items.length === 0) {
+    return <EmptyState message={emptyMessage} />;
+  }
+
+  return (
+    <>
+      {items.map((item) => (
+        <View key={item.postId} style={styles.cardWrapper}>
+          <AnnouncementCard
+            title={item.title}
+            type={item.type}
+            status={item.isRecruiting ? "모집중" : "모집마감"}
+            daysLeft={parseAnnouncementDaysLeft(item.dDay)}
+            deadlineAt={item.deadlineAt}
+            viewCount={item.viewCount}
+            priceType={item.priceType}
+            price={item.price}
+            address={item.address}
+            authorName={resolveAnnouncementAuthorLabel(item.user)}
+            profileImgUrl={item.user?.profileImgUrl}
+            showNew={isContentNew(item.createdAt)}
+            onPress={() => onPressItem(item)}
+          />
+        </View>
+      ))}
+    </>
+  );
+}
+
+const CollapsibleAnnouncementList = ({
+  items,
+  loading,
+  refreshing,
+  emptyMessage,
+  onRefresh,
+  onPressItem,
+}: AnnouncementListBodyProps) => {
+  const { listTopInset, scrollHandler } = useAnnouncementScroll();
+
+  return (
+    <View style={styles.scrollContentWrapper}>
+      <AnimatedScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={[
+          styles.scrollContent,
+          { paddingTop: listTopInset },
+          items.length === 0 && emptyListContentStyle,
+        ]}
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={MAIN.DEFAULT}
+            colors={[MAIN.DEFAULT]}
+          />
+        }
+      >
+        <AnnouncementListContent
+          items={items}
+          loading={loading}
+          refreshing={refreshing}
+          emptyMessage={emptyMessage}
+          onRefresh={onRefresh}
+          onPressItem={onPressItem}
+        />
+      </AnimatedScrollView>
+    </View>
+  );
+};
+
+const PlainAnnouncementList = ({
+  items,
+  loading,
+  refreshing,
+  emptyMessage,
+  onRefresh,
+  onScrollForPagination,
+  onPressItem,
+}: AnnouncementListBodyProps & {
+  onScrollForPagination: (event: NativeScrollEvent) => void;
+}) => (
+  <View style={styles.scrollContentWrapper}>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={[
+        styles.scrollContent,
+        items.length === 0 && emptyListContentStyle,
+      ]}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={MAIN.DEFAULT}
+          colors={[MAIN.DEFAULT]}
+        />
+      }
+      onScroll={({ nativeEvent }) => onScrollForPagination(nativeEvent)}
+      scrollEventThrottle={200}
+    >
+      <AnnouncementListContent
+        items={items}
+        loading={loading}
+        refreshing={refreshing}
+        emptyMessage={emptyMessage}
+        onRefresh={onRefresh}
+        onPressItem={onPressItem}
+      />
+    </ScrollView>
+  </View>
+);
 
 const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => {
   const navigation = useNavigation<NavigationProp>();
@@ -337,46 +481,115 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           ? "지원한 공고가 없습니다"
           : "모집공고가 없습니다";
 
-  return (
-    <View style={[styles.container, { paddingTop: hideTopBar ? 0 : top }]}>
-      {!hideTopBar && (
-        <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />
-      )}
-      <View style={styles.filterWrapper}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filterChipRow}
-          contentContainerStyle={styles.filterChipRowContent}
-        >
-          {filterChips.map((chip) => {
-            const isActive =
-              chip.type === "sort" ||
-              chip.selectedValues.length > 0;
-            return (
-              <Pressable
-                key={chip.type}
-                style={[styles.filterChip, isActive && styles.filterChipActive]}
-                onPress={() => setFilterSheet(chip.type)}
+  const handlePressItem = useCallback(
+    (item: AnnouncementListItem) => {
+      navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
+        title: item.title,
+        type: item.type,
+        status: item.isRecruiting ? "모집중" : "모집마감",
+        daysLeft: parseAnnouncementDaysLeft(item.dDay),
+        postId: item.postId,
+        viewCount: item.viewCount,
+      });
+    },
+    [navigation],
+  );
+
+  const handlePaginationScroll = useCallback(
+    (event: NativeScrollEvent) => {
+      const { layoutMeasurement, contentOffset, contentSize } = event;
+      const pad = 100;
+      if (
+        layoutMeasurement.height + contentOffset.y >= contentSize.height - pad &&
+        hasMore &&
+        nextCursor &&
+        !loading &&
+        !refreshing
+      ) {
+        loadMore();
+      }
+    },
+    [hasMore, nextCursor, loading, refreshing],
+  );
+
+  const filterBar = (
+    <View style={styles.filterWrapper}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.filterChipRow}
+        contentContainerStyle={styles.filterChipRowContent}
+      >
+        {filterChips.map((chip) => {
+          const isActive =
+            chip.type === "sort" || chip.selectedValues.length > 0;
+          return (
+            <Pressable
+              key={chip.type}
+              style={[styles.filterChip, isActive && styles.filterChipActive]}
+              onPress={() => setFilterSheet(chip.type)}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  isActive && styles.filterChipTextActive,
+                ]}
               >
-                <Text
-                  style={[
-                    styles.filterChipText,
-                    isActive && styles.filterChipTextActive,
-                  ]}
-                >
-                  {getFilterChipLabel(chip.defaultLabel, chip.selectedValues)}
-                </Text>
-                <MaterialCommunityIcons
-                  name="chevron-down"
-                  size={16}
-                  color={isActive ? WHITE : MAIN.DEFAULT}
-                />
-              </Pressable>
-            );
-          })}
-        </ScrollView>
+                {getFilterChipLabel(chip.defaultLabel, chip.selectedValues)}
+              </Text>
+              <MaterialCommunityIcons
+                name="chevron-down"
+                size={16}
+                color={isActive ? WHITE : MAIN.DEFAULT}
+              />
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
+  );
+
+  const listProps = {
+    items,
+    loading,
+    refreshing,
+    emptyMessage,
+    onRefresh,
+    onPressItem: handlePressItem,
+  };
+
+  if (hideTopBar) {
+    return (
+      <View style={styles.container}>
+        {filterBar}
+        {filterSheet ? (
+          <AnnouncementFilterSheet
+            type={filterSheet}
+            options={filterSheetConfig[filterSheet].options}
+            selectedValues={filterSheetConfig[filterSheet].selectedValues}
+            onToggle={filterSheetConfig[filterSheet].onToggle}
+            onClose={closeFilterSheet}
+          />
+        ) : null}
+        <PlainAnnouncementList
+          {...listProps}
+          onScrollForPagination={handlePaginationScroll}
+        />
       </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, { paddingTop: top }]}>
+      <AnnouncementScrollProvider
+        topBar={
+          <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />
+        }
+        filterBar={filterBar}
+        onScrollForPagination={handlePaginationScroll}
+      >
+        <CollapsibleAnnouncementList {...listProps} />
+      </AnnouncementScrollProvider>
       {filterSheet ? (
         <AnnouncementFilterSheet
           type={filterSheet}
@@ -386,75 +599,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           onClose={closeFilterSheet}
         />
       ) : null}
-      <View style={styles.scrollContentWrapper}>
-        <ScrollView
-          style={{ flex: 1 }}
-          contentContainerStyle={[
-            styles.scrollContent,
-            items.length === 0 && emptyListContentStyle,
-          ]}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={MAIN.DEFAULT}
-              colors={[MAIN.DEFAULT]}
-            />
-          }
-          onScroll={({ nativeEvent }) => {
-            const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-            const pad = 100;
-            if (
-              layoutMeasurement.height + contentOffset.y >= contentSize.height - pad &&
-              hasMore &&
-              nextCursor &&
-              !loading &&
-              !refreshing
-            ) {
-              loadMore();
-            }
-          }}
-          scrollEventThrottle={200}
-        >
-          {loading && items.length === 0 ? (
-            <View style={styles.loadingContainer}>
-              <ActivityIndicator size="large" color="#666" />
-            </View>
-          ) : items.length === 0 ? (
-            <EmptyState message={emptyMessage} />
-          ) : (
-            items.map((item) => (
-              <View key={item.postId} style={styles.cardWrapper}>
-                <AnnouncementCard
-                  title={item.title}
-                  type={item.type}
-                  status={item.isRecruiting ? "모집중" : "모집마감"}
-                  daysLeft={parseAnnouncementDaysLeft(item.dDay)}
-                  deadlineAt={item.deadlineAt}
-                  viewCount={item.viewCount}
-                  priceType={item.priceType}
-                  price={item.price}
-                  address={item.address}
-                  authorName={resolveAnnouncementAuthorLabel(item.user)}
-                  profileImgUrl={item.user?.profileImgUrl}
-                  showNew={isContentNew(item.createdAt)}
-                  onPress={() => {
-                    navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
-                      title: item.title,
-                      type: item.type,
-                      status: item.isRecruiting ? "모집중" : "모집마감",
-                      daysLeft: parseAnnouncementDaysLeft(item.dDay),
-                      postId: item.postId,
-                      viewCount: item.viewCount,
-                    });
-                  }}
-                />
-              </View>
-            ))
-          )}
-        </ScrollView>
-      </View>
-      {!hideTopBar && <ContentRegistrationFabButton />}
+      <ContentRegistrationFabButton />
     </View>
   );
 };

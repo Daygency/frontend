@@ -49,6 +49,9 @@ export function formatAnnouncementPriceLine(
     return label;
   }
   const n = typeof price === "number" && Number.isFinite(price) ? price : 0;
+  if (priceType === "INCOME") {
+    return `${n.toLocaleString("ko-KR")}원`;
+  }
   return `${label} · ${n.toLocaleString("ko-KR")}원`;
 }
 
