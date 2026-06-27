@@ -181,7 +181,6 @@ const FabButton = ({
     switch (label) {
       case "모집공고":
         return renderMenuImage(MEGAPHONE_ICON);
-      case "음악계 소식":
       case "공연 소식":
         return renderMenuImage(MUSIC_ICON);
       case "커뮤니티":

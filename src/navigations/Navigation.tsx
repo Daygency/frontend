@@ -508,7 +508,7 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={styles.title}>음악계 소식</Text>
+                <Text style={styles.title}>공연소식</Text>
               </View>
             ),
             headerShadowVisible: false,

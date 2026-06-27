@@ -22,8 +22,6 @@ import {
   getHomeBannerFeed,
   type HomeBannerListItem,
 } from "../../../../lib/apis/home/homeBannerApi";
-import { isContentNew } from "../../../../lib/content/newBadge";
-import NewBadge from "../../../../components/ui/NewBadge";
 import { normalizeListThumbnailUrl } from "../../../../lib/media/listThumbnailUrl";
 import { RootRoutes } from "../../../../navigations/routes";
 import { getImageAverageColor } from "../../../../lib/media/getImageAverageColor";
@@ -200,8 +198,6 @@ const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
 
     const renderGridItem = useCallback(
       ({ item }: { item: HomeBannerListItem }) => {
-        const showNewBadge = isContentNew(item.createdAt);
-
         return (
           <Pressable
             style={[styles.gridCard, { width: gridCardSize }]}
@@ -218,7 +214,6 @@ const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
                 style={styles.cardImage}
                 resizeMode="cover"
               />
-              {showNewBadge ? <NewBadge style={styles.newBadge} /> : null}
               {item.isCurrent === false ? (
                 <View style={styles.pastBadge}>
                   <Text style={styles.pastBadgeText}>이전</Text>
@@ -247,9 +242,6 @@ const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
             style={styles.cardImage}
             resizeMode="cover"
           />
-          {isContentNew(featuredBanner.createdAt) ? (
-            <NewBadge style={styles.newBadge} />
-          ) : null}
         </View>
       </Pressable>
     ) : null;

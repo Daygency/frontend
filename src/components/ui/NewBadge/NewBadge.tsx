@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
   badge: {
     paddingHorizontal: 4,
     paddingVertical: 1,
-    borderRadius: 3,
+    borderRadius: 100,
     backgroundColor: RED.DEFAULT,
     flexShrink: 0,
   },

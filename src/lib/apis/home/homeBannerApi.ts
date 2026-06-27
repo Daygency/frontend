@@ -36,21 +36,52 @@ export async function getHomeBannerFeed(params?: {
   cursor?: string;
   limit?: number;
 }): Promise<HomeBannerFeedResponse | null> {
+  const limit = params?.limit ?? 20;
+
   try {
     const search = new URLSearchParams();
     if (params?.cursor) search.set("cursor", params.cursor);
-    if (params?.limit) search.set("limit", String(params.limit));
+    search.set("limit", String(limit));
     const qs = search.toString();
-    const res = await fetch(
-      `${API_BASE}/home-banners/feed${qs ? `?${qs}` : ""}`,
-    );
-    if (!res.ok) return null;
-    const data = (await res.json()) as HomeBannerFeedResponse;
-    if (!data || !Array.isArray(data.items)) return null;
-    return data;
+    const res = await fetch(`${API_BASE}/home-banners/feed?${qs}`);
+    if (res.ok) {
+      const data = (await res.json()) as HomeBannerFeedResponse;
+      if (data && Array.isArray(data.items)) return data;
+    }
   } catch {
-    return null;
+    // feed 미배포·구버전 서버 — /all 폴백
   }
+
+  return paginateHomeBannersFromAll(params?.cursor, limit);
+}
+
+async function paginateHomeBannersFromAll(
+  cursor: string | undefined,
+  limit: number,
+): Promise<HomeBannerFeedResponse | null> {
+  const all = await getHomeBanners();
+  if (!all.length) {
+    return { items: [], nextCursor: null, hasMore: false };
+  }
+
+  const start = cursor
+    ? (() => {
+        const index = all.findIndex((item) => item.bannerId === cursor);
+        return index >= 0 ? index + 1 : all.length;
+      })()
+    : 0;
+
+  if (start >= all.length) {
+    return { items: [], nextCursor: null, hasMore: false };
+  }
+
+  const items = all.slice(start, start + limit);
+  const hasMore = start + limit < all.length;
+  const nextCursor = hasMore
+    ? items[items.length - 1]?.bannerId ?? null
+    : null;
+
+  return { items, nextCursor, hasMore };
 }
 
 export async function getHomeBannerDetail(

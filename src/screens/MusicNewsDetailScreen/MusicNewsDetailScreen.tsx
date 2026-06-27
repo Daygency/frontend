@@ -40,11 +40,6 @@ import {
   deleteLikeByTarget,
   getLikes,
 } from "../../lib/apis/like/likeApi";
-import {
-  createScrap,
-  deleteScrapByTarget,
-  getScraps,
-} from "../../lib/apis/scrap/scrapApi";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRequireLogin } from "../../hooks/useRequireLogin";
 import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
@@ -278,8 +273,6 @@ const MusicNewsDetailScreen = () => {
   } | null>(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-  const [scraped, setScraped] = useState(false);
-  const [scrapCount, setScrapCount] = useState(0);
   const [loading, setLoading] = useState(!!newsId);
   const [error, setError] = useState<string | null>(null);
   const [newsAuthorUserId, setNewsAuthorUserId] = useState<string | null>(null);
@@ -335,7 +328,7 @@ const MusicNewsDetailScreen = () => {
       setNewsAuthorUserId(authorUserId);
       setIsMineFromApi(Boolean(res.isMine));
     } else {
-      setError("음악계 소식을 불러오지 못했습니다.");
+      setError("공연소식을 불러오지 못했습니다.");
       setNewsAuthorUserId(null);
       setIsMineFromApi(false);
     }
@@ -385,23 +378,6 @@ const MusicNewsDetailScreen = () => {
       setLikeCount(res.count);
       const myId = user?.socialId;
       setLiked(
-        !!myId &&
-          res.items.some((item) => String(item.user?.userId ?? "") === myId),
-      );
-    })();
-  }, [targetNewsId, user?.socialId]);
-
-  useEffect(() => {
-    if (!targetNewsId) return;
-    (async () => {
-      const res = await getScraps({
-        targetType: "NEWS",
-        targetId: targetNewsId,
-      });
-      if (!res) return;
-      setScrapCount(res.count);
-      const myId = user?.socialId;
-      setScraped(
         !!myId &&
           res.items.some((item) => String(item.user?.userId ?? "") === myId),
       );
@@ -477,7 +453,7 @@ const MusicNewsDetailScreen = () => {
 
   const onDeleteNews = useCallback(() => {
     if (!targetNewsId) return;
-    Alert.alert("삭제", "이 음악계 소식을 삭제할까요?", [
+    Alert.alert("삭제", "이 공연소식을 삭제할까요?", [
       { text: "취소", style: "cancel" },
       {
         text: "삭제",
@@ -498,13 +474,6 @@ const MusicNewsDetailScreen = () => {
     navigation.setOptions({
       headerRight: () => (
         <View style={navigationHeaderStyles.rightItemsWrap}>
-          <Pressable hitSlop={10}>
-            <MaterialCommunityIcons
-              name="bookmark-outline"
-              size={21}
-              color="#000"
-            />
-          </Pressable>
           {isNewsMine ? (
             <PostDetailOptionsMenu
               isMine
@@ -585,34 +554,6 @@ const MusicNewsDetailScreen = () => {
     }
     setLiked(true);
     setLikeCount((prev) => prev + 1);
-  };
-
-  const handleToggleScrap = async () => {
-    if (!ensureLoggedIn()) return;
-    if (!targetNewsId) return;
-    if (scraped) {
-      const res = await deleteScrapByTarget({
-        targetType: "NEWS",
-        targetId: targetNewsId,
-      });
-      if (!res.success) {
-        Alert.alert("알림", "스크랩 취소에 실패했습니다.");
-        return;
-      }
-      setScraped(false);
-      setScrapCount((prev) => Math.max(0, prev - 1));
-      return;
-    }
-    const created = await createScrap({
-      targetType: "NEWS",
-      targetId: targetNewsId,
-    });
-    if (!created) {
-      Alert.alert("알림", "스크랩에 실패했습니다.");
-      return;
-    }
-    setScraped(true);
-    setScrapCount((prev) => prev + 1);
   };
 
   const handleCreateComment = async (content: string) => {
@@ -718,7 +659,7 @@ const MusicNewsDetailScreen = () => {
       >
         <ActivityIndicator size="large" color={GRAY.DARK} />
         <Text style={{ marginTop: 12, fontSize: 14, color: GRAY.DARK_2 }}>
-          음악계 소식을 불러오는 중...
+          공연소식을 불러오는 중...
         </Text>
       </View>
     );
@@ -887,16 +828,6 @@ const MusicNewsDetailScreen = () => {
               <View style={styles.actionItem}>
                 <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
                 <Text style={styles.actionCount}>{commentCount}</Text>
-              </View>
-              <View style={styles.actionItem}>
-                <Pressable onPress={handleToggleScrap} hitSlop={8}>
-                  <Ionicons
-                    name={scraped ? "bookmark" : "bookmark-outline"}
-                    size={20}
-                    color="#FFC107"
-                  />
-                </Pressable>
-                <Text style={styles.actionCount}>{scrapCount}</Text>
               </View>
             </View>
 

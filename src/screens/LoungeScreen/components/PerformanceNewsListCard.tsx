@@ -1,6 +1,4 @@
-import { useEffect, useState } from "react";
 import {
-  Alert,
   Image,
   Pressable,
   StyleSheet,
@@ -15,13 +13,6 @@ import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerforma
 import { buildPerformanceNewsDisplay } from "../../../lib/news/buildPerformanceNewsDisplay";
 import type { NewsListItem } from "../../../lib/apis/news/types";
 import { pickNewsListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
-import {
-  createScrap,
-  deleteScrapByTarget,
-  getScraps,
-} from "../../../lib/apis/scrap/scrapApi";
-import { useAuth } from "../../../contexts/AuthContext";
-import { useRequireLogin } from "../../../hooks/useRequireLogin";
 
 type PerformanceNewsListCardProps = {
   item: NewsListItem;
@@ -34,57 +25,11 @@ const PerformanceNewsListCard = ({
   onPress,
   style,
 }: PerformanceNewsListCardProps) => {
-  const { user } = useAuth();
-  const { ensureLoggedIn } = useRequireLogin();
-  const [scraped, setScraped] = useState(false);
-
   const imageUrl = pickNewsListThumbnailUrl(item);
   const display = buildPerformanceNewsDisplay(item);
   const openLabel =
     display.openLabel ||
     formatPerformanceListDateLabel(item.startedAt, item.endedAt);
-
-  useEffect(() => {
-    if (!item.newsId) return;
-    (async () => {
-      const res = await getScraps({
-        targetType: "NEWS",
-        targetId: item.newsId,
-      });
-      if (!res) return;
-      const myId = user?.socialId;
-      setScraped(
-        !!myId &&
-          res.items.some((scrap) => String(scrap.user?.userId ?? "") === myId),
-      );
-    })();
-  }, [item.newsId, user?.socialId]);
-
-  const handleToggleScrap = async () => {
-    if (!ensureLoggedIn()) return;
-    if (!item.newsId) return;
-    if (scraped) {
-      const res = await deleteScrapByTarget({
-        targetType: "NEWS",
-        targetId: item.newsId,
-      });
-      if (!res.success) {
-        Alert.alert("알림", "스크랩 취소에 실패했습니다.");
-        return;
-      }
-      setScraped(false);
-      return;
-    }
-    const created = await createScrap({
-      targetType: "NEWS",
-      targetId: item.newsId,
-    });
-    if (!created) {
-      Alert.alert("알림", "스크랩에 실패했습니다.");
-      return;
-    }
-    setScraped(true);
-  };
 
   return (
     <Pressable
@@ -100,25 +45,9 @@ const PerformanceNewsListCard = ({
       </View>
 
       <View style={styles.body}>
-        <View style={styles.topRow}>
-          <Text style={styles.title} numberOfLines={2}>
-            {item.title}
-          </Text>
-          <Pressable
-            hitSlop={10}
-            onPress={(e) => {
-              e.stopPropagation();
-              void handleToggleScrap();
-            }}
-            style={styles.scrapButton}
-          >
-            <MaterialCommunityIcons
-              name={scraped ? "bookmark" : "bookmark-outline"}
-              size={22}
-              color={scraped ? "#FFC107" : GRAY.DARK}
-            />
-          </Pressable>
-        </View>
+        <Text style={styles.title} numberOfLines={2}>
+          {item.title}
+        </Text>
 
         {openLabel ? (
           <View style={styles.timeRow}>
@@ -198,21 +127,11 @@ const styles = StyleSheet.create({
     minWidth: 0,
     gap: 4,
   },
-  topRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 8,
-  },
   timeRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 2,
     minWidth: 0,
-  },
-  scrapButton: {
-    flexShrink: 0,
-    marginTop: 2,
   },
   openTime: {
     fontSize: 15,
@@ -221,7 +140,6 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   title: {
-    flex: 1,
     fontSize: 18,
     fontWeight: "700",
     color: MAIN.DEFAULT,

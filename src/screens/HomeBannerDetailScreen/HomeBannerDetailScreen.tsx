@@ -11,11 +11,11 @@ import { RouteProp, useRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MAIN, WHITE } from "../../color";
 import { getHomeBannerDetail } from "../../lib/apis/home/homeBannerApi";
-import { formatContentDate, isContentNew } from "../../lib/content/newBadge";
-import NewBadge from "../../components/ui/NewBadge";
+import { formatContentDate } from "../../lib/content/newBadge";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 import { RootRoutes } from "../../navigations/routes";
 import styles from "./styles";
+import NewBadge from "../../components/ui/NewBadge";
 
 type RouteParams = {
   [RootRoutes.HOME_BANNER_DETAIL]: { bannerId: string };
@@ -63,7 +63,6 @@ const HomeBannerDetailScreen = () => {
   }
 
   const formattedDate = formatContentDate(createdAt);
-  const showNewBadge = isContentNew(createdAt);
 
   return (
     <ScrollView
@@ -75,7 +74,6 @@ const HomeBannerDetailScreen = () => {
           {title ? (
             <View style={styles.titleRow}>
               <Text style={styles.title}>{title}</Text>
-              {showNewBadge ? <NewBadge /> : null}
             </View>
           ) : null}
           {formattedDate ? (

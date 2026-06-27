@@ -136,10 +136,6 @@ const MainHomeScreen = () => {
       };
 
       applyTabBarStyle(isCuration);
-
-      return () => {
-        applyTabBarStyle(false);
-      };
     }, [isCuration, navigation]),
   );
 
