@@ -25,7 +25,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "rgba(255,255,255,0.6)",
     textAlign: "center",
-    paddingVertical: 48,
   },
   footerLoader: {
     paddingVertical: 20,

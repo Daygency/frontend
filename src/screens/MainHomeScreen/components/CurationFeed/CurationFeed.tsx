@@ -270,7 +270,7 @@ const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
         contentContainerStyle={[
           styles.listContent,
           (isEmpty || showInitialLoader) && styles.listContentEmpty,
-          showInitialLoader && styles.listContentCentered,
+          (showInitialLoader || isEmpty) && styles.listContentCentered,
         ]}
         showsVerticalScrollIndicator={false}
         onScroll={(event) => {
