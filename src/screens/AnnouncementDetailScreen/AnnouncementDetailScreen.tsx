@@ -1028,12 +1028,12 @@ const AnnouncementDetailScreen = () => {
             ) : null}
 
             <View style={styles.bodySectionBlock}>
-              <Text style={styles.sectionHeading}>본문</Text>
+              <Text style={styles.sectionHeading}>내용</Text>
               {descriptionText ? (
                 <Text style={styles.description}>{descriptionText}</Text>
               ) : (
                 <Text style={[styles.description, { color: GRAY.DARK_100 }]}>
-                  등록된 본문이 없습니다.
+                  등록된 내용이 없습니다.
                 </Text>
               )}
             </View>
@@ -1046,10 +1046,9 @@ const AnnouncementDetailScreen = () => {
                 ]}
               >
                 <ImageCarousel
-                  gap={12}
+                  gap={0}
                   images={imageList}
                   fitImageHeight
-                  maxSlideHeight={160}
                   onActiveIndexChange={setActiveImageIndex}
                 />
                 {imageList.length > 1 ? (

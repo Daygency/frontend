@@ -75,8 +75,10 @@ const MainHomeTopBar = ({
   };
 
   const logoHeight =
-    variant === "dark" ? 16 : MAIN_HOME_TOP_BAR_TITLE_SIZE;
-  const logoMaxWidth = variant === "dark" ? 20 : 110;
+    variant === "dark"
+      ? MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT
+      : MAIN_HOME_TOP_BAR_TITLE_SIZE;
+  const logoMaxWidth = 110;
   const logoWidth = Math.min(logoHeight * logoAspectRatio, logoMaxWidth);
 
   const openTitleMenu = () => {
@@ -183,8 +185,8 @@ const MainHomeTopBar = ({
           <Image
             source={logoImage}
             style={{
-              width: logoWidth,
-              height: logoHeight,
+              width: "100%",
+              height: "100%",
             }}
             resizeMode="contain"
             accessibilityLabel="daygency"

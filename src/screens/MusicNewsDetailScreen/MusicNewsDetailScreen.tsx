@@ -837,12 +837,12 @@ const MusicNewsDetailScreen = () => {
               ) : null}
 
               <View style={styles.bodySectionBlock}>
-                <Text style={styles.sectionHeading}>본문</Text>
+                <Text style={styles.sectionHeading}>내용</Text>
                 {news.description?.trim() ? (
                   <Text style={styles.description}>{news.description}</Text>
                 ) : (
                   <Text style={[styles.description, styles.descriptionEmpty]}>
-                    등록된 본문이 없습니다.
+                    등록된 내용이 없습니다.
                   </Text>
                 )}
               </View>
@@ -855,10 +855,9 @@ const MusicNewsDetailScreen = () => {
                   ]}
                 >
                   <ImageCarousel
-                    gap={12}
+                    gap={0}
                     images={news.imageUrls}
                     fitImageHeight
-                    maxSlideHeight={160}
                     onActiveIndexChange={setActiveImageIndex}
                   />
                   {news.imageUrls.length > 1 ? (
