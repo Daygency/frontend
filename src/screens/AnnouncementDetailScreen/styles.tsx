@@ -15,15 +15,20 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 24,
   },
-  heroCarousel: {
+  bodyImageBanner: {
     position: "relative",
-    marginBottom: 16,
-    paddingHorizontal: 20,
+    marginTop: 14,
+  },
+  bodyImageBannerWithDivider: {
+    borderBottomWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    paddingBottom: 14,
+    marginBottom: 14,
   },
   imageCounter: {
     position: "absolute",
-    right: 20,
-    bottom: 16,
+    right: 12,
+    bottom: 8,
     backgroundColor: "rgba(0,0,0,0.55)",
     borderRadius: 14,
     paddingHorizontal: 10,
@@ -36,6 +41,7 @@ const styles = StyleSheet.create({
   },
   body: {
     paddingHorizontal: 20,
+    paddingTop: 20,
   },
   titleRow: {
     flexDirection: "row",
@@ -80,14 +86,41 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   sectionBlock: {
-    marginBottom: 28,
+    marginBottom: 14,
+  },
+  sectionInlineRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 8,
+    marginBottom: 14,
+  },
+  sectionInlineRowTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    marginBottom: 14,
   },
   sectionHeading: {
-    fontSize: 17,
+    fontSize: 13,
     fontWeight: "800",
     color: BLACK,
-    lineHeight: 24,
-    marginBottom: 12,
+    lineHeight: 18,
+    marginBottom: 8,
+  },
+  sectionHeadingInline: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: BLACK,
+    lineHeight: 18,
+    flexShrink: 0,
+  },
+  bodySectionBlock: {
+    marginBottom: 14,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
   },
   description: {
     fontSize: 14,
@@ -107,21 +140,23 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   recruitmentMajorsChips: {
+    flex: 1,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 6,
+    minWidth: 0,
   },
   recruitmentMajorChip: {
     backgroundColor: WHITE,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
+    borderRadius: 4,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
   },
   recruitmentMajorChipText: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 11,
+    lineHeight: 15,
     color: BLACK,
     fontWeight: "500",
   },
@@ -143,7 +178,7 @@ const styles = StyleSheet.create({
     color: GRAY.DARK,
   },
   attachmentsCard: {
-    marginBottom: 28,
+    marginBottom: 14,
     gap: 8,
   },
   fileRow: {
@@ -162,7 +197,7 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
   },
   performersSection: {
-    marginBottom: 28,
+    marginBottom: 14,
   },
   floatingBottomBar: {
     position: "absolute",

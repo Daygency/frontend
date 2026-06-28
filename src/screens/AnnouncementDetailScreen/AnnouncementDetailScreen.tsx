@@ -955,30 +955,7 @@ const AnnouncementDetailScreen = () => {
             />
           }
         >
-          {imageList.length > 0 ? (
-            <View style={styles.heroCarousel}>
-              <ImageCarousel
-                gap={0}
-                images={imageList}
-                fitImageHeight
-                onActiveIndexChange={setActiveImageIndex}
-              />
-              {imageList.length > 1 ? (
-                <View style={styles.imageCounter}>
-                  <Text style={styles.imageCounterText}>
-                    {activeImageIndex + 1}/{imageList.length}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-
-          <View
-            style={[
-              styles.body,
-              imageList.length === 0 ? { paddingTop: 20 } : null,
-            ]}
-          >
+          <View style={styles.body}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>{displayTitle}</Text>
               {author ? (
@@ -1018,9 +995,16 @@ const AnnouncementDetailScreen = () => {
               ) : null}
             </View>
 
+            <View style={styles.sectionInlineRow}>
+              <Text style={styles.sectionHeadingInline}>마감일</Text>
+              <Text style={styles.deadlineText}>
+                {deadlineLabel || "-"}
+              </Text>
+            </View>
+
             {recruitmentMajorNames.length > 0 ? (
-              <View style={styles.sectionBlock}>
-                <Text style={styles.sectionHeading}>모집 전공</Text>
+              <View style={styles.sectionInlineRowTop}>
+                <Text style={styles.sectionHeadingInline}>모집 전공</Text>
                 <View style={styles.recruitmentMajorsChips}>
                   {recruitmentMajorNames.map((name, i) => (
                     <View
@@ -1037,13 +1021,13 @@ const AnnouncementDetailScreen = () => {
             ) : null}
 
             {priceLabel ? (
-              <View style={styles.sectionBlock}>
-                <Text style={styles.sectionHeading}>비용</Text>
+              <View style={styles.sectionInlineRow}>
+                <Text style={styles.sectionHeadingInline}>비용</Text>
                 <Text style={styles.priceText}>{priceLabel}</Text>
               </View>
             ) : null}
 
-            <View style={styles.sectionBlock}>
+            <View style={styles.bodySectionBlock}>
               <Text style={styles.sectionHeading}>본문</Text>
               {descriptionText ? (
                 <Text style={styles.description}>{descriptionText}</Text>
@@ -1054,12 +1038,29 @@ const AnnouncementDetailScreen = () => {
               )}
             </View>
 
-            <View style={styles.sectionBlock}>
-              <Text style={styles.sectionHeading}>마감일</Text>
-              <Text style={styles.deadlineText}>
-                {deadlineLabel || "-"}
-              </Text>
-            </View>
+            {imageList.length > 0 ? (
+              <View
+                style={[
+                  styles.bodyImageBanner,
+                  addressLabel ? styles.bodyImageBannerWithDivider : null,
+                ]}
+              >
+                <ImageCarousel
+                  gap={12}
+                  images={imageList}
+                  fitImageHeight
+                  maxSlideHeight={160}
+                  onActiveIndexChange={setActiveImageIndex}
+                />
+                {imageList.length > 1 ? (
+                  <View style={styles.imageCounter}>
+                    <Text style={styles.imageCounterText}>
+                      {activeImageIndex + 1}/{imageList.length}
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
 
             {addressLabel ? (
               <View style={styles.sectionBlock}>

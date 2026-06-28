@@ -1022,7 +1022,7 @@ const MusicNewsDetailScreen = () => {
                                 </Text>
                               )}
                             </View>
-                            {!reply.isMine && reply.authorUserId ? (
+                              {!reply.isMine && reply.authorUserId ? (
                               <ReportDotsDropdownMenu
                                 enabled
                                 onReport={() =>

@@ -35,6 +35,8 @@ interface ImageCarouselProps {
   imageResizeMode?: ImageResizeMode;
   /** true면 슬라이드 너비는 유지하고 높이는 이미지 비율에 맞춤 (회색 여백 없음) */
   fitImageHeight?: boolean;
+  /** fitImageHeight 와 함께 — 슬라이드 높이 상한. 비율 유지(contain) 후 가운데 정렬 */
+  maxSlideHeight?: number;
   /** 캐러셀 무한 순환 (홈·큐레이션 배너만 true 권장) */
   loop?: boolean;
   headerTitle?: string;
@@ -54,6 +56,23 @@ function resolveSlideHeight(
     return null;
   }
   return slideWidth * (dimensions.height / dimensions.width);
+}
+
+/** max 너비·높이 안에 비율 유지(contain) */
+function fitImageDimensions(
+  imgWidth: number,
+  imgHeight: number,
+  maxWidth: number,
+  maxHeight: number,
+): { width: number; height: number } {
+  if (imgWidth <= 0 || imgHeight <= 0 || maxWidth <= 0 || maxHeight <= 0) {
+    return { width: maxWidth, height: maxHeight };
+  }
+  const scale = Math.min(maxWidth / imgWidth, maxHeight / imgHeight, 1);
+  return {
+    width: imgWidth * scale,
+    height: imgHeight * scale,
+  };
 }
 
 type CarouselSlideProps = {
@@ -138,6 +157,7 @@ type FitHeightImageGalleryProps = {
   rememberDimensions: (uri: string, width: number, height: number) => void;
   onActiveIndexChange?: (index: number) => void;
   onPressImage?: (index: number) => void;
+  maxSlideHeight?: number;
 };
 
 const FitHeightImageGallery = ({
@@ -148,12 +168,24 @@ const FitHeightImageGallery = ({
   rememberDimensions,
   onActiveIndexChange,
   onPressImage,
+  maxSlideHeight,
 }: FitHeightImageGalleryProps) => {
   const [layoutWidth, setLayoutWidth] = useState(0);
   const slideWidth = Math.max(0, layoutWidth - gap * 2);
   const activeUri = uris[activeIndex] ?? "";
   const activeDimensions = imageDimensions[activeUri];
-  const activeHeight = resolveSlideHeight(slideWidth, activeDimensions);
+  const activeFitted =
+    maxSlideHeight && activeDimensions && slideWidth > 0
+      ? fitImageDimensions(
+          activeDimensions.width,
+          activeDimensions.height,
+          slideWidth,
+          maxSlideHeight,
+        )
+      : null;
+  const activeHeight = maxSlideHeight
+    ? (activeFitted?.height ?? maxSlideHeight)
+    : resolveSlideHeight(slideWidth, activeDimensions);
 
   const handleLayout = (width: number) => {
     const next = Math.round(width);
@@ -161,6 +193,54 @@ const FitHeightImageGallery = ({
   };
 
   const renderImage = (uri: string, index: number) => {
+    if (maxSlideHeight && slideWidth > 0) {
+      const dims = imageDimensions[uri];
+      if (!dims) return null;
+
+      const fitted = fitImageDimensions(
+        dims.width,
+        dims.height,
+        slideWidth,
+        maxSlideHeight,
+      );
+
+      const image = (
+        <Image
+          source={{ uri }}
+          style={[
+            styles.slide,
+            {
+              width: fitted.width,
+              height: fitted.height,
+              borderRadius: 8,
+            },
+          ]}
+          resizeMode="contain"
+        />
+      );
+
+      const wrapped = onPressImage ? (
+        <Pressable onPress={() => onPressImage(index)} accessibilityRole="image">
+          {image}
+        </Pressable>
+      ) : (
+        image
+      );
+
+      return (
+        <View
+          style={{
+            width: slideWidth,
+            height: fitted.height,
+            alignItems: "center",
+            justifyContent: "center",
+          }}
+        >
+          {wrapped}
+        </View>
+      );
+    }
+
     const dims = imageDimensions[uri];
     if (!dims || slideWidth <= 0) return null;
     const aspectRatio = dims.width / dims.height;
@@ -191,7 +271,10 @@ const FitHeightImageGallery = ({
   if (layoutWidth <= 0 || activeHeight == null) {
     return (
       <View
-        style={styles.containerFit}
+        style={[
+          styles.containerFit,
+          maxSlideHeight ? { height: maxSlideHeight } : null,
+        ]}
         onLayout={(event) => handleLayout(event.nativeEvent.layout.width)}
       />
     );
@@ -233,7 +316,8 @@ const FitHeightImageGallery = ({
               width: layoutWidth,
               height: activeHeight,
               paddingHorizontal: gap,
-              justifyContent: "flex-start",
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
             {renderImage(uri, index)}
@@ -253,6 +337,7 @@ const ImageCarousel = ({
   slideBackgroundColor,
   imageResizeMode = "cover",
   fitImageHeight = false,
+  maxSlideHeight,
   loop = false,
   headerTitle,
   onPressMore,
@@ -334,7 +419,7 @@ const ImageCarousel = ({
 
   if (fitImageHeight) {
     const activeUri = uris[activeIndex] ?? "";
-    if (!imageDimensions[activeUri]) {
+    if (!maxSlideHeight && !imageDimensions[activeUri]) {
       return null;
     }
 
@@ -345,6 +430,7 @@ const ImageCarousel = ({
         activeIndex={activeIndex}
         imageDimensions={imageDimensions}
         rememberDimensions={rememberDimensions}
+        maxSlideHeight={maxSlideHeight}
         onActiveIndexChange={(index) => {
           setActiveIndex(index);
           onActiveIndexChange?.(index);
