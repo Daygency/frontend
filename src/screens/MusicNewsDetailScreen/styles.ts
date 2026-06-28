@@ -15,71 +15,134 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 24,
   },
-  carouselWrapper: {
+  heroBanner: {
     width: "100%",
     marginBottom: 4,
-    paddingHorizontal: 20,
   },
-  contentSection: {
+  bodyImageBanner: {
+    position: "relative",
+    marginTop: 14,
+  },
+  bodyImageBannerWithDivider: {
+    borderBottomWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    paddingBottom: 14,
+    marginBottom: 14,
+  },
+  imageCounter: {
+    position: "absolute",
+    right: 12,
+    bottom: 8,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    borderRadius: 14,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+  },
+  imageCounterText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: WHITE,
+  },
+  body: {
     paddingHorizontal: 20,
     paddingTop: 20,
   },
-  titleRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-    marginBottom: 20,
-  },
   title: {
-    flex: 1,
     fontSize: 22,
     fontWeight: "800",
     color: BLACK,
     lineHeight: 30,
-    marginRight: 12,
+    marginBottom: 16,
   },
-  uploadedAt: {
-    fontSize: 12,
-    color: GRAY.DARK_2,
-    marginTop: 4,
+  sectionInlineRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    marginBottom: 10,
+    gap: 12,
   },
-  divider: {
-    height: 1,
-    backgroundColor: GRAY.MEDIUM_2,
-    marginVertical: 14,
-  },
-  infoBlock: {
-    gap: 6,
-  },
-  infoLabel: {
+  sectionLabel: {
+    width: 72,
     fontSize: 13,
-    color: GRAY.DARK,
+    lineHeight: 20,
+    color: GRAY.DARK_2,
     fontWeight: "500",
+    flexShrink: 0,
   },
-  infoValue: {
-    fontSize: 16,
+  sectionValuePressable: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    minWidth: 0,
+  },
+  sectionValue: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
     color: BLACK,
-    fontWeight: "700",
-    lineHeight: 24,
+    fontWeight: "500",
+    minWidth: 0,
   },
-  mapSection: {
-    borderRadius: 12,
-    overflow: "hidden",
+  sectionValueAccent: {
+    flex: 1,
+    fontSize: 14,
+    lineHeight: 20,
+    color: MAIN.DEFAULT,
+    fontWeight: "600",
+    minWidth: 0,
+  },
+  bodySectionBlock: {
+    marginTop: 10,
+    marginBottom: 14,
+    paddingVertical: 14,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+  },
+  sectionBlock: {
+    marginBottom: 14,
+  },
+  sectionHeading: {
+    fontSize: 13,
+    fontWeight: "800",
+    color: BLACK,
+    lineHeight: 18,
+    marginBottom: 8,
   },
   description: {
     fontSize: 14,
     lineHeight: 22,
     color: BLACK,
-    marginBottom: 4,
+  },
+  descriptionEmpty: {
+    color: GRAY.DARK_100,
+  },
+  locationCard: {
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    borderRadius: 12,
+    overflow: "hidden",
+    backgroundColor: WHITE,
+  },
+  addressInCard: {
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    backgroundColor: GRAY.DEFAULT,
+  },
+  addressText: {
+    fontSize: 13,
+    lineHeight: 20,
+    color: GRAY.DARK,
   },
   attachmentsCard: {
+    marginBottom: 14,
     gap: 8,
   },
-  attachmentsTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: BLACK,
-    marginBottom: 4,
+  actionDivider: {
+    height: 1,
+    backgroundColor: GRAY.MEDIUM_2,
+    marginTop: 4,
+    marginBottom: 14,
   },
   fileRow: {
     flexDirection: "row",
@@ -231,5 +294,7 @@ const styles = StyleSheet.create({
     borderTopColor: GRAY.DEFAULT,
   },
 });
+
+export type MusicNewsDetailScreenStyles = typeof styles;
 
 export default styles;

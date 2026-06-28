@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   RouteProp,
   useNavigation,
@@ -17,7 +17,7 @@ import {
   commentInputBarPaddingBottom,
   useKeyboardHeight,
 } from "../../hooks/useKeyboardHeight";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
 import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
 import { Ionicons } from "@expo/vector-icons";
@@ -62,6 +62,7 @@ import {
 } from "../../lib/media/attachmentImageUrl";
 import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
 import ImageCarousel from "../../components/media/ImageCarousel";
+import PosterBlurHeroBanner from "../../components/media/PosterBlurHeroBanner";
 import { parseCoord } from "../../lib/kakao/location";
 import { formatPerformanceDetailDateLabel } from "../../lib/news/formatPerformanceOpenLabel";
 import { formatNewsTicketPrice } from "../../lib/news/buildPerformanceNewsDisplay";
@@ -295,6 +296,10 @@ const MusicNewsDetailScreen = () => {
     targetType: ReportTargetType;
     targetId: string;
   } | null>(null);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollContentRef = useRef<View>(null);
+  const mapSectionRef = useRef<View>(null);
 
   const fetchDetail = useCallback(async () => {
     if (!newsId) return;
@@ -741,106 +746,151 @@ const MusicNewsDetailScreen = () => {
   }
 
   const ticketPriceLabel = formatNewsTicketPrice(news.ticketPrice);
+  const periodLabel = [news.date, news.time?.trim()].filter(Boolean).join(" ");
+  const hasPlace = Boolean(news.place?.trim());
+
+  const scrollToMap = () => {
+    if (!mapSectionRef.current || !scrollContentRef.current) return;
+    mapSectionRef.current.measureLayout(
+      scrollContentRef.current,
+      (_x, y) => {
+        scrollViewRef.current?.scrollTo({
+          y: Math.max(0, y - 12),
+          animated: true,
+        });
+      },
+      () => {},
+    );
+  };
 
   return (
     <View style={styles.container}>
       <View style={styles.detailInner}>
         <ScrollView
+          ref={scrollViewRef}
           style={styles.detailScroll}
           contentContainerStyle={styles.scrollContent}
           bounces={false}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {news.imageUrls && news.imageUrls.length > 0 ? (
-            <View style={styles.carouselWrapper}>
-              <ImageCarousel
-                gap={0}
-                images={news.imageUrls}
-                fitImageHeight
+          <View ref={scrollContentRef} collapsable={false}>
+            {news.imageUrls && news.imageUrls.length > 0 ? (
+              <PosterBlurHeroBanner
+                imageUrl={news.imageUrls[0]}
+                viewerUrls={news.imageUrls}
+                style={styles.heroBanner}
               />
-            </View>
-          ) : null}
+            ) : null}
 
-          <View style={styles.contentSection}>
-            <View style={styles.titleRow}>
+            <View style={styles.body}>
               <Text style={styles.title}>{news.title}</Text>
-              <Text style={styles.uploadedAt}>{news.uploadedAt}</Text>
-            </View>
 
-            {news.authorName ? (
-              <>
-                <View style={styles.infoBlock}>
-                  <Text style={styles.infoLabel}>작성자</Text>
-                  <Text style={styles.infoValue}>{news.authorName}</Text>
+              {hasPlace ? (
+                <View style={styles.sectionInlineRow}>
+                  <Text style={styles.sectionLabel}>장소</Text>
+                  <Pressable
+                    style={styles.sectionValuePressable}
+                    onPress={scrollToMap}
+                    accessibilityRole="button"
+                  >
+                    <Text style={styles.sectionValue} numberOfLines={2}>
+                      {news.place}
+                    </Text>
+                    <MaterialIcons
+                      name="chevron-right"
+                      size={20}
+                      color={GRAY.DARK_1}
+                    />
+                  </Pressable>
                 </View>
-                <View style={styles.divider} />
-              </>
-            ) : null}
+              ) : null}
 
-            <View style={styles.infoBlock}>
-              <Text style={styles.infoLabel}>예정일</Text>
-              <Text style={styles.infoValue}>{news.date}</Text>
-            </View>
-
-            <View style={styles.divider} />
-
-            <View style={styles.infoBlock}>
-              <Text style={styles.infoLabel}>예정 시간</Text>
-              <Text style={styles.infoValue}>{news.time}</Text>
-            </View>
-
-            {ticketPriceLabel ? (
-              <>
-                <View style={styles.divider} />
-                <View style={styles.infoBlock}>
-                  <Text style={styles.infoLabel}>티켓 가격</Text>
-                  <Text style={styles.infoValue}>{ticketPriceLabel}</Text>
+              {periodLabel ? (
+                <View style={styles.sectionInlineRow}>
+                  <Text style={styles.sectionLabel}>기간</Text>
+                  <Text style={styles.sectionValue}>{periodLabel}</Text>
                 </View>
-              </>
-            ) : null}
+              ) : null}
 
-            <View style={styles.divider} />
+              {ticketPriceLabel ? (
+                <View style={styles.sectionInlineRow}>
+                  <Text style={styles.sectionLabel}>티켓 가격</Text>
+                  <Text style={styles.sectionValueAccent}>
+                    {ticketPriceLabel}
+                  </Text>
+                </View>
+              ) : null}
 
-            <View style={styles.infoBlock}>
-              <Text style={styles.infoLabel}>장소</Text>
-              <Text style={styles.infoValue}>{news.place}</Text>
-            </View>
+              {news.authorName ? (
+                <View style={styles.sectionInlineRow}>
+                  <Text style={styles.sectionLabel}>작성자</Text>
+                  <Text style={styles.sectionValue}>{news.authorName}</Text>
+                </View>
+              ) : null}
 
-            {news.place?.trim() ? (
-              <>
-                <View style={styles.divider} />
-                <View style={styles.mapSection}>
-                  <KakaoMapView
-                    latitude={news.latitude}
-                    longitude={news.longitude}
-                    place={news.place}
-                    height={200}
+              {news.contact?.trim() ? (
+                <View style={styles.sectionInlineRow}>
+                  <Text style={styles.sectionLabel}>문의</Text>
+                  <Text style={styles.sectionValue}>{news.contact}</Text>
+                </View>
+              ) : null}
+
+              <View style={styles.bodySectionBlock}>
+                <Text style={styles.sectionHeading}>본문</Text>
+                {news.description?.trim() ? (
+                  <Text style={styles.description}>{news.description}</Text>
+                ) : (
+                  <Text style={[styles.description, styles.descriptionEmpty]}>
+                    등록된 본문이 없습니다.
+                  </Text>
+                )}
+              </View>
+
+              {news.imageUrls && news.imageUrls.length > 0 ? (
+                <View
+                  style={[
+                    styles.bodyImageBanner,
+                    hasPlace ? styles.bodyImageBannerWithDivider : null,
+                  ]}
+                >
+                  <ImageCarousel
+                    gap={12}
+                    images={news.imageUrls}
+                    fitImageHeight
+                    maxSlideHeight={160}
+                    onActiveIndexChange={setActiveImageIndex}
                   />
+                  {news.imageUrls.length > 1 ? (
+                    <View style={styles.imageCounter}>
+                      <Text style={styles.imageCounterText}>
+                        {activeImageIndex + 1}/{news.imageUrls.length}
+                      </Text>
+                    </View>
+                  ) : null}
                 </View>
-              </>
-            ) : null}
+              ) : null}
 
-            {news.contact?.trim() ? (
-              <>
-                <View style={styles.divider} />
-
-                <View style={styles.infoBlock}>
-                  <Text style={styles.infoLabel}>문의</Text>
-                  <Text style={styles.infoValue}>{news.contact}</Text>
+              {hasPlace ? (
+                <View ref={mapSectionRef} style={styles.sectionBlock}>
+                  <Text style={styles.sectionHeading}>지역</Text>
+                  <View style={styles.locationCard}>
+                    <KakaoMapView
+                      latitude={news.latitude}
+                      longitude={news.longitude}
+                      place={news.place}
+                      height={200}
+                    />
+                    <View style={styles.addressInCard}>
+                      <Text style={styles.addressText}>{news.place}</Text>
+                    </View>
+                  </View>
                 </View>
-              </>
-            ) : null}
+              ) : null}
 
-            <View style={styles.divider} />
-
-            <Text style={styles.description}>{news.description}</Text>
-
-            {news.attachments && news.attachments.length > 0 && (
-              <>
-                <View style={styles.divider} />
+              {news.attachments && news.attachments.length > 0 ? (
                 <View style={styles.attachmentsCard}>
-                  <Text style={styles.attachmentsTitle}>첨부파일</Text>
+                  <Text style={styles.sectionHeading}>첨부파일</Text>
                   {news.attachments.map((file, index) => (
                     <Pressable key={index} style={styles.fileRow}>
                       <MaterialCommunityIcons
@@ -860,39 +910,38 @@ const MusicNewsDetailScreen = () => {
                     </Pressable>
                   ))}
                 </View>
-              </>
-            )}
+              ) : null}
 
-            <View style={styles.divider} />
+              <View style={styles.actionDivider} />
 
-            <View style={styles.actionRow}>
-              <View style={styles.actionItem}>
-                <Pressable onPress={handleToggleLike} hitSlop={8}>
-                  <Ionicons
-                    name={liked ? "heart" : "heart-outline"}
-                    size={21}
-                    color={RED.DEFAULT}
-                  />
-                </Pressable>
-                <Text style={styles.actionCount}>{likeCount}</Text>
+              <View style={styles.actionRow}>
+                <View style={styles.actionItem}>
+                  <Pressable onPress={handleToggleLike} hitSlop={8}>
+                    <Ionicons
+                      name={liked ? "heart" : "heart-outline"}
+                      size={21}
+                      color={RED.DEFAULT}
+                    />
+                  </Pressable>
+                  <Text style={styles.actionCount}>{likeCount}</Text>
+                </View>
+                <View style={styles.actionItem}>
+                  <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
+                  <Text style={styles.actionCount}>{commentCount}</Text>
+                </View>
+                <View style={styles.actionItem}>
+                  <Pressable onPress={handleToggleScrap} hitSlop={8}>
+                    <Ionicons
+                      name={scraped ? "bookmark" : "bookmark-outline"}
+                      size={21}
+                      color={BLACK}
+                    />
+                  </Pressable>
+                  <Text style={styles.actionCount}>{scrapCount}</Text>
+                </View>
               </View>
-              <View style={styles.actionItem}>
-                <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
-                <Text style={styles.actionCount}>{commentCount}</Text>
-              </View>
-              <View style={styles.actionItem}>
-                <Pressable onPress={handleToggleScrap} hitSlop={8}>
-                  <Ionicons
-                    name={scraped ? "bookmark" : "bookmark-outline"}
-                    size={21}
-                    color={BLACK}
-                  />
-                </Pressable>
-                <Text style={styles.actionCount}>{scrapCount}</Text>
-              </View>
-            </View>
 
-          <View style={styles.commentList}>
+              <View style={styles.commentList}>
             {displayedComments.map((comment) => (
               <View
                 key={comment.id}
@@ -1077,8 +1126,9 @@ const MusicNewsDetailScreen = () => {
                 )}
               </View>
             ))}
+              </View>
+            </View>
           </View>
-        </View>
         </ScrollView>
 
         <View
