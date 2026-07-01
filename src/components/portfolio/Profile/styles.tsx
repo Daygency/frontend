@@ -26,6 +26,10 @@ const styles = StyleSheet.create({
   bannerImage: {
     ...StyleSheet.absoluteFillObject,
   },
+  bannerDimOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.2)",
+  },
   bannerBottomGradient: {
     position: "absolute",
     left: 0,

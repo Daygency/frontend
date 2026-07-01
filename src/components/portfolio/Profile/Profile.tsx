@@ -721,6 +721,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
                 resizeMode="cover"
                 onError={() => setCoverImageError(true)}
               />
+              <View style={styles.bannerDimOverlay} pointerEvents="none" />
               <LinearGradient
                 colors={["rgba(0, 0, 0, 0)", "rgba(0, 0, 0, 0.3)"]}
                 style={styles.bannerBottomGradient}
