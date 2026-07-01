@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  Pressable,
   RefreshControl,
   ScrollView,
   Text,
@@ -23,6 +22,7 @@ import AnnouncementCard from "../../cards/AnnouncementCard";
 import EventNewsCard from "../../cards/EventNewsCard";
 import GrayCard from "../../cards/GrayCard";
 import MagazineHeroCarousel from "../../media/MagazineHeroCarousel/MagazineHeroCarousel";
+import HomeShortcutSection from "../../home/HomeShortcutSection/HomeShortcutSection";
 import { isContentNew } from "../../../lib/content/newBadge";
 import { ContentRoutes } from "../../../navigations/routes";
 import { RootRoutes } from "../../../navigations/routes";
@@ -263,150 +263,10 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
               );
             }}
           />
-          <View
-            style={{
-              marginHorizontal: 20,
-              marginTop: 6,
-              marginBottom: 4,
-            }}
-          >
-            <View
-              style={{
-                paddingHorizontal: 18,
-                paddingTop: 18,
-                paddingBottom: 16,
-                borderBottomWidth: 1,
-                borderBottomColor: "#D7D9DE",
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "800",
-                    color: "#111113",
-                  }}
-                >
-                  내 예술 템포
-                </Text>
-                <Text
-                  style={{
-                    fontSize: 20,
-                    fontWeight: "800",
-                    color: "#111113",
-                  }}
-                >
-                  36점
-                </Text>
-              </View>
-              <View
-                style={{
-                  marginTop: 14,
-                  height: 18,
-                  justifyContent: "center",
-                }}
-              >
-                <View
-                  style={{
-                    height: 12,
-                    borderRadius: 999,
-                    backgroundColor: "#FFFFFF",
-                    borderWidth: 1,
-                    borderColor: "#D7D9DE",
-                    overflow: "hidden",
-                  }}
-                >
-                  <View
-                    style={{
-                      width: "52%",
-                      height: "100%",
-                      borderRadius: 999,
-                      backgroundColor: "#1F2A44",
-                    }}
-                  />
-                </View>
-                <View
-                  style={{
-                    position: "absolute",
-                    left: "52%",
-                    marginLeft: -15,
-                    width: 30,
-                    height: 30,
-                    borderRadius: 15,
-                    backgroundColor: "#1F2A44",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "#FFFFFF",
-                      fontSize: 15,
-                      fontWeight: "800",
-                    }}
-                  >
-                    #
-                  </Text>
-                </View>
-              </View>
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                borderBottomWidth: 1,
-                borderBottomColor: "#D7D9DE",
-              }}
-            >
-              <Pressable
-                onPress={() => handleAnnouncementShortcutPress("내가 올린 공고")}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  paddingVertical: 22,
-                  paddingHorizontal: 14,
-                  backgroundColor: pressed ? "rgba(31,42,68,0.03)" : "transparent",
-                  borderRightWidth: 1,
-                  borderRightColor: "#D7D9DE",
-                })}
-              >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "800",
-                    color: "#111113",
-                    textAlign: "center",
-                  }}
-                >
-                  내가 올린 공고
-                </Text>
-              </Pressable>
-              <Pressable
-                onPress={() => handleAnnouncementShortcutPress("지원한 공고")}
-                style={({ pressed }) => ({
-                  flex: 1,
-                  paddingVertical: 22,
-                  paddingHorizontal: 14,
-                  backgroundColor: pressed ? "rgba(31,42,68,0.03)" : "transparent",
-                })}
-              >
-                <Text
-                  style={{
-                    fontSize: 18,
-                    fontWeight: "800",
-                    color: "#111113",
-                    textAlign: "center",
-                  }}
-                >
-                  지원한 공고
-                </Text>
-              </Pressable>
-            </View>
-          </View>
+          <HomeShortcutSection
+            onPressApplied={() => handleAnnouncementShortcutPress("지원한 공고")}
+            onPressPosted={() => handleAnnouncementShortcutPress("내가 올린 공고")}
+          />
           <Section title="공연소식" onPressMore={handleNewsMore} styles={{ content: { paddingHorizontal: 0 } }}>
             {newsItems.length === 0 ? (
               <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24, paddingHorizontal: 20 }}>공연소식이 없습니다</Text>
