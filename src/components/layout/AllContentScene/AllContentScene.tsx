@@ -1,4 +1,11 @@
-import { ActivityIndicator, RefreshControl, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import {
@@ -15,7 +22,7 @@ import Section from "../../ui/Section";
 import AnnouncementCard from "../../cards/AnnouncementCard";
 import EventNewsCard from "../../cards/EventNewsCard";
 import GrayCard from "../../cards/GrayCard";
-import ImageCarousel from "../../media/ImageCarousel";
+import MagazineHeroCarousel from "../../media/MagazineHeroCarousel/MagazineHeroCarousel";
 import { isContentNew } from "../../../lib/content/newBadge";
 import { ContentRoutes } from "../../../navigations/routes";
 import { RootRoutes } from "../../../navigations/routes";
@@ -37,7 +44,11 @@ const NEWS_CARD_GAP = 14;
 
 type ContentTabParamList = {
   [ContentRoutes.HOME]: undefined;
-  [ContentRoutes.ACTIVITY]: undefined;
+  [ContentRoutes.ACTIVITY]:
+    | {
+        initialFeedView?: "전체" | "내가 올린 공고" | "지원한 공고";
+      }
+    | undefined;
   [ContentRoutes.PAYMENT]: undefined;
   [ContentRoutes.CHAT]: undefined;
   [ContentRoutes.LOUNGE]: undefined;
@@ -170,7 +181,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
     }, [loadHome, tab]),
   );
 
-  const carouselBanners = useMemo(
+  const heroBanners = useMemo(
     () =>
       banners
         .map((banner) => {
@@ -178,11 +189,15 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
           if (!imageUrl) return null;
           return {
             bannerId: banner.bannerId,
+            title: banner.title,
             imageUrl,
           };
         })
         .filter(
-          (item): item is { bannerId: string; imageUrl: string } => item != null,
+          (
+            item,
+          ): item is { bannerId: string; title: string; imageUrl: string } =>
+            item != null,
         ),
     [banners],
   );
@@ -193,6 +208,19 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
       { screen: ContentRoutes.ACTIVITY },
     );
   };
+
+  const handleAnnouncementShortcutPress = useCallback(
+    (initialFeedView: "내가 올린 공고" | "지원한 공고") => {
+      (navigation as { navigate: (a: string, b?: object) => void }).navigate(
+        "ContentTab",
+        {
+          screen: ContentRoutes.ACTIVITY,
+          params: { initialFeedView },
+        },
+      );
+    },
+    [navigation],
+  );
 
   const handleNewsMore = () => {
     (navigation as { navigate: (a: string, b?: object) => void }).navigate(
@@ -226,17 +254,159 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
         <ActivityIndicator size="small" color="#666" />
       ) : (
         <>
-          <ImageCarousel
-            gap={12}
-            banners={carouselBanners}
-            loop
-            onPressBanner={(bannerId) => {
+          <MagazineHeroCarousel
+            items={heroBanners}
+            onPressItem={(bannerId) => {
               (navigation as { navigate: (a: string, b?: object) => void }).navigate(
                 RootRoutes.HOME_BANNER_DETAIL,
                 { bannerId },
               );
             }}
           />
+          <View
+            style={{
+              marginHorizontal: 20,
+              marginTop: 6,
+              marginBottom: 4,
+            }}
+          >
+            <View
+              style={{
+                paddingHorizontal: 18,
+                paddingTop: 18,
+                paddingBottom: 16,
+                borderBottomWidth: 1,
+                borderBottomColor: "#D7D9DE",
+              }}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "800",
+                    color: "#111113",
+                  }}
+                >
+                  내 예술 템포
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 20,
+                    fontWeight: "800",
+                    color: "#111113",
+                  }}
+                >
+                  36점
+                </Text>
+              </View>
+              <View
+                style={{
+                  marginTop: 14,
+                  height: 18,
+                  justifyContent: "center",
+                }}
+              >
+                <View
+                  style={{
+                    height: 12,
+                    borderRadius: 999,
+                    backgroundColor: "#FFFFFF",
+                    borderWidth: 1,
+                    borderColor: "#D7D9DE",
+                    overflow: "hidden",
+                  }}
+                >
+                  <View
+                    style={{
+                      width: "52%",
+                      height: "100%",
+                      borderRadius: 999,
+                      backgroundColor: "#1F2A44",
+                    }}
+                  />
+                </View>
+                <View
+                  style={{
+                    position: "absolute",
+                    left: "52%",
+                    marginLeft: -15,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 15,
+                    backgroundColor: "#1F2A44",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: "#FFFFFF",
+                      fontSize: 15,
+                      fontWeight: "800",
+                    }}
+                  >
+                    #
+                  </Text>
+                </View>
+              </View>
+            </View>
+            <View
+              style={{
+                flexDirection: "row",
+                borderBottomWidth: 1,
+                borderBottomColor: "#D7D9DE",
+              }}
+            >
+              <Pressable
+                onPress={() => handleAnnouncementShortcutPress("내가 올린 공고")}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 22,
+                  paddingHorizontal: 14,
+                  backgroundColor: pressed ? "rgba(31,42,68,0.03)" : "transparent",
+                  borderRightWidth: 1,
+                  borderRightColor: "#D7D9DE",
+                })}
+              >
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "800",
+                    color: "#111113",
+                    textAlign: "center",
+                  }}
+                >
+                  내가 올린 공고
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={() => handleAnnouncementShortcutPress("지원한 공고")}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  paddingVertical: 22,
+                  paddingHorizontal: 14,
+                  backgroundColor: pressed ? "rgba(31,42,68,0.03)" : "transparent",
+                })}
+              >
+                <Text
+                  style={{
+                    fontSize: 18,
+                    fontWeight: "800",
+                    color: "#111113",
+                    textAlign: "center",
+                  }}
+                >
+                  지원한 공고
+                </Text>
+              </Pressable>
+            </View>
+          </View>
           <Section title="공연소식" onPressMore={handleNewsMore} styles={{ content: { paddingHorizontal: 0 } }}>
             {newsItems.length === 0 ? (
               <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24, paddingHorizontal: 20 }}>공연소식이 없습니다</Text>

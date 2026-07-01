@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
@@ -62,6 +62,7 @@ type RootStackParamList = {
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 type AnnouncementFeedView = "전체" | "내가 올린 공고" | "지원한 공고";
+type AnnouncementRouteParams = { initialFeedView?: AnnouncementFeedView };
 
 const FEED_VIEW_OPTIONS: AnnouncementFeedView[] = [
   "전체",
@@ -222,6 +223,7 @@ const PlainAnnouncementList = ({
 
 const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<{ key: string; name: string; params?: AnnouncementRouteParams }>();
   const { top } = useSafeAreaInsets();
   const { isLoggedIn } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
@@ -232,7 +234,9 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [filterSheet, setFilterSheet] = useState<AnnouncementFilterSheetType | null>(
     null,
   );
-  const [feedView, setFeedView] = useState<AnnouncementFeedView>("전체");
+  const [feedView, setFeedView] = useState<AnnouncementFeedView>(
+    route.params?.initialFeedView ?? "전체",
+  );
   const [sortTab, setSortTab] = useState<AnnouncementSortOption>("등록순");
 
   const recruitmentStatusOptions = ["모집중", "모집마감"];
@@ -388,6 +392,15 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   useEffect(() => {
     setFilterSheet(null);
   }, [feedView, sortTab]);
+
+  useEffect(() => {
+    const nextFeedView = route.params?.initialFeedView;
+    if (!nextFeedView) return;
+    if (feedViewRequiresLogin(nextFeedView) && !isLoggedIn) {
+      if (!ensureLoggedIn()) return;
+    }
+    setFeedView(nextFeedView);
+  }, [ensureLoggedIn, isLoggedIn, route.params?.initialFeedView]);
 
   /** 탭·로그인 변경 + 화면 포커스 시에만 자동 조회. 태그 필터는 시트 닫을 때 loadData 호출 */
   useFocusEffect(

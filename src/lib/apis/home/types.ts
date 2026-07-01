@@ -5,6 +5,7 @@ export type HomeAnnouncementItem = {
   title: string;
   type: string;
   isRecruiting: boolean;
+  completed?: boolean;
   dDay: string;
   priceType?: AnnouncementPriceType;
   price?: number;
