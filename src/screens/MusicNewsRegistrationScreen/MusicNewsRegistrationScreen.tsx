@@ -1,6 +1,6 @@
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { CommonActions } from "@react-navigation/native";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -10,15 +10,14 @@ import {
   Text,
   TextInput,
   View,
-  Platform,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/forms/Form";
 import FormTextInput from "../../components/forms/FormTextInput";
 import KakaoLocationField from "../../components/kakao/KakaoLocationField/KakaoLocationField";
+import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
 import { parseCoord } from "../../lib/kakao/location";
 import { GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
@@ -50,6 +49,8 @@ function dateToISO(d: Date, timeOverride?: string): string {
   const [hh = "00", mm = "00"] = (timeOverride ?? formatTimeDisplay(d)).split(":");
   return `${y}-${m}-${day}T${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00.000Z`;
 }
+
+type ValidationField = "title" | "content" | "place" | "images";
 
 const MusicNewsRegistrationScreen = () => {
   const navigation = useNavigation<any>();
@@ -86,6 +87,9 @@ const MusicNewsRegistrationScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(Boolean(editNewsId));
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollContentRef = useRef<View>(null);
+  const fieldRefs = useRef<Partial<Record<ValidationField, View | null>>>({});
 
   useEffect(() => {
     if (!editNewsId) return;
@@ -162,25 +166,45 @@ const MusicNewsRegistrationScreen = () => {
     }
   };
 
+  const hasRequiredImages = isEditMode
+    ? hasExistingImages || pendingImages.length > 0
+    : pendingImages.length > 0;
+
+  const setFieldRef =
+    (field: ValidationField) => (node: View | null) => {
+      fieldRefs.current[field] = node;
+    };
+
+  const getFirstInvalidField = (): ValidationField | null => {
+    if (!title.trim()) return "title";
+    if (!content.trim()) return "content";
+    if (!placeValue.address.trim()) return "place";
+    if (!hasRequiredImages) return "images";
+    return null;
+  };
+
+  const scrollToValidationField = (field: ValidationField) => {
+    const fieldNode = fieldRefs.current[field];
+    const contentNode = scrollContentRef.current;
+    if (!fieldNode || !contentNode) return;
+    fieldNode.measureLayout(
+      contentNode,
+      (_x, y) => {
+        scrollViewRef.current?.scrollTo({
+          y: Math.max(0, y - 16),
+          animated: true,
+        });
+      },
+      () => {},
+    );
+  };
+
   const handleRegister = async () => {
     setSubmitAttempted(true);
 
-    const hasRequiredImages = isEditMode
-      ? hasExistingImages || pendingImages.length > 0
-      : pendingImages.length > 0;
-
-    if (
-      !title.trim() ||
-      !content.trim() ||
-      !placeValue.address.trim() ||
-      !hasRequiredImages
-    ) {
-      const missing: string[] = [];
-      if (!title.trim()) missing.push("제목");
-      if (!content.trim()) missing.push("내용");
-      if (!placeValue.address.trim()) missing.push("장소");
-      if (!hasRequiredImages) missing.push("이미지 (최소 1장)");
-      Alert.alert("입력 확인", `다음 항목을 확인해주세요:\n\n${missing.join("\n")}`);
+    const firstInvalid = getFirstInvalidField();
+    if (firstInvalid) {
+      requestAnimationFrame(() => scrollToValidationField(firstInvalid));
       return;
     }
 
@@ -243,10 +267,6 @@ const MusicNewsRegistrationScreen = () => {
     }
   };
 
-  const hasRequiredImages = isEditMode
-    ? hasExistingImages || pendingImages.length > 0
-    : pendingImages.length > 0;
-
   const err = {
     title: submitAttempted && !title.trim(),
     content: submitAttempted && !content.trim(),
@@ -271,11 +291,18 @@ const MusicNewsRegistrationScreen = () => {
   return (
     <View style={styles.container}>
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={[styles.scrollContent, { paddingBottom: (bottom || 0) + 100 }]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
+        <View ref={scrollContentRef} collapsable={false}>
         <View style={styles.formSection}>
-          <View style={styles.formField}>
+          <View
+            ref={setFieldRef("title")}
+            collapsable={false}
+            style={styles.formField}
+          >
             <Form title="제목" isRequired hasError={err.title}>
               <FormTextInput
                 placeholder="공연 제목을 입력하세요 (최대 100자)"
@@ -287,7 +314,11 @@ const MusicNewsRegistrationScreen = () => {
             </Form>
           </View>
 
-          <View style={styles.formField}>
+          <View
+            ref={setFieldRef("content")}
+            collapsable={false}
+            style={styles.formField}
+          >
             <Form title="내용" isRequired hasError={err.content}>
               <View style={[styles.contentInputWrapper, err.content && styles.inputErrorBorder]}>
                 <TextInput
@@ -305,7 +336,11 @@ const MusicNewsRegistrationScreen = () => {
             </Form>
           </View>
 
-          <View style={styles.formField}>
+          <View
+            ref={setFieldRef("place")}
+            collapsable={false}
+            style={styles.formField}
+          >
             <Form title="장소" isRequired hasError={err.place}>
               <KakaoLocationField
                 placeholder="공연 장소를 입력하세요"
@@ -366,28 +401,6 @@ const MusicNewsRegistrationScreen = () => {
                   <MaterialCommunityIcons name="clock-outline" size={20} color={GRAY.DARK_1} />
                 </Pressable>
               </View>
-              {showStartDatePicker && (
-                <DateTimePicker
-                  value={startedAt}
-                  mode="date"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={(_, selected) => {
-                    if (selected) setStartedAt(selected);
-                    if (Platform.OS === "android") setShowStartDatePicker(false);
-                  }}
-                />
-              )}
-              {showStartTimePicker && (
-                <DateTimePicker
-                  value={startedAt}
-                  mode="time"
-                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                  onChange={(_, selected) => {
-                    if (selected) setStartedAt(selected);
-                    if (Platform.OS === "android") setShowStartTimePicker(false);
-                  }}
-                />
-              )}
             </Form>
           </View>
 
@@ -421,28 +434,6 @@ const MusicNewsRegistrationScreen = () => {
                 </Pressable>
               </View>
             )}
-            {useEndDate && showEndDatePicker && endedAt && (
-              <DateTimePicker
-                value={endedAt}
-                mode="date"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(_, selected) => {
-                  if (selected) setEndedAt(selected);
-                  if (Platform.OS === "android") setShowEndDatePicker(false);
-                }}
-              />
-            )}
-            {useEndDate && showEndTimePicker && endedAt && (
-              <DateTimePicker
-                value={endedAt}
-                mode="time"
-                display={Platform.OS === "ios" ? "spinner" : "default"}
-                onChange={(_, selected) => {
-                  if (selected) setEndedAt(selected);
-                  if (Platform.OS === "android") setShowEndTimePicker(false);
-                }}
-              />
-            )}
           </View>
 
           <View style={styles.formField}>
@@ -457,7 +448,11 @@ const MusicNewsRegistrationScreen = () => {
             </Form>
           </View>
 
-          <View style={styles.formField}>
+          <View
+            ref={setFieldRef("images")}
+            collapsable={false}
+            style={styles.formField}
+          >
             <Form title="이미지" isRequired hasError={err.images}>
               <Pressable
                 style={[styles.imageAddRow, err.images && styles.inputErrorBorder]}
@@ -515,13 +510,14 @@ const MusicNewsRegistrationScreen = () => {
             </Form>
           </View>
         </View>
+        </View>
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: (bottom || 0) + 16 }]}>
         <Pressable
           style={[styles.registerButton, (!isValid || isSubmitting) && styles.registerButtonDisabled]}
           onPress={handleRegister}
-          disabled={!isValid || isSubmitting}
+          disabled={isSubmitting}
         >
           {isSubmitting ? (
             <ActivityIndicator size="small" color={WHITE} />
@@ -532,6 +528,76 @@ const MusicNewsRegistrationScreen = () => {
           )}
         </Pressable>
       </View>
+
+      <WheelDateTimePickerModal
+        visible={showStartDatePicker}
+        value={startedAt}
+        pickerMode="date"
+        title="공연 시작일 선택"
+        description="공연 시작 날짜를 선택하세요."
+        onConfirm={(selected) => {
+          setStartedAt((prev) => {
+            const next = new Date(selected);
+            next.setHours(prev.getHours(), prev.getMinutes(), 0, 0);
+            return next;
+          });
+          setShowStartDatePicker(false);
+        }}
+        onCancel={() => setShowStartDatePicker(false)}
+      />
+      <WheelDateTimePickerModal
+        visible={showStartTimePicker}
+        value={startedAt}
+        pickerMode="time"
+        title="공연 시작 시간 선택"
+        description="공연 시작 시간을 선택하세요."
+        minuteInterval={5}
+        onConfirm={(selected) => {
+          setStartedAt((prev) => {
+            const next = new Date(prev);
+            next.setHours(selected.getHours(), selected.getMinutes(), 0, 0);
+            return next;
+          });
+          setShowStartTimePicker(false);
+        }}
+        onCancel={() => setShowStartTimePicker(false)}
+      />
+      <WheelDateTimePickerModal
+        visible={useEndDate && showEndDatePicker && !!endedAt}
+        value={endedAt ?? startedAt}
+        pickerMode="date"
+        title="공연 종료일 선택"
+        description="공연 종료 날짜를 선택하세요."
+        minimumDate={startedAt}
+        onConfirm={(selected) => {
+          setEndedAt((prev) => {
+            const base = prev ?? startedAt;
+            const next = new Date(selected);
+            next.setHours(base.getHours(), base.getMinutes(), 0, 0);
+            return next;
+          });
+          setShowEndDatePicker(false);
+        }}
+        onCancel={() => setShowEndDatePicker(false)}
+      />
+      <WheelDateTimePickerModal
+        visible={useEndDate && showEndTimePicker && !!endedAt}
+        value={endedAt ?? startedAt}
+        pickerMode="time"
+        title="공연 종료 시간 선택"
+        description="공연 종료 시간을 선택하세요."
+        minuteInterval={5}
+        onConfirm={(selected) => {
+          setEndedAt((prev) => {
+            const base = prev ?? startedAt;
+            const next = new Date(base);
+            next.setHours(selected.getHours(), selected.getMinutes(), 0, 0);
+            return next;
+          });
+          setShowEndTimePicker(false);
+        }}
+        onCancel={() => setShowEndTimePicker(false)}
+      />
     </View>
   );
 };

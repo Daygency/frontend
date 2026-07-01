@@ -182,16 +182,11 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 16,
   },
-  formFieldHeaderRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 12,
-    paddingHorizontal: 4,
-  },
   formFieldHeader: {
     fontSize: 12,
     color: GRAY.DARK_2,
+    marginBottom: 12,
+    paddingHorizontal: 4,
   },
   applicationFormItem: {
     flexDirection: "row",
@@ -219,20 +214,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: BLACK,
   },
-  formToggle: {
-    transform: [{ scaleX: 0.9 }, { scaleY: 0.9 }],
-  },
   confirmRow: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 24,
     gap: 12,
-  },
-  confirmRowError: {
-    borderWidth: 2,
-    borderColor: "#EC1313",
-    borderRadius: 8,
-    padding: 12,
   },
   radio: {
     width: 22,
@@ -245,6 +231,10 @@ const styles = StyleSheet.create({
   },
   radioChecked: {
     borderColor: MAIN.DEFAULT,
+    borderWidth: 2,
+  },
+  radioError: {
+    borderColor: "#EC1313",
     borderWidth: 2,
   },
   radioInner: {

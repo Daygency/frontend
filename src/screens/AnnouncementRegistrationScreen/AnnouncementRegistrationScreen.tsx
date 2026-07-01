@@ -8,13 +8,10 @@ import {
   Image,
   Pressable,
   ScrollView,
-  Switch,
   Text,
   TextInput,
   View,
-  Platform,
 } from "react-native";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
@@ -23,6 +20,7 @@ import Form from "../../components/forms/Form";
 import FormTextInput from "../../components/forms/FormTextInput";
 import FormDropdownInput from "../../components/forms/FormDropdownInput";
 import KakaoLocationField from "../../components/kakao/KakaoLocationField/KakaoLocationField";
+import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
 import { parseCoord } from "../../lib/kakao/location";
 import SelectableTag from "../../components/ui/SelectableTag";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
@@ -133,7 +131,7 @@ function parseIsoToDate(iso: string | undefined): Date | null {
 }
 
 function buildApplicationConfig(
-  formFields: Record<string, { included: boolean; required: boolean }>,
+  formFields: Record<string, boolean>,
 ): ApplicationConfig {
   const config: ApplicationConfig = {
     includeName: false,
@@ -152,7 +150,7 @@ function buildApplicationConfig(
     includeIntroduce: false,
   };
   Object.entries(FORM_TO_APPLICATION_CONFIG).forEach(([fieldId, configKey]) => {
-    if (configKey && formFields[fieldId]?.included) {
+    if (configKey && formFields[fieldId]) {
       config[configKey] = true;
     }
   });
@@ -198,15 +196,22 @@ const APPLICATION_FORM_FIELDS = [
   { id: "selfIntroduction", label: "자기소개/지원동기" },
 ] as const;
 
-const DEFAULT_FORM_FIELDS = {
-  name: { included: true, required: true },
-  major: { included: true, required: true },
-  detailMajor: { included: true, required: true },
-  participationSection: { included: true, required: true },
-  selfIntroduction: { included: true, required: true },
+const DEFAULT_INCLUDED_FIELDS: Record<string, boolean> = {
+  name: true,
+  major: true,
+  detailMajor: true,
+  participationSection: true,
+  selfIntroduction: true,
 };
 
 type TabType = "announcement" | "applicationForm";
+
+type ValidationField =
+  | "title"
+  | "announcementType"
+  | "content"
+  | "price"
+  | "formConfig";
 
 type AnnouncementRegistrationParams = { postId?: string };
 
@@ -225,6 +230,9 @@ const AnnouncementRegistrationScreen = () => {
   const [activeTab, setActiveTab] = useState<TabType>("announcement");
   const [loadingEdit, setLoadingEdit] = useState(isEditMode);
   const contentOpacity = useRef(new Animated.Value(1)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
+  const scrollContentRef = useRef<View>(null);
+  const fieldRefs = useRef<Partial<Record<ValidationField, View | null>>>({});
 
   const handleTabPress = (tab: TabType) => {
     if (tab === activeTab) return;
@@ -267,22 +275,14 @@ const AnnouncementRegistrationScreen = () => {
   const [priceInput, setPriceInput] = useState("");
 
   // 지원서 양식 구성
-  const [formFields, setFormFields] = useState<
-    Record<string, { included: boolean; required: boolean }>
-  >(() => {
-    const initial: Record<string, { included: boolean; required: boolean }> =
-      {};
+  const [formFields, setFormFields] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
     APPLICATION_FORM_FIELDS.forEach(({ id }) => {
-      initial[id] = DEFAULT_FORM_FIELDS[
-        id as keyof typeof DEFAULT_FORM_FIELDS
-      ] ?? {
-        included: false,
-        required: false,
-      };
+      initial[id] = DEFAULT_INCLUDED_FIELDS[id] ?? false;
     });
     return initial;
   });
-  const [formConfigConfirmed, setFormConfigConfirmed] = useState(true);
+  const [formConfigConfirmed, setFormConfigConfirmed] = useState(false);
   const [categoryOptions, setCategoryOptions] = useState(
     FALLBACK_CATEGORY_OPTIONS,
   );
@@ -441,6 +441,7 @@ const AnnouncementRegistrationScreen = () => {
         }
         const ac = getObj("applicationConfig");
         if (Object.keys(ac).length > 0) {
+          setFormConfigConfirmed(true);
           setFormFields((prev) => {
             const next = { ...prev };
             (
@@ -450,8 +451,8 @@ const AnnouncementRegistrationScreen = () => {
               ][]
             ).forEach(([configKey, fieldId]) => {
               const val = ac[configKey];
-              if (typeof val === "boolean" && next[fieldId]) {
-                next[fieldId] = { ...next[fieldId], included: val };
+              if (typeof val === "boolean" && fieldId in next) {
+                next[fieldId] = val;
               }
             });
             return next;
@@ -555,34 +556,60 @@ const AnnouncementRegistrationScreen = () => {
     }
   };
 
-  const buildApplicationConfig = (): ApplicationConfig => {
-    const defaults: ApplicationConfig = {
-      includeName: false,
-      includeBirth: false,
-      includeGender: false,
-      includeMajor: false,
-      includeMajorDetail: false,
-      includeEducation: false,
-      includeCategory: false,
-      includeMusic: false,
-      includeAddress: false,
-      includeFile: false,
-      includeLink: false,
-      includeDepartment: false,
-      includeCareer: false,
-      includeIntroduce: false,
+  const buildApplicationConfigPayload = (): ApplicationConfig =>
+    buildApplicationConfig(formFields);
+
+  const setFieldRef =
+    (field: ValidationField) => (node: View | null) => {
+      fieldRefs.current[field] = node;
     };
-    (
-      Object.entries(FORM_TO_APPLICATION_CONFIG) as [
-        string,
-        keyof ApplicationConfig | null,
-      ][]
-    ).forEach(([fieldId, configKey]) => {
-      if (configKey && formFields[fieldId]?.included) {
-        defaults[configKey] = true;
-      }
-    });
-    return defaults;
+
+  const isPriceInvalid = () => {
+    if (priceType !== "INCOME") return false;
+    const trimmed = priceInput.trim().replace(/,/g, "");
+    if (!trimmed) return true;
+    const n = parseInt(trimmed, 10);
+    return !Number.isFinite(n) || n < 0;
+  };
+
+  const getFirstInvalidField = (
+    hasTypeError: boolean,
+  ): ValidationField | null => {
+    if (!title.trim()) return "title";
+    if (hasTypeError) return "announcementType";
+    if (isPriceInvalid()) return "price";
+    if (!content.trim()) return "content";
+    if (!formConfigConfirmed) return "formConfig";
+    return null;
+  };
+
+  const scrollToValidationField = (field: ValidationField) => {
+    const targetTab: TabType =
+      field === "formConfig" ? "applicationForm" : "announcement";
+
+    const doScroll = () => {
+      const fieldNode = fieldRefs.current[field];
+      const contentNode = scrollContentRef.current;
+      if (!fieldNode || !contentNode) return;
+      fieldNode.measureLayout(
+        contentNode,
+        (_x, y) => {
+          scrollViewRef.current?.scrollTo({
+            y: Math.max(0, y - 16),
+            animated: true,
+          });
+        },
+        () => {},
+      );
+    };
+
+    if (activeTab !== targetTab) {
+      setActiveTab(targetTab);
+      contentOpacity.setValue(1);
+      setTimeout(doScroll, 80);
+      return;
+    }
+    requestAnimationFrame(doScroll);
   };
 
   const handleRegister = async () => {
@@ -597,36 +624,16 @@ const AnnouncementRegistrationScreen = () => {
       (o) => o.value === announcementType,
     );
 
-    if (
-      !title.trim() ||
-      hasTypeError ||
-      !content.trim() ||
-      !formConfigConfirmed
-    ) {
-      const missing: string[] = [];
-      if (!title.trim()) missing.push("공고명");
-      if (hasTypeError) missing.push("공고 유형");
-      if (!content.trim()) missing.push("내용");
-      if (!formConfigConfirmed) missing.push("지원서 양식 확인");
-      Alert.alert(
-        "입력 확인",
-        `다음 항목을 확인해주세요:\n\n${missing.join("\n")}`,
-      );
+    const firstInvalid = getFirstInvalidField(hasTypeError);
+    if (firstInvalid) {
+      scrollToValidationField(firstInvalid);
       return;
     }
 
     let resolvedPrice = 0;
     if (priceType === "INCOME") {
       const trimmed = priceInput.trim().replace(/,/g, "");
-      if (!trimmed) {
-        Alert.alert("입력 확인", "페이 유형일 때는 금액(원)을 입력해주세요.");
-        return;
-      }
       const n = parseInt(trimmed, 10);
-      if (!Number.isFinite(n) || n < 0) {
-        Alert.alert("입력 확인", "금액을 0 이상의 숫자로 입력해주세요.");
-        return;
-      }
       resolvedPrice = n;
     }
 
@@ -664,7 +671,7 @@ const AnnouncementRegistrationScreen = () => {
         : {}),
       categoryId: announcementType,
       status: "OPEN" as const,
-      applicationConfig: buildApplicationConfig(),
+      applicationConfig: buildApplicationConfigPayload(),
       priceType,
       price: resolvedPrice,
       ...(fileId ? { fileId } : {}),
@@ -718,20 +725,8 @@ const AnnouncementRegistrationScreen = () => {
     }
   };
 
-  const updateFormField = (
-    id: string,
-    field: "included" | "required",
-    value: boolean,
-  ) => {
-    setFormFields((prev) => {
-      const next = { ...prev };
-      if (!next[id]) next[id] = { included: false, required: false };
-      next[id] = { ...next[id], [field]: value };
-      if (field === "included" && !value) {
-        next[id].required = false;
-      }
-      return next;
-    });
+  const toggleFormFieldIncluded = (id: string) => {
+    setFormFields((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const isFormValid =
@@ -748,6 +743,7 @@ const AnnouncementRegistrationScreen = () => {
       submitAttempted &&
       !categoryOptions.some((o) => o.value === announcementType),
     content: submitAttempted && !content.trim(),
+    price: submitAttempted && isPriceInvalid(),
     formConfig: submitAttempted && !formConfigConfirmed,
   };
 
@@ -797,17 +793,24 @@ const AnnouncementRegistrationScreen = () => {
       </View>
 
       <ScrollView
+        ref={scrollViewRef}
         contentContainerStyle={[
           styles.scrollContent,
           { paddingBottom: (bottom || 0) + 100 },
         ]}
         showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
       >
+        <View ref={scrollContentRef} collapsable={false}>
         <Animated.View style={{ opacity: contentOpacity }}>
           {activeTab === "announcement" ? (
             <>
               <View style={styles.formSection}>
-                <View style={styles.formField}>
+                <View
+                  ref={setFieldRef("title")}
+                  collapsable={false}
+                  style={styles.formField}
+                >
                   <Form title="공고명" isRequired hasError={err.title}>
                     <FormTextInput
                       placeholder="공고명을 입력하세요"
@@ -840,30 +843,6 @@ const AnnouncementRegistrationScreen = () => {
                                 color={GRAY.DARK_1}
                               />
                             </Pressable>
-                            {showScheduledDatePicker && (
-                              <>
-                                <DateTimePicker
-                                  value={scheduledDate}
-                                  mode="date"
-                                  display={Platform.OS === "ios" ? "spinner" : "default"}
-                                  onChange={(_, selected) => {
-                                    if (selected) setScheduledDate(selected);
-                                    if (Platform.OS === "android")
-                                      setShowScheduledDatePicker(false);
-                                  }}
-                                />
-                                {Platform.OS === "ios" && (
-                                  <Pressable
-                                    style={styles.datePickerConfirmButton}
-                                    onPress={() => setShowScheduledDatePicker(false)}
-                                  >
-                                    <Text style={styles.datePickerConfirmText}>
-                                      확인
-                                    </Text>
-                                  </Pressable>
-                                )}
-                              </>
-                            )}
                           </View>
                         </Form>
                       </View>
@@ -882,32 +861,6 @@ const AnnouncementRegistrationScreen = () => {
                               color={GRAY.DARK_1}
                             />
                           </Pressable>
-                          {showScheduledTimePicker && (
-                            <>
-                              <DateTimePicker
-                                value={scheduledTime}
-                                mode="time"
-                                display={
-                                  Platform.OS === "ios" ? "spinner" : "default"
-                                }
-                                onChange={(_, selected) => {
-                                  if (selected) setScheduledTime(selected);
-                                  if (Platform.OS === "android")
-                                    setShowScheduledTimePicker(false);
-                                }}
-                              />
-                              {Platform.OS === "ios" && (
-                                <Pressable
-                                  style={styles.datePickerConfirmButton}
-                                  onPress={() => setShowScheduledTimePicker(false)}
-                                >
-                                  <Text style={styles.datePickerConfirmText}>
-                                    확인
-                                  </Text>
-                                </Pressable>
-                              )}
-                            </>
-                          )}
                         </Form>
                       </View>
                       <View style={styles.scheduleField}>
@@ -929,32 +882,6 @@ const AnnouncementRegistrationScreen = () => {
                                 color={GRAY.DARK_1}
                               />
                             </Pressable>
-                            {showDeadlinePicker && (
-                              <View>
-                                <DateTimePicker
-                                  value={deadline}
-                                  mode="date"
-                                  display={
-                                    Platform.OS === "ios" ? "spinner" : "default"
-                                  }
-                                  onChange={(_, selected) => {
-                                    if (selected) setDeadline(selected);
-                                    if (Platform.OS === "android")
-                                      setShowDeadlinePicker(false);
-                                  }}
-                                />
-                                {Platform.OS === "ios" && (
-                                  <Pressable
-                                    style={styles.datePickerConfirmButton}
-                                    onPress={() => setShowDeadlinePicker(false)}
-                                  >
-                                    <Text style={styles.datePickerConfirmText}>
-                                      확인
-                                    </Text>
-                                  </Pressable>
-                                )}
-                              </View>
-                            )}
                           </View>
                         </Form>
                       </View>
@@ -971,7 +898,11 @@ const AnnouncementRegistrationScreen = () => {
                   </Form>
                 </View>
 
-                <View style={styles.formField}>
+                <View
+                  ref={setFieldRef("announcementType")}
+                  collapsable={false}
+                  style={styles.formField}
+                >
                   <Form title="공고 유형" isRequired hasError={err.announcementType}>
                     <FormDropdownInput
                       placeholder="공고 유형을 선택하세요"
@@ -1009,8 +940,12 @@ const AnnouncementRegistrationScreen = () => {
                   </Form>
                 </View>
 
-                <View style={styles.formField}>
-                  <Form title="금액 유형 · 금액" isRequired={false}>
+                <View
+                  ref={setFieldRef("price")}
+                  collapsable={false}
+                  style={styles.formField}
+                >
+                  <Form title="금액 유형 · 금액" isRequired={false} hasError={err.price}>
                     <FormDropdownInput
                       placeholder="금액 유형을 선택하세요"
                       data={PRICE_TYPE_DROPDOWN_ITEMS}
@@ -1026,13 +961,18 @@ const AnnouncementRegistrationScreen = () => {
                           value={priceInput}
                           onChangeText={setPriceInput}
                           keyboardType="number-pad"
+                          hasError={err.price}
                         />
                       </View>
                     ) : null}
                   </Form>
                 </View>
 
-                <View style={styles.formField}>
+                <View
+                  ref={setFieldRef("content")}
+                  collapsable={false}
+                  style={styles.formField}
+                >
                   <Form title="내용" isRequired hasError={err.content}>
                     <View style={[styles.contentInputWrapper, err.content && styles.inputErrorBorder]}>
                       <TextInput
@@ -1172,26 +1112,22 @@ const AnnouncementRegistrationScreen = () => {
                 <Text style={styles.requiredMark}> *</Text>
               </Text>
               <Text style={styles.applicationFormDescription}>
-                지원자가 작성해야 할 정보를 선택해 주세요.
+                지원서에 포함할 항목을 선택해 주세요. 선택한 항목은 모두 필수
+                입력입니다.
               </Text>
 
-              <View style={styles.formFieldHeaderRow}>
-                <Text style={styles.formFieldHeader}>지원서에 포함</Text>
-                <Text style={styles.formFieldHeader}>지원자가 필수 작성</Text>
-              </View>
+              <Text style={styles.formFieldHeader}>지원서에 포함</Text>
 
               {APPLICATION_FORM_FIELDS.map(({ id, label }) => (
                 <View key={id} style={styles.applicationFormItem}>
                   <Pressable
                     style={[
                       styles.checkbox,
-                      formFields[id]?.included && styles.checkboxChecked,
+                      formFields[id] && styles.checkboxChecked,
                     ]}
-                    onPress={() =>
-                      updateFormField(id, "included", !formFields[id]?.included)
-                    }
+                    onPress={() => toggleFormFieldIncluded(id)}
                   >
-                    {formFields[id]?.included && (
+                    {formFields[id] && (
                       <MaterialCommunityIcons
                         name="check"
                         size={14}
@@ -1200,30 +1136,20 @@ const AnnouncementRegistrationScreen = () => {
                     )}
                   </Pressable>
                   <Text style={styles.applicationFormLabel}>{label}</Text>
-                  <Switch
-                    value={formFields[id]?.required ?? false}
-                    onValueChange={(value) =>
-                      updateFormField(id, "required", value)
-                    }
-                    disabled={!formFields[id]?.included}
-                    trackColor={{
-                      true: MAIN.DEFAULT,
-                      false: GRAY.MEDIUM,
-                    }}
-                    thumbColor={WHITE}
-                    style={styles.formToggle}
-                  />
                 </View>
               ))}
 
               <Pressable
-                style={[styles.confirmRow, err.formConfig && styles.confirmRowError]}
+                ref={setFieldRef("formConfig")}
+                collapsable={false}
+                style={styles.confirmRow}
                 onPress={() => setFormConfigConfirmed(!formConfigConfirmed)}
               >
                 <View
                   style={[
                     styles.radio,
                     formConfigConfirmed && styles.radioChecked,
+                    err.formConfig && styles.radioError,
                   ]}
                 >
                   {formConfigConfirmed && <View style={styles.radioInner} />}
@@ -1235,6 +1161,7 @@ const AnnouncementRegistrationScreen = () => {
             </View>
           )}
         </Animated.View>
+        </View>
       </ScrollView>
 
       <View style={[styles.footer, { paddingBottom: (bottom || 0) + 16 }]}>
@@ -1250,6 +1177,45 @@ const AnnouncementRegistrationScreen = () => {
           </Text>
         </Pressable>
       </View>
+
+      <WheelDateTimePickerModal
+        visible={showScheduledDatePicker}
+        value={scheduledDate}
+        pickerMode="date"
+        title="예정일 선택"
+        description="공고 예정일을 선택하세요."
+        onConfirm={(selected) => {
+          setScheduledDate(selected);
+          setShowScheduledDatePicker(false);
+        }}
+        onCancel={() => setShowScheduledDatePicker(false)}
+      />
+      <WheelDateTimePickerModal
+        visible={showScheduledTimePicker}
+        value={scheduledTime}
+        pickerMode="time"
+        title="예정 시간 선택"
+        description="공고 예정 시간을 선택하세요."
+        minuteInterval={5}
+        onConfirm={(selected) => {
+          setScheduledTime(selected);
+          setShowScheduledTimePicker(false);
+        }}
+        onCancel={() => setShowScheduledTimePicker(false)}
+      />
+      <WheelDateTimePickerModal
+        visible={showDeadlinePicker}
+        value={deadline}
+        pickerMode="date"
+        title="공고 마감일 선택"
+        description="공고 마감일을 선택하세요."
+        minimumDate={scheduledDate}
+        onConfirm={(selected) => {
+          setDeadline(selected);
+          setShowDeadlinePicker(false);
+        }}
+        onCancel={() => setShowDeadlinePicker(false)}
+      />
     </View>
   );
 };

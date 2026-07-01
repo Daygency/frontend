@@ -118,7 +118,8 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   inputErrorBorder: {
-    borderColor: "#E53935",
+    borderColor: "#EC1313",
+    borderWidth: 2,
   },
   datetimeRow: {
     flexDirection: "row",
