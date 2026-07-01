@@ -47,7 +47,7 @@ export type ProfileResponseDto = {
   role: UserRole;
   aboutMe: string;
   selfIntroduction?: string;
-  major?: string;
+  major?: string | { majorId: string; name: string } | null;
   majorDetail?: string;
   education: string | null;
   career: string | null;
@@ -82,6 +82,7 @@ export type PublicProfileResponseDto = {
   awards: unknown[] | null;
   certificates?: unknown[] | null;
   major: { majorId: string; name: string } | null;
+  majorDetail?: string | null;
   followerCount?: number;
   followingCount?: number;
   /**

@@ -37,7 +37,7 @@ interface ImageCarouselProps {
   fitImageHeight?: boolean;
   /** fitImageHeight 와 함께 — 슬라이드 높이 상한. 비율 유지(contain) 후 가운데 정렬 */
   maxSlideHeight?: number;
-  /** 캐러셀 무한 순환 (홈·큐레이션 배너만 true 권장) */
+  /** 캐러셀 무한 순환 (홈·매거진 배너만 true 권장) */
   loop?: boolean;
   headerTitle?: string;
   onPressMore?: () => void;

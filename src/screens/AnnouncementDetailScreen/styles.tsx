@@ -146,20 +146,6 @@ const styles = StyleSheet.create({
     gap: 6,
     minWidth: 0,
   },
-  recruitmentMajorChip: {
-    backgroundColor: WHITE,
-    borderRadius: 4,
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-  },
-  recruitmentMajorChipText: {
-    fontSize: 11,
-    lineHeight: 15,
-    color: BLACK,
-    fontWeight: "500",
-  },
   locationCard: {
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,

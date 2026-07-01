@@ -71,7 +71,7 @@ const MainHomeScreen = () => {
   );
   activeTabRef.current = activeTab;
 
-  const isCuration = activeTab === "큐레이션";
+  const isCuration = activeTab === "매거진";
 
   const animatedBackgroundStyle = useCurationBackgroundTransition(
     isCuration,
@@ -83,13 +83,13 @@ const MainHomeScreen = () => {
   const handleIndexChange = useCallback((newIndex: number) => {
     setIndex(newIndex);
     const tab = MAIN_HOME_TABS[newIndex];
-    if (tab !== "큐레이션") {
+    if (tab !== "매거진") {
       setCurationTheme(null);
     }
   }, []);
 
   const handleCurationThemeChange = useCallback((theme: CurationThemeState | null) => {
-    if (activeTabRef.current !== "큐레이션") return;
+    if (activeTabRef.current !== "매거진") return;
     setCurationTheme(theme);
   }, []);
 
@@ -104,14 +104,14 @@ const MainHomeScreen = () => {
       createSubTabRetapHandler({
         isScrolledDown: () => {
           const sceneRef =
-            activeTabRef.current === "큐레이션"
+            activeTabRef.current === "매거진"
               ? curationSceneRef
               : homeSceneRef;
           return (sceneRef.current?.getScrollOffset() ?? 0) > TAB_RESCROLL_THRESHOLD;
         },
         scrollToTop: () => {
           const sceneRef =
-            activeTabRef.current === "큐레이션"
+            activeTabRef.current === "매거진"
               ? curationSceneRef
               : homeSceneRef;
           sceneRef.current?.scrollToTop();
@@ -171,7 +171,7 @@ const MainHomeScreen = () => {
           <View style={styles.content}>
             <AllContentScene
               ref={curationSceneRef}
-              tab="큐레이션"
+              tab="매거진"
               onCurationThemeChange={handleCurationThemeChange}
             />
           </View>

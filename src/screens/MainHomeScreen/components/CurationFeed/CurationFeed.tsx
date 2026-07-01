@@ -290,7 +290,7 @@ const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
           showInitialLoader ? (
             <ActivityIndicator size="small" color="rgba(255,255,255,0.6)" />
           ) : isEmpty ? (
-            <Text style={styles.emptyText}>큐레이션이 없습니다.</Text>
+            <Text style={styles.emptyText}>매거진이 없습니다.</Text>
           ) : null
         }
         ListFooterComponent={

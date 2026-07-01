@@ -304,7 +304,7 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={styles.title}>큐레이션</Text>
+                <Text style={styles.title}>매거진</Text>
               </View>
             ),
             headerShadowVisible: false,
@@ -335,7 +335,7 @@ const Navigation = () => {
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
-                <Text style={styles.title}>큐레이션</Text>
+                <Text style={styles.title}>매거진</Text>
               </View>
             ),
             headerShadowVisible: false,

@@ -47,7 +47,7 @@ type NavigationProp = BottomTabNavigationProp<ContentTabParamList>;
 
 const HOME_ANNOUNCEMENT_PREVIEW_LIMIT = 3;
 
-type MainHomeContentTab = "홈" | "큐레이션";
+type MainHomeContentTab = "홈" | "매거진";
 
 export type AllContentSceneHandle = {
   scrollToTop: () => void;
@@ -89,7 +89,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
     ref,
     () => ({
       scrollToTop: () => {
-        if (tab === "큐레이션") {
+        if (tab === "매거진") {
           curationFeedRef.current?.scrollToTop();
           return;
         }
@@ -97,7 +97,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
         scrollOffsetRef.current = 0;
       },
       getScrollOffset: () => {
-        if (tab === "큐레이션") {
+        if (tab === "매거진") {
           return curationFeedRef.current?.getScrollOffset() ?? 0;
         }
         return scrollOffsetRef.current;
@@ -159,13 +159,13 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
   );
 
   useEffect(() => {
-    if (tab === "큐레이션") return;
+    if (tab === "매거진") return;
     void loadHome();
   }, [loadHome, tab]);
 
   useFocusEffect(
     useCallback(() => {
-      if (tab === "큐레이션") return;
+      if (tab === "매거진") return;
       void loadHome();
     }, [loadHome, tab]),
   );
@@ -201,7 +201,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
     );
   };
 
-  if (tab === "큐레이션") {
+  if (tab === "매거진") {
     return (
       <CurationFeed
         ref={curationFeedRef}

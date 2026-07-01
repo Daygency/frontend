@@ -80,6 +80,7 @@ import {
   deleteScrapByTarget,
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
+import RecruitmentMajorChip from "../../components/shared/RecruitmentMajorChip";
 import { sharedAnnouncementStyles } from "../../components/shared/AnnouncementShared/sharedAnnouncementStyles";
 import styles from "./styles";
 
@@ -1007,14 +1008,7 @@ const AnnouncementDetailScreen = () => {
                 <Text style={styles.sectionHeadingInline}>모집 전공</Text>
                 <View style={styles.recruitmentMajorsChips}>
                   {recruitmentMajorNames.map((name, i) => (
-                    <View
-                      key={`${name}-${i}`}
-                      style={styles.recruitmentMajorChip}
-                    >
-                      <Text style={styles.recruitmentMajorChipText}>
-                        {name}
-                      </Text>
-                    </View>
+                    <RecruitmentMajorChip key={`${name}-${i}`} label={name} />
                   ))}
                 </View>
               </View>

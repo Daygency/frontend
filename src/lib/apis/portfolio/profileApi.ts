@@ -217,6 +217,12 @@ export async function getUserPublicProfile(
           ? data.certificateEntries
           : null,
       major,
+      majorDetail:
+        typeof data.majorDetail === "string" || data.majorDetail === null
+          ? (data.majorDetail as string | null)
+          : typeof data.major_detail === "string" || data.major_detail === null
+            ? (data.major_detail as string | null)
+            : null,
       ...(counts.followerCount !== undefined
         ? { followerCount: counts.followerCount }
         : {}),
@@ -280,6 +286,11 @@ export async function getMyProfile(): Promise<ProfileResponseDto | null> {
     profile.isPortfolioPrivate = raw.isPortfolioPrivate;
   } else if (typeof raw.is_portfolio_private === "boolean") {
     profile.isPortfolioPrivate = raw.is_portfolio_private;
+  }
+  if (typeof raw.majorDetail === "string" || raw.majorDetail === null) {
+    profile.majorDetail = raw.majorDetail as string | null;
+  } else if (typeof raw.major_detail === "string" || raw.major_detail === null) {
+    profile.majorDetail = raw.major_detail as string | null;
   }
   return profile;
 }

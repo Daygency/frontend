@@ -40,11 +40,11 @@ const styles = StyleSheet.create({
   },
   dotNew: {
     position: "absolute",
-    top: -1,
-    right: -3,
-    width: 5,
-    height: 5,
-    borderRadius: 5,
+    top: 10,
+    right: 11,
+    width: 6,
+    height: 6,
+    borderRadius: 3,
     backgroundColor: RED.DEFAULT,
   },
   titleMenuButton: {

@@ -12,7 +12,8 @@ import {
   PENDING_SIGNUP_OAUTH_TOKEN_KEY,
   REFRESH_TOKEN_KEY,
 } from "../lib/apis/api";
-import { clearProfileCache } from "../lib/profileCache";
+import { clearProfileCache, saveProfileCache } from "../lib/profileCache";
+import { getMyProfile } from "../lib/apis/portfolio/profileApi";
 import { onAuthExpired } from "../lib/authEvents";
 import { completeKakaoSignup } from "../lib/apis/auth/completeKakaoSignup";
 import { completeGoogleSignup } from "../lib/apis/auth/completeGoogleSignup";
@@ -221,9 +222,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       if (data?.user) {
         const u = data.user;
+        const signedUpName = name?.trim() ?? "";
         const userInfo: SocialUser = {
           socialId: String(u.userId ?? u.socialId ?? ""),
-          name: String(u.name ?? ""),
+          name: String(u.name ?? signedUpName ?? ""),
           email: String(u.email ?? ""),
           profileImgUrl: String(u.profileImgUrl ?? ""),
         };
@@ -239,6 +241,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setNeedsRoleSelection(false);
       setIsLoggedIn(true);
       setIsBrowsing(false);
+      void getMyProfile().then((profile) => {
+        if (profile) void saveProfileCache(profile);
+      });
       void syncFcmTokenToServer();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

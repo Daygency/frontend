@@ -78,7 +78,7 @@ const HomeBannerListScreen = () => {
         [styles.listContent, { paddingBottom: bottom + 24 }],
       )}
       ListEmptyComponent={
-        <EmptyState message="큐레이션이 없습니다." />
+        <EmptyState message="매거진이 없습니다." />
       }
       renderItem={({ item }) => {
         const showNewBadge = isContentNew(item.createdAt);

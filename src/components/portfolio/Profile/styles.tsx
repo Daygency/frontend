@@ -147,6 +147,15 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_100,
     marginBottom: 14,
   },
+  profileIntroSection: {
+    marginBottom: 14,
+    gap: 8,
+  },
+  profileMajorTagRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 6,
+  },
   profileSettingContainer: {
     gap: 8,
   },
@@ -193,7 +202,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginTop: 4,
+    marginBottom: 12,
     flexWrap: "wrap",
   },
   otherFollowBtn: {

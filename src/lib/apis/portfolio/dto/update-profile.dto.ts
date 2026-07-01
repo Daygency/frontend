@@ -37,6 +37,7 @@ export type ProfileUpdateRequestDto = {
   phoneNumber?: string;
   artTempo?: number;
   profileImgUrl?: string;
+  coverImgUrl?: string;
   isEmailSubscribed?: boolean;
   isPushEnabled?: boolean;
   isPortfolioPrivate?: boolean;
@@ -44,7 +45,7 @@ export type ProfileUpdateRequestDto = {
   educations?: Education[];
   careers?: Career[];
   awards?: Award[];
-  majorId?: number | null;
+  majorId?: string | null;
   majorDetail?: string;
   certificates?: Certificate[];
 };

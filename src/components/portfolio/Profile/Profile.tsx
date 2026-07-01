@@ -21,7 +21,7 @@ import {
   getUserPublicProfile,
   PortfolioPrivateError,
 } from "../../../lib/apis/portfolio/profileApi";
-import { updateProfile } from "../../../lib/apis/portfolio/profileUpdate";
+import { updateProfile, clearProfileImage, clearCoverImage } from "../../../lib/apis/portfolio/profileUpdate";
 import type {
   ProfileResponseDto,
   PublicProfileResponseDto,
@@ -41,6 +41,8 @@ import { createCoffeeRoom } from "../../../lib/apis/chat/chatApi";
 import { chatRoomItemToParams } from "../../../lib/chat/chatRoomNavigation";
 import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
 import { DEFAULT_USER_PROFILE_IMAGE } from "../../../lib/media/defaultUserProfileImage";
+import RecruitmentMajorChip from "../../shared/RecruitmentMajorChip";
+import { getProfileMajorTagLabels } from "../../../lib/profile/profileMajorTags";
 import * as ImagePicker from "expo-image-picker";
 import type { ChatRoomParams } from "../../../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
 
@@ -299,7 +301,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
     }
   };
 
-  const pickCoverImage = async () => {
+  const pickCoverImageFromLibrary = async () => {
     if (isOtherProfile || coverUploading) return;
     try {
       const { status } =
@@ -333,14 +335,65 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       }
       setCoverImageError(false);
     } catch (e) {
-      console.warn("[pickCoverImage]", e);
+      console.warn("[pickCoverImageFromLibrary]", e);
       Alert.alert("알림", "배경 사진 변경에 실패했습니다.");
     } finally {
       setCoverUploading(false);
     }
   };
 
-  const pickProfileImage = async () => {
+  const removeCoverImage = async () => {
+    if (isOtherProfile || coverUploading) return;
+    if (!isValidImageSource(rawCoverImgUrl)) return;
+
+    setCoverUploading(true);
+    try {
+      const updated = await clearCoverImage();
+      if (!updated) {
+        Alert.alert("알림", "배경 사진 삭제에 실패했습니다.");
+        return;
+      }
+      const fresh = await getMyProfile();
+      if (fresh) {
+        setProfile(fresh);
+        await saveProfileCache(fresh);
+      }
+      setCoverImageError(false);
+    } catch (e) {
+      console.warn("[removeCoverImage]", e);
+      Alert.alert("알림", "배경 사진 삭제에 실패했습니다.");
+    } finally {
+      setCoverUploading(false);
+    }
+  };
+
+  const handleCoverImagePress = () => {
+    if (isOtherProfile || coverUploading) return;
+
+    const hasCustomCover = isValidImageSource(rawCoverImgUrl);
+    Alert.alert(
+      "배경 사진",
+      undefined,
+      [
+        {
+          text: "사진 변경",
+          onPress: () => void pickCoverImageFromLibrary(),
+        },
+        ...(hasCustomCover
+          ? [
+              {
+                text: "기본 배경으로 변경",
+                style: "destructive" as const,
+                onPress: () => void removeCoverImage(),
+              },
+            ]
+          : []),
+        { text: "취소", style: "cancel" },
+      ],
+    );
+  };
+
+  const pickProfileImageFromLibrary = async () => {
     if (isOtherProfile || profileUploading) return;
     try {
       const { status } =
@@ -374,11 +427,62 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       }
       setImageError(false);
     } catch (e) {
-      console.warn("[pickProfileImage]", e);
+      console.warn("[pickProfileImageFromLibrary]", e);
       Alert.alert("알림", "프로필 사진 변경에 실패했습니다.");
     } finally {
       setProfileUploading(false);
     }
+  };
+
+  const removeProfileImage = async () => {
+    if (isOtherProfile || profileUploading) return;
+    if (!isValidImageSource(rawProfileImgUrl)) return;
+
+    setProfileUploading(true);
+    try {
+      const updated = await clearProfileImage();
+      if (!updated) {
+        Alert.alert("알림", "프로필 사진 삭제에 실패했습니다.");
+        return;
+      }
+      const fresh = await getMyProfile();
+      if (fresh) {
+        setProfile(fresh);
+        await saveProfileCache(fresh);
+      }
+      setImageError(false);
+    } catch (e) {
+      console.warn("[removeProfileImage]", e);
+      Alert.alert("알림", "프로필 사진 삭제에 실패했습니다.");
+    } finally {
+      setProfileUploading(false);
+    }
+  };
+
+  const handleProfileImagePress = () => {
+    if (isOtherProfile || profileUploading) return;
+
+    const hasCustomPhoto = isValidImageSource(rawProfileImgUrl);
+    Alert.alert(
+      "프로필 사진",
+      undefined,
+      [
+        {
+          text: "사진 변경",
+          onPress: () => void pickProfileImageFromLibrary(),
+        },
+        ...(hasCustomPhoto
+          ? [
+              {
+                text: "기본 이미지로 변경",
+                style: "destructive" as const,
+                onPress: () => void removeProfileImage(),
+              },
+            ]
+          : []),
+        { text: "취소", style: "cancel" },
+      ],
+    );
   };
 
   const handleTogglePortfolioPrivate = async (next: boolean) => {
@@ -568,15 +672,11 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       : "";
 
   const headline =
-    legalName && activityLabel
-      ? activityLabel
-      : !legalName && activityLabel
-        ? ""
-        : activityLabel ||
-    (typeof (profile as PublicProfileResponseDto)?.major === "object"
-      ? (profile as PublicProfileResponseDto).major?.name?.trim()
-      : (profile as ProfileResponseDto)?.major?.trim()) ||
-    "";
+    legalName && activityLabel ? activityLabel : "";
+
+  const majorTagLabels = getProfileMajorTagLabels(profile);
+  const hasMajorTags = Boolean(majorTagLabels.major || majorTagLabels.detail);
+  const aboutMeText = profile?.aboutMe?.trim() ?? "";
 
   const followerRow = (
     <View style={styles.profileFollowerRow}>
@@ -599,7 +699,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
 
   const otherProfileFollowChat =
     isOtherProfile && !isInvalidOtherRoute ? (
-      <View style={{ marginTop: 4 }}>
+      <View>
         {followerRow}
         <View style={styles.otherProfileActionsRow}>
           {followLoading ? (
@@ -662,7 +762,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
           {!isOtherProfile ? (
             <Pressable
               style={styles.bannerEditBtn}
-              onPress={() => void pickCoverImage()}
+              onPress={handleCoverImagePress}
               disabled={coverUploading}
             >
               {coverUploading ? (
@@ -679,7 +779,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
         <View style={styles.profileBody}>
           <Pressable
             style={styles.avatarWrapper}
-            onPress={!isOtherProfile ? () => void pickProfileImage() : undefined}
+            onPress={!isOtherProfile ? handleProfileImagePress : undefined}
             disabled={isOtherProfile || profileUploading}
           >
             <View style={styles.profileImageContainer}>
@@ -730,9 +830,23 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
             followerRow
           )}
 
-          <Text style={styles.profileIntroduction}>
-            {profile?.aboutMe ? profile.aboutMe : "소개가 없습니다."}
-          </Text>
+          {hasMajorTags || aboutMeText ? (
+            <View style={styles.profileIntroSection}>
+              {hasMajorTags ? (
+                <View style={styles.profileMajorTagRow}>
+                  {majorTagLabels.major ? (
+                    <RecruitmentMajorChip label={majorTagLabels.major} />
+                  ) : null}
+                  {majorTagLabels.detail ? (
+                    <RecruitmentMajorChip label={majorTagLabels.detail} />
+                  ) : null}
+                </View>
+              ) : null}
+              {aboutMeText ? (
+                <Text style={styles.profileIntroduction}>{aboutMeText}</Text>
+              ) : null}
+            </View>
+          ) : null}
 
           {!isOtherProfile ? (
             <View style={styles.profileSettingContainer}>

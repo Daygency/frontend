@@ -41,6 +41,14 @@ async function parseUpdateProfileResponse(
   }
 }
 
+export async function clearCoverImage(): Promise<Record<string, unknown> | null> {
+  return updateProfile({ coverImgUrl: "" });
+}
+
+export async function clearProfileImage(): Promise<Record<string, unknown> | null> {
+  return updateProfile({ profileImgUrl: "" });
+}
+
 export async function updateProfile(
   profile: ProfileUpdateRequestDto,
   options?: UpdateProfileOptions,

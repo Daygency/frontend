@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   Image,
   Modal,
@@ -16,12 +16,14 @@ import styles, {
   MAIN_HOME_TOP_BAR_TITLE_SIZE,
 } from "./styles";
 import Feather from "@expo/vector-icons/Feather";
-import { CompositeNavigationProp, useNavigation } from "@react-navigation/native";
+import { CompositeNavigationProp, useFocusEffect, useNavigation } from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootRoutes } from "../../../navigations/routes";
 import type { ContentTabParamList, RootStackParamList } from "../../../navigations/types";
 import { useRequireLogin } from "../../../hooks/useRequireLogin";
+import { useAuth } from "../../../contexts/AuthContext";
+import { getNotificationUnreadCount } from "../../../lib/apis/notifications/notificationsApi";
 
 type MainHomeTopBarNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<ContentTabParamList>,
@@ -50,12 +52,29 @@ const MainHomeTopBar = ({
   onTitleMenuOptionChange,
 }: MainHomeTopBarProps) => {
   const navigation = useNavigation<MainHomeTopBarNavigationProp>();
+  const { isLoggedIn } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
   const iconColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
   const titleColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
+  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
   const [titleMenuVisible, setTitleMenuVisible] = useState(false);
   const [titleMenuPosition, setTitleMenuPosition] = useState({ x: 0, y: 0 });
   const titleMenuRef = useRef<View>(null);
+
+  const refreshUnreadNotifications = useCallback(async () => {
+    if (!isLoggedIn) {
+      setHasUnreadNotifications(false);
+      return;
+    }
+    const count = await getNotificationUnreadCount();
+    setHasUnreadNotifications(count != null && count > 0);
+  }, [isLoggedIn]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshUnreadNotifications();
+    }, [refreshUnreadNotifications]),
+  );
 
   const hasTitleMenu =
     titleMenuOptions != null &&
@@ -217,6 +236,7 @@ const MainHomeTopBar = ({
             size={23}
             color={iconColor}
           />
+          {hasUnreadNotifications ? <View style={styles.dotNew} /> : null}
         </Pressable>
         <Pressable
           style={styles.iconButton}

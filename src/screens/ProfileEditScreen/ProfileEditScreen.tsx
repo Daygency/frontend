@@ -35,6 +35,8 @@ import {
 } from "../../lib/profile/profileEntryDates";
 import type { ProfileUpdateRequestDto } from "../../lib/apis/portfolio/dto/update-profile.dto";
 import { isDupActivityName } from "../../lib/apis/portfolio/IsDupActivityName";
+import { getMajors, type Major } from "../../lib/apis/announcement/majorApi";
+import { resolveProfileMajorUuid } from "../../lib/profile/resolveProfileMajorUuid";
 import { MAJOR_OPTIONS } from "../../constants/majors";
 import TopIntroductionTab from "./components/TopIntroductionTab";
 import ProfileTab from "./components/ProfileTab";
@@ -86,10 +88,17 @@ const ProfileEditScreen = () => {
   const [pickedProfileImageUri, setPickedProfileImageUri] = useState<string | null>(
     null,
   );
+  const [profileImageClearRequested, setProfileImageClearRequested] =
+    useState(false);
   const [isProfileEntryEditingFocused, setIsProfileEntryEditingFocused] =
     useState(false);
   const [isTopCustomMajorFocused, setIsTopCustomMajorFocused] = useState(false);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
+  const [majorCatalog, setMajorCatalog] = useState<Major[]>([]);
+
+  useEffect(() => {
+    void getMajors().then(setMajorCatalog);
+  }, []);
 
   const handleProfileEntryFocusChange = (
     focused: boolean,
@@ -174,22 +183,33 @@ const ProfileEditScreen = () => {
     setOriginalActivityName(initialActivityName);
     setAboutMe(p.aboutMe || "");
 
-    const backendMajorId = (p as any).majorId as number | undefined;
-    if (typeof backendMajorId === "number") {
-      setMajorId(backendMajorId);
-      const matchedOption = MAJOR_OPTIONS.find(
-        (option) => option.id === backendMajorId,
-      );
-      setMajor(matchedOption?.label || ((p as any).major as string) || "");
-    } else {
-      const majorName = ((p as any).major as string) || "";
+    const majorObj = (p as { major?: { majorId?: string; name?: string } | null })
+      .major;
+    if (majorObj && typeof majorObj === "object" && majorObj.name) {
+      const majorName = String(majorObj.name).trim();
       setMajor(majorName);
       const matchedOption = MAJOR_OPTIONS.find(
         (option) => option.label === majorName,
       );
       setMajorId(matchedOption?.id ?? null);
+    } else if (typeof (p as { major?: string }).major === "string") {
+      const majorName = String((p as { major?: string }).major).trim();
+      setMajor(majorName);
+      const matchedOption = MAJOR_OPTIONS.find(
+        (option) => option.label === majorName,
+      );
+      setMajorId(matchedOption?.id ?? null);
+    } else {
+      setMajor("");
+      setMajorId(null);
     }
-    setMajorDetail(((p as any).majorDetail as string) || "");
+    setMajorDetail(
+      String(
+        (p as { majorDetail?: string | null }).majorDetail ??
+          (p as { major_detail?: string | null }).major_detail ??
+          "",
+      ),
+    );
     const rawEducations =
       (p as any).educations ?? (p as any).educationEntries ?? [];
     setEducationList(
@@ -263,13 +283,21 @@ const ProfileEditScreen = () => {
   }
 
   const rawProfileImgUrl = profile?.profileImgUrl || user?.profileImgUrl;
-  const displayProfileImgUrl = pickedProfileImageUri
-    ? pickedProfileImageUri
-    : isValidImageSource(rawProfileImgUrl)
-      ? toDisplayImageUri(rawProfileImgUrl)
-      : null;
+  const displayProfileImgUrl = profileImageClearRequested
+    ? null
+    : pickedProfileImageUri
+      ? pickedProfileImageUri
+      : isValidImageSource(rawProfileImgUrl)
+        ? toDisplayImageUri(rawProfileImgUrl)
+        : null;
+  const hasCustomProfileImage =
+    !profileImageClearRequested &&
+    Boolean(
+      pickedProfileImageUri ||
+        isValidImageSource(rawProfileImgUrl),
+    );
 
-  const pickProfileImage = async () => {
+  const pickProfileImageFromLibrary = async () => {
     try {
       const { status } =
         await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -284,11 +312,38 @@ const ProfileEditScreen = () => {
         quality: 0.85,
       });
       if (result.canceled || !result.assets[0]?.uri) return;
+      setProfileImageClearRequested(false);
       setPickedProfileImageUri(result.assets[0].uri);
     } catch (e) {
-      console.warn("[pickProfileImage]", e);
+      console.warn("[pickProfileImageFromLibrary]", e);
       Alert.alert("알림", "이미지 선택에 실패했습니다.");
     }
+  };
+
+  const handleProfileImagePress = () => {
+    Alert.alert(
+      "프로필 사진",
+      undefined,
+      [
+        {
+          text: "사진 변경",
+          onPress: () => void pickProfileImageFromLibrary(),
+        },
+        ...(hasCustomProfileImage
+          ? [
+              {
+                text: "기본 이미지로 변경",
+                style: "destructive" as const,
+                onPress: () => {
+                  setPickedProfileImageUri(null);
+                  setProfileImageClearRequested(true);
+                },
+              },
+            ]
+          : []),
+        { text: "취소", style: "cancel" },
+      ],
+    );
   };
 
   const renderTabBar = () => (
@@ -437,8 +492,11 @@ const ProfileEditScreen = () => {
       awards: (current.awardEntries ?? []).map((a: any) =>
         mapAwardPayload(a),
       ),
-      majorId: (current as any).majorId ?? null,
-      majorDetail: (current as any).majorDetail,
+      majorId:
+        (typeof current.major === "object" && current.major?.majorId
+          ? String(current.major.majorId)
+          : null) ?? null,
+      majorDetail: String(current.majorDetail ?? current.major_detail ?? ""),
       certificates: (current.certificateEntries ?? []).map((c: any) =>
         mapCertificatePayload(c),
       ),
@@ -461,8 +519,8 @@ const ProfileEditScreen = () => {
       educations: educationList.map(mapEducationPayload),
       careers: careerList.map(mapCareerPayload),
       awards: awardList.map(mapAwardPayload),
-      majorId: majorId ?? null,
-      majorDetail,
+      majorId: resolveProfileMajorUuid(major, majorCatalog) ?? null,
+      majorDetail: majorDetail.trim() || undefined,
       certificates: certificateList.map(mapCertificatePayload),
     };
 
@@ -529,12 +587,13 @@ const ProfileEditScreen = () => {
 
     const payload = buildUpdatePayload();
     const hasProfileImage = Boolean(pickedProfileImageUri);
+    const shouldClearProfileImage = profileImageClearRequested;
 
     if (submitting) {
       return;
     }
 
-    if (!payload && !hasProfileImage) {
+    if (!payload && !hasProfileImage && !shouldClearProfileImage) {
       console.log(
         "[ProfileEditScreen] early return (no payload or profile image)",
       );
@@ -556,7 +615,11 @@ const ProfileEditScreen = () => {
             profileImageType: "image/jpeg",
           }
         : undefined;
-      const updated = await updateProfile(payload ?? {}, imageOptions);
+      const updateBody: ProfileUpdateRequestDto = {
+        ...(payload ?? {}),
+        ...(shouldClearProfileImage ? { profileImgUrl: "" } : {}),
+      };
+      const updated = await updateProfile(updateBody, imageOptions);
       if (!updated) {
         await persistToCache();
         return;
@@ -633,7 +696,7 @@ const ProfileEditScreen = () => {
         stickyHeaderIndices={[1]}
       >
         {/* 프로필 이미지 */}
-        <Pressable style={styles.profileImageSection} onPress={pickProfileImage}>
+        <Pressable style={styles.profileImageSection} onPress={handleProfileImagePress}>
           <View style={styles.profileImageWrapper}>
             {displayProfileImgUrl ? (
               <Image
@@ -656,7 +719,9 @@ const ProfileEditScreen = () => {
               />
             </View>
           </View>
-          <Text style={styles.profileImageChangeText}>사진 변경</Text>
+          <Text style={styles.profileImageChangeText}>
+            {profileImageClearRequested ? "기본 이미지로 변경됨" : "사진 변경"}
+          </Text>
         </Pressable>
 
         {/* 탭 */}
