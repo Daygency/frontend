@@ -10,11 +10,13 @@ import { getMyPosts, getMyComments } from "../../lib/apis/userPosts/myPostsApi";
 import type { MyCommunityPostItem, MyCommentPostItem } from "../../lib/apis/userPosts/types";
 import { getMyScrappedCommunity } from "../../lib/apis/scrap/scrapApi";
 import type { MyScrappedCommunityItem } from "../../lib/apis/scrap/types";
+import { getMyLikedCommunity } from "../../lib/apis/like/myLikesApi";
+import type { MyLikedCommunityItem } from "../../lib/apis/like/types";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 
 type MyActivityListParams = {
   type: "posts" | "comments";
-  source?: "scrap";
+  source?: "scrap" | "like";
 };
 
 type RootStackParamList = {
@@ -45,12 +47,13 @@ const MyActivityListScreen = () => {
   const [myCommunityPosts, setMyCommunityPosts] = useState<MyCommunityPostItem[]>([]);
   const [myComments, setMyComments] = useState<MyCommentPostItem[]>([]);
   const [scrappedCommunity, setScrappedCommunity] = useState<MyScrappedCommunityItem[]>([]);
+  const [likedCommunity, setLikedCommunity] = useState<MyLikedCommunityItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
-    if (type !== "posts" || source === "scrap") return;
+    if (type !== "posts" || source === "scrap" || source === "like") return;
     (async () => {
       const res = await getMyPosts();
       if (!res) {
@@ -80,6 +83,22 @@ const MyActivityListScreen = () => {
         return;
       }
       setScrappedCommunity(res.items);
+      setNextCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    })();
+  }, [type, source]);
+
+  useEffect(() => {
+    if (type !== "posts" || source !== "like") return;
+    (async () => {
+      const res = await getMyLikedCommunity({ limit: 20 });
+      if (!res) {
+        setLikedCommunity([]);
+        setNextCursor(null);
+        setHasMore(false);
+        return;
+      }
+      setLikedCommunity(res.items);
       setNextCursor(res.nextCursor);
       setHasMore(res.hasMore);
     })();
@@ -140,15 +159,37 @@ const MyActivityListScreen = () => {
     [scrappedCommunity],
   );
 
+  const likedPostsData = useMemo(
+    (): CommunityRow[] =>
+      likedCommunity.map((item) => ({
+        id: item.communityId,
+        title: item.title,
+        contentPreview: item.category ?? "",
+        author: "나",
+        date: formatDate(item.createdAt),
+        likes: Number(item.likeCount ?? 0),
+        comments: Number(item.commentCount ?? 0),
+        scraps: 0,
+        views: Number(item.viewCount ?? 0),
+        thumbnailUrl: normalizeListThumbnailUrl(item.thumbnailUrl),
+        targetType: "COMMUNITY",
+        targetId: item.communityId,
+      })),
+    [likedCommunity],
+  );
+
   const data: CommunityRow[] =
     type === "posts"
       ? source === "scrap"
         ? scrappedPostsData
-        : myPostsData
+        : source === "like"
+          ? likedPostsData
+          : myPostsData
       : myCommentsData;
 
   const getEmptyMessage = () => {
     if (source === "scrap") return "스크랩한 글이 없습니다.";
+    if (source === "like") return "좋아요한 글이 없습니다.";
     return type === "posts" ? "작성한 글이 없습니다." : "작성한 댓글이 없습니다.";
   };
 
@@ -191,21 +232,37 @@ const MyActivityListScreen = () => {
         )}
         onEndReachedThreshold={0.4}
         onEndReached={async () => {
-          if (type !== "posts" || source !== "scrap" || loadingMore || !hasMore) return;
+          if (type !== "posts" || loadingMore || !hasMore) return;
           setLoadingMore(true);
-          const res = await getMyScrappedCommunity({
-            limit: 20,
-            cursor: nextCursor ?? undefined,
-          });
-          if (res) {
-            setScrappedCommunity((prev) => [...prev, ...res.items]);
-            setNextCursor(res.nextCursor);
-            setHasMore(res.hasMore);
+          if (source === "scrap") {
+            const res = await getMyScrappedCommunity({
+              limit: 20,
+              cursor: nextCursor ?? undefined,
+            });
+            if (res) {
+              setScrappedCommunity((prev) => [...prev, ...res.items]);
+              setNextCursor(res.nextCursor);
+              setHasMore(res.hasMore);
+            }
+          } else if (source === "like") {
+            const res = await getMyLikedCommunity({
+              limit: 20,
+              cursor: nextCursor ?? undefined,
+            });
+            if (res) {
+              setLikedCommunity((prev) => {
+                const seen = new Set(prev.map((item) => item.likeId));
+                const appended = res.items.filter((item) => !seen.has(item.likeId));
+                return [...prev, ...appended];
+              });
+              setNextCursor(res.nextCursor);
+              setHasMore(res.hasMore);
+            }
           }
           setLoadingMore(false);
         }}
         ListFooterComponent={
-          type === "posts" && source === "scrap" && loadingMore ? (
+          type === "posts" && (source === "scrap" || source === "like") && loadingMore ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>불러오는 중...</Text>
             </View>

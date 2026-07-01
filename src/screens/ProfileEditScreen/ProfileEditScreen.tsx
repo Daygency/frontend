@@ -84,6 +84,7 @@ const ProfileEditScreen = () => {
   const [certificateList, setCertificateList] = useState<CertificateEntry[]>(
     [],
   );
+  const [isPortfolioPrivate, setIsPortfolioPrivate] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [pickedProfileImageUri, setPickedProfileImageUri] = useState<string | null>(
     null,
@@ -182,6 +183,7 @@ const ProfileEditScreen = () => {
     setActivityName(initialActivityName);
     setOriginalActivityName(initialActivityName);
     setAboutMe(p.aboutMe || "");
+    setIsPortfolioPrivate(Boolean((p as { isPortfolioPrivate?: boolean }).isPortfolioPrivate));
 
     const majorObj = (p as { major?: { majorId?: string; name?: string } | null })
       .major;
@@ -394,6 +396,8 @@ const ProfileEditScreen = () => {
           setMajor={setMajor}
           majorDetail={majorDetail}
           setMajorDetail={setMajorDetail}
+          isPortfolioPrivate={isPortfolioPrivate}
+          setIsPortfolioPrivate={setIsPortfolioPrivate}
           onCustomMajorFocusChange={handleTopCustomMajorFocusChange}
         />
       );
@@ -425,6 +429,7 @@ const ProfileEditScreen = () => {
       aboutMe,
       major,
       majorDetail,
+      isPortfolioPrivate,
       educationEntries: educationList,
       careerEntries: careerList,
       awardEntries: awardList,
@@ -482,6 +487,7 @@ const ProfileEditScreen = () => {
       profileImgUrl: current.profileImgUrl,
       isEmailSubscribed: current.isEmailSubscribed,
       isPushEnabled: current.isPushEnabled,
+      isPortfolioPrivate: Boolean(current.isPortfolioPrivate),
       socialId: current.socialId,
       educations: (current.educationEntries ?? []).map((e: any) =>
         mapEducationPayload(e),
@@ -515,6 +521,7 @@ const ProfileEditScreen = () => {
         current.profileImgUrl ?? (user as any)?.profileImgUrl ?? "",
       isEmailSubscribed: current.isEmailSubscribed ?? false,
       isPushEnabled: current.isPushEnabled ?? false,
+      isPortfolioPrivate,
       socialId: current.socialId ?? "",
       educations: educationList.map(mapEducationPayload),
       careers: careerList.map(mapCareerPayload),
@@ -643,6 +650,7 @@ const ProfileEditScreen = () => {
           majorId,
           major,
           majorDetail,
+          isPortfolioPrivate,
           educationEntries: educationList,
           careerEntries: careerList,
           awardEntries: awardList,

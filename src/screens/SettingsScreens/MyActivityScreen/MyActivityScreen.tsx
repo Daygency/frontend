@@ -4,6 +4,7 @@ import { TabView } from "react-native-tab-view";
 import CategoryTabBar from "../../../components/layout/CategoryTabBar";
 import PostsCommentsScene from "./components/PostsCommentsScene";
 import ScrapScene from "./components/ScrapScene";
+import LikesScene from "./components/LikesScene";
 import MyReviewsScene from "./components/MyReviewsScene";
 import styles from "./styles";
 
@@ -13,6 +14,7 @@ const MyActivityScreen = () => {
   const [routes] = useState([
     { key: "postsComments", title: "작성글/댓글" },
     { key: "scrap", title: "스크랩" },
+    { key: "likes", title: "내 좋아요" },
     { key: "myReviews", title: "내가 쓴 후기" },
   ]);
 
@@ -22,6 +24,8 @@ const MyActivityScreen = () => {
         return <PostsCommentsScene />;
       case "scrap":
         return <ScrapScene />;
+      case "likes":
+        return <LikesScene />;
       case "myReviews":
         return <MyReviewsScene />;
       default:

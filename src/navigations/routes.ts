@@ -26,6 +26,7 @@ export const RootRoutes = {
   MY_ACTIVITY: "MyActivity",
   MY_ACTIVITY_LIST: "MyActivityList",
   MY_ACTIVITY_NEWS_LIST: "MyActivityNewsList",
+  MY_ACTIVITY_LIKED_COMMENTS_LIST: "MyActivityLikedCommentsList",
   MY_ACTIVITY_ANNOUNCEMENT_LIST: "MyActivityAnnouncementList",
   CHANGE_NAME: "ChangeName",
   NOTIFICATION_SETTINGS: "NotificationSettings",

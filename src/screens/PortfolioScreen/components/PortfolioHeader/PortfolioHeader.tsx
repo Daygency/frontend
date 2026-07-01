@@ -132,42 +132,76 @@ const PortfolioHeader = ({
             </View>
           ) : null}
         </View>
-        <Pressable
-          style={styles.settingsButton}
-          hitSlop={{ top: 10, bottom: 6, left: 10, right: 10 }}
-          onPress={() => {
-            if (!ensureLoggedIn()) return;
-            navigation.navigate(RootRoutes.SETTINGS);
-          }}
-        >
-          <FadeDualLayer
-            overlayOpacity={overlayOpacity}
-            solidOpacity={solidOpacity}
-            overlay={
-              <MaterialCommunityIcons
-                name="cog-outline"
-                size={23}
-                color={WHITE}
-                style={portfolioHeaderStyles.iconOverlay}
-              />
-            }
-            solid={
-              <MaterialCommunityIcons name="cog-outline" size={23} color={MAIN.DEFAULT} />
-            }
-          />
-        </Pressable>
+        <View style={styles.rightActions}>
+          <Pressable
+            style={styles.headerIconButton}
+            hitSlop={{ top: 10, bottom: 6, left: 10, right: 6 }}
+            onPress={() => {
+              if (!ensureLoggedIn()) return;
+              navigation.navigate(RootRoutes.PROFILE_EDIT);
+            }}
+          >
+            <FadeDualLayer
+              overlayOpacity={overlayOpacity}
+              solidOpacity={solidOpacity}
+              overlay={
+                <MaterialCommunityIcons
+                  name="pencil-outline"
+                  size={23}
+                  color={WHITE}
+                  style={portfolioHeaderStyles.iconOverlay}
+                />
+              }
+              solid={
+                <MaterialCommunityIcons
+                  name="pencil-outline"
+                  size={23}
+                  color={MAIN.DEFAULT}
+                />
+              }
+            />
+          </Pressable>
+          <Pressable
+            style={styles.headerIconButton}
+            hitSlop={{ top: 10, bottom: 6, left: 6, right: 10 }}
+            onPress={() => {
+              if (!ensureLoggedIn()) return;
+              navigation.navigate(RootRoutes.SETTINGS);
+            }}
+          >
+            <FadeDualLayer
+              overlayOpacity={overlayOpacity}
+              solidOpacity={solidOpacity}
+              overlay={
+                <MaterialCommunityIcons
+                  name="cog-outline"
+                  size={23}
+                  color={WHITE}
+                  style={portfolioHeaderStyles.iconOverlay}
+                />
+              }
+              solid={
+                <MaterialCommunityIcons name="cog-outline" size={23} color={MAIN.DEFAULT} />
+              }
+            />
+          </Pressable>
+        </View>
       </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  settingsButton: {
+  rightActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 0,
+  },
+  headerIconButton: {
     width: 44,
     height: 44,
     alignItems: "center",
     justifyContent: "center",
-    flexShrink: 0,
   },
 });
 

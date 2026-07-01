@@ -125,6 +125,26 @@ const styles = StyleSheet.create({
   fieldLast: {
     marginBottom: 0,
   },
+  privateToggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  privateToggleTextWrap: {
+    flex: 1,
+    gap: 4,
+  },
+  privateToggleLabel: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: GRAY.DARK_100,
+  },
+  privateToggleDescription: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: GRAY.DARK_2,
+  },
   label: {
     fontSize: 14,
     fontWeight: "500",

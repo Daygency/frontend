@@ -1,7 +1,7 @@
 import React from "react";
-import { Keyboard, View, Text, TextInput, Pressable, findNodeHandle } from "react-native";
+import { Keyboard, View, Text, TextInput, Pressable, findNodeHandle, Switch } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { GRAY } from "../../../color";
+import { GRAY, MAIN, WHITE } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
 import styles from "../styles";
 import { MAJOR_OPTIONS } from "../../../constants/majors";
@@ -22,6 +22,8 @@ type Props = {
   setMajor: (v: string) => void;
   majorDetail: string;
   setMajorDetail: (v: string) => void;
+  isPortfolioPrivate: boolean;
+  setIsPortfolioPrivate: (v: boolean) => void;
   onCustomMajorFocusChange?: (
     focused: boolean,
     inputNode?: number | null,
@@ -42,6 +44,8 @@ const TopIntroductionTab = ({
   setMajor,
   majorDetail,
   setMajorDetail,
+  isPortfolioPrivate,
+  setIsPortfolioPrivate,
   onCustomMajorFocusChange,
 }: Props) => {
   const customMajorInputRef = React.useRef<TextInput>(null);
@@ -343,6 +347,22 @@ const TopIntroductionTab = ({
           onBlur={() => setIsIntroFocused(false)}
         />
       </View>
+      </View>
+      <View style={styles.contentSheet}>
+        <View style={styles.privateToggleRow}>
+          <View style={styles.privateToggleTextWrap}>
+            <Text style={styles.privateToggleLabel}>포트폴리오 비공개</Text>
+            <Text style={styles.privateToggleDescription}>
+              다른 사용자에게 포트폴리오가 보이지 않습니다
+            </Text>
+          </View>
+          <Switch
+            value={isPortfolioPrivate}
+            onValueChange={setIsPortfolioPrivate}
+            trackColor={{ true: MAIN.DEFAULT, false: GRAY.MEDIUM }}
+            thumbColor={WHITE}
+          />
+        </View>
       </View>
     </View>
   );

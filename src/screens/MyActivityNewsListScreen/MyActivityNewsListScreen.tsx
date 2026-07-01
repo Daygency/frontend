@@ -7,6 +7,8 @@ import EmptyState, { contentContainerWhenEmpty } from "../../components/ui/Empty
 import styles from "./styles";
 import { getMyScrappedNews } from "../../lib/apis/scrap/scrapApi";
 import type { MyScrappedNewsItem } from "../../lib/apis/scrap/types";
+import { getMyLikedNews } from "../../lib/apis/like/myLikesApi";
+import type { MyLikedNewsItem } from "../../lib/apis/like/types";
 import { getMyNewsPosts } from "../../lib/apis/userPosts/myPostsApi";
 import type { MyNewsPostItem } from "../../lib/apis/userPosts/types";
 import { RootRoutes } from "../../navigations/routes";
@@ -25,7 +27,7 @@ type NewsListRow = {
 };
 
 type MyActivityNewsListParams = {
-  source?: "scrap";
+  source?: "scrap" | "like";
 };
 
 type RootStackParamList = {
@@ -40,6 +42,7 @@ const MyActivityNewsListScreen = () => {
   const route = useRoute<RouteProp<RootStackParamList, "MyActivityNewsList">>();
   const source = route.params?.source;
   const [scrappedNews, setScrappedNews] = useState<MyScrappedNewsItem[]>([]);
+  const [likedNews, setLikedNews] = useState<MyLikedNewsItem[]>([]);
   const [myNews, setMyNews] = useState<MyNewsPostItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -47,9 +50,32 @@ const MyActivityNewsListScreen = () => {
   const [loadingMore, setLoadingMore] = useState(false);
 
   const emptyMessage =
-    source === "scrap" ? "스크랩한 공연 소식이 없습니다." : "공연 소식이 없습니다.";
+    source === "scrap"
+      ? "스크랩한 공연 소식이 없습니다."
+      : source === "like"
+        ? "좋아요한 공연 소식이 없습니다."
+        : "공연 소식이 없습니다.";
 
   useEffect(() => {
+    if (source === "like") {
+      (async () => {
+        setLoadingInitial(true);
+        const res = await getMyLikedNews({ limit: 20 });
+        if (!res) {
+          setLikedNews([]);
+          setNextCursor(null);
+          setHasMore(false);
+          setLoadingInitial(false);
+          return;
+        }
+        setLikedNews(res.items);
+        setNextCursor(res.nextCursor);
+        setHasMore(res.hasMore);
+        setLoadingInitial(false);
+      })();
+      return;
+    }
+
     if (source === "scrap") {
       (async () => {
         setLoadingInitial(true);
@@ -78,6 +104,16 @@ const MyActivityNewsListScreen = () => {
   }, [source]);
 
   const data = useMemo((): NewsListRow[] => {
+    if (source === "like") {
+      return likedNews.map((item) => ({
+        id: item.newsId,
+        newsId: item.newsId,
+        title: item.title,
+        place: item.place ?? "",
+        dateRange: formatDate(item.createdAt),
+        imageUrl: normalizeListThumbnailUrl(item.thumbnailUrl),
+      }));
+    }
     if (source === "scrap") {
       return scrappedNews.map((item) => ({
         id: item.newsId,
@@ -96,7 +132,7 @@ const MyActivityNewsListScreen = () => {
       dateRange: formatDate(item.createdAt),
       imageUrl: normalizeListThumbnailUrl(item.thumbnailUrl),
     }));
-  }, [source, scrappedNews, myNews]);
+  }, [source, scrappedNews, likedNews, myNews]);
 
   return (
     <View style={styles.container}>
@@ -135,33 +171,41 @@ const MyActivityNewsListScreen = () => {
         }
         onEndReachedThreshold={0.4}
         onEndReached={async () => {
-          if (
-            source !== "scrap" ||
-            loadingInitial ||
-            loadingMore ||
-            !hasMore ||
-            !nextCursor
-          ) {
-            return;
-          }
+          if (loadingInitial || loadingMore || !hasMore || !nextCursor) return;
           setLoadingMore(true);
-          const res = await getMyScrappedNews({
-            limit: 20,
-            cursor: nextCursor ?? undefined,
-          });
-          if (res) {
-            setScrappedNews((prev) => {
-              const seen = new Set(prev.map((item) => item.scrapId));
-              const appended = res.items.filter((item) => !seen.has(item.scrapId));
-              return [...prev, ...appended];
+          if (source === "scrap") {
+            const res = await getMyScrappedNews({
+              limit: 20,
+              cursor: nextCursor ?? undefined,
             });
-            setNextCursor(res.nextCursor);
-            setHasMore(res.hasMore);
+            if (res) {
+              setScrappedNews((prev) => {
+                const seen = new Set(prev.map((item) => item.scrapId));
+                const appended = res.items.filter((item) => !seen.has(item.scrapId));
+                return [...prev, ...appended];
+              });
+              setNextCursor(res.nextCursor);
+              setHasMore(res.hasMore);
+            }
+          } else if (source === "like") {
+            const res = await getMyLikedNews({
+              limit: 20,
+              cursor: nextCursor ?? undefined,
+            });
+            if (res) {
+              setLikedNews((prev) => {
+                const seen = new Set(prev.map((item) => item.likeId));
+                const appended = res.items.filter((item) => !seen.has(item.likeId));
+                return [...prev, ...appended];
+              });
+              setNextCursor(res.nextCursor);
+              setHasMore(res.hasMore);
+            }
           }
           setLoadingMore(false);
         }}
         ListFooterComponent={
-          source === "scrap" && loadingMore ? (
+          (source === "scrap" || source === "like") && loadingMore ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>불러오는 중...</Text>
             </View>

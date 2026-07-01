@@ -1,7 +1,6 @@
 import {
   View,
   Text,
-  Switch,
   Pressable,
   Image,
   ActivityIndicator,
@@ -95,7 +94,6 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isPortfolioPrivateBlocked, setIsPortfolioPrivateBlocked] =
     useState(false);
-  const [privateUpdating, setPrivateUpdating] = useState(false);
   const [imageError, setImageError] = useState(false);
   const [coverImageError, setCoverImageError] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
@@ -133,10 +131,6 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
     (profile as ProfileResponseDto)?.followingCount ??
       (profile as PublicProfileResponseDto)?.followingCount,
   );
-  const isPortfolioPrivate = Boolean(
-    (profile as ProfileResponseDto | null)?.isPortfolioPrivate,
-  );
-
   const publicProf = profile as PublicProfileResponseDto | null;
   const activityNameForChat =
     publicProf?.activityName?.trim() ||
@@ -485,28 +479,6 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
     );
   };
 
-  const handleTogglePortfolioPrivate = async (next: boolean) => {
-    if (privateUpdating || isOtherProfile) return;
-    setPrivateUpdating(true);
-    try {
-      const updated = await updateProfile({ isPortfolioPrivate: next });
-      if (!updated) {
-        Alert.alert("알림", "비공개 설정 변경에 실패했습니다.");
-        return;
-      }
-      const fresh = await getMyProfile();
-      if (fresh) {
-        setProfile(fresh);
-        await saveProfileCache(fresh);
-      }
-    } catch (e) {
-      console.warn("[handleTogglePortfolioPrivate]", e);
-      Alert.alert("알림", "비공개 설정 변경에 실패했습니다.");
-    } finally {
-      setPrivateUpdating(false);
-    }
-  };
-
   /** 같은 화면에서 재포커스 시 전체 스피너 없이 새로고침 (팔로우 버튼이 안 바뀐 것처럼 보이는 문제 방지) */
   const profileFocusRef = useRef<{ scope: string; n: number }>({
     scope: "",
@@ -697,46 +669,43 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
     </View>
   );
 
-  const otherProfileFollowChat =
+  const otherProfileActionsRow =
     isOtherProfile && !isInvalidOtherRoute ? (
-      <View>
-        {followerRow}
-        <View style={styles.otherProfileActionsRow}>
-          {followLoading ? (
-            <View style={[styles.otherFollowBtn, { minWidth: 100 }]}>
-              <ActivityIndicator size="small" color="#fff" />
-            </View>
-          ) : following ? (
-            <Pressable
-              style={[styles.otherFollowBtn, styles.otherFollowBtnOutline]}
-              onPress={onPressUnfollow}
-            >
-              <Text
-                style={[
-                  styles.otherFollowBtnText,
-                  styles.otherFollowBtnTextOutline,
-                ]}
-              >
-                팔로잉
-              </Text>
-            </Pressable>
-          ) : (
-            <Pressable style={styles.otherFollowBtn} onPress={onPressFollow}>
-              <Text style={styles.otherFollowBtnText}>팔로우</Text>
-            </Pressable>
-          )}
+      <View style={styles.otherProfileActionsRow}>
+        {followLoading ? (
+          <View style={[styles.otherFollowBtn, { minWidth: 100 }]}>
+            <ActivityIndicator size="small" color="#fff" />
+          </View>
+        ) : following ? (
           <Pressable
-            style={styles.otherChatBtn}
-            onPress={onPressChat}
-            disabled={chatLoading}
+            style={[styles.otherFollowBtn, styles.otherFollowBtnOutline]}
+            onPress={onPressUnfollow}
           >
-            {chatLoading ? (
-              <ActivityIndicator size="small" color="#111" />
-            ) : (
-              <Text style={styles.otherChatBtnText}>채팅</Text>
-            )}
+            <Text
+              style={[
+                styles.otherFollowBtnText,
+                styles.otherFollowBtnTextOutline,
+              ]}
+            >
+              팔로잉
+            </Text>
           </Pressable>
-        </View>
+        ) : (
+          <Pressable style={styles.otherFollowBtn} onPress={onPressFollow}>
+            <Text style={styles.otherFollowBtnText}>팔로우</Text>
+          </Pressable>
+        )}
+        <Pressable
+          style={styles.otherChatBtn}
+          onPress={onPressChat}
+          disabled={chatLoading}
+        >
+          {chatLoading ? (
+            <ActivityIndicator size="small" color="#111" />
+          ) : (
+            <Text style={styles.otherChatBtnText}>채팅</Text>
+          )}
+        </Pressable>
       </View>
     ) : null;
 
@@ -824,11 +793,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
             <Text style={styles.profileHeadline}>{headline}</Text>
           ) : null}
 
-          {isOtherProfile ? (
-            otherProfileFollowChat
-          ) : (
-            followerRow
-          )}
+          {followerRow}
 
           {hasMajorTags || aboutMeText ? (
             <View style={styles.profileIntroSection}>
@@ -848,33 +813,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
             </View>
           ) : null}
 
-          {!isOtherProfile ? (
-            <View style={styles.profileSettingContainer}>
-              <View style={styles.profileActionsRow}>
-                <Pressable
-                  style={styles.profileEditContainer}
-                  onPress={() => {
-                    if (!ensureLoggedIn()) return;
-                    navigation.navigate(RootRoutes.PROFILE_EDIT);
-                  }}
-                >
-                  <Ionicons name="create-outline" size={18} color="white" />
-                  <Text style={styles.profileEditText}>프로필 수정</Text>
-                </Pressable>
-                <View style={styles.profilePrivateContainer}>
-                  <Switch
-                    value={isPortfolioPrivate}
-                    onValueChange={handleTogglePortfolioPrivate}
-                    disabled={privateUpdating}
-                    trackColor={{ true: MAIN.DEFAULT, false: GRAY.MEDIUM }}
-                    thumbColor={WHITE}
-                    style={{ transform: [{ scaleX: 0.75 }, { scaleY: 0.75 }] }}
-                  />
-                  <Text style={styles.profilePrivateText}>비공개</Text>
-                </View>
-              </View>
-            </View>
-          ) : null}
+          {otherProfileActionsRow}
         </View>
       </View>
     </View>
