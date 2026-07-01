@@ -10,7 +10,7 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
@@ -24,6 +24,8 @@ import {
   type AnnouncementSortOption,
 } from "./components/announcementFilterOptions";
 import { RootRoutes } from "../../navigations/routes";
+import { ContentRoutes } from "../../navigations/routes";
+import type { ContentTabParamList } from "../../navigations/types";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import styles from "./styles";
 import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
@@ -59,7 +61,10 @@ type RootStackParamList = {
   AnnouncementRegistration: undefined;
 };
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+type NavigationProp = BottomTabNavigationProp<
+  ContentTabParamList,
+  typeof ContentRoutes.ACTIVITY
+>;
 
 type AnnouncementFeedView = "전체" | "내가 올린 공고" | "지원한 공고";
 type AnnouncementRouteParams = { initialFeedView?: AnnouncementFeedView };
@@ -273,6 +278,8 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [categories, setCategories] = useState<{ name: string; categoryId: string }[]>([]);
   const [majors, setMajors] = useState<{ name: string; majorId: string }[]>([]);
   const loadListSeqRef = useRef(0);
+  const skipFocusLoadRef = useRef(false);
+  const [filterReloadEpoch, setFilterReloadEpoch] = useState(0);
 
   const buildListParams = useCallback(() => {
     const status =
@@ -370,6 +377,29 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const loadDataRef = useRef(loadData);
   loadDataRef.current = loadData;
 
+  const resetFiltersFromTab = useCallback(() => {
+    skipFocusLoadRef.current = true;
+    setSelectedStatus(null);
+    setSelectedTypes([]);
+    setSelectedMajors([]);
+    setSelectedPriceTypes([]);
+    setFeedView("전체");
+    setSortTab("등록순");
+    setFilterSheet(null);
+    navigation.setParams({ initialFeedView: undefined });
+    setFilterReloadEpoch((prev) => prev + 1);
+  }, [navigation]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener("tabPress", resetFiltersFromTab);
+    return unsubscribe;
+  }, [navigation, resetFiltersFromTab]);
+
+  useEffect(() => {
+    if (filterReloadEpoch === 0) return;
+    loadDataRef.current();
+  }, [filterReloadEpoch]);
+
   useEffect(() => {
     getAnnouncementCategories().then((list) => {
       setCategories(
@@ -405,6 +435,10 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   /** 탭·로그인 변경 + 화면 포커스 시에만 자동 조회. 태그 필터는 시트 닫을 때 loadData 호출 */
   useFocusEffect(
     useCallback(() => {
+      if (skipFocusLoadRef.current) {
+        skipFocusLoadRef.current = false;
+        return;
+      }
       loadDataRef.current();
     }, [feedView, isLoggedIn, sortTab]),
   );
