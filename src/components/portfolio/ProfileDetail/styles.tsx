@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
   entryTitle: {
     fontSize: 15,
     lineHeight: 21,
-    fontWeight: "700",
+    fontWeight: "500",
     color: BLACK,
   },
   entryPeriod: {
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 17,
     letterSpacing: 0.2,
-    fontWeight: "400",
+    fontWeight: "300",
     color: GRAY.DARK,
   },
   listItem: {
