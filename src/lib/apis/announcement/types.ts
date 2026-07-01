@@ -24,7 +24,7 @@ export type ApplicationConfig = {
 export type CreateAnnouncementDto = {
   title: string;
   content: string;
-  deadlineAt: string; // ISO 8601
+  deadlineAt?: string | null; // ISO 8601, null = 상시 모집
   scheduledAt: string; // ISO 8601
   address: string;
   latitude?: number | null;

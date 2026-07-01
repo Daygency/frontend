@@ -43,11 +43,33 @@ const styles = StyleSheet.create({
     marginTop: 0,
   },
   scheduleLocationBox: {
-    paddingTop: 4,
     gap: 16,
   },
   scheduleField: {
     gap: 8,
+  },
+  deadlineHeaderRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  toggleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    paddingTop: 2,
+  },
+  toggleText: {
+    fontSize: 14,
+    color: BLACK,
+  },
+  datePickerFieldDisabled: {
+    backgroundColor: GRAY.DEFAULT,
+    opacity: 0.7,
+  },
+  datePickerTextDisabled: {
+    color: GRAY.DARK_2,
   },
   chipRow: {
     flexDirection: "row",

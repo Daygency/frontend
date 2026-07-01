@@ -65,8 +65,12 @@ export function formatAnnouncementDDayLabel(
   daysLeft: number,
   status: string,
   completed?: boolean,
+  deadlineAt?: string | null,
 ): string {
   if (completed || status === "모집마감" || daysLeft < 0) return "마감";
+  if (deadlineAt == null || !String(deadlineAt).trim()) {
+    if (status === "모집중") return "상시";
+  }
   if (daysLeft === 0) return "오늘마감";
   return `D-${daysLeft}`;
 }

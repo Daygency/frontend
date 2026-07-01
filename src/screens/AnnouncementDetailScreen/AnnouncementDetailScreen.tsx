@@ -733,13 +733,16 @@ const AnnouncementDetailScreen = () => {
   const imageList = detailData?.imageUrls ?? [];
   const attachmentList = detailData?.attachments ?? [];
 
-  const deadlineLabel = formatDateKorean(detailData?.deadlineAt);
+  const deadlineLabel = detailData?.deadlineAt?.trim()
+    ? formatDateKorean(detailData.deadlineAt)
+    : "상시 모집";
   const addressLabel = detailData?.address?.trim() || "";
   const descriptionText = detailData?.content?.trim() ?? "";
   const dDayLabel = formatAnnouncementDDayLabel(
     displayDaysLeft,
     displayStatus,
     displayCompleted,
+    detailData?.deadlineAt,
   );
   const venueLabel = formatAnnouncementDistrictLabel(addressLabel);
   const recruitmentMajorNames = useMemo(

@@ -258,6 +258,7 @@ const AnnouncementRegistrationScreen = () => {
   const [scheduledDate, setScheduledDate] = useState<Date>(defaultScheduled);
   const [scheduledTime, setScheduledTime] = useState<Date>(defaultScheduled);
   const [deadline, setDeadline] = useState<Date>(defaultDeadline);
+  const [isOngoingRecruitment, setIsOngoingRecruitment] = useState(false);
   const [showScheduledDatePicker, setShowScheduledDatePicker] = useState(false);
   const [showScheduledTimePicker, setShowScheduledTimePicker] = useState(false);
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
@@ -421,7 +422,12 @@ const AnnouncementRegistrationScreen = () => {
         const dl = get("deadlineAt");
         if (dl) {
           const dt = new Date(dl);
-          if (!isNaN(dt.getTime())) setDeadline(dt);
+          if (!isNaN(dt.getTime())) {
+            setDeadline(dt);
+            setIsOngoingRecruitment(false);
+          }
+        } else {
+          setIsOngoingRecruitment(true);
         }
         const pt = get("priceType") ?? get("price_type");
         if (pt != null && String(pt).trim()) {
@@ -660,7 +666,9 @@ const AnnouncementRegistrationScreen = () => {
     const dto = {
       title: title.trim(),
       content: content.trim(),
-      deadlineAt: resolvedDeadline,
+      ...(isOngoingRecruitment
+        ? { deadlineAt: null }
+        : { deadlineAt: resolvedDeadline }),
       scheduledAt: resolvedSched,
       address: locationValue.address.trim() || "",
       ...(locationValue.latitude != null && locationValue.longitude != null
@@ -822,80 +830,118 @@ const AnnouncementRegistrationScreen = () => {
                 </View>
 
                 <View style={styles.formField}>
-                  <Form title="일정/장소" isRequired>
-                    <View style={styles.scheduleLocationBox}>
-                      <View style={styles.scheduleField}>
-                        <Form title="예정일" isRequired hasError={err.scheduledDate}>
-                          <View>
-                            <Pressable
-                              style={[
-                                styles.datePickerField,
-                                err.scheduledDate && styles.inputErrorBorder,
-                              ]}
-                              onPress={() => setShowScheduledDatePicker(true)}
-                            >
-                              <Text style={styles.datePickerText}>
-                                {formatDateDisplay(scheduledDate)}
-                              </Text>
-                              <MaterialCommunityIcons
-                                name="calendar"
-                                size={20}
-                                color={GRAY.DARK_1}
-                              />
-                            </Pressable>
-                          </View>
-                        </Form>
-                      </View>
-                      <View style={styles.scheduleField}>
-                        <Form title="예정 시간" isRequired={false}>
+                  <View style={styles.scheduleLocationBox}>
+                    <View style={styles.scheduleField}>
+                      <Form
+                        title="예정일"
+                        isRequired
+                        hasError={err.scheduledDate}
+                      >
+                        <View>
                           <Pressable
-                            style={styles.datePickerField}
-                            onPress={() => setShowScheduledTimePicker(true)}
+                            style={[
+                              styles.datePickerField,
+                              err.scheduledDate && styles.inputErrorBorder,
+                            ]}
+                            onPress={() => setShowScheduledDatePicker(true)}
                           >
                             <Text style={styles.datePickerText}>
-                              {formatTimeDisplay(scheduledTime)}
+                              {formatDateDisplay(scheduledDate)}
                             </Text>
                             <MaterialCommunityIcons
-                              name="clock-outline"
+                              name="calendar"
                               size={20}
                               color={GRAY.DARK_1}
                             />
                           </Pressable>
-                        </Form>
-                      </View>
-                      <View style={styles.scheduleField}>
-                        <Form title="공고 마감일" isRequired hasError={err.deadline}>
-                          <View>
-                            <Pressable
-                              style={[
-                                styles.datePickerField,
-                                err.deadline && styles.inputErrorBorder,
-                              ]}
-                              onPress={() => setShowDeadlinePicker(true)}
-                            >
-                              <Text style={styles.datePickerText}>
-                                {formatDateDisplay(deadline)}
-                              </Text>
-                              <MaterialCommunityIcons
-                                name="calendar"
-                                size={20}
-                                color={GRAY.DARK_1}
-                              />
-                            </Pressable>
-                          </View>
-                        </Form>
-                      </View>
-                      <View style={styles.scheduleField}>
-                        <Form title="장소" isRequired={false}>
-                          <KakaoLocationField
-                            placeholder="장소를 입력하세요"
-                            value={locationValue}
-                            onChange={setLocationValue}
-                          />
-                        </Form>
-                      </View>
+                        </View>
+                      </Form>
                     </View>
-                  </Form>
+                    <View style={styles.scheduleField}>
+                      <Form title="예정 시간" isRequired={false}>
+                        <Pressable
+                          style={styles.datePickerField}
+                          onPress={() => setShowScheduledTimePicker(true)}
+                        >
+                          <Text style={styles.datePickerText}>
+                            {formatTimeDisplay(scheduledTime)}
+                          </Text>
+                          <MaterialCommunityIcons
+                            name="clock-outline"
+                            size={20}
+                            color={GRAY.DARK_1}
+                          />
+                        </Pressable>
+                      </Form>
+                    </View>
+                    <View style={styles.scheduleField}>
+                      <View style={styles.deadlineHeaderRow}>
+                        <Form
+                          title="공고 마감일"
+                          isRequired={!isOngoingRecruitment}
+                          hasError={err.deadline}
+                        />
+                        <Pressable
+                          style={styles.toggleButton}
+                          onPress={() =>
+                            setIsOngoingRecruitment((prev) => !prev)
+                          }
+                        >
+                          <Text style={styles.toggleText}>상시 모집</Text>
+                          <MaterialCommunityIcons
+                            name={
+                              isOngoingRecruitment
+                                ? "checkbox-marked"
+                                : "checkbox-blank-outline"
+                            }
+                            size={20}
+                            color={MAIN.DEFAULT}
+                          />
+                        </Pressable>
+                      </View>
+                      <Pressable
+                        style={[
+                          styles.datePickerField,
+                          isOngoingRecruitment && styles.datePickerFieldDisabled,
+                          err.deadline && styles.inputErrorBorder,
+                        ]}
+                        onPress={() => {
+                          if (!isOngoingRecruitment) {
+                            setShowDeadlinePicker(true);
+                          }
+                        }}
+                        disabled={isOngoingRecruitment}
+                      >
+                        <Text
+                          style={[
+                            styles.datePickerText,
+                            isOngoingRecruitment &&
+                              styles.datePickerTextDisabled,
+                          ]}
+                        >
+                          {isOngoingRecruitment
+                            ? "상시 모집"
+                            : formatDateDisplay(deadline)}
+                        </Text>
+                        <MaterialCommunityIcons
+                          name="calendar"
+                          size={20}
+                          color={
+                            isOngoingRecruitment ? GRAY.DARK_2 : GRAY.DARK_1
+                          }
+                        />
+                      </Pressable>
+                    </View>
+                    <View style={styles.scheduleField}>
+                      <Form title="장소" isRequired={false}>
+                        <KakaoLocationField
+                          placeholder="장소를 입력하세요"
+                          value={locationValue}
+                          onChange={setLocationValue}
+                        />
+                      </Form>
+                    </View>
+                  </View>
                 </View>
 
                 <View

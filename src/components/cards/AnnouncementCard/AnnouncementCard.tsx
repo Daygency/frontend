@@ -67,6 +67,7 @@ const AnnouncementCard = ({
     effectiveDaysLeft,
     displayStatus,
     completed,
+    deadlineAt,
   );
 
   const showPrice =
