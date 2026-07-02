@@ -2,6 +2,7 @@ import { useCallback, useState } from "react";
 import { Text, Animated, StyleSheet, View, Pressable } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Feather from "@expo/vector-icons/Feather";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MAIN, WHITE } from "../../../../color";
@@ -173,16 +174,14 @@ const PortfolioHeader = ({
               overlayOpacity={overlayOpacity}
               solidOpacity={solidOpacity}
               overlay={
-                <MaterialCommunityIcons
-                  name="cog-outline"
+                <Feather
+                  name="settings"
                   size={23}
                   color={WHITE}
                   style={portfolioHeaderStyles.iconOverlay}
                 />
               }
-              solid={
-                <MaterialCommunityIcons name="cog-outline" size={23} color={MAIN.DEFAULT} />
-              }
+              solid={<Feather name="settings" size={23} color={MAIN.DEFAULT} />}
             />
           </Pressable>
         </View>

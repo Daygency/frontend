@@ -9,6 +9,7 @@ import {
   type ImageSourcePropType,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Octicons from "@expo/vector-icons/Octicons";
 import Logo from "../../ui/Logo";
 import { MAIN, WHITE } from "../../../color";
 import styles, {
@@ -222,7 +223,7 @@ const MainHomeTopBar = ({
       <View style={styles.titleArea}>{renderTitle()}</View>
       <View style={styles.iconContainer}>
         <Pressable style={styles.iconButton} onPress={handleSearchPress}>
-          <Feather name="search" size={23} color={iconColor} />
+          <Feather name="search" size={24} color={iconColor} />
         </Pressable>
         <Pressable
           style={styles.iconButton}
@@ -231,11 +232,7 @@ const MainHomeTopBar = ({
             navigation.navigate(RootRoutes.NOTIFICATIONS);
           }}
         >
-          <MaterialCommunityIcons
-            name="bell-outline"
-            size={23}
-            color={iconColor}
-          />
+          <Octicons name="bell" size={21} color={iconColor} />
           {hasUnreadNotifications ? <View style={styles.dotNew} /> : null}
         </Pressable>
         <Pressable
@@ -245,11 +242,7 @@ const MainHomeTopBar = ({
             navigation.navigate(RootRoutes.SETTINGS);
           }}
         >
-          <MaterialCommunityIcons
-            name="cog-outline"
-            size={23}
-            color={iconColor}
-          />
+          <Feather name="settings" size={22} color={iconColor} />
         </Pressable>
       </View>
     </View>

@@ -2,7 +2,6 @@ import { Text, View } from "react-native";
 import { Pressable } from "react-native";
 import styles from "./styles";
 import Feather from "@expo/vector-icons/Feather";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { MAIN } from "../../../../../color";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -27,11 +26,7 @@ const ChatHeader = () => {
             navigation.navigate(RootRoutes.SETTINGS);
           }}
         >
-          <MaterialCommunityIcons
-            name="cog-outline"
-            size={23}
-            color={MAIN.DEFAULT}
-          />
+          <Feather name="settings" size={23} color={MAIN.DEFAULT} />
         </Pressable>
       </View>
     </View>
