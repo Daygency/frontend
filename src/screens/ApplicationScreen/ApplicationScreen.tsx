@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   RouteProp,
   StackActions,
@@ -37,7 +38,14 @@ import { emitChatAppliedRoomsRefresh } from "../../lib/chat/chatRoomsEvents";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
 import type { ApplicationGender } from "../../lib/apis/application/types";
 import type { ApplicationConfig } from "../../lib/apis/announcement/types";
-import { deriveApplicationPrefillFromProfile } from "../../lib/application/profileApplicationPrefill";
+import {
+  applicationCareersFromSnapshots,
+  deriveApplicationPrefillFromProfile,
+  formatApplicationCareerPeriod,
+  parseCareersFromProfile,
+  toApplicationCareerSnapshots,
+  type ApplicationCareerListItem,
+} from "../../lib/application/profileApplicationPrefill";
 import {
   detailHasExplicitNullApplicationConfig,
   extractApplicationConfigRaw,
@@ -145,7 +153,8 @@ type ApplicationFieldKey =
   | "participationSection"
   | "participatingSong"
   | "link"
-  | "selfIntroduction";
+  | "selfIntroduction"
+  | "career";
 
 type ApplicationFieldErrors = Partial<Record<ApplicationFieldKey, boolean>>;
 
@@ -163,6 +172,7 @@ function collectFieldErrors(
     participatingSong: string;
     link: string;
     selfIntroduction: string;
+    careerCount: number;
   },
 ): ApplicationFieldErrors {
   const errors: ApplicationFieldErrors = {};
@@ -188,6 +198,9 @@ function collectFieldErrors(
   if (config.includeLink && !values.link.trim()) errors.link = true;
   if (config.includeIntroduce && !values.selfIntroduction.trim()) {
     errors.selfIntroduction = true;
+  }
+  if (config.includeCareer && values.careerCount === 0) {
+    errors.career = true;
   }
   return errors;
 }
@@ -241,7 +254,8 @@ const ApplicationScreen = () => {
   const [link, setLink] = useState("");
   const [selfIntroduction, setSelfIntroduction] = useState("");
   const [includeFile, setIncludeFile] = useState(false);
-  const [includeCareer, setIncludeCareer] = useState(false);
+  const [careerItems, setCareerItems] = useState<ApplicationCareerListItem[]>([]);
+  const [loadingCareers, setLoadingCareers] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ApplicationFieldErrors>({});
 
   const prefilledRef = useRef(false);
@@ -272,7 +286,9 @@ const ApplicationScreen = () => {
       if (e.link) setLink(e.link);
       if (e.introduce) setSelfIntroduction(e.introduce);
       if (Array.isArray(e.file)) setIncludeFile(e.file.length > 0);
-      if (Array.isArray(e.career)) setIncludeCareer(e.career.length > 0);
+      if (Array.isArray(e.career) && e.career.length > 0) {
+        setCareerItems(applicationCareersFromSnapshots(e.career));
+      }
     }
 
     (async () => {
@@ -363,6 +379,36 @@ const ApplicationScreen = () => {
     });
   };
 
+  const removeCareerItem = (id: string) => {
+    setCareerItems((prev) => {
+      const next = prev.filter((item) => item.id !== id);
+      if (next.length > 0) {
+        clearFieldError("career");
+      }
+      return next;
+    });
+  };
+
+  const loadCareersFromProfile = async () => {
+    setLoadingCareers(true);
+    try {
+      const p = await getMyProfile();
+      if (!p) {
+        Alert.alert("알림", "프로필을 불러오지 못했습니다.");
+        return;
+      }
+      const items = parseCareersFromProfile(p);
+      if (items.length === 0) {
+        Alert.alert("알림", "프로필에 등록된 경력이 없습니다.");
+        return;
+      }
+      setCareerItems(items);
+      clearFieldError("career");
+    } finally {
+      setLoadingCareers(false);
+    }
+  };
+
   const buildDtoBody = () => {
     if (!config || !postId) return null;
     const educationLine = formatEducation(schoolName, selectedGrade);
@@ -385,7 +431,9 @@ const ApplicationScreen = () => {
     if (config.includeMusic) base.music = participatingSong.trim();
     if (config.includeFile && includeFile) base.file = [];
     if (config.includeLink) base.link = link.trim();
-    if (config.includeCareer && includeCareer) base.career = [];
+    if (config.includeCareer && careerItems.length > 0) {
+      base.career = toApplicationCareerSnapshots(careerItems);
+    }
     if (config.includeIntroduce) base.introduce = selfIntroduction.trim();
     return base;
   };
@@ -461,6 +509,7 @@ const ApplicationScreen = () => {
       participatingSong,
       link,
       selfIntroduction,
+      careerCount: careerItems.length,
     });
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -728,22 +777,54 @@ const ApplicationScreen = () => {
           )}
           {config.includeCareer && (
             <View style={fieldGap}>
-              <Form title="경력" isRequired={true}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingVertical: 8,
-                  }}
+              <Form title="경력" isRequired={true} hasError={!!fieldErrors.career}>
+                <Pressable
+                  style={[
+                    styles.loadCareerButton,
+                    loadingCareers && { opacity: 0.6 },
+                  ]}
+                  disabled={loadingCareers}
+                  onPress={loadCareersFromProfile}
                 >
-                  <Text style={{ flex: 1, marginRight: 12 }}>관련 경력이 있습니다</Text>
-                  <Switch
-                    value={includeCareer}
-                    onValueChange={setIncludeCareer}
-                    trackColor={{ true: MAIN.DEFAULT, false: "#ccc" }}
-                  />
-                </View>
+                  <Text style={styles.loadCareerButtonText}>
+                    {loadingCareers ? "불러오는 중…" : "경력 불러오기"}
+                  </Text>
+                </Pressable>
+                {careerItems.length === 0 ? (
+                  <Text style={styles.careerEmptyHint}>
+                    프로필에 등록한 경력을 불러온 뒤, 제출하지 않을 항목은 삭제할 수
+                    있습니다.
+                  </Text>
+                ) : (
+                  <View style={styles.careerList}>
+                    {careerItems.map((item) => {
+                      const period = formatApplicationCareerPeriod(item);
+                      return (
+                        <View key={item.id} style={styles.careerRow}>
+                          <View style={styles.careerRowContent}>
+                            <Text style={styles.careerDescription}>
+                              {item.description}
+                            </Text>
+                            {period ? (
+                              <Text style={styles.careerPeriod}>{period}</Text>
+                            ) : null}
+                          </View>
+                          <Pressable
+                            style={styles.careerRemoveButton}
+                            onPress={() => removeCareerItem(item.id)}
+                            accessibilityLabel="경력 삭제"
+                          >
+                            <MaterialCommunityIcons
+                              name="close"
+                              size={20}
+                              color="#717182"
+                            />
+                          </Pressable>
+                        </View>
+                      );
+                    })}
+                  </View>
+                )}
               </Form>
             </View>
           )}

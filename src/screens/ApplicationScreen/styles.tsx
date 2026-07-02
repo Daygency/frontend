@@ -64,6 +64,59 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#EC1313",
   },
+  loadCareerButton: {
+    marginTop: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: MAIN.DEFAULT,
+  },
+  loadCareerButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
+  },
+  careerList: {
+    marginTop: 12,
+    gap: 8,
+  },
+  careerRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E6E6E6",
+    backgroundColor: "#FAFAFA",
+  },
+  careerRowContent: {
+    flex: 1,
+    marginRight: 8,
+  },
+  careerDescription: {
+    fontSize: 15,
+    lineHeight: 22,
+    color: "#111113",
+    fontWeight: "500",
+  },
+  careerPeriod: {
+    marginTop: 4,
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#717182",
+  },
+  careerRemoveButton: {
+    padding: 4,
+  },
+  careerEmptyHint: {
+    marginTop: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#717182",
+  },
 });
 
 export default styles;

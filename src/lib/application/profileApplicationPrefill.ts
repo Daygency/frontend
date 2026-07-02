@@ -1,4 +1,10 @@
 import type { ProfileResponseDto } from "../apis/portfolio/types";
+import type { ApplicationSnapshotCareer } from "../apis/application/snapshot.types";
+import {
+  toOptionalIsoDate,
+  yearMonthFromApiDate,
+  formatPeriodFromApiItem,
+} from "../profile/profileEntryDates";
 
 /** ApplicationScreen 전공 드롭다운과 동일한 value 목록 */
 const MAJOR_OPTION_VALUES = [
@@ -90,4 +96,117 @@ export function deriveApplicationPrefillFromProfile(
     schoolName,
     grade: "",
   };
+}
+
+export type ApplicationCareerListItem = ApplicationSnapshotCareer & {
+  id: string;
+  isOngoing?: boolean;
+};
+
+function rawCareerToListItem(
+  raw: Record<string, unknown>,
+  index: number,
+): ApplicationCareerListItem | null {
+  const description =
+    typeof raw.description === "string" ? raw.description.trim() : "";
+  if (!description) return null;
+
+  const isOngoing = Boolean(raw.isOngoing ?? raw.is_ongoing);
+  let startedAt = "";
+  let endedAt = "";
+
+  const hasLocalDates =
+    raw.startYear != null ||
+    raw.start_year != null ||
+    raw.startMonth != null ||
+    raw.start_month != null;
+
+  if (hasLocalDates) {
+    startedAt =
+      toOptionalIsoDate(
+        String(raw.startYear ?? raw.start_year ?? ""),
+        String(raw.startMonth ?? raw.start_month ?? ""),
+      ) ?? "";
+    endedAt = isOngoing
+      ? ""
+      : (toOptionalIsoDate(
+          String(raw.endYear ?? raw.end_year ?? ""),
+          String(raw.endMonth ?? raw.end_month ?? ""),
+        ) ?? "");
+  } else {
+    const start = yearMonthFromApiDate(
+      (raw.startedAt ?? raw.started_at) as string | Date | null | undefined,
+    );
+    const end = yearMonthFromApiDate(
+      isOngoing
+        ? null
+        : ((raw.endedAt ?? raw.ended_at) as string | Date | null | undefined),
+    );
+    startedAt = toOptionalIsoDate(start.year, start.month) ?? "";
+    endedAt = isOngoing
+      ? ""
+      : (toOptionalIsoDate(end.year, end.month) ?? "");
+  }
+
+  return {
+    id: String(raw.careerId ?? raw.career_id ?? raw.id ?? `career-${index}`),
+    description,
+    startedAt,
+    endedAt,
+    isOngoing,
+    organization:
+      typeof raw.organization === "string" ? raw.organization : undefined,
+  };
+}
+
+/** 프로필 API 경력 목록 → 지원서 스냅샷용 리스트 */
+export function parseCareersFromProfile(
+  p: ProfileResponseDto,
+): ApplicationCareerListItem[] {
+  const raw = p as ProfileResponseDto & Record<string, unknown>;
+  const rawCareers =
+    (Array.isArray(raw.careers) ? raw.careers : null) ??
+    p.careerEntries ??
+    [];
+
+  if (!Array.isArray(rawCareers)) return [];
+
+  return rawCareers
+    .map((item, index) =>
+      item && typeof item === "object"
+        ? rawCareerToListItem(item as Record<string, unknown>, index)
+        : null,
+    )
+    .filter((item): item is ApplicationCareerListItem => item !== null);
+}
+
+export function applicationCareersFromSnapshots(
+  items: ApplicationSnapshotCareer[],
+): ApplicationCareerListItem[] {
+  return items.map((item, index) => ({
+    ...item,
+    id: `saved-${index}-${item.description.slice(0, 8)}`,
+  }));
+}
+
+export function formatApplicationCareerPeriod(item: ApplicationCareerListItem): string {
+  return formatPeriodFromApiItem(
+    {
+      startedAt: item.startedAt || null,
+      endedAt: item.endedAt || null,
+      isOngoing: item.isOngoing,
+    },
+    { ongoingLabel: "재직 중" },
+  );
+}
+
+export function toApplicationCareerSnapshots(
+  items: ApplicationCareerListItem[],
+): ApplicationSnapshotCareer[] {
+  return items.map(({ description, startedAt, endedAt, organization }) => ({
+    description,
+    startedAt,
+    endedAt,
+    ...(organization ? { organization } : {}),
+  }));
 }
