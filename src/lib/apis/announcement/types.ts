@@ -13,10 +13,8 @@ export type ApplicationConfig = {
   includeEducation: boolean;
   includeCategory: boolean;
   includeMusic: boolean;
-  includeAddress: boolean;
   includeFile: boolean;
   includeLink: boolean;
-  includeDepartment: boolean;
   includeCareer: boolean;
   includeIntroduce: boolean;
 };

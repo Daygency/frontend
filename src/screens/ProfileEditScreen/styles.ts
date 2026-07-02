@@ -1,5 +1,5 @@
 import { Platform, StyleSheet } from "react-native";
-import { BLUE, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, BLUE, GRAY, MAIN, WHITE } from "../../color";
 import {
   PORTFOLIO_BODY_BG,
   PORTFOLIO_SECTION_GAP,
@@ -318,6 +318,28 @@ const styles = StyleSheet.create({
     fontSize: 13,
     fontWeight: "500",
     color: GRAY.DARK_100,
+  },
+  datePickerField: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM,
+    backgroundColor: WHITE,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+    minHeight: 46,
+  },
+  datePickerFieldDisabled: {
+    opacity: 0.45,
+  },
+  datePickerFieldText: {
+    fontSize: 14,
+    color: BLACK,
+  },
+  datePickerFieldTextPlaceholder: {
+    color: GRAY.DARK_2,
   },
   dateDropdownRow: {
     flexDirection: "row",

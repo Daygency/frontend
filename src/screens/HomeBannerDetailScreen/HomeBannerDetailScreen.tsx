@@ -6,6 +6,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import ViewerPressableImage from "../../components/media/ViewerPressableImage";
+import MagazineCardOverlay from "../../components/media/MagazineCardOverlay";
 import { useEffect, useState } from "react";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,7 +16,6 @@ import { formatContentDate } from "../../lib/content/newBadge";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
 import { RootRoutes } from "../../navigations/routes";
 import styles from "./styles";
-import NewBadge from "../../components/ui/NewBadge";
 
 type RouteParams = {
   [RootRoutes.HOME_BANNER_DETAIL]: { bannerId: string };
@@ -69,28 +69,31 @@ const HomeBannerDetailScreen = () => {
       style={{ flex: 1, backgroundColor: WHITE }}
       contentContainerStyle={{ paddingBottom: bottom + 24 }}
     >
-      {title || formattedDate ? (
-        <View style={styles.header}>
-          {title ? (
-            <View style={styles.titleRow}>
-              <Text style={styles.title}>{title}</Text>
-            </View>
-          ) : null}
-          {formattedDate ? (
-            <Text style={styles.timestamp}>{formattedDate}</Text>
-          ) : null}
-        </View>
+      {imageUrls.map((url, index) => {
+        const isHero = index === 0;
+
+        return (
+          <View key={`${url}-${index}`} style={isHero ? styles.heroWrap : undefined}>
+            <ViewerPressableImage
+              urls={imageUrls}
+              imageIndex={index}
+              source={{ uri: url }}
+              style={[styles.image, { width, aspectRatio: 1 }]}
+              resizeMode="cover"
+            />
+            {isHero && title ? (
+              <MagazineCardOverlay
+                title={title}
+                variant="large"
+                titleLines={null}
+              />
+            ) : null}
+          </View>
+        );
+      })}
+      {formattedDate ? (
+        <Text style={styles.timestamp}>{formattedDate}</Text>
       ) : null}
-      {imageUrls.map((url, index) => (
-        <ViewerPressableImage
-          key={`${url}-${index}`}
-          urls={imageUrls}
-          imageIndex={index}
-          source={{ uri: url }}
-          style={[styles.image, { width, aspectRatio: 1 }]}
-          resizeMode="cover"
-        />
-      ))}
     </ScrollView>
   );
 };

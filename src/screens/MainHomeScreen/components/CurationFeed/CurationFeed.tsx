@@ -25,6 +25,7 @@ import {
 import { normalizeListThumbnailUrl } from "../../../../lib/media/listThumbnailUrl";
 import { RootRoutes } from "../../../../navigations/routes";
 import { getImageAverageColor } from "../../../../lib/media/getImageAverageColor";
+import MagazineCardOverlay from "../../../../components/media/MagazineCardOverlay";
 import {
   CURATION_LOADING_BACKGROUND,
   type CurationThemeState,
@@ -214,6 +215,7 @@ const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
                 style={styles.cardImage}
                 resizeMode="cover"
               />
+              <MagazineCardOverlay title={item.title} variant="compact" />
               {item.isCurrent === false ? (
                 <View style={styles.pastBadge}>
                   <Text style={styles.pastBadgeText}>이전</Text>
@@ -242,6 +244,7 @@ const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
             style={styles.cardImage}
             resizeMode="cover"
           />
+          <MagazineCardOverlay title={featuredBanner.title} variant="large" />
         </View>
       </Pressable>
     ) : null;

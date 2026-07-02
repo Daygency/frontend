@@ -1,19 +1,25 @@
-import React from "react";
-import { View, Text } from "react-native";
-import { Dropdown } from "react-native-element-dropdown";
+import { useMemo, useState } from "react";
+import { View, Text, Pressable } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import WheelDateTimePickerModal from "../../../components/modals/WheelDateTimePickerModal";
+import { GRAY } from "../../../color";
+import { formatYearMonth } from "../../../lib/profile/profileEntryDates";
 import styles from "../styles";
 
 const CURRENT_YEAR = new Date().getFullYear();
+const MIN_DATE = new Date(CURRENT_YEAR - 59, 0, 1);
+const MAX_DATE = new Date(CURRENT_YEAR, 11, 31);
 
-const MONTH_OPTIONS = Array.from({ length: 12 }, (_, i) => {
-  const value = String(i + 1).padStart(2, "0");
-  return { label: `${i + 1}월`, value };
-});
-
-const YEAR_OPTIONS = Array.from({ length: 60 }, (_, i) => {
-  const value = String(CURRENT_YEAR - i);
-  return { label: `${value}년`, value };
-});
+function yearMonthToDate(year: string, month: string): Date {
+  if (year && month) {
+    const y = Number(year);
+    const m = Number(month) - 1;
+    if (Number.isFinite(y) && Number.isFinite(m) && m >= 0 && m <= 11) {
+      return new Date(y, m, 1);
+    }
+  }
+  return new Date(CURRENT_YEAR, new Date().getMonth(), 1);
+}
 
 type Props = {
   label?: string;
@@ -29,50 +35,64 @@ const YearMonthDropdowns = ({
   month,
   onChange,
   disabled = false,
-}: Props) => (
-  <View style={styles.dateFieldGroup}>
-    {label ? <Text style={styles.dateFieldLabel}>{label}</Text> : null}
-    <View style={styles.dateDropdownRow}>
-      <View style={[styles.dateDropdownWrap, disabled && styles.dateDropdownDisabled]}>
-        <Dropdown
-          style={styles.dateDropdown}
-          placeholderStyle={styles.dateDropdownPlaceholder}
-          selectedTextStyle={styles.dateDropdownText}
-          itemTextStyle={styles.dateDropdownItemText}
-          containerStyle={styles.dateDropdownContainer}
-          iconStyle={styles.dateDropdownIcon}
-          data={MONTH_OPTIONS}
-          search={false}
-          maxHeight={260}
-          labelField="label"
-          valueField="value"
-          placeholder="월"
-          value={month || null}
-          disable={disabled}
-          onChange={(item) => onChange(year, item.value)}
+}: Props) => {
+  const [visible, setVisible] = useState(false);
+  const value = useMemo(() => yearMonthToDate(year, month), [year, month]);
+  const display = formatYearMonth(year, month);
+  const pickerTitle = label ? `${label} 선택` : "년월 선택";
+
+  return (
+    <View style={styles.dateFieldGroup}>
+      {label ? <Text style={styles.dateFieldLabel}>{label}</Text> : null}
+      <Pressable
+        style={[
+          styles.datePickerField,
+          disabled && styles.datePickerFieldDisabled,
+        ]}
+        onPress={() => setVisible(true)}
+        disabled={disabled}
+      >
+        <Text
+          style={[
+            styles.datePickerFieldText,
+            !display && styles.datePickerFieldTextPlaceholder,
+          ]}
+        >
+          {display || "년월 선택"}
+        </Text>
+        <MaterialCommunityIcons
+          name="calendar"
+          size={20}
+          color={disabled ? GRAY.DARK_2 : GRAY.DARK_1}
         />
-      </View>
-      <View style={[styles.dateDropdownWrap, disabled && styles.dateDropdownDisabled]}>
-        <Dropdown
-          style={styles.dateDropdown}
-          placeholderStyle={styles.dateDropdownPlaceholder}
-          selectedTextStyle={styles.dateDropdownText}
-          itemTextStyle={styles.dateDropdownItemText}
-          containerStyle={styles.dateDropdownContainer}
-          iconStyle={styles.dateDropdownIcon}
-          data={YEAR_OPTIONS}
-          search={false}
-          maxHeight={260}
-          labelField="label"
-          valueField="value"
-          placeholder="년"
-          value={year || null}
-          disable={disabled}
-          onChange={(item) => onChange(item.value, month)}
-        />
-      </View>
+      </Pressable>
+
+      <WheelDateTimePickerModal
+        visible={visible}
+        value={value}
+        pickerMode="date"
+        title={pickerTitle}
+        description={
+          label ? `${label}을(를) 선택하세요.` : "년월을 선택하세요."
+        }
+        minimumDate={MIN_DATE}
+        maximumDate={MAX_DATE}
+        confirmLabel={(date) => {
+          const y = date.getFullYear();
+          const m = date.getMonth() + 1;
+          return `${y}년 ${m}월 선택`;
+        }}
+        onConfirm={(selected) => {
+          onChange(
+            String(selected.getFullYear()),
+            String(selected.getMonth() + 1).padStart(2, "0"),
+          );
+          setVisible(false);
+        }}
+        onCancel={() => setVisible(false)}
+      />
     </View>
-  </View>
-);
+  );
+};
 
 export default YearMonthDropdowns;

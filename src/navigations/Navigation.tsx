@@ -14,7 +14,6 @@ import CommunityDetailScreen from "../screens/CommunityDetailScreen";
 import CommunityRegistrationScreen from "../screens/CommunityRegistrationScreen";
 import AnnouncementRegistrationScreen from "../screens/AnnouncementRegistrationScreen";
 import SettingsScreen from "../screens/SettingsScreen/SettingsScreen";
-import MyInfoScreen from "../screens/SettingsScreens/MyInfoScreen/MyInfoScreen";
 import MyActivityScreen from "../screens/SettingsScreens/MyActivityScreen/MyActivityScreen";
 import MyActivityListScreen from "../screens/MyActivityListScreen/MyActivityListScreen";
 import MyActivityNewsListScreen from "../screens/MyActivityNewsListScreen/MyActivityNewsListScreen";
@@ -583,37 +582,6 @@ const Navigation = () => {
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title}>알림</Text>
-              </View>
-            ),
-            headerShadowVisible: false,
-            headerShown: true,
-            headerTitleAlign: "left",
-            headerLeft: () => (
-              <Pressable
-                onPress={() => {
-                  if (navigation.canGoBack()) {
-                    navigation.goBack();
-                  }
-                }}
-                hitSlop={10}
-                style={styles.leftIcon}
-              >
-                <MaterialCommunityIcons
-                  name="chevron-left"
-                  size={30}
-                  color="#000"
-                />
-              </Pressable>
-            ),
-          })}
-        />
-        <Stack.Screen
-          name={RootRoutes.MY_INFO}
-          component={withAuthGate(MyInfoScreen)}
-          options={({ navigation }) => ({
-            headerTitle: () => (
-              <View style={styles.titleWrap}>
-                <Text style={styles.title}>내 정보</Text>
               </View>
             ),
             headerShadowVisible: false,

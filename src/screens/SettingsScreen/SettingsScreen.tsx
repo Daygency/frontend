@@ -17,11 +17,6 @@ const SettingsScreen = () => {
       showsVerticalScrollIndicator={false}
     >
       <SettingItem
-        icon="account-outline"
-        label="내 정보"
-        onPress={() => navigation.navigate(RootRoutes.MY_INFO)}
-      />
-      <SettingItem
         icon="pulse"
         label="내 활동"
         onPress={() => navigation.navigate(RootRoutes.MY_ACTIVITY)}

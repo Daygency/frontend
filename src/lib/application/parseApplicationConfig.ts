@@ -9,10 +9,8 @@ const DEFAULT: ApplicationConfig = {
   includeEducation: false,
   includeCategory: false,
   includeMusic: false,
-  includeAddress: false,
   includeFile: false,
   includeLink: false,
-  includeDepartment: false,
   includeCareer: false,
   includeIntroduce: false,
 };

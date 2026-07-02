@@ -22,7 +22,6 @@ export const RootRoutes = {
   COMMUNITY_DETAIL: "CommunityDetail",
   COMMUNITY_REGISTRATION: "CommunityRegistration",
   SETTINGS: "Settings",
-  MY_INFO: "MyInfo",
   MY_ACTIVITY: "MyActivity",
   MY_ACTIVITY_LIST: "MyActivityList",
   MY_ACTIVITY_NEWS_LIST: "MyActivityNewsList",

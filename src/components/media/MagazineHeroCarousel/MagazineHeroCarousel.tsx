@@ -4,16 +4,15 @@ import {
   Image,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from "react-native";
 import Carousel from "react-native-reanimated-carousel";
-import { LinearGradient } from "expo-linear-gradient";
 import Animated, {
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import { BLACK, WHITE } from "../../../color";
+import { BLACK } from "../../../color";
+import MagazineCardOverlay from "../MagazineCardOverlay";
 
 export type MagazineHeroCarouselItem = {
   bannerId: string;
@@ -68,17 +67,7 @@ const CarouselCard = ({
             resizeMode="cover"
           />
         </View>
-        <LinearGradient
-          colors={["rgba(0,0,0,0.04)", "rgba(0,0,0,0.32)", "rgba(0,0,0,0.84)"]}
-          locations={[0, 0.45, 1]}
-          style={styles.overlay}
-        />
-        <View style={styles.textWrap}>
-          <Text style={styles.badge}>DAYGENCY MAGAZINE</Text>
-          <Text style={styles.title} numberOfLines={3}>
-            {item.title}
-          </Text>
-        </View>
+        <MagazineCardOverlay title={item.title} variant="large" />
       </Pressable>
     </Animated.View>
   );
@@ -167,28 +156,6 @@ const styles = StyleSheet.create({
     left: 0,
     width: "100%",
     height: "100%",
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  textWrap: {
-    position: "absolute",
-    right: 22,
-    bottom: 18,
-    left: 22,
-  },
-  badge: {
-    color: "rgba(255,255,255,0.9)",
-    fontSize: 11,
-    fontWeight: "700",
-    letterSpacing: 1,
-    marginBottom: 12,
-  },
-  title: {
-    color: WHITE,
-    fontSize: 26,
-    lineHeight: 32,
-    fontWeight: "800",
   },
 });
 

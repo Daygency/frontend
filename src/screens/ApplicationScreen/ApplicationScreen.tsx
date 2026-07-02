@@ -134,6 +134,64 @@ function httpErrorMessage(status: number): string {
   return "요청에 실패했습니다.";
 }
 
+type ApplicationFieldKey =
+  | "name"
+  | "birthYear"
+  | "gender"
+  | "selectedMajor"
+  | "detailMajor"
+  | "schoolName"
+  | "selectedGrade"
+  | "participationSection"
+  | "participatingSong"
+  | "link"
+  | "selfIntroduction";
+
+type ApplicationFieldErrors = Partial<Record<ApplicationFieldKey, boolean>>;
+
+function collectFieldErrors(
+  config: ApplicationConfig,
+  values: {
+    name: string;
+    birthYear: string;
+    gender: ApplicationGender | "";
+    selectedMajor: string;
+    detailMajor: string;
+    schoolName: string;
+    selectedGrade: string;
+    participationSection: string;
+    participatingSong: string;
+    link: string;
+    selfIntroduction: string;
+  },
+): ApplicationFieldErrors {
+  const errors: ApplicationFieldErrors = {};
+  if (config.includeName && !values.name.trim()) errors.name = true;
+  if (config.includeBirth && !values.birthYear.trim()) errors.birthYear = true;
+  if (config.includeGender && !values.gender) errors.gender = true;
+  if (config.includeMajor && !values.selectedMajor.trim()) {
+    errors.selectedMajor = true;
+  }
+  if (config.includeMajorDetail && !values.detailMajor.trim()) {
+    errors.detailMajor = true;
+  }
+  if (config.includeEducation) {
+    if (!values.schoolName.trim()) errors.schoolName = true;
+    if (!values.selectedGrade.trim()) errors.selectedGrade = true;
+  }
+  if (config.includeCategory && !values.participationSection.trim()) {
+    errors.participationSection = true;
+  }
+  if (config.includeMusic && !values.participatingSong.trim()) {
+    errors.participatingSong = true;
+  }
+  if (config.includeLink && !values.link.trim()) errors.link = true;
+  if (config.includeIntroduce && !values.selfIntroduction.trim()) {
+    errors.selfIntroduction = true;
+  }
+  return errors;
+}
+
 /** 공고 상세 기준 모집 진행 여부 — 마감 후에는 지원 취소·수정 불가 */
 function deriveRecruitmentOpen(
   d: Record<string, unknown>,
@@ -180,12 +238,11 @@ const ApplicationScreen = () => {
   const [selectedGrade, setSelectedGrade] = useState("");
   const [participationSection, setParticipationSection] = useState("");
   const [participatingSong, setParticipatingSong] = useState("");
-  const [deliveryAddress, setDeliveryAddress] = useState("");
   const [link, setLink] = useState("");
-  const [affiliatedDepartment, setAffiliatedDepartment] = useState("");
   const [selfIntroduction, setSelfIntroduction] = useState("");
   const [includeFile, setIncludeFile] = useState(false);
   const [includeCareer, setIncludeCareer] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<ApplicationFieldErrors>({});
 
   const prefilledRef = useRef(false);
 
@@ -212,9 +269,7 @@ const ApplicationScreen = () => {
       }
       if (e.category) setParticipationSection(e.category);
       if (e.music) setParticipatingSong(e.music);
-      if (e.address) setDeliveryAddress(e.address);
       if (e.link) setLink(e.link);
-      if (e.department) setAffiliatedDepartment(e.department);
       if (e.introduce) setSelfIntroduction(e.introduce);
       if (Array.isArray(e.file)) setIncludeFile(e.file.length > 0);
       if (Array.isArray(e.career)) setIncludeCareer(e.career.length > 0);
@@ -299,31 +354,13 @@ const ApplicationScreen = () => {
     { label: "졸업", value: "졸업" },
   ];
 
-  const validate = (): string | null => {
-    if (!config) return "양식을 불러오는 중입니다.";
-    if (config.includeName && !name.trim()) return "이름을 입력해 주세요.";
-    if (config.includeBirth && !birthYear.trim()) return "생년을 입력해 주세요.";
-    if (config.includeGender && !gender) return "성별을 선택해 주세요.";
-    if (config.includeMajor && !selectedMajor.trim()) return "전공을 선택해 주세요.";
-    if (config.includeMajorDetail && !detailMajor.trim()) return "세부 전공을 입력해 주세요.";
-    if (config.includeEducation && (!schoolName.trim() || !selectedGrade.trim())) {
-      return "소속 학교와 학년을 입력해 주세요.";
-    }
-    if (config.includeCategory && !participationSection.trim()) {
-      return "참가 부문을 입력해 주세요.";
-    }
-    if (config.includeMusic && !participatingSong.trim()) return "참가곡을 입력해 주세요.";
-    if (config.includeAddress && !deliveryAddress.trim()) {
-      return "배송 주소를 입력해 주세요.";
-    }
-    if (config.includeLink && !link.trim()) return "링크를 입력해 주세요.";
-    if (config.includeDepartment && !affiliatedDepartment.trim()) {
-      return "소속 학부를 입력해 주세요.";
-    }
-    if (config.includeIntroduce && !selfIntroduction.trim()) {
-      return "자기소개/지원동기를 입력해 주세요.";
-    }
-    return null;
+  const clearFieldError = (key: ApplicationFieldKey) => {
+    setFieldErrors((prev) => {
+      if (!prev[key]) return prev;
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
   };
 
   const buildDtoBody = () => {
@@ -346,10 +383,8 @@ const ApplicationScreen = () => {
     }
     if (config.includeCategory) base.category = participationSection.trim();
     if (config.includeMusic) base.music = participatingSong.trim();
-    if (config.includeAddress) base.address = deliveryAddress.trim();
     if (config.includeFile && includeFile) base.file = [];
     if (config.includeLink) base.link = link.trim();
-    if (config.includeDepartment) base.department = affiliatedDepartment.trim();
     if (config.includeCareer && includeCareer) base.career = [];
     if (config.includeIntroduce) base.introduce = selfIntroduction.trim();
     return base;
@@ -414,11 +449,24 @@ const ApplicationScreen = () => {
       Alert.alert("알림", "모집이 마감되어 지원서를 제출하거나 수정할 수 없습니다.");
       return;
     }
-    const err = validate();
-    if (err) {
-      Alert.alert("알림", err);
+    const errors = collectFieldErrors(config, {
+      name,
+      birthYear,
+      gender,
+      selectedMajor,
+      detailMajor,
+      schoolName,
+      selectedGrade,
+      participationSection,
+      participatingSong,
+      link,
+      selfIntroduction,
+    });
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
+    setFieldErrors({});
     const body = buildDtoBody();
     if (!body) return;
 
@@ -497,34 +545,46 @@ const ApplicationScreen = () => {
         <View style={{ paddingHorizontal: 12, paddingVertical: 15 }}>
           {config.includeName && (
             <View>
-              <Form title="이름" isRequired={true}>
+              <Form title="이름" isRequired={true} hasError={!!fieldErrors.name}>
                 <FormTextInput
                   placeholder="이름을 입력하세요"
                   value={name}
-                  onChangeText={setName}
+                  onChangeText={(text) => {
+                    setName(text);
+                    clearFieldError("name");
+                  }}
+                  hasError={!!fieldErrors.name}
                 />
               </Form>
             </View>
           )}
           {config.includeBirth && (
             <View style={fieldGap}>
-              <Form title="생년" isRequired={true}>
+              <Form title="생년" isRequired={true} hasError={!!fieldErrors.birthYear}>
                 <FormTextInput
                   placeholder="YYYY"
                   value={birthYear}
-                  onChangeText={setBirthYear}
+                  onChangeText={(text) => {
+                    setBirthYear(text);
+                    clearFieldError("birthYear");
+                  }}
+                  hasError={!!fieldErrors.birthYear}
                 />
               </Form>
             </View>
           )}
           {config.includeGender && (
             <View style={fieldGap}>
-              <Form title="성별" isRequired={true}>
+              <Form title="성별" isRequired={true} hasError={!!fieldErrors.gender}>
                 <FormDropdownInput
                   placeholder="성별을 선택하세요"
                   data={GENDER_OPTIONS}
                   value={gender}
-                  onChange={(item) => setGender(item.value as ApplicationGender)}
+                  onChange={(item) => {
+                    setGender(item.value as ApplicationGender);
+                    clearFieldError("gender");
+                  }}
+                  hasError={!!fieldErrors.gender}
                 />
               </Form>
             </View>
@@ -535,73 +595,95 @@ const ApplicationScreen = () => {
                 title="전공"
                 isRequired={true}
                 example="ex. 건반악기, 현악, 성악, 작곡, 무용, 실용"
+                hasError={!!fieldErrors.selectedMajor}
               >
                 <FormDropdownInput
                   placeholder="전공을 선택하세요"
                   data={majorOptions}
                   value={selectedMajor}
-                  onChange={(item) => setSelectedMajor(item.value)}
+                  onChange={(item) => {
+                    setSelectedMajor(item.value);
+                    clearFieldError("selectedMajor");
+                  }}
+                  hasError={!!fieldErrors.selectedMajor}
                 />
               </Form>
             </View>
           )}
           {config.includeMajorDetail && (
             <View style={fieldGap}>
-              <Form title="세부 전공" isRequired={true}>
+              <Form title="세부 전공" isRequired={true} hasError={!!fieldErrors.detailMajor}>
                 <FormTextInput
                   placeholder="세부 전공을 입력하세요"
                   value={detailMajor}
-                  onChangeText={setDetailMajor}
+                  onChangeText={(text) => {
+                    setDetailMajor(text);
+                    clearFieldError("detailMajor");
+                  }}
+                  hasError={!!fieldErrors.detailMajor}
                 />
               </Form>
             </View>
           )}
           {config.includeEducation && (
             <View style={fieldGap}>
-              <Form title="학력(소속학교/학년)" isRequired={true}>
+              <Form
+                title="학력(소속학교/학년)"
+                isRequired={true}
+                hasError={!!fieldErrors.schoolName || !!fieldErrors.selectedGrade}
+              >
                 <FormTextInput
                   placeholder="소속학교를 입력하세요"
                   value={schoolName}
-                  onChangeText={setSchoolName}
+                  onChangeText={(text) => {
+                    setSchoolName(text);
+                    clearFieldError("schoolName");
+                  }}
+                  hasError={!!fieldErrors.schoolName}
                 />
                 <FormDropdownInput
                   placeholder="학년을 선택하세요"
                   data={gradeOptions}
                   value={selectedGrade}
-                  onChange={(item) => setSelectedGrade(item.value)}
+                  onChange={(item) => {
+                    setSelectedGrade(item.value);
+                    clearFieldError("selectedGrade");
+                  }}
+                  hasError={!!fieldErrors.selectedGrade}
                 />
               </Form>
             </View>
           )}
           {config.includeCategory && (
             <View style={fieldGap}>
-              <Form title="참가 부문" isRequired={true}>
+              <Form
+                title="참가 부문"
+                isRequired={true}
+                hasError={!!fieldErrors.participationSection}
+              >
                 <FormTextInput
                   placeholder="참가 부문을 입력하세요"
                   value={participationSection}
-                  onChangeText={setParticipationSection}
+                  onChangeText={(text) => {
+                    setParticipationSection(text);
+                    clearFieldError("participationSection");
+                  }}
+                  hasError={!!fieldErrors.participationSection}
                 />
               </Form>
             </View>
           )}
           {config.includeMusic && (
             <View style={fieldGap}>
-              <Form title="참가곡" isRequired={true}>
+              <Form title="참가곡" isRequired={true} hasError={!!fieldErrors.participatingSong}>
                 <FormTextInput
                   placeholder="참가곡을 입력하세요"
                   value={participatingSong}
-                  onChangeText={setParticipatingSong}
-                />
-              </Form>
-            </View>
-          )}
-          {config.includeAddress && (
-            <View style={fieldGap}>
-              <Form title="상장/트로피 배송 주소" isRequired={true}>
-                <FormTextInput
-                  placeholder="주소를 입력하세요"
-                  value={deliveryAddress}
-                  onChangeText={setDeliveryAddress}
+                  onChangeText={(text) => {
+                    setParticipatingSong(text);
+                    clearFieldError("participatingSong");
+                  }}
+                  hasError={!!fieldErrors.participatingSong}
                 />
               </Form>
             </View>
@@ -631,22 +713,15 @@ const ApplicationScreen = () => {
           )}
           {config.includeLink && (
             <View style={fieldGap}>
-              <Form title="링크 첨부" isRequired={true}>
+              <Form title="링크 첨부" isRequired={true} hasError={!!fieldErrors.link}>
                 <FormTextInput
                   placeholder="https://"
                   value={link}
-                  onChangeText={setLink}
-                />
-              </Form>
-            </View>
-          )}
-          {config.includeDepartment && (
-            <View style={fieldGap}>
-              <Form title="소속 학부" isRequired={true}>
-                <FormTextInput
-                  placeholder="소속 학부를 입력하세요"
-                  value={affiliatedDepartment}
-                  onChangeText={setAffiliatedDepartment}
+                  onChangeText={(text) => {
+                    setLink(text);
+                    clearFieldError("link");
+                  }}
+                  hasError={!!fieldErrors.link}
                 />
               </Form>
             </View>
@@ -674,11 +749,19 @@ const ApplicationScreen = () => {
           )}
           {config.includeIntroduce && (
             <View style={fieldGap}>
-              <Form title="자기소개/지원동기" isRequired={true}>
+              <Form
+                title="자기소개/지원동기"
+                isRequired={true}
+                hasError={!!fieldErrors.selfIntroduction}
+              >
                 <FormTextInput
                   placeholder="내용을 입력하세요"
                   value={selfIntroduction}
-                  onChangeText={setSelfIntroduction}
+                  onChangeText={(text) => {
+                    setSelfIntroduction(text);
+                    clearFieldError("selfIntroduction");
+                  }}
+                  hasError={!!fieldErrors.selfIntroduction}
                 />
               </Form>
             </View>

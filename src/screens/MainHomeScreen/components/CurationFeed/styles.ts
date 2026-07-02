@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
   listContent: {
     paddingHorizontal: HORIZONTAL_GAP,
     paddingTop: 6,
-    paddingBottom: 24,
+    paddingBottom: 120,
     gap: HORIZONTAL_GAP,
   },
   listContentEmpty: {
@@ -44,6 +44,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     overflow: "hidden",
     backgroundColor: "rgba(255,255,255,0.08)",
+    position: "relative",
   },
   cardImage: {
     width: "100%",
@@ -53,6 +54,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 8,
     right: 8,
+    zIndex: 2,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,

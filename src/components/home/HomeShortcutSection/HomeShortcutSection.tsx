@@ -4,8 +4,8 @@ import { BLACK, BLUE, GRAY, WHITE } from "../../../color";
 const LETTER_ICON = require("../../../../assets/letter.png");
 const PENCIL_ICON = require("../../../../assets/pencil.png");
 
-const PILL_HEIGHT = 44;
-const PILL_PADDING = 4;
+const PILL_HEIGHT = 36;
+const PILL_PADDING = 3;
 const ICON_SIZE = PILL_HEIGHT - PILL_PADDING * 2;
 
 type ShortcutPillProps = {
@@ -61,15 +61,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
-    gap: 8,
+    gap: 6,
   },
   pill: {
     flexDirection: "row",
     alignItems: "center",
     height: PILL_HEIGHT,
     paddingLeft: PILL_PADDING,
-    paddingRight: 14,
-    gap: 8,
+    paddingRight: 12,
+    gap: 6,
     borderRadius: PILL_HEIGHT / 2,
     borderCurve: "continuous",
     borderWidth: 1,
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     height: ICON_SIZE * 0.62,
   },
   label: {
-    fontSize: 15,
+    fontSize: 13,
     lineHeight: ICON_SIZE,
     fontWeight: "700",
     color: BLACK,
