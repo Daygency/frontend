@@ -9,7 +9,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
-    paddingHorizontal: 15,
+    paddingHorizontal: 12,
     height: 36,
     alignItems: "center",
     justifyContent: "center",
@@ -20,11 +20,11 @@ const styles = StyleSheet.create({
   },
   tagText: {
     color: BLACK,
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "400",
     includeFontPadding: false,
     textAlignVertical: "center",
-    lineHeight: 20,
+    lineHeight: 18,
   },
   tagTextSelected: {
     color: WHITE,

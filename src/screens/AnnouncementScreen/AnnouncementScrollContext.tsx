@@ -3,7 +3,6 @@ import {
   useCallback,
   useContext,
   useMemo,
-  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -144,8 +143,6 @@ function AnnouncementCollapsibleChrome({
   onTopBarLayout,
   onFilterBarLayout,
 }: AnnouncementCollapsibleChromeProps) {
-  const topBarMeasured = useRef(false);
-
   const topBarStyle = useAnimatedStyle(() => ({
     transform: [
       {
@@ -173,10 +170,8 @@ function AnnouncementCollapsibleChrome({
   }), [topBarHeight]);
 
   const handleTopBarLayout = (event: LayoutChangeEvent) => {
-    if (topBarMeasured.current) return;
     const height = event.nativeEvent.layout.height;
     if (height > 0) {
-      topBarMeasured.current = true;
       onTopBarLayout(height);
     }
   };

@@ -70,15 +70,10 @@ const AnnouncementCard = ({
     deadlineAt,
   );
 
-  const showPrice =
-    priceType !== undefined ||
-    (typeof price === "number" && Number.isFinite(price));
-  const priceLabel = showPrice
-    ? formatAnnouncementPriceLineList(
-        priceType ?? "PENDING",
-        typeof price === "number" ? price : 0,
-      )
-    : null;
+  const priceLabel = formatAnnouncementPriceLineList(
+    priceType ?? "PENDING",
+    typeof price === "number" ? price : 0,
+  );
 
   const content = (
     <>

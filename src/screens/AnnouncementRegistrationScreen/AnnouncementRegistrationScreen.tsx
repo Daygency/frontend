@@ -34,13 +34,15 @@ import {
 import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
 import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
 import type {
-  AnnouncementPriceType,
   ApplicationConfig,
 } from "../../lib/apis/announcement/types";
 import {
-  PRICE_TYPE_DROPDOWN_ITEMS,
+  compensationModeFromPriceType,
+  isAnnouncementPayAmountInvalid,
   normalizeAnnouncementPriceType,
   parseAnnouncementPrice,
+  resolveAnnouncementPriceSubmit,
+  type AnnouncementCompensationMode,
 } from "../../lib/announcement/announcementPrice";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
@@ -264,7 +266,8 @@ const AnnouncementRegistrationScreen = () => {
   );
   const [recruitmentMajors, setRecruitmentMajors] = useState<string[]>([]);
   const [content, setContent] = useState("");
-  const [priceType, setPriceType] = useState<AnnouncementPriceType>("PENDING");
+  const [compensationMode, setCompensationMode] =
+    useState<AnnouncementCompensationMode>("none");
   const [priceInput, setPriceInput] = useState("");
 
   // 지원서 양식 구성
@@ -423,7 +426,8 @@ const AnnouncementRegistrationScreen = () => {
         }
         const pt = get("priceType") ?? get("price_type");
         if (pt != null && String(pt).trim()) {
-          setPriceType(normalizeAnnouncementPriceType(pt));
+          const normalized = normalizeAnnouncementPriceType(pt);
+          setCompensationMode(compensationModeFromPriceType(normalized));
         }
         const pr = d.price;
         if (typeof pr === "number" && Number.isFinite(pr)) {
@@ -562,13 +566,8 @@ const AnnouncementRegistrationScreen = () => {
       fieldRefs.current[field] = node;
     };
 
-  const isPriceInvalid = () => {
-    if (priceType !== "INCOME") return false;
-    const trimmed = priceInput.trim().replace(/,/g, "");
-    if (!trimmed) return true;
-    const n = parseInt(trimmed, 10);
-    return !Number.isFinite(n) || n < 0;
-  };
+  const isPriceInvalid = () =>
+    isAnnouncementPayAmountInvalid(compensationMode, priceInput);
 
   const getFirstInvalidField = (
     hasTypeError: boolean,
@@ -628,12 +627,10 @@ const AnnouncementRegistrationScreen = () => {
       return;
     }
 
-    let resolvedPrice = 0;
-    if (priceType === "INCOME") {
-      const trimmed = priceInput.trim().replace(/,/g, "");
-      const n = parseInt(trimmed, 10);
-      resolvedPrice = n;
-    }
+    const { priceType, price: resolvedPrice } = resolveAnnouncementPriceSubmit(
+      compensationMode,
+      priceInput,
+    );
 
     if (isSubmitting) return;
 
@@ -983,16 +980,31 @@ const AnnouncementRegistrationScreen = () => {
                   collapsable={false}
                   style={styles.formField}
                 >
-                  <Form title="금액 유형 · 금액" isRequired={false} hasError={err.price}>
-                    <FormDropdownInput
-                      placeholder="금액 유형을 선택하세요"
-                      data={PRICE_TYPE_DROPDOWN_ITEMS}
-                      value={priceType}
-                      onChange={(item) =>
-                        setPriceType(item.value as AnnouncementPriceType)
-                      }
-                    />
-                    {priceType === "INCOME" ? (
+                  <Form title="비용" isRequired={false} hasError={err.price}>
+                    <View style={styles.chipRow}>
+                      <SelectableTag
+                        label="선택안함"
+                        selected={compensationMode === "none"}
+                        onPress={() => {
+                          setCompensationMode("none");
+                          setPriceInput("");
+                        }}
+                      />
+                      <SelectableTag
+                        label="페이"
+                        selected={compensationMode === "pay"}
+                        onPress={() => setCompensationMode("pay")}
+                      />
+                      <SelectableTag
+                        label="비용협의"
+                        selected={compensationMode === "negotiable"}
+                        onPress={() => {
+                          setCompensationMode("negotiable");
+                          setPriceInput("");
+                        }}
+                      />
+                    </View>
+                    {compensationMode === "pay" ? (
                       <View style={{ marginTop: 12 }}>
                         <FormTextInput
                           placeholder="금액(원)을 입력하세요"

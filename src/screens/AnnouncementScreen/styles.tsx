@@ -36,8 +36,8 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     color: MAIN.DEFAULT,
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "400",
   },
   filterChipTextActive: {
     color: WHITE,
@@ -66,12 +66,12 @@ const styles = StyleSheet.create({
   },
   sortTabText: {
     color: MAIN.DEFAULT,
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "400",
   },
   sortTabTextActive: {
     color: WHITE,
-    fontWeight: "500",
+    fontWeight: "400",
   },
   scrollContentWrapper: {
     flex: 1,

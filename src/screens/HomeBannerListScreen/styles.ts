@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   },
   newBadge: {
     position: "absolute",
-    top: 8,
+    bottom: 8,
     left: 8,
   },
   pastBadge: {

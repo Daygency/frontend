@@ -106,8 +106,8 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     color: MAIN.DEFAULT,
-    fontSize: 14,
-    fontWeight: "500",
+    fontSize: 13,
+    fontWeight: "400",
   },
   filterChipTextActive: {
     color: WHITE,

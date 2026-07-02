@@ -1,5 +1,6 @@
 import {
   ActivityIndicator,
+  Linking,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -9,11 +10,18 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native";
+import {
+  CompositeNavigationProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from "@react-navigation/native";
 import { BottomTabNavigationProp } from "@react-navigation/bottom-tabs";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Animated from "react-native-reanimated";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
+import AnnouncementPickCarousel from "../../components/announcement/AnnouncementPickCarousel/AnnouncementPickCarousel";
 import { ContentRegistrationFabButton } from "../../components/ui/FabButton";
 import EmptyState, { emptyListContentStyle } from "../../components/ui/EmptyState";
 import AnnouncementFilterSheet from "./components/AnnouncementFilterSheet";
@@ -35,12 +43,17 @@ import {
   getMyAppliedAnnouncementList,
 } from "../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
+import {
+  getAnnouncementPicks,
+  type AnnouncementPickItem,
+} from "../../lib/apis/announcement-pick/announcementPickApi";
 import { useAuth } from "../../contexts/AuthContext";
 import { useRequireLogin } from "../../hooks/useRequireLogin";
 import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryApi";
 import { getMajors } from "../../lib/apis/announcement/majorApi";
 import {
   ANNOUNCEMENT_PRICE_FILTER_LABELS,
+  ANNOUNCEMENT_PRICE_FILTER_ALL,
   selectedPriceLabelsToApiParam,
 } from "../../lib/announcement/announcementPrice";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
@@ -61,9 +74,9 @@ type RootStackParamList = {
   AnnouncementRegistration: undefined;
 };
 
-type NavigationProp = BottomTabNavigationProp<
-  ContentTabParamList,
-  typeof ContentRoutes.ACTIVITY
+type NavigationProp = CompositeNavigationProp<
+  BottomTabNavigationProp<ContentTabParamList, typeof ContentRoutes.ACTIVITY>,
+  NativeStackNavigationProp<RootStackParamList>
 >;
 
 type AnnouncementFeedView = "전체" | "내가 올린 공고" | "지원한 공고";
@@ -271,6 +284,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     "기타",
   ];
   const [items, setItems] = useState<AnnouncementListItem[]>([]);
+  const [pickItems, setPickItems] = useState<AnnouncementPickItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
@@ -325,6 +339,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
 
       if (feedViewRequiresLogin(feedView) && !isLoggedIn) {
         setItems([]);
+        setPickItems([]);
         setNextCursor(null);
         setHasMore(false);
         setLoading(false);
@@ -345,13 +360,20 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           priceType,
           sort,
         };
-        const res =
+        const [res, picks] = await Promise.all([
           feedView === "내가 올린 공고"
-            ? await getMyAnnouncementList(params)
+            ? getMyAnnouncementList(params)
             : feedView === "지원한 공고"
-              ? await getMyAppliedAnnouncementList(params)
-              : await getAnnouncementList(params);
+              ? getMyAppliedAnnouncementList(params)
+              : getAnnouncementList(params),
+          !cursor && feedView === "전체"
+            ? getAnnouncementPicks()
+            : Promise.resolve<AnnouncementPickItem[] | null>(null),
+        ]);
         if (seq !== loadListSeqRef.current) return;
+        if (!cursor) {
+          setPickItems(feedView === "전체" ? (picks ?? []) : []);
+        }
         if (!res) {
           setItems([]);
           setNextCursor(null);
@@ -502,11 +524,22 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     },
     price: {
       options: [...ANNOUNCEMENT_PRICE_FILTER_LABELS],
-      selectedValues: selectedPriceTypes,
-      onToggle: (value) =>
-        setSelectedPriceTypes((prev) =>
-          prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
-        ),
+      selectedValues:
+        selectedPriceTypes.length === 0
+          ? [ANNOUNCEMENT_PRICE_FILTER_ALL]
+          : selectedPriceTypes,
+      onToggle: (value) => {
+        if (value === ANNOUNCEMENT_PRICE_FILTER_ALL) {
+          setSelectedPriceTypes([]);
+          return;
+        }
+        setSelectedPriceTypes((prev) => {
+          const next = prev.includes(value)
+            ? prev.filter((v) => v !== value)
+            : [...prev, value];
+          return next;
+        });
+      },
     },
   };
 
@@ -605,6 +638,18 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     </View>
   );
 
+  const pickSection =
+    feedView === "전체" && pickItems.length > 0 ? (
+      <View style={{ paddingBottom: 8 }}>
+        <AnnouncementPickCarousel
+          items={pickItems}
+          onPressItem={(item) => {
+            void Linking.openURL(item.linkUrl);
+          }}
+        />
+      </View>
+    ) : null;
+
   const listProps = {
     items,
     loading,
@@ -617,6 +662,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   if (hideTopBar) {
     return (
       <View style={styles.container}>
+        {pickSection}
         {filterBar}
         {filterSheet ? (
           <AnnouncementFilterSheet
@@ -639,7 +685,10 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     <View style={[styles.container, { paddingTop: top }]}>
       <AnnouncementScrollProvider
         topBar={
-          <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />
+          <View>
+            <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />
+            {pickSection}
+          </View>
         }
         filterBar={filterBar}
         onScrollForPagination={handlePaginationScroll}

@@ -1,7 +1,7 @@
 import { Platform, StyleSheet } from "react-native";
 import { BLACK, GRAY, RED, WHITE } from "../../../color";
 
-export const MAIN_HOME_TOP_BAR_TITLE_SIZE = 22;
+export const MAIN_HOME_TOP_BAR_TITLE_SIZE = 21;
 export const MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT = 28;
 
 const styles = StyleSheet.create({

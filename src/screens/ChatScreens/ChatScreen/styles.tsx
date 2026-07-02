@@ -80,13 +80,15 @@ const styles = StyleSheet.create({
     backgroundColor: MAIN.DEFAULT,
   },
   topTabText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "400",
     color: MAIN.DEFAULT,
+    lineHeight: 18,
+    includeFontPadding: false,
   },
   topTabTextSelected: {
     color: WHITE,
-    fontWeight: "500",
+    fontWeight: "400",
   },
   unreadBadge: {
     minWidth: 18,
