@@ -52,6 +52,14 @@ export async function createLike(dto: CreateLikeDto): Promise<LikeItem | null> {
     });
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
+      if (res.status === 409) {
+        return {
+          id: "",
+          likeType: dto.likeType,
+          targetId: dto.targetId,
+          alreadyLiked: true,
+        } as LikeItem;
+      }
       console.warn("[createLike] 실패:", res.status, errText);
       return null;
     }
@@ -75,6 +83,9 @@ export async function deleteLikeByTarget(
       method: "DELETE",
       headers,
     });
+    if (res.status === 404) {
+      return { success: true };
+    }
     return { success: res.ok };
   } catch (e) {
     console.warn("[deleteLikeByTarget] 에러:", e);

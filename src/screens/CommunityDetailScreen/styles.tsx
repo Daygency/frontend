@@ -1,9 +1,6 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, WHITE } from "../../color";
 
-const AVATAR_SIZE = 36;
-const REPLY_AVATAR_SIZE = 28;
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -106,146 +103,10 @@ const styles = StyleSheet.create({
     marginTop: 16,
     marginBottom: 4,
   },
-  avatarColumn: {
-    width: AVATAR_SIZE,
-    marginRight: 12,
-    alignItems: "center",
-  },
-  threadLine: {
-    flex: 1,
-    width: 2,
-    backgroundColor: GRAY.MEDIUM,
-    marginTop: 8,
-    marginBottom: 4,
-    borderRadius: 1,
-  },
-  commentsSection: {
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  commentBlock: {
-    flexDirection: "row",
-    alignItems: "stretch",
-    paddingVertical: 12,
-  },
-  commentContent: {
-    flex: 1,
-    minWidth: 0,
-  },
-  commentTopRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 8,
-  },
-  commentMetaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    marginBottom: 4,
-    flex: 1,
-    minWidth: 0,
-  },
-  commentAuthor: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: BLACK,
-  },
-  commentDate: {
-    fontSize: 14,
-    color: GRAY.DARK_2,
-  },
-  commentText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: BLACK,
-  },
-  commentStats: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 10,
-  },
-  commentCount: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: BLACK,
-    marginRight: 8,
-  },
-  replyActionText: {
-    fontSize: 14,
-    color: GRAY.DARK_2,
-    fontWeight: "500",
-  },
-  replyList: {
-    marginTop: 8,
-    gap: 12,
-  },
-  replyBlock: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 10,
-  },
-  replyAvatarColumn: {
-    width: REPLY_AVATAR_SIZE,
-    alignItems: "center",
-  },
-  replyBody: {
-    flex: 1,
-    minWidth: 0,
-  },
-  replyMetaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-    marginBottom: 4,
-  },
-  replyAuthor: {
-    fontSize: 14,
-    fontWeight: "700",
-    color: BLACK,
-  },
-  replyDate: {
-    fontSize: 13,
-    color: GRAY.DARK_2,
-  },
-  replyText: {
-    fontSize: 15,
-    lineHeight: 22,
-    color: BLACK,
-  },
-  replyStats: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    marginTop: 8,
-  },
-  replyCount: {
-    fontSize: 13,
-    fontWeight: "500",
-    color: BLACK,
-  },
   commentInputContainer: {
     backgroundColor: WHITE,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: GRAY.MEDIUM,
-  },
-  replyComposerInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 4,
-  },
-  replyComposerText: {
-    fontSize: 13,
-    color: GRAY.DARK_100,
-  },
-  replyComposerCancel: {
-    fontSize: 13,
-    color: BLACK,
-    fontWeight: "600",
   },
   navTitle: {
     fontSize: 16,
@@ -260,4 +121,3 @@ const styles = StyleSheet.create({
 });
 
 export default styles;
-export { AVATAR_SIZE, REPLY_AVATAR_SIZE };

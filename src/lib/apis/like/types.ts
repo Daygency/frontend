@@ -1,3 +1,29 @@
+export type LikeType = "NEWS" | "COMMUNITY" | "ANNOUNCEMENT" | "COMMENT";
+
+export type LikeItem = {
+  id: string;
+  createdAt?: string;
+  likeType: LikeType;
+  targetId: string;
+  user?: {
+    userId?: string;
+    [key: string]: unknown;
+  } | null;
+  [key: string]: unknown;
+};
+
+export type GetLikesParams = {
+  likeType: LikeType;
+  targetId: string;
+};
+
+export type CreateLikeDto = GetLikesParams;
+
+export type GetLikesResponse = {
+  count: number;
+  items: LikeItem[];
+};
+
 export type MyLikedCommunityItem = {
   likeId: string;
   likedAt: string;

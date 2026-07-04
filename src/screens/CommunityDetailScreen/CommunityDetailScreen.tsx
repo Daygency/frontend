@@ -17,15 +17,17 @@ import {
   commentInputBarPaddingBottom,
   useKeyboardHeight,
 } from "../../hooks/useKeyboardHeight";
-import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import { Ionicons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
 import CommentInputBar from "../../components/comments/CommentInputBar";
+import CommentReplyTargetBar from "../../components/comments/CommentReplyTargetBar";
 import CommentAuthorAvatar from "../../components/comments/CommentAuthorAvatar/CommentAuthorAvatar";
+import ThreadedCommentList from "../../components/comments/ThreadedCommentList";
 import ImageCarousel from "../../components/media/ImageCarousel";
-import styles, { AVATAR_SIZE, REPLY_AVATAR_SIZE } from "./styles";
+import styles from "./styles";
 import { getCommunityDetail, deleteCommunity } from "../../lib/apis/community/communityApi";
 import type { CommunityDetailResponse } from "../../lib/apis/community/types";
-import { BLACK, GRAY, RED } from "../../color";
+import { BLACK, RED } from "../../color";
 import {
   createComment,
   deleteComment,
@@ -96,6 +98,11 @@ type CommentItem = {
     isMine?: boolean;
     authorUserId?: string;
   }>;
+};
+
+type ReplyTarget = {
+  parentId: string;
+  author: string;
 };
 
 function formatTimeAgo(value?: string): string {
@@ -208,7 +215,7 @@ const CommunityDetailScreen = () => {
   const keyboardHeight = useKeyboardHeight();
   const [data, setData] = useState<CommunityDetailResponse | null>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
-  const [replyTarget, setReplyTarget] = useState<{ id: string; author: string } | null>(null);
+  const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const [editingComment, setEditingComment] = useState<{
     commentId: string;
     initialContent: string;
@@ -523,11 +530,16 @@ const CommunityDetailScreen = () => {
       await refreshComments();
       return;
     }
+    const replyContent = replyTarget
+      ? content.trim().startsWith(`@${replyTarget.author}`)
+        ? content
+        : `@${replyTarget.author} ${content}`
+      : content;
     const created = await createComment({
-      content,
+      content: replyContent,
       targetType: "COMMUNITY",
       targetId: communityId,
-      parentId: replyTarget?.id,
+      parentId: replyTarget?.parentId,
     });
     if (!created) {
       Alert.alert("알림", "댓글 작성에 실패했습니다.");
@@ -753,225 +765,15 @@ const CommunityDetailScreen = () => {
 
         <View style={styles.sectionDivider} />
 
-        <View style={styles.commentsSection}>
-          {displayedComments.map((comment, index) => {
-            const isLast =
-              index === displayedComments.length - 1 &&
-              !comment.replies?.length;
-            return (
-              <View key={comment.id} style={styles.commentBlock}>
-                <View style={styles.avatarColumn}>
-                  <Pressable
-                    onPress={() =>
-                      navigateToCommentAuthorProfile(
-                        comment.authorUserId,
-                        comment.author,
-                      )
-                    }
-                    disabled={!comment.authorUserId}
-                    hitSlop={8}
-                  >
-                    <CommentAuthorAvatar
-                      profileImgUrl={comment.profileImgUrl}
-                      size={AVATAR_SIZE}
-                    />
-                  </Pressable>
-                  {!isLast || (comment.replies?.length ?? 0) > 0 ? (
-                    <View style={styles.threadLine} />
-                  ) : null}
-                </View>
-
-                <View style={styles.commentContent}>
-                  <View style={styles.commentTopRow}>
-                    <View style={styles.commentMetaRow}>
-                      <Pressable
-                        onPress={() =>
-                          navigateToCommentAuthorProfile(
-                            comment.authorUserId,
-                            comment.author,
-                          )
-                        }
-                        disabled={!comment.authorUserId}
-                        hitSlop={8}
-                      >
-                        <Text style={styles.commentAuthor}>
-                          {comment.author}
-                        </Text>
-                      </Pressable>
-                      {!!comment.createdAt && (
-                        <Text style={styles.commentDate}>
-                          {formatTimeAgo(comment.createdAt)}
-                        </Text>
-                      )}
-                    </View>
-                    {!comment.isMine && comment.authorUserId ? (
-                      <ReportDotsDropdownMenu
-                        enabled
-                        onReport={() =>
-                          openReportComment(comment.id, comment.authorUserId)
-                        }
-                        variant="comment"
-                        disabledMessage="신고할 수 없습니다."
-                      />
-                    ) : comment.isMine ? (
-                      <Pressable
-                        hitSlop={8}
-                        onPress={() => openOwnCommentActions(comment)}
-                      >
-                        <MaterialCommunityIcons
-                          name="dots-vertical"
-                          size={18}
-                          color={GRAY.DARK_2}
-                        />
-                      </Pressable>
-                    ) : null}
-                  </View>
-
-                  <Text style={styles.commentText}>{comment.content}</Text>
-
-                  <View style={styles.commentStats}>
-                    <Pressable
-                      onPress={() =>
-                        handleToggleCommentLike(
-                          comment.id,
-                          Boolean(comment.isLiked),
-                        )
-                      }
-                      hitSlop={8}
-                    >
-                      <Ionicons
-                        name={comment.isLiked ? "heart" : "heart-outline"}
-                        size={20}
-                        color={comment.isLiked ? RED.DEFAULT : BLACK}
-                      />
-                    </Pressable>
-                    <Text style={styles.commentCount}>
-                      {comment.likeCount}
-                    </Text>
-                    <Pressable
-                      onPress={() =>
-                        setReplyTarget({
-                          id: comment.id,
-                          author: comment.author,
-                        })
-                      }
-                      hitSlop={8}
-                    >
-                      <Text style={styles.replyActionText}>답글</Text>
-                    </Pressable>
-                  </View>
-
-                  {!!comment.replies?.length && (
-                    <View style={styles.replyList}>
-                      {comment.replies.map((reply) => (
-                        <View key={reply.id} style={styles.replyBlock}>
-                          <View style={styles.replyAvatarColumn}>
-                            <Pressable
-                              onPress={() =>
-                                navigateToCommentAuthorProfile(
-                                  reply.authorUserId,
-                                  reply.author,
-                                )
-                              }
-                              disabled={!reply.authorUserId}
-                              hitSlop={8}
-                            >
-                              <CommentAuthorAvatar
-                                profileImgUrl={reply.profileImgUrl}
-                                size={REPLY_AVATAR_SIZE}
-                              />
-                            </Pressable>
-                          </View>
-                          <View style={styles.replyBody}>
-                            <View style={styles.replyMetaRow}>
-                              <View
-                                style={{
-                                  flexDirection: "row",
-                                  alignItems: "center",
-                                  gap: 8,
-                                  flex: 1,
-                                }}
-                              >
-                                <Pressable
-                                  onPress={() =>
-                                    navigateToCommentAuthorProfile(
-                                      reply.authorUserId,
-                                      reply.author,
-                                    )
-                                  }
-                                  disabled={!reply.authorUserId}
-                                  hitSlop={8}
-                                >
-                                  <Text style={styles.replyAuthor}>
-                                    {reply.author}
-                                  </Text>
-                                </Pressable>
-                                {!!reply.createdAt && (
-                                  <Text style={styles.replyDate}>
-                                    {formatTimeAgo(reply.createdAt)}
-                                  </Text>
-                                )}
-                              </View>
-                              {!reply.isMine && reply.authorUserId ? (
-                                <ReportDotsDropdownMenu
-                                  enabled
-                                  onReport={() =>
-                                    openReportComment(
-                                      reply.id,
-                                      reply.authorUserId,
-                                    )
-                                  }
-                                  variant="reply"
-                                  disabledMessage="신고할 수 없습니다."
-                                />
-                              ) : reply.isMine ? (
-                                <Pressable
-                                  hitSlop={8}
-                                  onPress={() => openOwnCommentActions(reply)}
-                                >
-                                  <MaterialCommunityIcons
-                                    name="dots-vertical"
-                                    size={16}
-                                    color={GRAY.DARK_2}
-                                  />
-                                </Pressable>
-                              ) : null}
-                            </View>
-                            <Text style={styles.replyText}>
-                              {reply.content}
-                            </Text>
-                            <View style={styles.replyStats}>
-                              <Pressable
-                                onPress={() =>
-                                  handleToggleCommentLike(
-                                    reply.id,
-                                    Boolean(reply.isLiked),
-                                  )
-                                }
-                                hitSlop={8}
-                              >
-                                <Ionicons
-                                  name={
-                                    reply.isLiked ? "heart" : "heart-outline"
-                                  }
-                                  size={18}
-                                  color={reply.isLiked ? RED.DEFAULT : BLACK}
-                                />
-                              </Pressable>
-                              <Text style={styles.replyCount}>
-                                {reply.likeCount ?? 0}
-                              </Text>
-                            </View>
-                          </View>
-                        </View>
-                      ))}
-                    </View>
-                  )}
-                </View>
-              </View>
-            );
-          })}
-        </View>
+        <ThreadedCommentList
+          comments={displayedComments}
+          formatTimeAgo={formatTimeAgo}
+          onPressAuthor={navigateToCommentAuthorProfile}
+          onToggleLike={handleToggleCommentLike}
+          onReply={(parentId, author) => setReplyTarget({ parentId, author })}
+          onReport={openReportComment}
+          onOpenOwnActions={openOwnCommentActions}
+        />
         </ScrollView>
 
         <View
@@ -981,14 +783,10 @@ const CommunityDetailScreen = () => {
           ]}
         >
           {!!replyTarget && (
-            <View style={styles.replyComposerInfo}>
-              <Text style={styles.replyComposerText}>
-                {replyTarget.author}님에게 답글 작성 중
-              </Text>
-              <Pressable hitSlop={8} onPress={() => setReplyTarget(null)}>
-                <Text style={styles.replyComposerCancel}>취소</Text>
-              </Pressable>
-            </View>
+            <CommentReplyTargetBar
+              author={replyTarget.author}
+              onCancel={() => setReplyTarget(null)}
+            />
           )}
           <CommentInputBar
             placeholder={

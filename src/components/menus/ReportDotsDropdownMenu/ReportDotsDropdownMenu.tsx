@@ -78,7 +78,7 @@ const ReportDotsDropdownMenu = ({
     ) : (
       <Ionicons
         name="ellipsis-vertical"
-        size={variant === "reply" ? 16 : 18}
+        size={18}
         color={MAIN.DEFAULT}
       />
     );
