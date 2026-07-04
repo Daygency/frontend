@@ -815,7 +815,31 @@ const MusicNewsDetailScreen = () => {
             ) : null}
 
             <View style={styles.body}>
-              <Text style={styles.title}>{news.title}</Text>
+              <View style={styles.titleRow}>
+                <Text style={styles.title}>{news.title}</Text>
+                <View style={styles.titleActions}>
+                  <View style={styles.titleActionItem}>
+                    <Pressable onPress={handleToggleLike} hitSlop={8}>
+                      <Ionicons
+                        name={liked ? "heart" : "heart-outline"}
+                        size={21}
+                        color={RED.DEFAULT}
+                      />
+                    </Pressable>
+                    <Text style={styles.titleActionCount}>{likeCount}</Text>
+                  </View>
+                  <View style={styles.titleActionItem}>
+                    <Pressable onPress={handleToggleScrap} hitSlop={8}>
+                      <Ionicons
+                        name={scraped ? "bookmark" : "bookmark-outline"}
+                        size={21}
+                        color={BLACK}
+                      />
+                    </Pressable>
+                    <Text style={styles.titleActionCount}>{scrapCount}</Text>
+                  </View>
+                </View>
+              </View>
 
               {hasPlace ? (
                 <View style={styles.sectionInlineRow}>
@@ -946,28 +970,8 @@ const MusicNewsDetailScreen = () => {
 
               <View style={styles.actionRow}>
                 <View style={styles.actionItem}>
-                  <Pressable onPress={handleToggleLike} hitSlop={8}>
-                    <Ionicons
-                      name={liked ? "heart" : "heart-outline"}
-                      size={21}
-                      color={RED.DEFAULT}
-                    />
-                  </Pressable>
-                  <Text style={styles.actionCount}>{likeCount}</Text>
-                </View>
-                <View style={styles.actionItem}>
                   <Ionicons name="chatbubble-outline" size={19} color={BLACK} />
                   <Text style={styles.actionCount}>{commentCount}</Text>
-                </View>
-                <View style={styles.actionItem}>
-                  <Pressable onPress={handleToggleScrap} hitSlop={8}>
-                    <Ionicons
-                      name={scraped ? "bookmark" : "bookmark-outline"}
-                      size={21}
-                      color={BLACK}
-                    />
-                  </Pressable>
-                  <Text style={styles.actionCount}>{scrapCount}</Text>
                 </View>
               </View>
             </View>

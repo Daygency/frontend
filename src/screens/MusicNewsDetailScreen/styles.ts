@@ -47,12 +47,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 20,
   },
+  titleRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 12,
+    marginBottom: 16,
+  },
   title: {
+    flex: 1,
     fontSize: 22,
     fontWeight: "800",
     color: BLACK,
     lineHeight: 30,
-    marginBottom: 16,
+    minWidth: 0,
+  },
+  titleActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingTop: 3,
+    flexShrink: 0,
+  },
+  titleActionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  titleActionCount: {
+    fontSize: 14,
+    color: BLACK,
+    fontWeight: "600",
   },
   sectionInlineRow: {
     flexDirection: "row",
