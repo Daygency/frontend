@@ -35,6 +35,10 @@ import {
 } from "../../lib/profile/profileEntryDates";
 import type { ProfileUpdateRequestDto } from "../../lib/apis/portfolio/dto/update-profile.dto";
 import { isDupActivityName } from "../../lib/apis/portfolio/IsDupActivityName";
+import {
+  ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
+  isActivityNameEnglishOnly,
+} from "../../lib/profile/activityNameValidation";
 import { getMajors, type Major } from "../../lib/apis/announcement/majorApi";
 import { resolveProfileMajorUuid } from "../../lib/profile/resolveProfileMajorUuid";
 import { MAJOR_OPTIONS } from "../../constants/majors";
@@ -576,6 +580,14 @@ const ProfileEditScreen = () => {
 
     const trimmedActivityName = activityName.trim();
     const trimmedOriginalActivityName = originalActivityName.trim();
+
+    if (
+      trimmedActivityName &&
+      !isActivityNameEnglishOnly(trimmedActivityName)
+    ) {
+      Alert.alert("활동 아이디 형식", ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE);
+      return;
+    }
 
     // 활동 아이디를 변경했을 때만 중복 검사
     if (

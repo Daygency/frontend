@@ -3,6 +3,11 @@ import { Keyboard, View, Text, TextInput, Pressable, findNodeHandle, Switch } fr
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
+import {
+  ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
+  isActivityNameEnglishOnly,
+  sanitizeActivityName,
+} from "../../../lib/profile/activityNameValidation";
 import styles from "../styles";
 import { MAJOR_OPTIONS } from "../../../constants/majors";
 import OneLineTextInput from "../../../components/forms/OneLineTextInput";
@@ -86,6 +91,11 @@ const TopIntroductionTab = ({
     if (!value) {
       setIsActivityNameDuplicate(null);
       setActivityNameMessage("");
+      return;
+    }
+    if (!isActivityNameEnglishOnly(value)) {
+      setIsActivityNameDuplicate(null);
+      setActivityNameMessage(ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE);
       return;
     }
 
@@ -176,9 +186,14 @@ const TopIntroductionTab = ({
             placeholder="활동 아이디를 입력하세요"
             value={activityName}
             onChangeText={(text) => {
-              setActivityName(text);
+              const nextActivityName = sanitizeActivityName(text);
+              setActivityName(nextActivityName);
               setIsActivityNameDuplicate(null);
-              setActivityNameMessage("");
+              setActivityNameMessage(
+                text === nextActivityName
+                  ? ""
+                  : ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
+              );
             }}
             placeholderTextColor={GRAY.DARK_2}
             autoCapitalize="none"
@@ -202,6 +217,7 @@ const TopIntroductionTab = ({
             disabled={
               isCheckingActivityName ||
               !activityName.trim() ||
+              !isActivityNameEnglishOnly(activityName) ||
               activityName.trim() === originalActivityName.trim()
             }
           >

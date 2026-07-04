@@ -19,6 +19,11 @@ import SignupFlowProgress from "../../../components/layout/SignupFlowProgress";
 import { useAuth } from "../../../contexts/AuthContext";
 import { MAIN, GRAY, WHITE } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
+import {
+  ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
+  isActivityNameEnglishOnly,
+  sanitizeActivityName,
+} from "../../../lib/profile/activityNameValidation";
 import { styles, roleSelectionStyles } from "./styles";
 
 export type UserRole = "artist" | "planner";
@@ -56,6 +61,7 @@ const SignupFlowScreen = () => {
     termsChecked &&
     privacyChecked &&
     activityName.trim().length > 0 &&
+    isActivityNameEnglishOnly(activityName) &&
     isActivityNameVerified &&
     isActivityNameDuplicate === false;
 
@@ -82,6 +88,12 @@ const SignupFlowScreen = () => {
       setIsActivityNameVerified(false);
       return;
     }
+    if (!isActivityNameEnglishOnly(value)) {
+      setIsActivityNameDuplicate(null);
+      setActivityNameMessage(ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE);
+      setIsActivityNameVerified(false);
+      return;
+    }
 
     try {
       setIsCheckingActivityName(true);
@@ -105,6 +117,10 @@ const SignupFlowScreen = () => {
   const handleComplete = async () => {
     if (!allRequiredChecked) return;
     try {
+      if (!isActivityNameEnglishOnly(activityName)) {
+        Alert.alert("활동 아이디 형식", ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE);
+        return;
+      }
       if (activityName.trim()) {
         const isDup = await isDupActivityName(activityName.trim());
         if (isDup) {
@@ -323,9 +339,14 @@ const SignupFlowScreen = () => {
                     ]}
                     value={activityName}
                     onChangeText={(text) => {
-                      setActivityName(text);
+                      const nextActivityName = sanitizeActivityName(text);
+                      setActivityName(nextActivityName);
                       setIsActivityNameDuplicate(null);
-                      setActivityNameMessage("");
+                      setActivityNameMessage(
+                        text === nextActivityName
+                          ? ""
+                          : ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
+                      );
                       setIsActivityNameVerified(false);
                     }}
                     placeholder="아이디를 입력하세요."
@@ -346,7 +367,11 @@ const SignupFlowScreen = () => {
                       backgroundColor: GRAY.DEFAULT_1,
                     }}
                     onPress={handleCheckActivityId}
-                    disabled={isCheckingActivityName}
+                    disabled={
+                      isCheckingActivityName ||
+                      !activityName.trim() ||
+                      !isActivityNameEnglishOnly(activityName)
+                    }
                   >
                     <Text
                       style={{
