@@ -96,6 +96,36 @@ function sortTabToApiParam(tab: AnnouncementSortOption): "imminent" | "created" 
   return tab === "임박순" ? "imminent" : "created";
 }
 
+function formatRelativeTime(createdAt?: string): string {
+  if (!createdAt) return "";
+
+  const created = new Date(createdAt);
+  if (Number.isNaN(created.getTime())) return "";
+
+  const diffMs = Date.now() - created.getTime();
+  if (diffMs < 60 * 1000) return "방금 전";
+
+  const minuteMs = 60 * 1000;
+  const hourMs = minuteMs * 60;
+  const dayMs = hourMs * 24;
+  const monthMs = dayMs * 30;
+  const yearMs = dayMs * 365;
+
+  if (diffMs < hourMs) {
+    return `${Math.floor(diffMs / minuteMs)}분 전`;
+  }
+  if (diffMs < dayMs) {
+    return `${Math.floor(diffMs / hourMs)}시간 전`;
+  }
+  if (diffMs < monthMs) {
+    return `${Math.floor(diffMs / dayMs)}일 전`;
+  }
+  if (diffMs < yearMs) {
+    return `${Math.floor(diffMs / monthMs)}달 전`;
+  }
+  return `${Math.floor(diffMs / yearMs)}년 전`;
+}
+
 interface AnnouncementScreenProps {
   hideTopBar?: boolean;
 }
@@ -145,6 +175,7 @@ function AnnouncementListContent({
             address={item.address}
             authorName={resolveAnnouncementAuthorLabel(item.user)}
             profileImgUrl={item.user?.profileImgUrl}
+            relativeTimeText={formatRelativeTime(item.createdAt)}
             showNew={isContentNew(item.createdAt)}
             onPress={() => onPressItem(item)}
           />

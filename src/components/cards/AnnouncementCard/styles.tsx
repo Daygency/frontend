@@ -57,6 +57,13 @@ export default StyleSheet.create({
     color: BLACK,
     fontWeight: "600",
   },
+  relativeTimeText: {
+    flexShrink: 0,
+    fontSize: 12,
+    lineHeight: 18,
+    color: GRAY.DARK_2,
+    fontWeight: "400",
+  },
   footerSection: {
     backgroundColor: GRAY.DEFAULT_1,
     paddingHorizontal: 15,

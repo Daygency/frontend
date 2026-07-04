@@ -32,6 +32,7 @@ interface AnnouncementCardProps {
   authorName?: string;
   /** 작성자 프로필 이미지 */
   profileImgUrl?: string | null;
+  relativeTimeText?: string;
   showNew?: boolean;
   onPress?: () => void;
 }
@@ -49,6 +50,7 @@ const AnnouncementCard = ({
   address,
   authorName = "작성자",
   profileImgUrl,
+  relativeTimeText,
   onPress,
 }: AnnouncementCardProps) => {
   const effectiveDaysLeft = effectiveAnnouncementDaysLeft(
@@ -106,6 +108,11 @@ const AnnouncementCard = ({
           <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
             {title}
           </Text>
+          {relativeTimeText ? (
+            <Text style={styles.relativeTimeText} numberOfLines={1}>
+              {relativeTimeText}
+            </Text>
+          ) : null}
         </View>
       </View>
 
