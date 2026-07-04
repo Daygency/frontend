@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { View, Text, StyleSheet, Pressable, Image } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Pressable,
+  Image,
+  type GestureResponderEvent,
+} from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BLACK, GRAY } from "../../../color";
 import CommentAuthorAvatar from "../../../components/comments/CommentAuthorAvatar/CommentAuthorAvatar";
@@ -19,6 +26,7 @@ type CommunityCardProps = {
   thumbnailUrl?: string;
   showNew?: boolean;
   onPress?: () => void;
+  onPressAuthor?: () => void;
 };
 
 const CommunityCard = ({
@@ -32,6 +40,7 @@ const CommunityCard = ({
   profileImageUrl,
   thumbnailUrl,
   onPress,
+  onPressAuthor,
 }: CommunityCardProps) => {
   const titleText = title.trim();
   const contentText = contentPreview.trim();
@@ -41,15 +50,25 @@ const CommunityCard = ({
   const showMedia = Boolean(thumbnailUrl?.trim());
   const [textBlockHeight, setTextBlockHeight] = useState(0);
   const thumbSize = textBlockHeight > 0 ? textBlockHeight : 0;
+  const handlePressAuthor = (event: GestureResponderEvent) => {
+    event.stopPropagation();
+    onPressAuthor?.();
+  };
 
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.row}>
-        <CommentAuthorAvatar
-          profileImgUrl={profileImageUrl}
-          size={40}
-          style={styles.avatar}
-        />
+        <Pressable
+          onPress={handlePressAuthor}
+          disabled={!onPressAuthor}
+          hitSlop={8}
+        >
+          <CommentAuthorAvatar
+            profileImgUrl={profileImageUrl}
+            size={40}
+            style={styles.avatar}
+          />
+        </Pressable>
 
         <View style={[styles.body, showMedia && styles.bodyWithThumb]}>
           <View
@@ -60,9 +79,16 @@ const CommunityCard = ({
             }}
           >
             <View style={styles.headerRow}>
-              <Text style={styles.username} numberOfLines={1}>
-                {author}
-              </Text>
+              <Pressable
+                onPress={handlePressAuthor}
+                disabled={!onPressAuthor}
+                hitSlop={8}
+                style={styles.usernamePressable}
+              >
+                <Text style={styles.username} numberOfLines={1}>
+                  {author}
+                </Text>
+              </Pressable>
               {!!date && (
                 <Text style={styles.timestamp} numberOfLines={1}>
                   {date}
@@ -159,10 +185,13 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   username: {
-    flexShrink: 1,
     fontSize: 12,
     fontWeight: "400",
     color: GRAY.DARK_2,
+  },
+  usernamePressable: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   timestamp: {
     fontSize: 12,

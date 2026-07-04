@@ -18,10 +18,11 @@ import EmptyState, {
 } from "../../../components/ui/EmptyState";
 import {
   pickCommunityAuthor,
+  pickCommunityAuthorUserId,
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
 import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerformanceOpenLabel";
-import { RootRoutes } from "../../../navigations/routes";
+import { ContentRoutes, RootRoutes } from "../../../navigations/routes";
 import { getAnnouncementList } from "../../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../../lib/apis/announcement/types";
 import { parseAnnouncementDaysLeft } from "../../../lib/announcement/parseAnnouncementDaysLeft";
@@ -40,6 +41,7 @@ import {
 } from "../../../lib/media/listThumbnailUrl";
 import { MAIN } from "../../../color";
 import styles from "../sceneStyles";
+import { useAuth } from "../../../contexts/AuthContext";
 
 type SceneProps = {
   query: string;
@@ -57,6 +59,28 @@ function formatCommunityDate(iso?: string): string {
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, "0")}.${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function navigateToCommunityAuthorProfile(
+  navigation: any,
+  myUserId: string,
+  authorUserId?: string,
+  activityName?: string,
+) {
+  const uid = authorUserId?.trim();
+  if (!uid) return;
+
+  if (myUserId && uid.toLowerCase() === myUserId.toLowerCase()) {
+    navigation.navigate(RootRoutes.CONTENT_TAB, {
+      screen: ContentRoutes.LOUNGE,
+    });
+    return;
+  }
+
+  navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+    userId: uid,
+    activityName: activityName?.trim() ?? "",
+  });
 }
 
 export function SearchAnnouncementScene({ query }: SceneProps) {
@@ -296,6 +320,8 @@ export function SearchNewsScene({ query }: SceneProps) {
 
 export function SearchCommunityScene({ query }: SceneProps) {
   const navigation = useNavigation<any>();
+  const { user } = useAuth();
+  const myUserId = user?.socialId?.trim() ?? "";
   const [items, setItems] = useState<CommunityListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -349,25 +375,41 @@ export function SearchCommunityScene({ query }: SceneProps) {
         items.length === 0,
         styles.listContent,
       )}
-      renderItem={({ item }) => (
-        <View style={styles.cardPad}>
-          <CommunityCard
-            title={item.title}
-            contentPreview={item.content}
-            author={pickCommunityAuthor(item)}
-            profileImageUrl={pickCommunityProfileImgUrl(item)}
-            date={formatCommunityDate(item.createdAt)}
-            likes={item.likeCount ?? 0}
-            comments={item.commentCount ?? 0}
-            thumbnailUrl={pickCommunityListThumbnailUrl(item)}
-            onPress={() =>
-              navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
-                communityId: item.communityId,
-              })
-            }
-          />
-        </View>
-      )}
+      renderItem={({ item }) => {
+        const author = pickCommunityAuthor(item);
+        const authorUserId = pickCommunityAuthorUserId(item);
+
+        return (
+          <View style={styles.cardPad}>
+            <CommunityCard
+              title={item.title}
+              contentPreview={item.content}
+              author={author}
+              profileImageUrl={pickCommunityProfileImgUrl(item)}
+              date={formatCommunityDate(item.createdAt)}
+              likes={item.likeCount ?? 0}
+              comments={item.commentCount ?? 0}
+              thumbnailUrl={pickCommunityListThumbnailUrl(item)}
+              onPress={() =>
+                navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
+                  communityId: item.communityId,
+                })
+              }
+              onPressAuthor={
+                authorUserId
+                  ? () =>
+                      navigateToCommunityAuthorProfile(
+                        navigation,
+                        myUserId,
+                        authorUserId,
+                        author,
+                      )
+                  : undefined
+              }
+            />
+          </View>
+        );
+      }}
     />
   );
 }
@@ -488,6 +530,8 @@ const ALL_PREVIEW_LIMIT = 3;
 
 export function SearchAllScene({ query }: SceneProps) {
   const navigation = useNavigation<any>();
+  const { user } = useAuth();
+  const myUserId = user?.socialId?.trim() ?? "";
   const [loading, setLoading] = useState(true);
   const [announcements, setAnnouncements] = useState<AnnouncementListItem[]>([]);
   const [news, setNews] = useState<NewsListItem[]>([]);
@@ -610,25 +654,41 @@ export function SearchAllScene({ query }: SceneProps) {
       {community.length > 0 ? (
         <View style={styles.allSection}>
           <Text style={styles.allSectionTitle}>커뮤니티</Text>
-          {community.map((item) => (
-            <View key={item.communityId} style={styles.cardPad}>
-              <CommunityCard
-                title={item.title}
-                contentPreview={item.content}
-                author={pickCommunityAuthor(item)}
-                profileImageUrl={pickCommunityProfileImgUrl(item)}
-                date={formatCommunityDate(item.createdAt)}
-                likes={item.likeCount ?? 0}
-                comments={item.commentCount ?? 0}
-                thumbnailUrl={pickCommunityListThumbnailUrl(item)}
-                onPress={() =>
-                  navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
-                    communityId: item.communityId,
-                  })
-                }
-              />
-            </View>
-          ))}
+          {community.map((item) => {
+            const author = pickCommunityAuthor(item);
+            const authorUserId = pickCommunityAuthorUserId(item);
+
+            return (
+              <View key={item.communityId} style={styles.cardPad}>
+                <CommunityCard
+                  title={item.title}
+                  contentPreview={item.content}
+                  author={author}
+                  profileImageUrl={pickCommunityProfileImgUrl(item)}
+                  date={formatCommunityDate(item.createdAt)}
+                  likes={item.likeCount ?? 0}
+                  comments={item.commentCount ?? 0}
+                  thumbnailUrl={pickCommunityListThumbnailUrl(item)}
+                  onPress={() =>
+                    navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
+                      communityId: item.communityId,
+                    })
+                  }
+                  onPressAuthor={
+                    authorUserId
+                      ? () =>
+                          navigateToCommunityAuthorProfile(
+                            navigation,
+                            myUserId,
+                            authorUserId,
+                            author,
+                          )
+                      : undefined
+                  }
+                />
+              </View>
+            );
+          })}
         </View>
       ) : null}
 

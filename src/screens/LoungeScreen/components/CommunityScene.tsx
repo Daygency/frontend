@@ -12,16 +12,18 @@ import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
 import type { LoungeCommunityTagOption } from "./LoungeCommunityTagRow";
-import { RootRoutes } from "../../../navigations/routes";
+import { ContentRoutes, RootRoutes } from "../../../navigations/routes";
 import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
 import type { CommunityCategory, CommunityListItem } from "../../../lib/apis/community/types";
 import { pickCommunityListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
 import {
   pickCommunityAuthor,
+  pickCommunityAuthorUserId,
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
 import { GRAY, MAIN } from "../../../color";
 import { useLoungeScroll } from "../LoungeScrollContext";
+import { useAuth } from "../../../contexts/AuthContext";
 
 type PostTag = Exclude<LoungeCommunityTagOption, "전체">;
 
@@ -42,6 +44,8 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
   const [items, setItems] = useState<CommunityListItem[]>([]);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<any>();
+  const { user } = useAuth();
+  const myUserId = user?.socialId?.trim() ?? "";
 
   const filteredPosts = useMemo(() => {
     const safeItems = Array.isArray(items) ? items : [];
@@ -128,14 +132,36 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
     void loadCommunities();
   }, [loadCommunities]);
 
+  const navigateToAuthorProfile = useCallback(
+    (authorUserId?: string, activityName?: string) => {
+      const uid = authorUserId?.trim();
+      if (!uid) return;
+
+      if (myUserId && uid.toLowerCase() === myUserId.toLowerCase()) {
+        navigation.navigate(RootRoutes.CONTENT_TAB, {
+          screen: ContentRoutes.LOUNGE,
+        });
+        return;
+      }
+
+      navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+        userId: uid,
+        activityName: activityName?.trim() ?? "",
+      });
+    },
+    [myUserId, navigation],
+  );
+
   const renderItem = ({ item }: { item: CommunityListItem }) => {
     const relativeDate = formatRelativeTime(item.createdAt);
+    const author = pickCommunityAuthor(item);
+    const authorUserId = pickCommunityAuthorUserId(item);
 
     return (
       <CommunityCard
         title={item.title}
         contentPreview={item.content ?? ""}
-        author={pickCommunityAuthor(item)}
+        author={author}
         profileImageUrl={pickCommunityProfileImgUrl(item)}
         date={relativeDate}
         likes={item.likeCount ?? 0}
@@ -145,6 +171,11 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
           navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
             communityId: item.communityId,
           })
+        }
+        onPressAuthor={
+          authorUserId
+            ? () => navigateToAuthorProfile(authorUserId, author)
+            : undefined
         }
       />
     );

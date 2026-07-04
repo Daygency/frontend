@@ -14,6 +14,26 @@ export function pickCommunityProfileImgUrl(
   return pickProfileImageUrlDeep(item.user);
 }
 
+export function pickCommunityAuthorUserId(
+  item: { user?: unknown } | null | undefined,
+): string | undefined {
+  const user = item?.user;
+  if (!user || typeof user !== "object") return undefined;
+  const u = user as Record<string, unknown>;
+  const id = String(
+    u.userId ??
+      u.user_id ??
+      u.socialId ??
+      u.social_id ??
+      u.id ??
+      u.uuid ??
+      u.authorId ??
+      u.author_id ??
+      "",
+  ).trim();
+  return id || undefined;
+}
+
 export function pickAuthorFromUser(
   user: Record<string, unknown> | null | undefined,
 ): string {

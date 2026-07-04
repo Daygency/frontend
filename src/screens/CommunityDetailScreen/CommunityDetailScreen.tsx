@@ -667,12 +667,28 @@ const CommunityDetailScreen = () => {
           )}
 
           <View style={styles.authorMetaRow}>
-            <CommentAuthorAvatar
-              profileImgUrl={postProfileImg}
-              size={40}
-            />
+            <Pressable
+              onPress={() =>
+                navigateToCommentAuthorProfile(authorUserId, postAuthor)
+              }
+              disabled={!authorUserId}
+              hitSlop={8}
+            >
+              <CommentAuthorAvatar
+                profileImgUrl={postProfileImg}
+                size={40}
+              />
+            </Pressable>
             <View style={styles.authorMetaText}>
-              <Text style={styles.authorName}>{postAuthor}</Text>
+              <Pressable
+                onPress={() =>
+                  navigateToCommentAuthorProfile(authorUserId, postAuthor)
+                }
+                disabled={!authorUserId}
+                hitSlop={8}
+              >
+                <Text style={styles.authorName}>{postAuthor}</Text>
+              </Pressable>
               <Text style={styles.postDate}>
                 {formatPostDate(data.createdAt)}
               </Text>
