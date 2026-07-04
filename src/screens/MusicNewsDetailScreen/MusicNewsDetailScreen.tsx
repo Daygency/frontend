@@ -175,7 +175,7 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     imageUrl: imageUrls[0],
     imageUrls,
     likes: 0,
-    comments: 0,
+    comments: Number((res as any)?.commentCount ?? (res as any)?.comment_count ?? 0),
     commentsData: (res as any)?.comments,
   };
 }
@@ -281,6 +281,7 @@ const MusicNewsDetailScreen = () => {
     newsFromParams ?? null,
   );
   const [comments, setComments] = useState<CommentItem[]>([]);
+  const [commentTotalCount, setCommentTotalCount] = useState<number | null>(null);
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const [editingComment, setEditingComment] = useState<{
     commentId: string;
@@ -365,7 +366,7 @@ const MusicNewsDetailScreen = () => {
   const targetNewsId = newsId ?? news?.id;
   const myUserId = user?.socialId?.trim() ?? "";
   const commentCount = Number(
-    (news as any)?.commentCount ?? news?.comments ?? comments.length,
+    commentTotalCount ?? (news as any)?.commentCount ?? news?.comments ?? 0,
   );
 
   useEffect(() => {
@@ -375,7 +376,10 @@ const MusicNewsDetailScreen = () => {
         targetType: "NEWS",
         targetId: targetNewsId,
       });
-      if (res) setComments(buildCommentTree(res, myUserId));
+      if (res) {
+        setComments(buildCommentTree(res, myUserId));
+        setCommentTotalCount(res.length);
+      }
     })();
   }, [targetNewsId, myUserId]);
 
@@ -385,7 +389,10 @@ const MusicNewsDetailScreen = () => {
       targetType: "NEWS",
       targetId: targetNewsId,
     });
-    if (res) setComments(buildCommentTree(res, myUserId));
+    if (res) {
+      setComments(buildCommentTree(res, myUserId));
+      setCommentTotalCount(res.length);
+    }
   }, [targetNewsId, myUserId]);
 
   useEffect(() => {

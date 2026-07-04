@@ -26,7 +26,12 @@ import {
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../color";
 import styles from "./styles";
-import { getChatMessages, sendChatFileMessage } from "../../../lib/apis/chat/chatApi";
+import {
+  getChatMessages,
+  sendChatFileMessage,
+  sendChatFilesMessage,
+} from "../../../lib/apis/chat/chatApi";
+import type { ChatFileItem } from "../../../lib/apis/chat/types";
 import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
 import { findMessageMatchIndices } from "../../../lib/chat/chatSearch";
 import { createChatSocket } from "../../../lib/chat/createChatSocket";
@@ -34,6 +39,10 @@ import UserProfileAvatar from "../../../components/ui/UserProfileAvatar";
 import HighlightText from "../../../components/ui/HighlightText";
 import { useImageViewer } from "../../../contexts/ImageViewerContext";
 import type { Socket } from "socket.io-client";
+import {
+  cacheChatFile,
+  openChatCachedFile,
+} from "../../../lib/chat/chatFileCache";
 
 export type ChatRoomParams = {
   /** 백엔드 채팅방 UUID */
@@ -55,21 +64,146 @@ type MessageItem = {
   fileUrl?: string | null;
   fileName?: string | null;
   fileMime?: string | null;
+  fileItems?: ChatFileItem[] | null;
 };
 
 type WsMessagePayload = {
   id?: string;
   chatRoomId?: string;
+  chat_room_id?: string;
   userId?: string;
+  user_id?: string;
   content?: string | null;
   fileUrl?: string | null;
+  file_url?: string | null;
   fileName?: string | null;
+  file_name?: string | null;
+  originalName?: string | null;
+  original_name?: string | null;
   fileMime?: string | null;
+  file_mime?: string | null;
+  fileItems?: unknown;
+  file_items?: unknown;
   createdAt?: string;
+  created_at?: string;
 };
 
 const isImageMime = (mime?: string | null) =>
   Boolean(mime?.startsWith("image/"));
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+
+const pickRawString = (
+  raw: Record<string, unknown>,
+  camelKey: string,
+  snakeKey: string,
+) => {
+  const camelValue = raw[camelKey];
+  if (typeof camelValue === "string") return camelValue;
+  const snakeValue = raw[snakeKey];
+  return typeof snakeValue === "string" ? snakeValue : null;
+};
+
+const PREVIEWABLE_DOCUMENT_EXTENSIONS = [
+  ".pdf",
+  ".ppt",
+  ".pptx",
+  ".doc",
+  ".docx",
+  ".xls",
+  ".xlsx",
+];
+
+const PREVIEWABLE_DOCUMENT_MIME_KEYWORDS = [
+  "pdf",
+  "powerpoint",
+  "presentation",
+  "msword",
+  "wordprocessingml",
+  "excel",
+  "spreadsheetml",
+];
+
+const isPreviewableDocumentFile = (
+  fileName?: string | null,
+  mime?: string | null,
+  url?: string | null,
+) => {
+  const normalizedMime = mime?.toLowerCase() ?? "";
+  if (
+    PREVIEWABLE_DOCUMENT_MIME_KEYWORDS.some((keyword) =>
+      normalizedMime.includes(keyword),
+    )
+  ) {
+    return true;
+  }
+  const name = fileName?.toLowerCase() ?? "";
+  if (PREVIEWABLE_DOCUMENT_EXTENSIONS.some((ext) => name.endsWith(ext))) {
+    return true;
+  }
+  const cleanUrl = url?.split("?")[0]?.split("#")[0]?.toLowerCase() ?? "";
+  return PREVIEWABLE_DOCUMENT_EXTENSIONS.some((ext) => cleanUrl.endsWith(ext));
+};
+
+const normalizeFileName = (value: string) =>
+  typeof value.normalize === "function" ? value.normalize("NFC") : value;
+
+const decodeFileName = (value: string) => {
+  let decoded = value;
+  for (let i = 0; i < 5; i += 1) {
+    try {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) break;
+      decoded = next;
+    } catch {
+      break;
+    }
+  }
+
+  const withoutQuery = decoded.split("?")[0]?.split("#")[0] ?? decoded;
+  const fileName =
+    withoutQuery.split(/[\\/]/).filter(Boolean).pop() ?? withoutQuery;
+  return normalizeFileName(fileName).trim();
+};
+
+const cleanFileName = (value?: string | null) => {
+  const cleaned = value?.replace(/^\[파일\]\s*/, "").trim();
+  return cleaned ? decodeFileName(cleaned) : null;
+};
+
+const fileNameFromUrl = (value?: string | null) => {
+  if (!value?.trim()) return null;
+  const withoutQuery = value.split("?")[0]?.split("#")[0] ?? "";
+  const lastSegment = withoutQuery.split("/").filter(Boolean).pop();
+  if (!lastSegment) return null;
+  return decodeFileName(lastSegment);
+};
+
+const normalizeMessageFileItems = (value: unknown): ChatFileItem[] | null => {
+  if (!Array.isArray(value)) return null;
+  const items = value
+    .map((item) => {
+      const raw = asRecord(item);
+      const fileUrl = pickRawString(raw, "fileUrl", "file_url");
+      if (!fileUrl) return null;
+      const fileName =
+        cleanFileName(pickRawString(raw, "fileName", "file_name")) ??
+        cleanFileName(pickRawString(raw, "originalName", "original_name")) ??
+        fileNameFromUrl(fileUrl) ??
+        "파일";
+      const fileMime = pickRawString(raw, "fileMime", "file_mime");
+      return { fileUrl, fileName, fileMime };
+    })
+    .filter(Boolean) as ChatFileItem[];
+  return items.length > 0 ? items : null;
+};
+
+const pickMessageFileName = (message: Pick<MessageItem, "text" | "fileUrl" | "fileName">) =>
+  cleanFileName(message.fileName) ??
+  cleanFileName(message.text) ??
+  fileNameFromUrl(message.fileUrl) ??
+  "파일";
 
 const mapToMessageItem = (
   m: WsMessagePayload,
@@ -77,17 +211,29 @@ const mapToMessageItem = (
   peerUserId: string,
 ): MessageItem | null => {
   const id = String(m.id ?? "");
-  const createdAt = m.createdAt;
+  const createdAt = m.createdAt ?? m.created_at;
   if (!id || !createdAt) return null;
-  const uid = String(m.userId ?? "");
+  const uid = String(m.userId ?? m.user_id ?? "");
+  const fileItems = normalizeMessageFileItems(m.fileItems ?? m.file_items);
+  const firstFileItem = fileItems?.[0] ?? null;
+  const fileUrl = m.fileUrl ?? m.file_url ?? firstFileItem?.fileUrl ?? null;
+  const fileName =
+    cleanFileName(m.fileName) ??
+    cleanFileName(m.file_name) ??
+    cleanFileName(m.originalName) ??
+    cleanFileName(m.original_name) ??
+    firstFileItem?.fileName ??
+    fileNameFromUrl(fileUrl);
+  const fileMime = m.fileMime ?? m.file_mime ?? firstFileItem?.fileMime ?? null;
   return {
     id,
     text: m.content ?? "",
     isFromMe: myUserId ? uid === myUserId : uid !== String(peerUserId),
     timestamp: formatTime(new Date(createdAt)),
-    fileUrl: m.fileUrl ?? null,
-    fileName: m.fileName ?? null,
-    fileMime: m.fileMime ?? null,
+    fileUrl,
+    fileName,
+    fileMime,
+    fileItems,
   };
 };
 
@@ -215,7 +361,20 @@ const ChatRoomScreen = () => {
       const item = mapToMessageItem(payload, myUserId, peerUserId);
       if (!item) return;
       setMessages((prev) => {
-        if (prev.some((m) => m.id === item.id)) return prev;
+        if (prev.some((m) => m.id === item.id)) {
+          return prev.map((message) =>
+            message.id === item.id
+              ? {
+                  ...message,
+                  text: message.text || item.text,
+                  fileUrl: message.fileUrl ?? item.fileUrl,
+                  fileName: message.fileName ?? item.fileName,
+                  fileMime: message.fileMime ?? item.fileMime,
+                  fileItems: message.fileItems ?? item.fileItems,
+                }
+              : message,
+          );
+        }
         return [...prev, item];
       });
       setTimeout(() => {
@@ -249,6 +408,7 @@ const ChatRoomScreen = () => {
           fileUrl: m.fileUrl ?? null,
           fileName: m.fileName ?? null,
           fileMime: m.fileMime ?? null,
+          fileItems: m.fileItems ?? null,
         })),
       );
       setLoading(false);
@@ -381,6 +541,28 @@ const ChatRoomScreen = () => {
     }
   };
 
+  const uploadAndSendFiles = async (
+    files: Array<{ uri: string; name?: string; type?: string }>,
+  ) => {
+    if (!chatRoomId || fileUploading || files.length === 0) return;
+    setFileUploading(true);
+    try {
+      const sent = await sendChatFilesMessage(chatRoomId, files);
+      if (!sent) {
+        Alert.alert(
+          "전송 실패",
+          "사진을 보내지 못했습니다. 다시 시도해 주세요.",
+        );
+        return;
+      }
+      appendFromSocket(sent);
+    } catch {
+      Alert.alert("오류", "사진을 전송하는 중 오류가 발생했습니다.");
+    } finally {
+      setFileUploading(false);
+    }
+  };
+
   const handlePickAlbum = async () => {
     setIsAttachmentMenuOpen(false);
     try {
@@ -391,14 +573,24 @@ const ChatRoomScreen = () => {
       }
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ["images"],
+        allowsMultipleSelection: true,
+        selectionLimit: 10,
         quality: 0.85,
       });
       if (result.canceled || !result.assets?.length) return;
-      const asset = result.assets[0];
-      await uploadAndSendFile(asset.uri, {
-        name: asset.fileName ?? `image_${Date.now()}.jpg`,
+      const files = result.assets.slice(0, 10).map((asset, index) => ({
+        uri: asset.uri,
+        name: asset.fileName ?? `image_${Date.now()}_${index + 1}.jpg`,
         type: asset.mimeType ?? "image/jpeg",
-      });
+      }));
+      if (files.length === 1) {
+        await uploadAndSendFile(files[0].uri, {
+          name: files[0].name,
+          type: files[0].type,
+        });
+        return;
+      }
+      await uploadAndSendFiles(files);
     } catch {
       Alert.alert("오류", "사진을 선택하는 중 오류가 발생했습니다.");
     }
@@ -422,11 +614,36 @@ const ChatRoomScreen = () => {
     }
   };
 
-  const openFileUrl = async (url?: string | null) => {
+  const openFileUrl = async (
+    url?: string | null,
+    fileName?: string | null,
+    fileMime?: string | null,
+  ) => {
     const resolved = resolveProfileImageUrlForDisplay(url);
     if (!resolved) return;
+    if (isPreviewableDocumentFile(fileName, fileMime, resolved)) {
+      void cacheChatFile({ url: resolved, fileName, fileMime }).catch(() => {
+        // Cache is best-effort; remote preview should still open.
+      });
+      navigation.navigate(RootRoutes.PDF_VIEWER, {
+        url: resolved,
+        title: fileName?.trim() || "파일 보기",
+      });
+      return;
+    }
+
+    let cachedFile: Awaited<ReturnType<typeof cacheChatFile>> | null = null;
     try {
-      await Linking.openURL(resolved);
+      cachedFile = await cacheChatFile({ url: resolved, fileName, fileMime });
+    } catch {
+      // Cache is best-effort; opening the file should still work.
+    }
+    try {
+      if (cachedFile) {
+        await openChatCachedFile(cachedFile);
+      } else {
+        await Linking.openURL(resolved);
+      }
     } catch {
       Alert.alert("열기 실패", "파일을 열 수 없습니다.");
     }
@@ -583,11 +800,26 @@ const ChatRoomScreen = () => {
               const rowRef = (node: View | null) => {
                 messageRowRefs.current[msg.id] = node;
               };
-              const hasFile = Boolean(msg.fileUrl);
+              const imageGridItems = (msg.fileItems ?? [])
+                .map((item, index) => ({
+                  ...item,
+                  index,
+                  displayUrl: resolveProfileImageUrlForDisplay(item.fileUrl),
+                }))
+                .filter(
+                  (item) => item.displayUrl && isImageMime(item.fileMime),
+                ) as Array<ChatFileItem & { index: number; displayUrl: string }>;
+              const hasImageGrid = imageGridItems.length > 1;
+              const imageGridUrls = imageGridItems.map((item) => item.displayUrl);
+              const hasFile = Boolean(
+                msg.fileUrl || msg.fileName || (msg.fileItems?.length ?? 0) > 0,
+              );
               const fileDisplayUrl = resolveProfileImageUrlForDisplay(msg.fileUrl);
-              const showImage = hasFile && isImageMime(msg.fileMime) && fileDisplayUrl;
-              const showFileRow = hasFile && !showImage;
+              const showImage =
+                !hasImageGrid && hasFile && isImageMime(msg.fileMime) && fileDisplayUrl;
+              const showFileRow = hasFile && !showImage && !hasImageGrid;
               const showText = Boolean(msg.text?.trim()) && !hasFile;
+              const fileDisplayName = pickMessageFileName(msg);
 
               const textContent = isSearchOpen && searchQuery.trim() ? (
                 <HighlightText
@@ -614,6 +846,28 @@ const ChatRoomScreen = () => {
 
               const bubbleContent = (
                 <>
+                  {hasImageGrid ? (
+                    <View style={styles.messageImageGrid}>
+                      {imageGridItems.map((item, imageIndex) => (
+                        <Pressable
+                          key={`${item.fileUrl}-${imageIndex}`}
+                          style={[
+                            styles.messageImageGridItem,
+                            imageGridItems.length === 3 &&
+                              imageIndex === 0 &&
+                              styles.messageImageGridItemWide,
+                          ]}
+                          onPress={() => openImageViewer(imageGridUrls, imageIndex)}
+                        >
+                          <Image
+                            source={{ uri: item.displayUrl }}
+                            style={styles.messageImageGridImage}
+                            resizeMode="cover"
+                          />
+                        </Pressable>
+                      ))}
+                    </View>
+                  ) : null}
                   {showImage ? (
                     <Pressable
                       onPress={() => {
@@ -632,7 +886,9 @@ const ChatRoomScreen = () => {
                   {showFileRow ? (
                     <Pressable
                       style={styles.messageFileRow}
-                      onPress={() => openFileUrl(msg.fileUrl)}
+                      onPress={() =>
+                        openFileUrl(msg.fileUrl, fileDisplayName, msg.fileMime)
+                      }
                     >
                       <MaterialCommunityIcons
                         name="file-outline"
@@ -646,9 +902,7 @@ const ChatRoomScreen = () => {
                         ]}
                         numberOfLines={2}
                       >
-                        {msg.fileName ??
-                          msg.text.replace(/^\[파일\]\s*/, "") ??
-                          "파일"}
+                        {fileDisplayName}
                       </Text>
                     </Pressable>
                   ) : null}
@@ -656,7 +910,7 @@ const ChatRoomScreen = () => {
                 </>
               );
 
-              const bubbleStyle = showImage
+              const bubbleStyle = showImage || hasImageGrid
                 ? msg.isFromMe
                   ? [styles.messageBubbleMe, styles.messageBubbleMedia]
                   : [styles.messageBubbleOther, styles.messageBubbleMedia]

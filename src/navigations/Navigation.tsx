@@ -30,6 +30,8 @@ import AccountScreen from "../screens/SettingsScreens/AccountScreen/AccountScree
 import WithdrawConfirmScreen from "../screens/WithdrawConfirmScreen/WithdrawConfirmScreen";
 import ChatRoomScreen from "../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen";
 import ChatRoomOptionsScreen from "../screens/ChatScreens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
+import ChatFileArchiveScreen from "../screens/ChatScreens/ChatFileArchiveScreen/ChatFileArchiveScreen";
+import PdfViewerScreen from "../screens/PdfViewerScreen/PdfViewerScreen";
 import MyPostedChatRoomsScreen from "../screens/ChatScreens/MyPostedChatRoomsScreen/MyPostedChatRoomsScreen";
 import AnnouncementApplicantsScreen from "../screens/AnnouncementApplicantsScreen/AnnouncementApplicantsScreen";
 import ActivityReviewScreen from "../screens/ActivityReviewScreen/ActivityReviewScreen";
@@ -987,6 +989,67 @@ const Navigation = () => {
           name={RootRoutes.CHAT_ROOM}
           component={withAuthGate(ChatRoomScreen)}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name={RootRoutes.CHAT_FILE_ARCHIVE}
+          component={withAuthGate(ChatFileArchiveScreen)}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>채팅 보관함</Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) navigation.goBack();
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.PDF_VIEWER}
+          component={withAuthGate(PdfViewerScreen)}
+          options={({ navigation, route }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title}>
+                  {(route.params as { title?: string } | undefined)?.title ??
+                    "파일 보기"}
+                </Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) navigation.goBack();
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
         />
         <Stack.Screen
           name={RootRoutes.ACTIVITY_REVIEW}

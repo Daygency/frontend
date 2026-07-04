@@ -2,6 +2,12 @@
 
 export type ChatRoomKind = "COFFEE" | "ANNOUNCEMENT";
 
+export type ChatFileItem = {
+  fileUrl: string;
+  fileName: string;
+  fileMime?: string | null;
+};
+
 /** 목록 `peer`는 README상 `profileImgUrl`; 클라이언트는 스네이크/카멜 병합 */
 export type ChatPeerSummary = {
   userId: string;
@@ -16,7 +22,14 @@ export type ChatRoomListItem = {
   kind: ChatRoomKind;
   post?: { postId?: string; title?: string } | null;
   peer?: ChatPeerSummary | null;
-  lastMessage?: { content?: string | null; createdAt?: string } | null;
+  lastMessage?: {
+    content?: string | null;
+    fileUrl?: string | null;
+    fileName?: string | null;
+    fileMime?: string | null;
+    fileItems?: ChatFileItem[] | null;
+    createdAt?: string;
+  } | null;
   createdAt?: string;
 };
 
@@ -34,6 +47,7 @@ export type ChatMessageDto = {
   fileUrl?: string | null;
   fileName?: string | null;
   fileMime?: string | null;
+  fileItems?: ChatFileItem[] | null;
   createdAt: string;
 };
 

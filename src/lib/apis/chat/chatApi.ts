@@ -2,6 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
 import type {
+  ChatFileItem,
   ChatMessagesPage,
   ChatRoomListItem,
   ChatRoomsPage,
@@ -23,6 +24,92 @@ function asRecord(v: unknown): Record<string, unknown> {
   return v && typeof v === "object" ? (v as Record<string, unknown>) : {};
 }
 
+function normalizeFileName(value: string): string {
+  return typeof value.normalize === "function" ? value.normalize("NFC") : value;
+}
+
+function decodeFileName(value: string): string {
+  let decoded = value;
+  for (let i = 0; i < 5; i += 1) {
+    try {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) break;
+      decoded = next;
+    } catch {
+      break;
+    }
+  }
+
+  const withoutQuery = decoded.split("?")[0]?.split("#")[0] ?? decoded;
+  const fileName =
+    withoutQuery.split(/[\\/]/).filter(Boolean).pop() ?? withoutQuery;
+  return normalizeFileName(fileName).trim();
+}
+
+function cleanFileName(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const cleaned = value.replace(/^\[파일\]\s*/, "").trim();
+  return cleaned ? decodeFileName(cleaned) : null;
+}
+
+function fileNameFromUrl(value: unknown): string | null {
+  if (typeof value !== "string" || !value.trim()) return null;
+  const withoutQuery = value.split("?")[0]?.split("#")[0] ?? "";
+  const lastSegment = withoutQuery.split("/").filter(Boolean).pop();
+  if (!lastSegment) return null;
+  return decodeFileName(lastSegment);
+}
+
+function pickFileName(raw: Record<string, unknown>): string | null {
+  return (
+    cleanFileName(raw.fileName) ??
+    cleanFileName(raw.file_name) ??
+    cleanFileName(raw.originalName) ??
+    cleanFileName(raw.original_name) ??
+    cleanFileName(raw.name) ??
+    fileNameFromUrl(raw.fileUrl) ??
+    fileNameFromUrl(raw.file_url)
+  );
+}
+
+function pickFileUrl(raw: Record<string, unknown>): string | null {
+  return typeof raw.fileUrl === "string"
+    ? raw.fileUrl
+    : typeof raw.file_url === "string"
+      ? raw.file_url
+      : null;
+}
+
+function pickFileMime(raw: Record<string, unknown>): string | null {
+  return typeof raw.fileMime === "string"
+    ? raw.fileMime
+    : typeof raw.file_mime === "string"
+      ? raw.file_mime
+      : typeof raw.mimeType === "string"
+        ? raw.mimeType
+        : typeof raw.mime_type === "string"
+          ? raw.mime_type
+          : null;
+}
+
+function normalizeFileItem(raw: unknown): ChatFileItem | null {
+  const p = asRecord(raw);
+  const fileUrl = pickFileUrl(p);
+  if (!fileUrl) return null;
+  return {
+    fileUrl,
+    fileName: pickFileName(p) ?? fileNameFromUrl(fileUrl) ?? "파일",
+    fileMime: pickFileMime(p),
+  };
+}
+
+function pickFileItems(raw: Record<string, unknown>): ChatFileItem[] | null {
+  const value = raw.fileItems ?? raw.file_items;
+  if (!Array.isArray(value)) return null;
+  const items = value.map(normalizeFileItem).filter(Boolean) as ChatFileItem[];
+  return items.length > 0 ? items : null;
+}
+
 function normalizePost(raw: unknown): ChatRoomListItem["post"] {
   const p = asRecord(raw);
   if (!Object.keys(p).length) return null;
@@ -35,15 +122,30 @@ function normalizePost(raw: unknown): ChatRoomListItem["post"] {
 function normalizeLastMessage(raw: unknown): ChatRoomListItem["lastMessage"] {
   const p = asRecord(raw);
   if (!Object.keys(p).length) return null;
+  const fileUrl = pickFileUrl(p);
+  const fileName = pickFileName(p);
+  const fileMime = pickFileMime(p);
+  const fileItems = pickFileItems(p);
   const content =
-    typeof p.content === "string" || p.content === null ? p.content : null;
+    typeof p.content === "string" && p.content.trim()
+      ? p.content
+      : p.content === null
+        ? null
+        : fileName;
   const createdAt =
     typeof p.createdAt === "string"
       ? p.createdAt
       : typeof p.created_at === "string"
         ? p.created_at
         : undefined;
-  return { content, createdAt };
+  return {
+    content: content ?? fileName ?? (fileUrl ? "파일" : null),
+    fileUrl,
+    fileName,
+    fileMime,
+    fileItems,
+    createdAt,
+  };
 }
 
 function normalizeRoomItem(
@@ -189,6 +291,9 @@ export async function getChatMessages(
     const rawItems = Array.isArray(data.items) ? data.items : [];
     const items = rawItems.map((row) => {
       const m = asRecord(row);
+      const fileUrl = pickFileUrl(m);
+      const fileName = pickFileName(m);
+      const fileItems = pickFileItems(m);
       return {
         id: String(m.id ?? ""),
         chatRoomId: String(m.chatRoomId ?? m.chat_room_id ?? ""),
@@ -197,24 +302,10 @@ export async function getChatMessages(
           typeof m.content === "string" || m.content === null
             ? (m.content as string | null)
             : null,
-        fileUrl:
-          typeof m.fileUrl === "string"
-            ? m.fileUrl
-            : typeof m.file_url === "string"
-              ? m.file_url
-              : null,
-        fileName:
-          typeof m.fileName === "string"
-            ? m.fileName
-            : typeof m.file_name === "string"
-              ? m.file_name
-              : null,
-        fileMime:
-          typeof m.fileMime === "string"
-            ? m.fileMime
-            : typeof m.file_mime === "string"
-              ? m.file_mime
-              : null,
+        fileUrl,
+        fileName,
+        fileMime: pickFileMime(m),
+        fileItems,
         createdAt:
           typeof m.createdAt === "string"
             ? m.createdAt
@@ -320,6 +411,9 @@ export async function sendChatFileMessage(
     }
 
     const m = asRecord(await res.json());
+    const fileUrl = pickFileUrl(m);
+    const fileName = pickFileName(m) ?? cleanFileName(options?.name);
+    const fileItems = pickFileItems(m);
     return {
       id: String(m.id ?? ""),
       chatRoomId: String(m.chatRoomId ?? m.chat_room_id ?? roomId),
@@ -328,24 +422,10 @@ export async function sendChatFileMessage(
         typeof m.content === "string" || m.content === null
           ? (m.content as string | null)
           : null,
-      fileUrl:
-        typeof m.fileUrl === "string"
-          ? m.fileUrl
-          : typeof m.file_url === "string"
-            ? m.file_url
-            : null,
-      fileName:
-        typeof m.fileName === "string"
-          ? m.fileName
-          : typeof m.file_name === "string"
-            ? m.file_name
-            : null,
-      fileMime:
-        typeof m.fileMime === "string"
-          ? m.fileMime
-          : typeof m.file_mime === "string"
-            ? m.file_mime
-            : null,
+      fileUrl,
+      fileName,
+      fileMime: pickFileMime(m) ?? options?.type ?? null,
+      fileItems,
       createdAt:
         typeof m.createdAt === "string"
           ? m.createdAt
@@ -355,6 +435,70 @@ export async function sendChatFileMessage(
     };
   } catch (e) {
     console.warn("[sendChatFileMessage]", e);
+    return null;
+  }
+}
+
+export async function sendChatFilesMessage(
+  roomId: string,
+  files: Array<{ uri: string; name?: string; type?: string }>,
+): Promise<ChatMessagesPage["items"][number] | null> {
+  try {
+    const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+    if (!token) throw new Error("인증이 필요합니다.");
+    if (!files.length) return null;
+
+    const formData = new FormData();
+    files.forEach((file, index) => {
+      formData.append("files", {
+        uri: file.uri,
+        name: file.name ?? `image_${Date.now()}_${index + 1}.jpg`,
+        type: file.type ?? "image/jpeg",
+      } as unknown as Blob);
+    });
+
+    const res = await fetchWithAuth(
+      `${API_BASE}/chat/rooms/${encodeURIComponent(roomId)}/messages/files`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      },
+    );
+
+    if (!res.ok) {
+      console.warn(
+        "[sendChatFilesMessage]",
+        res.status,
+        await res.text().catch(() => ""),
+      );
+      return null;
+    }
+
+    const m = asRecord(await res.json());
+    const fileUrl = pickFileUrl(m);
+    const fileItems = pickFileItems(m);
+    return {
+      id: String(m.id ?? ""),
+      chatRoomId: String(m.chatRoomId ?? m.chat_room_id ?? roomId),
+      userId: String(m.userId ?? m.user_id ?? ""),
+      content:
+        typeof m.content === "string" || m.content === null
+          ? (m.content as string | null)
+          : null,
+      fileUrl,
+      fileName: pickFileName(m) ?? fileItems?.[0]?.fileName ?? fileNameFromUrl(fileUrl),
+      fileMime: pickFileMime(m) ?? fileItems?.[0]?.fileMime ?? null,
+      fileItems,
+      createdAt:
+        typeof m.createdAt === "string"
+          ? m.createdAt
+          : typeof m.created_at === "string"
+            ? m.created_at
+            : new Date().toISOString(),
+    };
+  } catch (e) {
+    console.warn("[sendChatFilesMessage]", e);
     return null;
   }
 }

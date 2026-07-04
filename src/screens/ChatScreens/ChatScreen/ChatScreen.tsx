@@ -1,10 +1,12 @@
 import { useMemo, useState } from "react";
 import { Pressable, Text, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Logo from "../../../components/ui/Logo";
 import { GRAY, MAIN } from "../../../color";
 import { useAuthGate } from "../../../hooks/useRequireLogin";
+import { RootRoutes } from "../../../navigations/routes";
 import styles from "./styles";
 import ChatList, { getUnreadCountByTopTabMock } from "./components/ChatList/ChatList";
 
@@ -13,6 +15,7 @@ const TOP_TABS: ChatTopTab[] = ["일반", "내 공고", "지원 공고"];
 
 const ChatScreen = () => {
   useAuthGate();
+  const navigation = useNavigation<any>();
   const { top } = useSafeAreaInsets();
   const [selectedTopTab, setSelectedTopTab] = useState<ChatTopTab>("일반");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -61,6 +64,12 @@ const ChatScreen = () => {
           </View>
         )}
         <View style={styles.iconContainer}>
+          <Pressable
+            style={styles.iconButton}
+            onPress={() => navigation.navigate(RootRoutes.CHAT_FILE_ARCHIVE)}
+          >
+            <Feather name="archive" size={23} color={MAIN.DEFAULT} />
+          </Pressable>
           <Pressable
             style={styles.iconButton}
             onPress={() => {

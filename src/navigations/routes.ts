@@ -39,6 +39,8 @@ export const RootRoutes = {
   WITHDRAW_CONFIRM: "WithdrawConfirm",
   CHAT_ROOM: "ChatRoom",
   CHAT_ROOM_OPTIONS: "ChatRoomOptions",
+  CHAT_FILE_ARCHIVE: "ChatFileArchive",
+  PDF_VIEWER: "PdfViewer",
   MY_POSTED_CHAT_ROOMS: "MyPostedChatRooms",
   ANNOUNCEMENT_APPLICANTS: "AnnouncementApplicants",
   /** README: POST /announcement/:postId/reviews */
