@@ -35,7 +35,7 @@ import {
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
 import { pickCommentUserProfileImgUrl } from "../../lib/apis/comment/commentUserProfile";
 import PostDetailOptionsMenu from "../../components/menus/PostDetailOptionsMenu";
-import { RootRoutes } from "../../navigations/routes";
+import { ContentRoutes, RootRoutes } from "../../navigations/routes";
 import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
 import {
   createLike,
@@ -394,7 +394,7 @@ const MusicNewsDetailScreen = () => {
       const myId = user?.socialId;
       setLiked(
         !!myId &&
-          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+          res.items.some((item: any) => String(item.user?.userId ?? "") === myId),
       );
     })();
   }, [targetNewsId, user?.socialId]);
@@ -683,6 +683,26 @@ const MusicNewsDetailScreen = () => {
     [handleDeleteComment],
   );
 
+  const navigateToCommentAuthorProfile = useCallback(
+    (authorUserId?: string, activityName?: string) => {
+      const uid = authorUserId?.trim();
+      if (!uid) return;
+
+      if (myUserId && uid.toLowerCase() === myUserId.toLowerCase()) {
+        navigation.navigate(RootRoutes.CONTENT_TAB, {
+          screen: ContentRoutes.LOUNGE,
+        });
+        return;
+      }
+
+      navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+        userId: uid,
+        activityName: activityName?.trim() ?? "",
+      });
+    },
+    [myUserId, navigation],
+  );
+
   const handleToggleCommentLike = async (targetId: string, currentLiked: boolean) => {
     if (!ensureLoggedIn()) return;
     if (currentLiked) {
@@ -951,12 +971,34 @@ const MusicNewsDetailScreen = () => {
               >
                 <View style={styles.commentTopRow}>
                   <View style={styles.commentAuthorRow}>
-                    <CommentAuthorAvatar profileImgUrl={comment.profileImgUrl} />
+                    <Pressable
+                      onPress={() =>
+                        navigateToCommentAuthorProfile(
+                          comment.authorUserId,
+                          comment.author,
+                        )
+                      }
+                      disabled={!comment.authorUserId}
+                      hitSlop={8}
+                    >
+                      <CommentAuthorAvatar profileImgUrl={comment.profileImgUrl} />
+                    </Pressable>
                     <View style={styles.commentHeaderText}>
                       <View style={styles.commentMetaRow}>
-                        <Text style={styles.commentAuthor}>
-                          {comment.author}
-                        </Text>
+                        <Pressable
+                          onPress={() =>
+                            navigateToCommentAuthorProfile(
+                              comment.authorUserId,
+                              comment.author,
+                            )
+                          }
+                          disabled={!comment.authorUserId}
+                          hitSlop={8}
+                        >
+                          <Text style={styles.commentAuthor}>
+                            {comment.author}
+                          </Text>
+                        </Pressable>
                         {!!comment.createdAt && (
                           <Text style={styles.commentDate}>
                             {formatTimeAgo(comment.createdAt)}
@@ -1041,11 +1083,22 @@ const MusicNewsDetailScreen = () => {
                   <View style={styles.replyList}>
                     {comment.replies.map((reply) => (
                       <View key={reply.id} style={styles.replyRow}>
-                        <CommentAuthorAvatar
-                          profileImgUrl={reply.profileImgUrl}
-                          size={24}
-                          style={styles.replyAvatarCircle}
-                        />
+                        <Pressable
+                          onPress={() =>
+                            navigateToCommentAuthorProfile(
+                              reply.authorUserId,
+                              reply.author,
+                            )
+                          }
+                          disabled={!reply.authorUserId}
+                          hitSlop={8}
+                        >
+                          <CommentAuthorAvatar
+                            profileImgUrl={reply.profileImgUrl}
+                            size={24}
+                            style={styles.replyAvatarCircle}
+                          />
+                        </Pressable>
                         <View style={styles.replyBody}>
                           <View
                             style={[
@@ -1061,9 +1114,20 @@ const MusicNewsDetailScreen = () => {
                                 flex: 1,
                               }}
                             >
-                              <Text style={styles.replyAuthor}>
-                                {reply.author}
-                              </Text>
+                              <Pressable
+                                onPress={() =>
+                                  navigateToCommentAuthorProfile(
+                                    reply.authorUserId,
+                                    reply.author,
+                                  )
+                                }
+                                disabled={!reply.authorUserId}
+                                hitSlop={8}
+                              >
+                                <Text style={styles.replyAuthor}>
+                                  {reply.author}
+                                </Text>
+                              </Pressable>
                               {!!reply.createdAt && (
                                 <Text style={styles.replyDate}>
                                   {formatTimeAgo(reply.createdAt)}

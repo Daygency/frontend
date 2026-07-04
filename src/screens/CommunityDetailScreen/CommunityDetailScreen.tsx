@@ -34,7 +34,7 @@ import {
 } from "../../lib/apis/comment/commentApi";
 import type { CommentItem as ApiCommentItem } from "../../lib/apis/comment/types";
 import PostDetailOptionsMenu from "../../components/menus/PostDetailOptionsMenu";
-import { RootRoutes } from "../../navigations/routes";
+import { ContentRoutes, RootRoutes } from "../../navigations/routes";
 import { promptOwnCommentActions } from "../../lib/comment/promptOwnCommentActions";
 import {
   createLike,
@@ -199,7 +199,7 @@ function updateCommentLikeState(
 }
 
 const CommunityDetailScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute<CommunityDetailRouteProp>();
   const { communityId } = route.params;
   const { user, isLoggedIn } = useAuth();
@@ -295,7 +295,7 @@ const CommunityDetailScreen = () => {
       const myId = user?.socialId;
       setLiked(
         !!myId &&
-          res.items.some((item) => String(item.user?.userId ?? "") === myId),
+          res.items.some((item: any) => String(item.user?.userId ?? "") === myId),
       );
     })();
   }, [communityId, user?.socialId]);
@@ -577,6 +577,30 @@ const CommunityDetailScreen = () => {
     [handleDeleteComment],
   );
 
+  const navigateToCommentAuthorProfile = useCallback(
+    (authorUserId?: string, activityName?: string) => {
+      const uid = authorUserId?.trim();
+      if (!uid) return;
+
+      if (myUserId && uid.toLowerCase() === myUserId.toLowerCase()) {
+        navigation.navigate(
+          RootRoutes.CONTENT_TAB as never,
+          { screen: ContentRoutes.LOUNGE } as never,
+        );
+        return;
+      }
+
+      navigation.navigate(
+        RootRoutes.ARTIST_PORTFOLIO as never,
+        {
+          userId: uid,
+          activityName: activityName?.trim() ?? "",
+        } as never,
+      );
+    },
+    [myUserId, navigation],
+  );
+
   const handleToggleCommentLike = async (targetId: string, currentLiked: boolean) => {
     if (!ensureLoggedIn()) return;
     if (currentLiked) {
@@ -721,10 +745,21 @@ const CommunityDetailScreen = () => {
             return (
               <View key={comment.id} style={styles.commentBlock}>
                 <View style={styles.avatarColumn}>
-                  <CommentAuthorAvatar
-                    profileImgUrl={comment.profileImgUrl}
-                    size={AVATAR_SIZE}
-                  />
+                  <Pressable
+                    onPress={() =>
+                      navigateToCommentAuthorProfile(
+                        comment.authorUserId,
+                        comment.author,
+                      )
+                    }
+                    disabled={!comment.authorUserId}
+                    hitSlop={8}
+                  >
+                    <CommentAuthorAvatar
+                      profileImgUrl={comment.profileImgUrl}
+                      size={AVATAR_SIZE}
+                    />
+                  </Pressable>
                   {!isLast || (comment.replies?.length ?? 0) > 0 ? (
                     <View style={styles.threadLine} />
                   ) : null}
@@ -733,9 +768,20 @@ const CommunityDetailScreen = () => {
                 <View style={styles.commentContent}>
                   <View style={styles.commentTopRow}>
                     <View style={styles.commentMetaRow}>
-                      <Text style={styles.commentAuthor}>
-                        {comment.author}
-                      </Text>
+                      <Pressable
+                        onPress={() =>
+                          navigateToCommentAuthorProfile(
+                            comment.authorUserId,
+                            comment.author,
+                          )
+                        }
+                        disabled={!comment.authorUserId}
+                        hitSlop={8}
+                      >
+                        <Text style={styles.commentAuthor}>
+                          {comment.author}
+                        </Text>
+                      </Pressable>
                       {!!comment.createdAt && (
                         <Text style={styles.commentDate}>
                           {formatTimeAgo(comment.createdAt)}
@@ -804,10 +850,21 @@ const CommunityDetailScreen = () => {
                       {comment.replies.map((reply) => (
                         <View key={reply.id} style={styles.replyBlock}>
                           <View style={styles.replyAvatarColumn}>
-                            <CommentAuthorAvatar
-                              profileImgUrl={reply.profileImgUrl}
-                              size={REPLY_AVATAR_SIZE}
-                            />
+                            <Pressable
+                              onPress={() =>
+                                navigateToCommentAuthorProfile(
+                                  reply.authorUserId,
+                                  reply.author,
+                                )
+                              }
+                              disabled={!reply.authorUserId}
+                              hitSlop={8}
+                            >
+                              <CommentAuthorAvatar
+                                profileImgUrl={reply.profileImgUrl}
+                                size={REPLY_AVATAR_SIZE}
+                              />
+                            </Pressable>
                           </View>
                           <View style={styles.replyBody}>
                             <View style={styles.replyMetaRow}>
@@ -819,9 +876,20 @@ const CommunityDetailScreen = () => {
                                   flex: 1,
                                 }}
                               >
-                                <Text style={styles.replyAuthor}>
-                                  {reply.author}
-                                </Text>
+                                <Pressable
+                                  onPress={() =>
+                                    navigateToCommentAuthorProfile(
+                                      reply.authorUserId,
+                                      reply.author,
+                                    )
+                                  }
+                                  disabled={!reply.authorUserId}
+                                  hitSlop={8}
+                                >
+                                  <Text style={styles.replyAuthor}>
+                                    {reply.author}
+                                  </Text>
+                                </Pressable>
                                 {!!reply.createdAt && (
                                   <Text style={styles.replyDate}>
                                     {formatTimeAgo(reply.createdAt)}
