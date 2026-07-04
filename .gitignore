@@ -44,5 +44,6 @@ GoogleService-Info.plist
 google-services.json
 
 *.ipa
+*.aab
 *storybook.log
 storybook-static

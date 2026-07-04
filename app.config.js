@@ -85,7 +85,9 @@ export default ({ config }) => ({
             buildReactNativeFromSource: false,
           },
           android: {
-            extraMavenRepos: ["https://kakao.com"],
+            extraMavenRepos: [
+              "https://devrepo.kakao.com/nexus/content/groups/public/",
+            ],
           },
         },
       ],
