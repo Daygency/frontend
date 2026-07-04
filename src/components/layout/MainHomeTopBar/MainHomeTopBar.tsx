@@ -57,18 +57,18 @@ const MainHomeTopBar = ({
   const { ensureLoggedIn } = useRequireLogin();
   const iconColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
   const titleColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
-  const [hasUnreadNotifications, setHasUnreadNotifications] = useState(false);
+  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
   const [titleMenuVisible, setTitleMenuVisible] = useState(false);
   const [titleMenuPosition, setTitleMenuPosition] = useState({ x: 0, y: 0 });
   const titleMenuRef = useRef<View>(null);
 
   const refreshUnreadNotifications = useCallback(async () => {
     if (!isLoggedIn) {
-      setHasUnreadNotifications(false);
+      setUnreadNotificationCount(0);
       return;
     }
     const count = await getNotificationUnreadCount();
-    setHasUnreadNotifications(count != null && count > 0);
+    setUnreadNotificationCount(count != null ? Math.max(0, count) : 0);
   }, [isLoggedIn]);
 
   useFocusEffect(
@@ -85,6 +85,10 @@ const MainHomeTopBar = ({
   const displayedTitle = hasTitleMenu
     ? selectedTitleMenuOption
     : (logoName ?? "");
+  const unreadNotificationLabel =
+    unreadNotificationCount > 99
+      ? "99+"
+      : String(unreadNotificationCount);
 
   const handleSearchPress = () => {
     if (initialTag) {
@@ -233,7 +237,13 @@ const MainHomeTopBar = ({
           }}
         >
           <Octicons name="bell" size={21} color={iconColor} />
-          {hasUnreadNotifications ? <View style={styles.dotNew} /> : null}
+          {unreadNotificationCount > 0 ? (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationBadgeText}>
+                {unreadNotificationLabel}
+              </Text>
+            </View>
+          ) : null}
         </Pressable>
         <Pressable
           style={styles.iconButton}
