@@ -105,7 +105,21 @@ function normalizeAnnouncementListItem(item: unknown): AnnouncementListItem {
   const row = item as Record<string, unknown>;
   const address = pickAddressFromAnnouncementRaw(item);
   const deadlineAt = pickDeadlineAtFromAnnouncementRaw(item);
-  const createdAtRaw = row.createdAt ?? row.created_at;
+  const createdAtRaw =
+    row.createdAt ??
+    row.created_at ??
+    row.createdDate ??
+    row.created_date ??
+    row.postedAt ??
+    row.posted_at ??
+    (row.post && typeof row.post === "object"
+      ? (row.post as Record<string, unknown>).createdAt ??
+        (row.post as Record<string, unknown>).created_at
+      : undefined) ??
+    (row.announcement && typeof row.announcement === "object"
+      ? (row.announcement as Record<string, unknown>).createdAt ??
+        (row.announcement as Record<string, unknown>).created_at
+      : undefined);
   const user = pickAnnouncementAuthorFromRaw(item);
   return {
     ...(item as AnnouncementListItem),

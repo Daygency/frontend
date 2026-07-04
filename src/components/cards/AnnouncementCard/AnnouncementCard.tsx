@@ -108,11 +108,6 @@ const AnnouncementCard = ({
           <Text style={styles.title} numberOfLines={1} ellipsizeMode="tail">
             {title}
           </Text>
-          {relativeTimeText ? (
-            <Text style={styles.relativeTimeText} numberOfLines={1}>
-              {relativeTimeText}
-            </Text>
-          ) : null}
         </View>
       </View>
 
@@ -133,8 +128,20 @@ const AnnouncementCard = ({
               </Text>
             ) : null}
           </View>
-          {typeof viewCount === "number" ? (
-            <Text style={styles.viewCountText}>조회 {viewCount}</Text>
+          {typeof viewCount === "number" || relativeTimeText ? (
+            <View style={styles.footerMetaRow}>
+              {typeof viewCount === "number" ? (
+                <Text style={styles.viewCountText}>조회 {viewCount}</Text>
+              ) : null}
+              {typeof viewCount === "number" && relativeTimeText ? (
+                <Text style={styles.footerMetaSeparator}>·</Text>
+              ) : null}
+              {relativeTimeText ? (
+                <Text style={styles.relativeTimeText} numberOfLines={1}>
+                  {relativeTimeText}
+                </Text>
+              ) : null}
+            </View>
           ) : null}
         </View>
       </View>

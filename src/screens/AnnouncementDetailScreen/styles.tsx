@@ -85,6 +85,22 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     flexShrink: 1,
   },
+  postedDateText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: GRAY.MEDIUM_100,
+    fontWeight: "400",
+    flexShrink: 0,
+    marginTop: -14,
+    marginBottom: 10,
+  },
+  postedDateDivider: {
+    alignSelf: "center",
+    width: "100%",
+    height: 1,
+    backgroundColor: GRAY.MEDIUM_2,
+    marginBottom: 14,
+  },
   sectionBlock: {
     marginBottom: 14,
   },

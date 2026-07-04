@@ -96,13 +96,23 @@ function sortTabToApiParam(tab: AnnouncementSortOption): "imminent" | "created" 
   return tab === "임박순" ? "imminent" : "created";
 }
 
+function parseCreatedAtTime(createdAt?: string): number {
+  const raw = createdAt?.trim();
+  if (!raw) return NaN;
+
+  const numeric = Number(raw);
+  if (Number.isFinite(numeric) && raw.length >= 10) {
+    return raw.length <= 10 ? numeric * 1000 : numeric;
+  }
+
+  return new Date(raw).getTime();
+}
+
 function formatRelativeTime(createdAt?: string): string {
-  if (!createdAt) return "";
+  const createdTime = parseCreatedAtTime(createdAt);
+  if (Number.isNaN(createdTime)) return "";
 
-  const created = new Date(createdAt);
-  if (Number.isNaN(created.getTime())) return "";
-
-  const diffMs = Date.now() - created.getTime();
+  const diffMs = Date.now() - createdTime;
   if (diffMs < 60 * 1000) return "방금 전";
 
   const minuteMs = 60 * 1000;
@@ -609,6 +619,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         status: announcementListRecruitmentStatus(item),
         daysLeft: parseAnnouncementDaysLeft(item.dDay),
         postId: item.postId,
+        postedDate: item.createdAt,
         viewCount: item.viewCount,
       });
     },

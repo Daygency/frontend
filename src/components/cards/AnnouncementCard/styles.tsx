@@ -61,7 +61,7 @@ export default StyleSheet.create({
     flexShrink: 0,
     fontSize: 12,
     lineHeight: 18,
-    color: GRAY.DARK_2,
+    color: GRAY.MEDIUM_100,
     fontWeight: "400",
   },
   footerSection: {
@@ -104,5 +104,17 @@ export default StyleSheet.create({
     color: GRAY.MEDIUM_100,
     fontWeight: "400",
     flexShrink: 0,
+  },
+  footerMetaRow: {
+    flexShrink: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  footerMetaSeparator: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: GRAY.MEDIUM_100,
+    fontWeight: "400",
   },
 });

@@ -111,7 +111,12 @@ type AnnouncementDetailRouteProp = RouteProp<
 
 function formatDateKorean(iso?: string): string {
   if (!iso?.trim()) return "";
-  const dt = new Date(iso);
+  const raw = iso.trim();
+  const numeric = Number(raw);
+  const dt =
+    Number.isFinite(numeric) && raw.length >= 10
+      ? new Date(raw.length <= 10 ? numeric * 1000 : numeric)
+      : new Date(raw);
   if (isNaN(dt.getTime())) return "";
   return `${dt.getFullYear()}.${String(dt.getMonth() + 1).padStart(2, "0")}.${String(dt.getDate()).padStart(2, "0")}`;
 }
@@ -373,7 +378,21 @@ const AnnouncementDetailScreen = () => {
           : undefined;
 
       const createdAt =
-        get("createdAt") ?? get("created_at") ?? undefined;
+        get("createdAt") ??
+        get("created_at") ??
+        get("createdDate") ??
+        get("created_date") ??
+        get("postedAt") ??
+        get("posted_at") ??
+        (d.post && typeof d.post === "object"
+          ? ((d.post as Record<string, unknown>).createdAt ??
+            (d.post as Record<string, unknown>).created_at)
+          : undefined) ??
+        (d.announcement && typeof d.announcement === "object"
+          ? ((d.announcement as Record<string, unknown>).createdAt ??
+            (d.announcement as Record<string, unknown>).created_at)
+          : undefined) ??
+        undefined;
 
       setDetailData({
         title: String(title),
@@ -744,6 +763,9 @@ const AnnouncementDetailScreen = () => {
     displayCompleted,
     detailData?.deadlineAt,
   );
+  const postedDateLabel = formatDateKorean(
+    detailData?.createdAt ?? params.postedDate,
+  );
   const venueLabel = formatAnnouncementDistrictLabel(addressLabel);
   const recruitmentMajorNames = useMemo(
     () =>
@@ -998,6 +1020,15 @@ const AnnouncementDetailScreen = () => {
                 </Text>
               ) : null}
             </View>
+
+            {postedDateLabel ? (
+              <>
+                <Text style={styles.postedDateText} numberOfLines={1}>
+                  게시일 {postedDateLabel}
+                </Text>
+                <View style={styles.postedDateDivider} />
+              </>
+            ) : null}
 
             <View style={styles.sectionInlineRow}>
               <Text style={styles.sectionHeadingInline}>마감일</Text>
