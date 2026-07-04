@@ -4,8 +4,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
 import {
-  ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
-  isActivityNameEnglishOnly,
+  ACTIVITY_NAME_ALPHANUMERIC_MESSAGE,
+  isActivityNameAlphanumeric,
   sanitizeActivityName,
 } from "../../../lib/profile/activityNameValidation";
 import styles from "../styles";
@@ -93,9 +93,9 @@ const TopIntroductionTab = ({
       setActivityNameMessage("");
       return;
     }
-    if (!isActivityNameEnglishOnly(value)) {
+    if (!isActivityNameAlphanumeric(value)) {
       setIsActivityNameDuplicate(null);
-      setActivityNameMessage(ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE);
+      setActivityNameMessage(ACTIVITY_NAME_ALPHANUMERIC_MESSAGE);
       return;
     }
 
@@ -192,7 +192,7 @@ const TopIntroductionTab = ({
               setActivityNameMessage(
                 text === nextActivityName
                   ? ""
-                  : ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
+                  : ACTIVITY_NAME_ALPHANUMERIC_MESSAGE,
               );
             }}
             placeholderTextColor={GRAY.DARK_2}
@@ -217,7 +217,7 @@ const TopIntroductionTab = ({
             disabled={
               isCheckingActivityName ||
               !activityName.trim() ||
-              !isActivityNameEnglishOnly(activityName) ||
+              !isActivityNameAlphanumeric(activityName) ||
               activityName.trim() === originalActivityName.trim()
             }
           >

@@ -20,8 +20,8 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { MAIN, GRAY, WHITE } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
 import {
-  ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
-  isActivityNameEnglishOnly,
+  ACTIVITY_NAME_ALPHANUMERIC_MESSAGE,
+  isActivityNameAlphanumeric,
   sanitizeActivityName,
 } from "../../../lib/profile/activityNameValidation";
 import { styles, roleSelectionStyles } from "./styles";
@@ -61,7 +61,7 @@ const SignupFlowScreen = () => {
     termsChecked &&
     privacyChecked &&
     activityName.trim().length > 0 &&
-    isActivityNameEnglishOnly(activityName) &&
+    isActivityNameAlphanumeric(activityName) &&
     isActivityNameVerified &&
     isActivityNameDuplicate === false;
 
@@ -88,9 +88,9 @@ const SignupFlowScreen = () => {
       setIsActivityNameVerified(false);
       return;
     }
-    if (!isActivityNameEnglishOnly(value)) {
+    if (!isActivityNameAlphanumeric(value)) {
       setIsActivityNameDuplicate(null);
-      setActivityNameMessage(ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE);
+      setActivityNameMessage(ACTIVITY_NAME_ALPHANUMERIC_MESSAGE);
       setIsActivityNameVerified(false);
       return;
     }
@@ -117,8 +117,8 @@ const SignupFlowScreen = () => {
   const handleComplete = async () => {
     if (!allRequiredChecked) return;
     try {
-      if (!isActivityNameEnglishOnly(activityName)) {
-        Alert.alert("활동 아이디 형식", ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE);
+      if (!isActivityNameAlphanumeric(activityName)) {
+        Alert.alert("활동 아이디 형식", ACTIVITY_NAME_ALPHANUMERIC_MESSAGE);
         return;
       }
       if (activityName.trim()) {
@@ -345,7 +345,7 @@ const SignupFlowScreen = () => {
                       setActivityNameMessage(
                         text === nextActivityName
                           ? ""
-                          : ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
+                          : ACTIVITY_NAME_ALPHANUMERIC_MESSAGE,
                       );
                       setIsActivityNameVerified(false);
                     }}
@@ -370,7 +370,7 @@ const SignupFlowScreen = () => {
                     disabled={
                       isCheckingActivityName ||
                       !activityName.trim() ||
-                      !isActivityNameEnglishOnly(activityName)
+                      !isActivityNameAlphanumeric(activityName)
                     }
                   >
                     <Text

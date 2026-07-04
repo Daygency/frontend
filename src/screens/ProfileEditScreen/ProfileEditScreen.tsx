@@ -36,8 +36,8 @@ import {
 import type { ProfileUpdateRequestDto } from "../../lib/apis/portfolio/dto/update-profile.dto";
 import { isDupActivityName } from "../../lib/apis/portfolio/IsDupActivityName";
 import {
-  ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE,
-  isActivityNameEnglishOnly,
+  ACTIVITY_NAME_ALPHANUMERIC_MESSAGE,
+  isActivityNameAlphanumeric,
 } from "../../lib/profile/activityNameValidation";
 import { getMajors, type Major } from "../../lib/apis/announcement/majorApi";
 import { resolveProfileMajorUuid } from "../../lib/profile/resolveProfileMajorUuid";
@@ -583,9 +583,9 @@ const ProfileEditScreen = () => {
 
     if (
       trimmedActivityName &&
-      !isActivityNameEnglishOnly(trimmedActivityName)
+      !isActivityNameAlphanumeric(trimmedActivityName)
     ) {
-      Alert.alert("활동 아이디 형식", ACTIVITY_NAME_ENGLISH_ONLY_MESSAGE);
+      Alert.alert("활동 아이디 형식", ACTIVITY_NAME_ALPHANUMERIC_MESSAGE);
       return;
     }
 
