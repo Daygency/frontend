@@ -166,12 +166,16 @@ function normalizeRoomItem(
     peer = peerFromMembers(r.members, opts.myUserId) ?? peer;
   }
 
+  const unreadRaw = r.unreadCount ?? r.unread_count;
+  const unreadCount = typeof unreadRaw === "number" ? unreadRaw : Number(unreadRaw ?? 0);
+
   return {
     id,
     kind,
     post: normalizePost(r.post),
     peer,
     lastMessage: normalizeLastMessage(r.lastMessage ?? r.last_message),
+    unreadCount: Number.isFinite(unreadCount) ? Math.max(0, unreadCount) : 0,
     createdAt:
       typeof r.createdAt === "string"
         ? r.createdAt
@@ -562,6 +566,47 @@ export async function setChatRoomNotificationsMuted(
     };
   } catch (e) {
     console.warn("[setChatRoomNotificationsMuted]", e);
+    return null;
+  }
+}
+
+/** PATCH /chat/rooms/:roomId/read — lastMessageId 생략 시 방의 최신 메시지 기준 */
+export async function markChatRoomRead(
+  roomId: string,
+  lastMessageId?: string,
+): Promise<boolean> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(
+      `${API_BASE}/chat/rooms/${encodeURIComponent(roomId)}/read`,
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(lastMessageId ? { lastMessageId } : {}),
+      },
+    );
+    return res.ok;
+  } catch (e) {
+    console.warn("[markChatRoomRead]", e);
+    return false;
+  }
+}
+
+/** GET /chat/unread-count — 하단 탭바 배지용, 내가 속한 모든 방의 안읽음 총합 */
+export async function getChatUnreadCount(): Promise<number | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/chat/unread-count`, {
+      method: "GET",
+      headers,
+    });
+    if (!res.ok) return null;
+    const data = asRecord(await res.json());
+    const raw = data.unreadCount ?? data.unread_count;
+    const n = typeof raw === "number" ? raw : Number(raw ?? 0);
+    return Number.isFinite(n) ? Math.max(0, n) : 0;
+  } catch (e) {
+    console.warn("[getChatUnreadCount]", e);
     return null;
   }
 }

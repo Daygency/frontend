@@ -15,8 +15,15 @@ import {
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+  useRoute,
+  RouteProp,
+} from "@react-navigation/native";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useChatUnread } from "../../../contexts/ChatUnreadContext";
 import { RootRoutes } from "../../../navigations/routes";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
@@ -28,6 +35,7 @@ import { GRAY, MAIN, WHITE } from "../../../color";
 import styles from "./styles";
 import {
   getChatMessages,
+  markChatRoomRead,
   sendChatFileMessage,
   sendChatFilesMessage,
 } from "../../../lib/apis/chat/chatApi";
@@ -249,6 +257,8 @@ const ChatRoomScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<{ ChatRoom: ChatRoomParams }, "ChatRoom">>();
   const { user } = useAuth();
+  const { refresh: refreshChatUnread } = useChatUnread();
+  const isFocused = useIsFocused();
   const { top, bottom } = useSafeAreaInsets();
   const keyboardHeight = useKeyboardHeight();
   const isKeyboardVisible = keyboardHeight > 0;
@@ -356,6 +366,17 @@ const ChatRoomScreen = () => {
     setActiveMatchIndex(0);
   };
 
+  /** 방을 열람 중일 때만 읽음 처리 — 배경 탭에 머무는 동안은 안읽음 그대로 유지 */
+  const markRead = useCallback(
+    (lastMessageId?: string) => {
+      if (!chatRoomId || !isFocused) return;
+      void markChatRoomRead(chatRoomId, lastMessageId).then((ok) => {
+        if (ok) void refreshChatUnread();
+      });
+    },
+    [chatRoomId, isFocused, refreshChatUnread],
+  );
+
   const appendFromSocket = useCallback(
     (payload: WsMessagePayload) => {
       const item = mapToMessageItem(payload, myUserId, peerUserId);
@@ -377,11 +398,14 @@ const ChatRoomScreen = () => {
         }
         return [...prev, item];
       });
+      if (!item.isFromMe) {
+        markRead(item.id);
+      }
       setTimeout(() => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 50);
     },
-    [peerUserId, myUserId],
+    [peerUserId, myUserId, markRead],
   );
 
   useEffect(() => {
@@ -421,6 +445,13 @@ const ChatRoomScreen = () => {
       cancelled = true;
     };
   }, [chatRoomId, peerUserId, myUserId]);
+
+  /** 방 진입/재진입 시 읽음 처리 (탭 전환 후 되돌아오는 경우 포함) */
+  useFocusEffect(
+    useCallback(() => {
+      markRead();
+    }, [markRead]),
+  );
 
   useEffect(() => {
     if (!chatRoomId || !peerUserId) return;

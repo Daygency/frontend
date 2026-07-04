@@ -186,7 +186,7 @@ export default function MyPostedChatRoomsScreen() {
                 name={displayName}
                 lastMessage={last}
                 timestamp={ts}
-                unreadCount={0}
+                unreadCount={item.unreadCount ?? 0}
                 isOnline={false}
                 isMusic={false}
                 isVerified={false}

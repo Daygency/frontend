@@ -8,6 +8,7 @@ import ChatScreen from "../screens/ChatScreens/ChatScreen/ChatScreen";
 import LoungeScreen from "../screens/LoungeScreen/LoungeScreen";
 import PortfolioScreen from "../screens/PortfolioScreen/PortfolioScreen";
 import { useAuth } from "../contexts/AuthContext";
+import { useChatUnread } from "../contexts/ChatUnreadContext";
 import { getFcmToken } from "../lib/pushNotifications";
 import {
   AntDesign,
@@ -33,6 +34,7 @@ const TAB_BAR_STYLE = {
 
 const ContentTab = () => {
   const { isLoggedIn, requireLogin } = useAuth();
+  const { unreadCount } = useChatUnread();
 
   const requireLoginOnTabPress = (
     e: EventArg<"tabPress", true, undefined>,
@@ -96,6 +98,7 @@ const ContentTab = () => {
           tabBarIcon: ({ color }) => (
             <Ionicons name="chatbubble-outline" size={24} color={color} />
           ),
+          tabBarBadge: isLoggedIn && unreadCount > 0 ? unreadCount : undefined,
           title: "채팅",
         }}
       />

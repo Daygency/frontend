@@ -30,6 +30,8 @@ export type ChatRoomListItem = {
     fileItems?: ChatFileItem[] | null;
     createdAt?: string;
   } | null;
+  /** 로그인 사용자 기준, 이 방에서 안 읽은 메시지 수 */
+  unreadCount?: number;
   createdAt?: string;
 };
 

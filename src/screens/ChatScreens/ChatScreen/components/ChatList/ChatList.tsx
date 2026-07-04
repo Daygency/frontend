@@ -31,7 +31,7 @@ import MyAnnouncementListItem from "./MyAnnouncementListItem";
 
 type ChatTopTab = "일반" | "내 공고" | "지원 공고";
 
-/** 탭별 안읽음 배지 — 서버에 unread 필드 없음 */
+/** 서브탭(일반/내 공고/지원 공고) 배지 — 공고별 방 안읽음 합산은 별도 과제 */
 export function getUnreadCountByTopTabMock(_topTab: ChatTopTab): number {
   return 0;
 }
@@ -118,10 +118,13 @@ function ChatRoomsFlatList({
   };
 
   const filteredItems = useMemo(() => {
-    if (filter === "안읽음") return [];
+    const base =
+      filter === "안읽음"
+        ? items.filter((item) => (item.unreadCount ?? 0) > 0)
+        : items;
     const q = searchQuery.trim();
-    if (!q) return items;
-    return items.filter((item) => matchesChatRoom(item, q));
+    if (!q) return base;
+    return base.filter((item) => matchesChatRoom(item, q));
   }, [items, filter, searchQuery]);
 
   const openRoom = (room: ChatRoomListItem) => {
@@ -140,14 +143,6 @@ function ChatRoomsFlatList({
     return (
       <View style={emptyScreenStyle}>
         <EmptyState message="로그인 후 채팅 목록을 불러올 수 있습니다." />
-      </View>
-    );
-  }
-
-  if (filter === "안읽음") {
-    return (
-      <View style={emptyScreenStyle}>
-        <EmptyState message="안읽음 필터는 서버 연동 후 제공 예정입니다." />
       </View>
     );
   }
@@ -186,7 +181,9 @@ function ChatRoomsFlatList({
             message={
               searchQuery.trim()
                 ? "검색 결과가 없습니다."
-                : "채팅방이 없습니다."
+                : filter === "안읽음"
+                  ? "안읽은 채팅방이 없습니다."
+                  : "채팅방이 없습니다."
             }
           />
         )
@@ -206,7 +203,7 @@ function ChatRoomsFlatList({
               name={displayName}
               lastMessage={last}
               timestamp={ts}
-              unreadCount={0}
+              unreadCount={item.unreadCount ?? 0}
               isOnline={false}
               isMusic={false}
               isVerified={false}
