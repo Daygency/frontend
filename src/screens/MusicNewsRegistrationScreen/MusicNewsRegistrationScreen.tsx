@@ -513,7 +513,7 @@ const MusicNewsRegistrationScreen = () => {
         </View>
       </ScrollView>
 
-      <View style={[styles.footer, { paddingBottom: (bottom || 0) + 16 }]}>
+      <View style={[styles.footer, { paddingBottom: (bottom || 0) + 4 }]}>
         <Pressable
           style={[styles.registerButton, (!isValid || isSubmitting) && styles.registerButtonDisabled]}
           onPress={handleRegister}

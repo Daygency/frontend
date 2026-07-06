@@ -588,7 +588,13 @@ const ApplicationScreen = () => {
     <View style={{ flex: 1, backgroundColor: WHITE }}>
       <ScrollView
         contentContainerStyle={{
-          paddingBottom: applicationId ? 150 : 90,
+          paddingBottom:
+            floatingBottomPad +
+            (!recruitmentOpen && applicationId
+              ? 190
+              : applicationId
+                ? 150
+                : 90),
         }}
       >
         <View style={{ paddingHorizontal: 12, paddingVertical: 15 }}>

@@ -15,7 +15,7 @@ const styles = StyleSheet.create({
     paddingTop: 4,
   },
   btnApply: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: "#0069FF",
     borderRadius: 16,
     paddingVertical: 16,
     bottom: 10,

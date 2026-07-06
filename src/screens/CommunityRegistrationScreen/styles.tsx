@@ -70,17 +70,18 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     flex: 1,
-    backgroundColor: "#0057D9",
+    backgroundColor: "#0069FF",
     borderRadius: 12,
-    paddingVertical: 14,
+    paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
+    minHeight: 52,
   },
   registerButtonDisabled: {
     backgroundColor: GRAY.DARK_1,
   },
   registerButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
     color: WHITE,
   },

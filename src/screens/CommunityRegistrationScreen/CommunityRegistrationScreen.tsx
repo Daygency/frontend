@@ -321,7 +321,7 @@ const CommunityRegistrationScreen = () => {
         style={[
           styles.footer,
           {
-            paddingBottom: (bottom || 0) + 16,
+            paddingBottom: (bottom || 0) + 4,
           },
         ]}
       >
