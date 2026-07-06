@@ -217,15 +217,15 @@ const styles = StyleSheet.create({
   },
   btnBookmark: {
     width: 52,
-    height: 52,
+    height: 56,
     borderRadius: 10,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: "#0069FF",
     alignItems: "center",
     justifyContent: "center",
   },
   btnApply: {
     flex: 1,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: "#0069FF",
     borderRadius: 10,
     paddingVertical: 16,
     alignItems: "center",

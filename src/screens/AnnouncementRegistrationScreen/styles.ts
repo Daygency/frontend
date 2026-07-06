@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   },
   registerButton: {
     flex: 1,
-    backgroundColor: "#0057D9",
+    backgroundColor: "#0069FF",
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",

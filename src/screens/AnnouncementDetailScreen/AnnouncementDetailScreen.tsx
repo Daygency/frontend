@@ -843,7 +843,14 @@ const AnnouncementDetailScreen = () => {
     <View
       style={[styles.floatingBottomBar, { paddingBottom: floatingBottomPad }]}
     >
-      <View style={[styles.btnApply, styles.btnApplyFull, styles.visitorInfoBar]}>
+      <Pressable style={styles.btnBookmark} onPress={handleToggleScrap}>
+        <Ionicons
+          name={scraped ? "bookmark" : "bookmark-outline"}
+          size={22}
+          color={WHITE}
+        />
+      </Pressable>
+      <View style={[styles.btnApply, styles.visitorInfoBar]}>
         <Text style={styles.visitorInfoText}>{message}</Text>
       </View>
     </View>
