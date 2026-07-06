@@ -141,6 +141,19 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingBottom: 24,
   },
+  dateDivider: {
+    alignItems: "center",
+    marginBottom: 12,
+  },
+  dateDividerText: {
+    fontSize: 12,
+    color: GRAY.DARK_2,
+    backgroundColor: GRAY.DEFAULT,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
   messageRow: {
     flexDirection: "row",
     marginBottom: 5,

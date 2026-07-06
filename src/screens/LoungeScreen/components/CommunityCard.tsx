@@ -79,16 +79,12 @@ const CommunityCard = ({
             }}
           >
             <View style={styles.headerRow}>
-              <Pressable
-                onPress={handlePressAuthor}
-                disabled={!onPressAuthor}
-                hitSlop={8}
-                style={styles.usernamePressable}
+              <Text
+                style={[styles.username, styles.usernamePressable]}
+                numberOfLines={1}
               >
-                <Text style={styles.username} numberOfLines={1}>
-                  {author}
-                </Text>
-              </Pressable>
+                {author}
+              </Text>
               {!!date && (
                 <Text style={styles.timestamp} numberOfLines={1}>
                   {date}

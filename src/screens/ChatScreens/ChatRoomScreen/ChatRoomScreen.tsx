@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo, Fragment } from "react";
 import {
   View,
   Text,
@@ -70,6 +70,7 @@ type MessageItem = {
   text: string;
   isFromMe: boolean;
   timestamp: string;
+  createdAt: string;
   fileUrl?: string | null;
   fileName?: string | null;
   fileMime?: string | null;
@@ -239,6 +240,7 @@ const mapToMessageItem = (
     text: m.content ?? "",
     isFromMe: myUserId ? uid === myUserId : uid !== String(peerUserId),
     timestamp: formatTime(new Date(createdAt)),
+    createdAt,
     fileUrl,
     fileName,
     fileMime,
@@ -253,6 +255,16 @@ const formatTime = (date: Date) => {
   const h = hours % 12 || 12;
   return `${ampm} ${h}:${minutes.toString().padStart(2, "0")}`;
 };
+
+const WEEKDAY_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
+
+const formatDateDivider = (date: Date) =>
+  `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${WEEKDAY_LABELS[date.getDay()]}요일`;
+
+const isSameDay = (a: Date, b: Date) =>
+  a.getFullYear() === b.getFullYear() &&
+  a.getMonth() === b.getMonth() &&
+  a.getDate() === b.getDate();
 
 const ChatRoomScreen = () => {
   const navigation = useNavigation<any>();
@@ -430,6 +442,7 @@ const ChatRoomScreen = () => {
             ? String(m.userId) === myUserId
             : String(m.userId) !== String(peerUserId),
           timestamp: formatTime(new Date(m.createdAt)),
+          createdAt: m.createdAt,
           fileUrl: m.fileUrl ?? null,
           fileName: m.fileName ?? null,
           fileMime: m.fileMime ?? null,
@@ -827,7 +840,11 @@ const ChatRoomScreen = () => {
               }
             }}
           >
-            {messages.map((msg) => {
+            {messages.map((msg, index) => {
+              const prevMsg = messages[index - 1];
+              const showDateDivider =
+                !prevMsg ||
+                !isSameDay(new Date(prevMsg.createdAt), new Date(msg.createdAt));
               const isActiveMatch = activeMatchMessageId === msg.id;
               const rowRef = (node: View | null) => {
                 messageRowRefs.current[msg.id] = node;
@@ -941,43 +958,52 @@ const ChatRoomScreen = () => {
                   ? styles.messageBubbleMe
                   : styles.messageBubbleOther;
 
-              return msg.isFromMe ? (
-                <View
-                  key={msg.id}
-                  ref={rowRef}
-                  style={[
-                    styles.messageRow,
-                    styles.messageRowFromMe,
-                    isActiveMatch && styles.messageRowActiveMatch,
-                  ]}
-                >
-                  <Text style={[styles.messageTime, styles.messageTimeBeforeBubble]}>
-                    {msg.timestamp}
-                  </Text>
-                  <View style={bubbleStyle}>{bubbleContent}</View>
-                </View>
-              ) : (
-                <View
-                  key={msg.id}
-                  ref={rowRef}
-                  style={[
-                    styles.messageRow,
-                    styles.messageRowFromOther,
-                    isActiveMatch && styles.messageRowActiveMatch,
-                  ]}
-                >
-                  <View style={styles.otherAvatar}>
-                    <UserProfileAvatar
-                      peerUserId={peerUserId || undefined}
-                      profileImgUrl={peerAvatarUrl}
-                      size={32}
-                    />
-                  </View>
-                  <View style={bubbleStyle}>{bubbleContent}</View>
-                  <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
-                    {msg.timestamp}
-                  </Text>
-                </View>
+              return (
+                <Fragment key={msg.id}>
+                  {showDateDivider ? (
+                    <View style={styles.dateDivider}>
+                      <Text style={styles.dateDividerText}>
+                        {formatDateDivider(new Date(msg.createdAt))}
+                      </Text>
+                    </View>
+                  ) : null}
+                  {msg.isFromMe ? (
+                    <View
+                      ref={rowRef}
+                      style={[
+                        styles.messageRow,
+                        styles.messageRowFromMe,
+                        isActiveMatch && styles.messageRowActiveMatch,
+                      ]}
+                    >
+                      <Text style={[styles.messageTime, styles.messageTimeBeforeBubble]}>
+                        {msg.timestamp}
+                      </Text>
+                      <View style={bubbleStyle}>{bubbleContent}</View>
+                    </View>
+                  ) : (
+                    <View
+                      ref={rowRef}
+                      style={[
+                        styles.messageRow,
+                        styles.messageRowFromOther,
+                        isActiveMatch && styles.messageRowActiveMatch,
+                      ]}
+                    >
+                      <View style={styles.otherAvatar}>
+                        <UserProfileAvatar
+                          peerUserId={peerUserId || undefined}
+                          profileImgUrl={peerAvatarUrl}
+                          size={32}
+                        />
+                      </View>
+                      <View style={bubbleStyle}>{bubbleContent}</View>
+                      <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
+                        {msg.timestamp}
+                      </Text>
+                    </View>
+                  )}
+                </Fragment>
               );
             })}
           </ScrollView>
