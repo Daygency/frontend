@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   registerButtonDisabled: {
-    backgroundColor: GRAY.DARK_1,
+    backgroundColor: "#0069FF",
   },
   registerButtonText: {
     fontSize: 17,
