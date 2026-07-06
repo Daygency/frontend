@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
   },
   messageRow: {
     flexDirection: "row",
-    marginBottom: 16,
+    marginBottom: 5,
   },
   messageRowFromMe: {
     justifyContent: "flex-end",
