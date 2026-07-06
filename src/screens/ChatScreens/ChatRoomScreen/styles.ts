@@ -172,7 +172,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderBottomRightRadius: 4,
   },
   messageBubbleOther: {
     maxWidth: "60%",
@@ -180,7 +179,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 10,
-    borderBottomLeftRadius: 4,
   },
   messageText: {
     fontSize: 15,
@@ -244,14 +242,32 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     alignSelf: "flex-end",
   },
+  messageGroupOther: {
+    marginBottom: 5,
+    position: "relative",
+  },
+  otherContent: {
+    marginLeft: 40,
+  },
+  otherName: {
+    fontSize: 13,
+    color: GRAY.DARK_2,
+    marginBottom: 5,
+  },
+  otherBubbleRow: {
+    flexDirection: "row",
+    alignItems: "flex-end",
+  },
   otherAvatar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
     width: 32,
     height: 32,
     borderRadius: 16,
     backgroundColor: GRAY.DARK_1,
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 8,
     overflow: "hidden",
   },
   otherAvatarImage: {

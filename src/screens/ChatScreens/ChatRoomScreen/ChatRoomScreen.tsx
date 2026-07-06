@@ -846,8 +846,21 @@ const ChatRoomScreen = () => {
           >
             {messages.map((msg, index) => {
               const prevMsg = messages[index - 1];
+              const nextMsg = messages[index + 1];
               const showDateDivider =
                 !prevMsg ||
+                !isSameDay(new Date(prevMsg.createdAt), new Date(msg.createdAt));
+              /** 같은 발신자의 같은 시각(분) 메시지가 이어지면, 가장 최근 것에만 시각 표기 */
+              const showTimestamp =
+                !nextMsg ||
+                nextMsg.isFromMe !== msg.isFromMe ||
+                nextMsg.timestamp !== msg.timestamp ||
+                !isSameDay(new Date(nextMsg.createdAt), new Date(msg.createdAt));
+              /** 같은 발신자의 같은 시각(분) 메시지가 이어지면, 가장 과거 것에만 프로필 사진 표기 */
+              const showAvatar =
+                !prevMsg ||
+                prevMsg.isFromMe !== msg.isFromMe ||
+                prevMsg.timestamp !== msg.timestamp ||
                 !isSameDay(new Date(prevMsg.createdAt), new Date(msg.createdAt));
               const isActiveMatch = activeMatchMessageId === msg.id;
               const rowRef = (node: View | null) => {
@@ -980,31 +993,43 @@ const ChatRoomScreen = () => {
                         isActiveMatch && styles.messageRowActiveMatch,
                       ]}
                     >
-                      <Text style={[styles.messageTime, styles.messageTimeBeforeBubble]}>
-                        {msg.timestamp}
-                      </Text>
+                      {showTimestamp ? (
+                        <Text style={[styles.messageTime, styles.messageTimeBeforeBubble]}>
+                          {msg.timestamp}
+                        </Text>
+                      ) : null}
                       <View style={bubbleStyle}>{bubbleContent}</View>
                     </View>
                   ) : (
                     <View
                       ref={rowRef}
                       style={[
-                        styles.messageRow,
-                        styles.messageRowFromOther,
+                        styles.messageGroupOther,
                         isActiveMatch && styles.messageRowActiveMatch,
                       ]}
                     >
-                      <View style={styles.otherAvatar}>
-                        <UserProfileAvatar
-                          peerUserId={peerUserId || undefined}
-                          profileImgUrl={peerAvatarUrl}
-                          size={32}
-                        />
+                      {showAvatar ? (
+                        <View style={styles.otherAvatar}>
+                          <UserProfileAvatar
+                            peerUserId={peerUserId || undefined}
+                            profileImgUrl={peerAvatarUrl}
+                            size={32}
+                          />
+                        </View>
+                      ) : null}
+                      <View style={styles.otherContent}>
+                        {showAvatar ? (
+                          <Text style={styles.otherName}>{handle}</Text>
+                        ) : null}
+                        <View style={styles.otherBubbleRow}>
+                          <View style={bubbleStyle}>{bubbleContent}</View>
+                          {showTimestamp ? (
+                            <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
+                              {msg.timestamp}
+                            </Text>
+                          ) : null}
+                        </View>
                       </View>
-                      <View style={bubbleStyle}>{bubbleContent}</View>
-                      <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
-                        {msg.timestamp}
-                      </Text>
                     </View>
                   )}
                 </Fragment>
