@@ -2,7 +2,7 @@ import messaging from "@react-native-firebase/messaging";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
-import { Alert, Platform, Share } from "react-native";
+import { Alert, Platform, Share, Text, TextInput } from "react-native";
 import {
   initialWindowMetrics,
   SafeAreaProvider,
@@ -29,6 +29,17 @@ messaging().setBackgroundMessageHandler(async (remoteMessage) => {
 });
 
 SplashScreen.preventAutoHideAsync();
+
+(Text as any).defaultProps ??= {};
+(Text as any).defaultProps.style = [
+  { fontFamily: "Pretendard-Regular" },
+  (Text as any).defaultProps.style,
+];
+(TextInput as any).defaultProps ??= {};
+(TextInput as any).defaultProps.style = [
+  { fontFamily: "Pretendard-Regular" },
+  (TextInput as any).defaultProps.style,
+];
 
 const kakaoNativeAppKey = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY ?? "";
 if (kakaoNativeAppKey) {

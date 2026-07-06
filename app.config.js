@@ -77,6 +77,16 @@ export default ({ config }) => ({
     },
     plugins: [
       [
+        "expo-font",
+        {
+          fonts: [
+            "./assets/fonts/Pretendard-Regular.otf",
+            "./assets/fonts/Pretendard-Medium.otf",
+            "./assets/fonts/Pretendard-Bold.otf",
+          ],
+        },
+      ],
+      [
         "expo-build-properties",
         {
           ios: {
