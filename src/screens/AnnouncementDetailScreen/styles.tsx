@@ -125,6 +125,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   sectionHeadingInline: {
+    width: 72,
     fontSize: 13,
     fontWeight: "800",
     color: BLACK,

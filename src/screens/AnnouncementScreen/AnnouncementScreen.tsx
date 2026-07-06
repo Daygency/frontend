@@ -653,7 +653,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       >
         {filterChips.map((chip) => {
           const isActive =
-            chip.type === "sort" || chip.selectedValues.length > 0;
+            chip.type !== "sort" && chip.selectedValues.length > 0;
           return (
             <Pressable
               key={chip.type}
