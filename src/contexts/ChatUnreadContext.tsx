@@ -12,6 +12,10 @@ import type { Socket } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 import { getChatUnreadCount } from "../lib/apis/chat/chatApi";
 import { createChatSocket } from "../lib/chat/createChatSocket";
+import {
+  emitChatRoomUpdated,
+  type ChatRoomUpdatedMessage,
+} from "../lib/chat/chatRoomsEvents";
 
 type ChatUnreadContextType = {
   /** 내가 속한 모든 채팅방의 안 읽은 메시지 총합 (하단 탭바 배지) */
@@ -64,9 +68,18 @@ export const ChatUnreadProvider = ({ children }: { children: ReactNode }) => {
       const socket = await createChatSocket();
       if (cancelled || !socket) return;
       socketRef.current = socket;
-      socket.on("chatUnreadChanged", () => {
-        void refresh();
-      });
+      socket.on(
+        "chatUnreadChanged",
+        (data?: { chatRoomId?: string; message?: ChatRoomUpdatedMessage }) => {
+          void refresh();
+          if (data?.chatRoomId) {
+            emitChatRoomUpdated({
+              chatRoomId: data.chatRoomId,
+              message: data.message ?? null,
+            });
+          }
+        },
+      );
     })();
 
     return () => {

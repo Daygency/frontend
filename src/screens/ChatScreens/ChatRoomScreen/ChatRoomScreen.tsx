@@ -43,6 +43,7 @@ import type { ChatFileItem } from "../../../lib/apis/chat/types";
 import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
 import { findMessageMatchIndices } from "../../../lib/chat/chatSearch";
 import { createChatSocket } from "../../../lib/chat/createChatSocket";
+import { emitChatRoomsRefresh } from "../../../lib/chat/chatRoomsEvents";
 import UserProfileAvatar from "../../../components/ui/UserProfileAvatar";
 import HighlightText from "../../../components/ui/HighlightText";
 import { useImageViewer } from "../../../contexts/ImageViewerContext";
@@ -384,7 +385,10 @@ const ChatRoomScreen = () => {
     (lastMessageId?: string) => {
       if (!chatRoomId || !isFocused) return;
       void markChatRoomRead(chatRoomId, lastMessageId).then((ok) => {
-        if (ok) void refreshChatUnread();
+        if (ok) {
+          void refreshChatUnread();
+          emitChatRoomsRefresh();
+        }
       });
     },
     [chatRoomId, isFocused, refreshChatUnread],

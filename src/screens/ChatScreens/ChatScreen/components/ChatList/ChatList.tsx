@@ -20,7 +20,12 @@ import { getMyAnnouncementList } from "../../../../../lib/apis/announcement/anno
 import type { AnnouncementListItem } from "../../../../../lib/apis/announcement/types";
 import { formatChatListTime } from "../../../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../../../lib/chat/chatRoomNavigation";
-import { CHAT_APPLIED_ROOMS_REFRESH } from "../../../../../lib/chat/chatRoomsEvents";
+import {
+  CHAT_APPLIED_ROOMS_REFRESH,
+  CHAT_ROOMS_REFRESH,
+  CHAT_ROOM_UPDATED,
+  type ChatRoomUpdatedPayload,
+} from "../../../../../lib/chat/chatRoomsEvents";
 import { matchesAnnouncement, matchesChatRoom } from "../../../../../lib/chat/chatSearch";
 import EmptyState, {
   contentContainerWhenEmpty,
@@ -97,6 +102,45 @@ function ChatRoomsFlatList({
     });
     return () => sub.remove();
   }, [mode, fetchFirst]);
+
+  /** 방 읽음 처리 PATCH가 실제로 끝난 시점에 맞춰 재조회 — focus 재조회가 먼저 끝나 안읽음 뱃지가 남는 레이스 방지 */
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener(CHAT_ROOMS_REFRESH, () => {
+      void fetchFirst();
+    });
+    return () => sub.remove();
+  }, [fetchFirst]);
+
+  /** 소켓으로 새 메시지가 온 방을 목록에서 실시간으로 갱신(안읽음 +1, 미리보기, 맨 위로) */
+  useEffect(() => {
+    const sub = DeviceEventEmitter.addListener(
+      CHAT_ROOM_UPDATED,
+      (data: ChatRoomUpdatedPayload) => {
+        setItems((prev) => {
+          const idx = prev.findIndex((r) => r.id === data.chatRoomId);
+          if (idx === -1) return prev;
+          const current = prev[idx];
+          const updated: ChatRoomListItem = data.message
+            ? {
+                ...current,
+                unreadCount: (current.unreadCount ?? 0) + 1,
+                lastMessage: {
+                  content: data.message.content,
+                  fileUrl: data.message.fileUrl ?? null,
+                  fileName: data.message.fileName ?? null,
+                  fileMime: data.message.fileMime ?? null,
+                  fileItems: data.message.fileItems ?? null,
+                  createdAt: data.message.createdAt,
+                },
+              }
+            : current;
+          const rest = [...prev.slice(0, idx), ...prev.slice(idx + 1)];
+          return [updated, ...rest];
+        });
+      },
+    );
+    return () => sub.remove();
+  }, []);
 
   const onRefresh = async () => {
     setRefreshing(true);

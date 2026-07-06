@@ -585,6 +585,9 @@ export async function markChatRoomRead(
         body: JSON.stringify(lastMessageId ? { lastMessageId } : {}),
       },
     );
+    if (!res.ok) {
+      console.warn("[markChatRoomRead] failed", res.status, await res.text().catch(() => ""));
+    }
     return res.ok;
   } catch (e) {
     console.warn("[markChatRoomRead]", e);
