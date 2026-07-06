@@ -3,7 +3,14 @@ import {
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ScrollView,
   Text,
@@ -213,8 +220,13 @@ const CommunityDetailScreen = () => {
   const { ensureLoggedIn } = useRequireLogin();
   const { bottom } = useSafeAreaInsets();
   const keyboardHeight = useKeyboardHeight();
+  const scrollViewRef = useRef<ScrollView>(null);
+  const contentAnchorRef = useRef<View>(null);
   const [data, setData] = useState<CommunityDetailResponse | null>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
+  const [scrollTargetCommentId, setScrollTargetCommentId] = useState<
+    string | null
+  >(null);
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const [editingComment, setEditingComment] = useState<{
     commentId: string;
@@ -547,6 +559,7 @@ const CommunityDetailScreen = () => {
     }
     await refreshComments();
     setReplyTarget(null);
+    setScrollTargetCommentId(String(created.id));
   };
 
   const handleDeleteComment = useCallback(
@@ -663,12 +676,14 @@ const CommunityDetailScreen = () => {
     <View style={styles.container}>
       <View style={styles.detailInner}>
         <ScrollView
+          ref={scrollViewRef}
           style={styles.detailScroll}
           contentContainerStyle={styles.scrollContent}
           bounces={false}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
+        <View ref={contentAnchorRef}>
         <View style={styles.postSection}>
           {!!categoryName && (
             <Text style={styles.categoryText}>{categoryName}</Text>
@@ -773,7 +788,12 @@ const CommunityDetailScreen = () => {
           onReply={(parentId, author) => setReplyTarget({ parentId, author })}
           onReport={openReportComment}
           onOpenOwnActions={openOwnCommentActions}
+          scrollViewRef={scrollViewRef}
+          scrollAnchorRef={contentAnchorRef}
+          scrollTargetId={scrollTargetCommentId}
+          onScrollTargetHandled={() => setScrollTargetCommentId(null)}
         />
+        </View>
         </ScrollView>
 
         <View

@@ -1,4 +1,5 @@
-import { Pressable, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY } from "../../../color";
 import CommentAuthorAvatar from "../CommentAuthorAvatar/CommentAuthorAvatar";
@@ -6,6 +7,8 @@ import styles, {
   COMMENT_AVATAR_SIZE,
   REPLY_AVATAR_SIZE,
 } from "./styles";
+
+const SCROLL_TARGET_TOP_OFFSET = 12;
 
 export type ThreadedCommentReply = {
   id: string;
@@ -33,6 +36,10 @@ type Props = {
   onReply: (parentId: string, author: string) => void;
   onReport: (commentId: string, authorUserId: string) => void;
   onOpenOwnActions: (comment: Pick<ThreadedCommentReply, "id" | "content">) => void;
+  scrollViewRef?: React.RefObject<ScrollView | null>;
+  scrollAnchorRef?: React.RefObject<View | null>;
+  scrollTargetId?: string | null;
+  onScrollTargetHandled?: () => void;
 };
 
 const ThreadedCommentList = ({
@@ -43,7 +50,33 @@ const ThreadedCommentList = ({
   onReply,
   onReport,
   onOpenOwnActions,
+  scrollViewRef,
+  scrollAnchorRef,
+  scrollTargetId,
+  onScrollTargetHandled,
 }: Props) => {
+  const commentNodes = useRef<Map<string, View>>(new Map());
+
+  useEffect(() => {
+    if (!scrollTargetId) return;
+    const node = commentNodes.current.get(scrollTargetId);
+    const anchor = scrollAnchorRef?.current;
+    if (!node || !anchor) {
+      onScrollTargetHandled?.();
+      return;
+    }
+    node.measureLayout(
+      anchor,
+      (_x, y) => {
+        scrollViewRef?.current?.scrollTo({
+          y: Math.max(0, y - SCROLL_TARGET_TOP_OFFSET),
+          animated: true,
+        });
+        onScrollTargetHandled?.();
+      },
+      () => onScrollTargetHandled?.(),
+    );
+  }, [scrollTargetId, comments, scrollViewRef, scrollAnchorRef, onScrollTargetHandled]);
   const renderTopActions = (comment: ThreadedCommentReply) => {
     if (!comment.isMine) return null;
 
@@ -102,7 +135,14 @@ const ThreadedCommentList = ({
           index === comments.length - 1 && !comment.replies?.length;
 
         return (
-          <View key={comment.id} style={styles.commentBlock}>
+          <View
+            key={comment.id}
+            style={styles.commentBlock}
+            ref={(node) => {
+              if (node) commentNodes.current.set(comment.id, node);
+              else commentNodes.current.delete(comment.id);
+            }}
+          >
             <View style={styles.avatarColumn}>
               <Pressable
                 onPress={() => onPressAuthor(comment.authorUserId, comment.author)}
@@ -144,7 +184,14 @@ const ThreadedCommentList = ({
               {!!comment.replies?.length && (
                 <View style={styles.replyList}>
                   {comment.replies.map((reply) => (
-                    <View key={reply.id} style={styles.replyBlock}>
+                    <View
+                      key={reply.id}
+                      style={styles.replyBlock}
+                      ref={(node) => {
+                        if (node) commentNodes.current.set(reply.id, node);
+                        else commentNodes.current.delete(reply.id);
+                      }}
+                    >
                       <View style={styles.replyAvatarColumn}>
                         <Pressable
                           onPress={() =>
