@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { Keyboard, Pressable, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { GRAY, MAIN } from "../../../color";
 import styles from "./styles";
@@ -31,6 +31,7 @@ const CommentInputBar = ({
   const handleSubmit = async () => {
     const content = text.trim();
     if (!content) return;
+    Keyboard.dismiss();
     await onSubmit?.(content);
     if (!editMode) {
       setText("");
