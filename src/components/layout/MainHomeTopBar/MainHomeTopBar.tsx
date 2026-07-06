@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { useNotificationUnread } from "../../../contexts/NotificationUnreadContext";
 import {
   Image,
   Modal,
@@ -24,7 +25,6 @@ import { RootRoutes } from "../../../navigations/routes";
 import type { ContentTabParamList, RootStackParamList } from "../../../navigations/types";
 import { useRequireLogin } from "../../../hooks/useRequireLogin";
 import { useAuth } from "../../../contexts/AuthContext";
-import { getNotificationUnreadCount } from "../../../lib/apis/notifications/notificationsApi";
 
 type MainHomeTopBarNavigationProp = CompositeNavigationProp<
   BottomTabNavigationProp<ContentTabParamList>,
@@ -57,19 +57,11 @@ const MainHomeTopBar = ({
   const { ensureLoggedIn } = useRequireLogin();
   const iconColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
   const titleColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
-  const [unreadNotificationCount, setUnreadNotificationCount] = useState(0);
+  const { unreadCount: unreadNotificationCount, refresh: refreshUnreadNotifications } =
+    useNotificationUnread();
   const [titleMenuVisible, setTitleMenuVisible] = useState(false);
   const [titleMenuPosition, setTitleMenuPosition] = useState({ x: 0, y: 0 });
   const titleMenuRef = useRef<View>(null);
-
-  const refreshUnreadNotifications = useCallback(async () => {
-    if (!isLoggedIn) {
-      setUnreadNotificationCount(0);
-      return;
-    }
-    const count = await getNotificationUnreadCount();
-    setUnreadNotificationCount(count != null ? Math.max(0, count) : 0);
-  }, [isLoggedIn]);
 
   useFocusEffect(
     useCallback(() => {

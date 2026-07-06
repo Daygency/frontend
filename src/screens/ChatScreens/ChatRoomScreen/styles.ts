@@ -181,11 +181,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     paddingVertical: 4,
   },
-  messageFileImage: {
-    width: 200,
-    height: 200,
-    borderRadius: 12,
-  },
   messageImageGrid: {
     width: 220,
     flexDirection: "row",

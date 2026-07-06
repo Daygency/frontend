@@ -11,6 +11,7 @@
     "ios-build": "expo export:embed --platform ios --dev false --entry-file index.ts --bundle-output ./ios/main.jsbundle --assets-dest ./ios",
     "build:local": "npm run build:local:ios && npm run build:local:android",
     "build:submit:local": "npm run build:local:ios && npm run build:local:android && eas submit --local", 
+    "build:submit:local:ios": "npm run build:local:ios && eas submit --local --platform ios",
     "build:local:ios": "GOOGLE_SERVICES_PLIST=$(base64 -i GoogleService-Info.plist) eas build --local --platform ios",
     "build:local:android": "GOOGLE_SERVICES_JSON=$(base64 -i google-services.json) eas build --local --platform android",
     "storybook": "cross-env STORYBOOK_ENABLED=true expo start",

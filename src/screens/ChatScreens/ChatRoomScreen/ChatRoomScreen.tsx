@@ -51,6 +51,7 @@ import {
   cacheChatFile,
   openChatCachedFile,
 } from "../../../lib/chat/chatFileCache";
+import ChatImageMessage from "./ChatImageMessage";
 
 export type ChatRoomParams = {
   /** 백엔드 채팅방 UUID */
@@ -900,19 +901,10 @@ const ChatRoomScreen = () => {
                     </View>
                   ) : null}
                   {showImage ? (
-                    <Pressable
-                      onPress={() => {
-                        if (fileDisplayUrl) {
-                          openImageViewer(fileDisplayUrl);
-                        }
-                      }}
-                    >
-                      <Image
-                        source={{ uri: fileDisplayUrl }}
-                        style={styles.messageFileImage}
-                        resizeMode="cover"
-                      />
-                    </Pressable>
+                    <ChatImageMessage
+                      uri={fileDisplayUrl}
+                      onPress={() => openImageViewer(fileDisplayUrl)}
+                    />
                   ) : null}
                   {showFileRow ? (
                     <Pressable

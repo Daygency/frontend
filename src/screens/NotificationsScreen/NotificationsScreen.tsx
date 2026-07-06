@@ -11,6 +11,7 @@ import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useAuth } from "../../contexts/AuthContext";
+import { useNotificationUnread } from "../../contexts/NotificationUnreadContext";
 import {
   getNotificationInbox,
   markAllNotificationsRead,
@@ -65,6 +66,7 @@ function displayLine(item: InboxRecipientItem): string {
 const NotificationsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<Record<string, object | undefined>>>();
   const { isLoggedIn, user } = useAuth();
+  const { setUnreadCount: setGlobalUnreadCount } = useNotificationUnread();
   const [items, setItems] = useState<InboxRecipientItem[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -135,8 +137,9 @@ const NotificationsScreen = () => {
             : row,
         ),
       );
+      setGlobalUnreadCount(0);
     }
-  }, [isLoggedIn, unreadCount]);
+  }, [isLoggedIn, unreadCount, setGlobalUnreadCount]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -167,13 +170,14 @@ const NotificationsScreen = () => {
                 : r,
             ),
           );
+          setGlobalUnreadCount((prev) => Math.max(0, prev - 1));
         }
       }
       await navigateFromInboxItem(navigation, row, {
         currentUserId: user?.socialId,
       });
     },
-    [navigation, user?.socialId],
+    [navigation, user?.socialId, setGlobalUnreadCount],
   );
 
   if (!isLoggedIn) {
