@@ -207,6 +207,44 @@ function parseInboxListResponse(raw: unknown): InboxListResponse | null {
 }
 
 /**
+ * GET /notifications/push-enabled — 실제 알림(댓글/팔로우 등) 수신 여부
+ */
+export async function getPushEnabled(): Promise<boolean | null> {
+  try {
+    const headers = await authJsonHeaders();
+    const res = await fetchNotificationPath("/notifications/push-enabled", {
+      method: "GET",
+      headers,
+    });
+    if (!res.ok) return null;
+    const raw = (await res.json()) as Record<string, unknown>;
+    const v = raw.isPushEnabled ?? raw.is_push_enabled;
+    return typeof v === "boolean" ? v : null;
+  } catch (e) {
+    if (__DEV__) console.warn("[getPushEnabled]", e);
+    return null;
+  }
+}
+
+/**
+ * PATCH /notifications/push-enabled — 실제 알림(댓글/팔로우 등) 수신 여부 설정
+ */
+export async function setPushEnabled(isPushEnabled: boolean): Promise<boolean> {
+  try {
+    const headers = await authJsonHeaders();
+    const res = await fetchNotificationPath("/notifications/push-enabled", {
+      method: "PATCH",
+      headers,
+      body: JSON.stringify({ isPushEnabled }),
+    });
+    return res.ok;
+  } catch (e) {
+    if (__DEV__) console.warn("[setPushEnabled]", e);
+    return false;
+  }
+}
+
+/**
  * GET /notifications — 인박스 (커서 페이지네이션)
  * @see README.md (알림 API)
  */

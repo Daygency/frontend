@@ -1,7 +1,11 @@
 import messaging from "@react-native-firebase/messaging";
 import React, { useCallback, useEffect, useState } from "react";
 import { ScrollView } from "react-native";
-import { unregisterPushDevice } from "../../../lib/apis/notifications/notificationsApi";
+import {
+  getPushEnabled,
+  setPushEnabled,
+  unregisterPushDevice,
+} from "../../../lib/apis/notifications/notificationsApi";
 import { syncFcmTokenToServer } from "../../../lib/fcmServerSync";
 import ShadowCardList, {
   ShadowCardListToggleItem,
@@ -33,11 +37,13 @@ const NotificationSettingsScreen = () => {
       setPushOn(false);
       return;
     }
-    const [pref, perm] = await Promise.all([
+    const [pref, perm, serverEnabled] = await Promise.all([
       getPushReceivePreference(),
       getOsPushPermission(),
+      getPushEnabled(),
     ]);
-    setPushOn(pref && perm === "granted");
+    const enabled = serverEnabled ?? pref;
+    setPushOn(enabled && perm === "granted");
   }, []);
 
   useEffect(() => {
@@ -56,6 +62,7 @@ const NotificationSettingsScreen = () => {
         return;
       }
       setPushOn(true);
+      void setPushEnabled(true);
       void syncFcmTokenToServer();
       return;
     }
@@ -68,6 +75,7 @@ const NotificationSettingsScreen = () => {
       /* ignore */
     }
     await setPushReceivePreference(false);
+    await setPushEnabled(false);
     setPushOn(false);
     await refreshPushState();
   };
