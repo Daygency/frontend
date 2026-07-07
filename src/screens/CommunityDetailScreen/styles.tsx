@@ -113,10 +113,9 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: BLACK,
   },
-  navSubtitle: {
+  viewCount: {
     fontSize: 12,
     color: GRAY.DARK_2,
-    marginTop: 1,
   },
 });
 

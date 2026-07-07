@@ -412,11 +412,6 @@ const CommunityDetailScreen = () => {
       headerTitle: () => (
         <View>
           <Text style={styles.navTitle}>커뮤니티</Text>
-          {viewCount > 0 ? (
-            <Text style={styles.navSubtitle}>
-              조회 {viewCount.toLocaleString()}회
-            </Text>
-          ) : null}
         </View>
       ),
       headerRight: () => (
@@ -447,7 +442,6 @@ const CommunityDetailScreen = () => {
     isMinePost,
     onEditCommunity,
     onDeleteCommunity,
-    viewCount,
   ]);
 
   const handlePickReportCategory = useCallback(
@@ -725,6 +719,11 @@ const CommunityDetailScreen = () => {
                 {formatPostDate(data.createdAt)}
               </Text>
             </View>
+            {viewCount > 0 ? (
+              <Text style={styles.viewCount}>
+                조회 {viewCount.toLocaleString()}회
+              </Text>
+            ) : null}
           </View>
 
           <View style={styles.contentDivider} />
