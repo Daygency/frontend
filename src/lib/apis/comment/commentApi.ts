@@ -36,7 +36,10 @@ export async function getComments(
     q.set("targetType", params.targetType);
     q.set("targetId", params.targetId);
     const url = `${API_BASE}/comment?${q.toString()}`;
-    const res = await fetch(url);
+    const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
+    const res = await fetch(url, {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
       console.warn("[getComments] 실패:", res.status, url, errText);
