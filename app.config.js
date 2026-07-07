@@ -57,6 +57,7 @@ export default ({ config }) => ({
       entitlements: { "aps-environment": "production" },
       infoPlist: {
         UIBackgroundModes: ["remote-notification"],
+        UIDesignRequiresCompatibility: true,
         ITSAppUsesNonExemptEncryption: false,
         NSPhotoLibraryAddUsageDescription:
           "사진을 기기에 저장하기 위해 사진 보관함 접근 권한이 필요합니다.",

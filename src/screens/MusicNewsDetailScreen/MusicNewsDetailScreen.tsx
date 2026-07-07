@@ -5,7 +5,6 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import {
-  ActivityIndicator,
   ScrollView,
   Text,
   View,
@@ -70,6 +69,7 @@ import { formatNewsTicketPrice } from "../../lib/news/buildPerformanceNewsDispla
 import { pickUserNickname } from "../../lib/user/pickUserNickname";
 import { getMyProfile } from "../../lib/apis/portfolio/profileApi";
 import { getProfileCache } from "../../lib/profileCache";
+import MusicNewsDetailSkeleton from "./components/MusicNewsDetailSkeleton";
 
 export type MusicNewsDetailItem = {
   id: string;
@@ -753,16 +753,29 @@ const MusicNewsDetailScreen = () => {
 
   if (loading) {
     return (
-      <View
-        style={[
-          styles.container,
-          { justifyContent: "center", alignItems: "center", flex: 1 },
-        ]}
-      >
-        <ActivityIndicator size="large" color={GRAY.DARK} />
-        <Text style={{ marginTop: 12, fontSize: 14, color: GRAY.DARK_2 }}>
-          공연소식을 불러오는 중...
-        </Text>
+      <View style={styles.container}>
+        <View style={styles.detailInner}>
+          <ScrollView
+            style={styles.detailScroll}
+            contentContainerStyle={styles.scrollContent}
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+          >
+            <MusicNewsDetailSkeleton />
+          </ScrollView>
+
+          <View
+            style={[
+              styles.commentInputWrapper,
+              { paddingBottom: commentInputBarPaddingBottom(keyboardHeight, bottom) },
+            ]}
+          >
+            <CommentInputBar
+              placeholder="댓글을 입력하세요"
+              onSubmit={handleCreateComment}
+            />
+          </View>
+        </View>
       </View>
     );
   }
