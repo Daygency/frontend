@@ -134,16 +134,16 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   openTime: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: "700",
     color: BLUE.DEFAULT,
     includeFontPadding: false,
   },
   title: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "700",
     color: MAIN.DEFAULT,
-    lineHeight: 24,
+    lineHeight: 22,
   },
   place: {
     fontSize: 14,

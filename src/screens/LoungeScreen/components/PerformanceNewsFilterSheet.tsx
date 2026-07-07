@@ -1,11 +1,10 @@
-import {
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useCallback, useMemo } from "react";
+import { Platform, StyleSheet, Text, View } from "react-native";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  type BottomSheetBackdropProps,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import SelectableTag from "../../../components/ui/SelectableTag";
 import { GRAY, MAIN, WHITE } from "../../../color";
 import {
@@ -34,6 +33,8 @@ const SHEET_CONFIG = {
   genre: { title: "장르" },
   region: { title: "지역" },
 } as const;
+
+const SNAP_POINTS = ["50%"];
 
 const PerformanceNewsFilterSheet = ({
   type,
@@ -99,65 +100,78 @@ const PerformanceNewsFilterSheet = ({
     onSelectRegion(selectedRegion === id ? null : id);
   };
 
+  const snapPoints = useMemo(() => SNAP_POINTS, []);
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+        style={[props.style, styles.backdropZIndex]}
+      />
+    ),
+    [],
+  );
+
   return (
-    <View style={styles.overlay}>
-      <Pressable style={styles.backdrop} onPress={onClose}>
-        <Pressable style={styles.panel} onPress={(e) => e.stopPropagation()}>
-          <View style={styles.handle} />
+    <BottomSheet
+      index={0}
+      snapPoints={snapPoints}
+      enableDynamicSizing={false}
+      enablePanDownToClose
+      onClose={onClose}
+      backdropComponent={renderBackdrop}
+      containerStyle={styles.containerZIndex}
+      backgroundStyle={styles.sheetBackground}
+      handleIndicatorStyle={styles.handleIndicator}
+    >
+      <Text style={styles.title}>{config.title}</Text>
 
-          <Text style={styles.title}>{config.title}</Text>
-
-          <ScrollView
-            style={styles.optionsScroll}
-            contentContainerStyle={styles.tagContent}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-          >
-            <View style={styles.tagContainer}>
-              {tagOptions.map((option) => (
-                <SelectableTag
-                  key={option.id}
-                  label={option.label}
-                  selected={isTagSelected(option.id)}
-                  onPress={() => handleTagPress(option.id)}
-                />
-              ))}
-            </View>
-          </ScrollView>
-        </Pressable>
-      </Pressable>
-    </View>
+      <BottomSheetScrollView
+        style={styles.optionsScroll}
+        contentContainerStyle={styles.tagContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.tagContainer}>
+          {tagOptions.map((option) => (
+            <SelectableTag
+              key={option.id}
+              label={option.label}
+              selected={isTagSelected(option.id)}
+              onPress={() => handleTagPress(option.id)}
+            />
+          ))}
+        </View>
+      </BottomSheetScrollView>
+    </BottomSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
+  backdropZIndex: {
     zIndex: 100,
     ...Platform.select({
       android: { elevation: 100 },
     }),
   },
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
+  containerZIndex: {
+    zIndex: 100,
+    ...Platform.select({
+      android: { elevation: 100 },
+    }),
   },
-  panel: {
+  sheetBackground: {
     backgroundColor: WHITE,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    overflow: "hidden",
-    height: "50%",
   },
-  handle: {
-    alignSelf: "center",
+  handleIndicator: {
     width: 36,
     height: 4,
     borderRadius: 2,
     backgroundColor: GRAY.DARK_1,
-    marginTop: 10,
-    marginBottom: 8,
   },
   title: {
     fontSize: 18,

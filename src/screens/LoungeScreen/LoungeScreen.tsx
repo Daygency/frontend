@@ -129,7 +129,7 @@ const LoungeScreen = () => {
   const [index, setIndex] = useState(() =>
     tabToIndex(resolveInitialTab(route.params?.initialTab)),
   );
-  const [sortMode, setSortMode] = useState<PerformanceNewsSortMode>("imminent");
+  const [sortMode, setSortMode] = useState<PerformanceNewsSortMode>("created");
   const [selectedGenre, setSelectedGenre] = useState<string | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<string | null>(null);
   const [selectedCommunityTag, setSelectedCommunityTag] =
