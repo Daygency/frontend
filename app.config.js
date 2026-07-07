@@ -47,9 +47,10 @@ const googleSignInPlugins = googleIosUrlScheme
 export default ({ config }) => ({
   ...config,
   expo: {
-    name: "mfrontend",
-    slug: "mfrontend",
+    name: "데이전시",
+    slug: "daygency",
     version: "1.0.0",
+    icon: "./assets/main_app_logo.png",
     ios: {
       bundleIdentifier: "com.rbdus.mfrontend",
       googleServicesFile: hasPlist ? "./GoogleService-Info.plist" : undefined,
