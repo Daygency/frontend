@@ -3,6 +3,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import { Alert, Platform, Share, Text, TextInput } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import {
   initialWindowMetrics,
   SafeAreaProvider,
@@ -134,19 +135,21 @@ const App = () => {
   }
 
   return (
-    <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-      <AuthProvider>
-        <ChatUnreadProvider>
-          <NotificationUnreadProvider>
-            <ImageViewerProvider>
-              <FcmTokenSyncBridge />
-              <StatusBar style="dark" />
-              <Navigation />
-            </ImageViewerProvider>
-          </NotificationUnreadProvider>
-        </ChatUnreadProvider>
-      </AuthProvider>
-    </SafeAreaProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+        <AuthProvider>
+          <ChatUnreadProvider>
+            <NotificationUnreadProvider>
+              <ImageViewerProvider>
+                <FcmTokenSyncBridge />
+                <StatusBar style="dark" />
+                <Navigation />
+              </ImageViewerProvider>
+            </NotificationUnreadProvider>
+          </ChatUnreadProvider>
+        </AuthProvider>
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
   );
 };
 

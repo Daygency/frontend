@@ -1,13 +1,11 @@
-import { useState } from "react";
-import {
-  Platform,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { useCallback, useMemo, useState } from "react";
+import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import BottomSheet, {
+  BottomSheetBackdrop,
+  type BottomSheetBackdropProps,
+  BottomSheetScrollView,
+} from "@gorhom/bottom-sheet";
 import SelectableTag from "../../../components/ui/SelectableTag";
 import { BLUE, GRAY, MAIN, WHITE } from "../../../color";
 import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
@@ -21,6 +19,8 @@ const FILTER_TAB_TYPES: AnnouncementFilterTabType[] = [
   "major",
   "price",
 ];
+
+const SNAP_POINTS = ["50%"];
 
 type AnnouncementFilterTabSheetProps = {
   initialType: AnnouncementFilterTabType;
@@ -45,90 +45,103 @@ const AnnouncementFilterTabSheet = ({
     0,
   );
 
+  const snapPoints = useMemo(() => SNAP_POINTS, []);
+
+  const renderBackdrop = useCallback(
+    (props: BottomSheetBackdropProps) => (
+      <BottomSheetBackdrop
+        {...props}
+        appearsOnIndex={0}
+        disappearsOnIndex={-1}
+        pressBehavior="close"
+        style={[props.style, styles.backdropZIndex]}
+      />
+    ),
+    [],
+  );
+
   return (
-    <View style={styles.overlay}>
-      <Pressable style={styles.backdrop} onPress={onApply}>
-        <Pressable style={styles.panel} onPress={(e) => e.stopPropagation()}>
-          <View style={styles.handle} />
-
-          <View style={styles.tabRow}>
-            {FILTER_TAB_TYPES.map((type) => {
-              const isActive = type === activeTab;
-              return (
-                <Pressable
-                  key={type}
-                  style={styles.tabItem}
-                  onPress={() => setActiveTab(type)}
-                >
-                  <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
-                    {ANNOUNCEMENT_FILTER_SHEET_TITLES[type]}
-                  </Text>
-                  {isActive && <View style={styles.tabUnderline} />}
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <ScrollView
-            style={styles.optionsScroll}
-            contentContainerStyle={styles.tagContent}
-            showsVerticalScrollIndicator={false}
-            bounces={false}
-          >
-            <View style={styles.tagContainer}>
-              {active.options.map((option) => (
-                <SelectableTag
-                  key={option}
-                  label={option}
-                  selected={active.selectedValues.includes(option)}
-                  onPress={() => active.onToggle(option)}
-                />
-              ))}
-            </View>
-          </ScrollView>
-
-          <View style={styles.footer}>
-            <Pressable style={styles.resetButton} onPress={onReset} hitSlop={8}>
-              <MaterialCommunityIcons name="close" size={20} color={MAIN.DEFAULT} />
+    <BottomSheet
+      index={0}
+      snapPoints={snapPoints}
+      enableDynamicSizing={false}
+      enablePanDownToClose
+      onClose={onApply}
+      backdropComponent={renderBackdrop}
+      containerStyle={styles.containerZIndex}
+      backgroundStyle={styles.sheetBackground}
+      handleIndicatorStyle={styles.handleIndicator}
+    >
+      <View style={styles.tabRow}>
+        {FILTER_TAB_TYPES.map((type) => {
+          const isActive = type === activeTab;
+          return (
+            <Pressable
+              key={type}
+              style={styles.tabItem}
+              onPress={() => setActiveTab(type)}
+            >
+              <Text style={[styles.tabLabel, isActive && styles.tabLabelActive]}>
+                {ANNOUNCEMENT_FILTER_SHEET_TITLES[type]}
+              </Text>
+              {isActive && <View style={styles.tabUnderline} />}
             </Pressable>
-            <Pressable style={styles.applyButton} onPress={onApply}>
-              <Text style={styles.applyButtonText}>{totalSelected}개 적용</Text>
-            </Pressable>
-          </View>
+          );
+        })}
+      </View>
+
+      <BottomSheetScrollView
+        style={styles.optionsScroll}
+        contentContainerStyle={styles.tagContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.tagContainer}>
+          {active.options.map((option) => (
+            <SelectableTag
+              key={option}
+              label={option}
+              selected={active.selectedValues.includes(option)}
+              onPress={() => active.onToggle(option)}
+            />
+          ))}
+        </View>
+      </BottomSheetScrollView>
+
+      <View style={styles.footer}>
+        <Pressable style={styles.resetButton} onPress={onReset} hitSlop={8}>
+          <MaterialCommunityIcons name="close" size={20} color={MAIN.DEFAULT} />
         </Pressable>
-      </Pressable>
-    </View>
+        <Pressable style={styles.applyButton} onPress={onApply}>
+          <Text style={styles.applyButtonText}>{totalSelected}개 적용</Text>
+        </Pressable>
+      </View>
+    </BottomSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
+  backdropZIndex: {
     zIndex: 100,
     ...Platform.select({
       android: { elevation: 100 },
     }),
   },
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "flex-end",
+  containerZIndex: {
+    zIndex: 100,
+    ...Platform.select({
+      android: { elevation: 100 },
+    }),
   },
-  panel: {
+  sheetBackground: {
     backgroundColor: WHITE,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
-    overflow: "hidden",
-    height: "50%",
   },
-  handle: {
-    alignSelf: "center",
+  handleIndicator: {
     width: 36,
     height: 4,
     borderRadius: 2,
     backgroundColor: GRAY.DARK_1,
-    marginTop: 10,
-    marginBottom: 8,
   },
   tabRow: {
     flexDirection: "row",
