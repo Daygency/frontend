@@ -5,6 +5,7 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import {
+  RefreshControl,
   ScrollView,
   Text,
   View,
@@ -18,7 +19,7 @@ import {
 } from "../../hooks/useKeyboardHeight";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import navigationHeaderStyles from "../../navigations/styles";
-import { BLACK, GRAY, RED } from "../../color";
+import { BLACK, GRAY, MAIN, RED } from "../../color";
 import { Ionicons } from "@expo/vector-icons";
 import CommentInputBar from "../../components/comments/CommentInputBar";
 import CommentReplyTargetBar from "../../components/comments/CommentReplyTargetBar";
@@ -296,6 +297,7 @@ const MusicNewsDetailScreen = () => {
   const [scrapCount, setScrapCount] = useState(0);
   const [loading, setLoading] = useState(!!newsId);
   const [error, setError] = useState<string | null>(null);
+  const [detailRefreshing, setDetailRefreshing] = useState(false);
   const [newsAuthorUserId, setNewsAuthorUserId] = useState<string | null>(null);
   /** API `isMine` — 작성자 id가 비어 있어도 본인 글 판별 */
   const [isMineFromApi, setIsMineFromApi] = useState(false);
@@ -364,6 +366,12 @@ const MusicNewsDetailScreen = () => {
       fetchDetail();
     }
   }, [newsId, fetchDetail]);
+
+  const onRetryRefresh = useCallback(async () => {
+    setDetailRefreshing(true);
+    await fetchDetail();
+    setDetailRefreshing(false);
+  }, [fetchDetail]);
 
   const displayedComments = comments;
   const targetNewsId = newsId ?? news?.id;
@@ -751,7 +759,7 @@ const MusicNewsDetailScreen = () => {
     setComments((prev) => updateCommentLikeState(prev, targetId, true));
   };
 
-  if (loading) {
+  if (loading || (newsId && (error || !news))) {
     return (
       <View style={styles.container}>
         <View style={styles.detailInner}>
@@ -760,6 +768,14 @@ const MusicNewsDetailScreen = () => {
             contentContainerStyle={styles.scrollContent}
             bounces={false}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={detailRefreshing}
+                onRefresh={onRetryRefresh}
+                tintColor={MAIN.DEFAULT}
+                colors={[MAIN.DEFAULT]}
+              />
+            }
           >
             <MusicNewsDetailSkeleton />
           </ScrollView>
@@ -780,7 +796,7 @@ const MusicNewsDetailScreen = () => {
     );
   }
 
-  if (error || !news) {
+  if (!news) {
     return (
       <View
         style={[
@@ -789,13 +805,8 @@ const MusicNewsDetailScreen = () => {
         ]}
       >
         <Text style={{ fontSize: 14, color: GRAY.DARK_2, textAlign: "center" }}>
-          {error ?? "정보를 불러올 수 없습니다."}
+          정보를 불러올 수 없습니다.
         </Text>
-        {newsId && (
-          <Pressable onPress={fetchDetail} style={{ marginTop: 16 }}>
-            <Text style={{ fontSize: 14, color: "#0057D9" }}>다시 시도</Text>
-          </Pressable>
-        )}
       </View>
     );
   }

@@ -1,5 +1,5 @@
 import { Dimensions, StyleSheet } from "react-native";
-import { SKELETON } from "../../../color";
+import { GRAY, SKELETON, WHITE } from "../../../color";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -90,6 +90,75 @@ const homeSkeletonStyles = StyleSheet.create({
     marginTop: 6,
     width: "50%",
     height: 11,
+  },
+  announcementCard: {
+    marginHorizontal: 20,
+    marginBottom: 8,
+    backgroundColor: WHITE,
+    borderWidth: 1,
+    borderRadius: 12,
+    borderColor: GRAY.MEDIUM,
+    overflow: "hidden",
+  },
+  announcementTopSection: {
+    paddingHorizontal: 15,
+    paddingTop: 12,
+    paddingBottom: 10,
+  },
+  announcementProfileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  announcementAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    marginRight: 8,
+  },
+  announcementAuthorName: {
+    width: 70,
+    height: 18,
+    marginRight: 8,
+  },
+  announcementDDay: {
+    width: 36,
+    height: 18,
+    marginLeft: "auto",
+  },
+  announcementTitle: {
+    width: "70%",
+    height: 20,
+  },
+  announcementFooterSection: {
+    flexDirection: "row",
+    gap: 6,
+    backgroundColor: GRAY.DEFAULT_1,
+    paddingHorizontal: 15,
+    paddingTop: 10,
+    paddingBottom: 12,
+  },
+  announcementTag: {
+    width: 56,
+    height: 18,
+    borderRadius: 4,
+  },
+  communityRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 20,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: GRAY.MEDIUM_2,
+  },
+  communityBoardName: {
+    width: 60,
+    height: 18,
+    marginRight: 12,
+  },
+  communityLatestPost: {
+    flex: 1,
+    height: 16,
   },
 });
 

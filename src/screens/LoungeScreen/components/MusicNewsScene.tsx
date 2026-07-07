@@ -11,6 +11,7 @@ import Animated from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import PerformanceNewsListCard from "./PerformanceNewsListCard";
+import MusicNewsListSkeleton from "./MusicNewsListSkeleton";
 import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
@@ -68,10 +69,6 @@ const localStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 24,
-  },
-  errorText: {
-    fontSize: 14,
-    color: GRAY.DARK,
   },
   emptyText: {
     fontSize: 14,
@@ -213,14 +210,8 @@ const MusicNewsScene = ({
           ) : null
         }
         ListEmptyComponent={
-          loading && items.length === 0 ? (
-            <View style={localStyles.loaderContainer}>
-              <ActivityIndicator size="small" />
-            </View>
-          ) : error ? (
-            <View style={localStyles.loaderContainer}>
-              <Text style={localStyles.errorText}>{error}</Text>
-            </View>
+          items.length === 0 && (loading || error) ? (
+            <MusicNewsListSkeleton />
           ) : (
             <View style={localStyles.loaderContainer}>
               <Text style={localStyles.emptyText}>등록된 공연소식이 없습니다.</Text>

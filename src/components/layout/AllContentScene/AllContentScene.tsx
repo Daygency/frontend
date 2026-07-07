@@ -95,6 +95,8 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
   >([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [hasData, setHasData] = useState(false);
 
   useImperativeHandle(
     ref,
@@ -134,7 +136,12 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
     }
     try {
       const home = await getHome();
-      if (!home) return;
+      if (!home) {
+        setLoadError(true);
+        return;
+      }
+      setLoadError(false);
+      setHasData(true);
       setAnnouncements(home.latestAnnouncements ?? []);
       setBanners(home.banners ?? []);
       setNewsItems(home.recentNews ?? []);
@@ -248,7 +255,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
       scrollEventThrottle={16}
       refreshControl={homeRefreshControl}
     >
-      {loading ? (
+      {(loading || loadError) && !hasData ? (
         <HomeSkeleton />
       ) : (
         <>

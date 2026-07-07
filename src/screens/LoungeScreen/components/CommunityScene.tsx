@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  ActivityIndicator,
   FlatList,
   RefreshControl,
   StyleSheet,
@@ -11,6 +10,7 @@ import Animated from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
+import CommunityListSkeleton from "./CommunityListSkeleton";
 import type { LoungeCommunityTagOption } from "./LoungeCommunityTagRow";
 import { ContentRoutes, RootRoutes } from "../../../navigations/routes";
 import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
@@ -207,14 +207,8 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
           />
         }
         ListEmptyComponent={
-          error ? (
-            <View style={localStyles.loaderContainer}>
-              <Text style={localStyles.errorText}>{error}</Text>
-            </View>
-          ) : loading && !refreshing ? (
-            <View style={localStyles.loaderContainer}>
-              <ActivityIndicator size="small" />
-            </View>
+          items.length === 0 && (loading || error) && !refreshing ? (
+            <CommunityListSkeleton />
           ) : (
             <View style={localStyles.loaderContainer}>
               <Text style={localStyles.emptyText}>게시글이 없습니다.</Text>
@@ -269,10 +263,6 @@ const localStyles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingVertical: 24,
-  },
-  errorText: {
-    fontSize: 14,
-    color: GRAY.DARK,
   },
   emptyText: {
     fontSize: 14,

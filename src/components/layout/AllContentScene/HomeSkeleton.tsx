@@ -18,6 +18,8 @@ const Box = ({
 );
 
 const NEWS_CARD_PLACEHOLDER_COUNT = 3;
+const ANNOUNCEMENT_PLACEHOLDER_COUNT = 2;
+const COMMUNITY_ROW_PLACEHOLDER_COUNT = 4;
 
 const HomeSkeleton = () => (
   <View>
@@ -45,6 +47,40 @@ const HomeSkeleton = () => (
           </View>
         ))}
       </View>
+    </View>
+
+    <View style={skeletonStyles.section}>
+      <View style={skeletonStyles.sectionHeader}>
+        <Box style={skeletonStyles.sectionTitle} />
+      </View>
+      {Array.from({ length: ANNOUNCEMENT_PLACEHOLDER_COUNT }).map((_, index) => (
+        <View key={index} style={skeletonStyles.announcementCard}>
+          <View style={skeletonStyles.announcementTopSection}>
+            <View style={skeletonStyles.announcementProfileRow}>
+              <Box light style={skeletonStyles.announcementAvatar} />
+              <Box light style={skeletonStyles.announcementAuthorName} />
+              <Box light style={skeletonStyles.announcementDDay} />
+            </View>
+            <Box style={skeletonStyles.announcementTitle} />
+          </View>
+          <View style={skeletonStyles.announcementFooterSection}>
+            <Box light style={skeletonStyles.announcementTag} />
+            <Box light style={skeletonStyles.announcementTag} />
+          </View>
+        </View>
+      ))}
+    </View>
+
+    <View style={skeletonStyles.section}>
+      <View style={skeletonStyles.sectionHeader}>
+        <Box style={skeletonStyles.sectionTitle} />
+      </View>
+      {Array.from({ length: COMMUNITY_ROW_PLACEHOLDER_COUNT }).map((_, index) => (
+        <View key={index} style={skeletonStyles.communityRow}>
+          <Box light style={skeletonStyles.communityBoardName} />
+          <Box light style={skeletonStyles.communityLatestPost} />
+        </View>
+      ))}
     </View>
   </View>
 );

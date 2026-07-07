@@ -146,6 +146,7 @@ type AnnouncementListBodyProps = {
   items: AnnouncementListItem[];
   loading: boolean;
   refreshing: boolean;
+  loadError: boolean;
   emptyMessage: string;
   onRefresh: () => void;
   onPressItem: (item: AnnouncementListItem) => void;
@@ -155,10 +156,11 @@ function AnnouncementListContent({
   items,
   loading,
   refreshing,
+  loadError,
   emptyMessage,
   onPressItem,
 }: AnnouncementListBodyProps) {
-  if (loading && !refreshing && items.length === 0) {
+  if (items.length === 0 && (loading || loadError) && !refreshing) {
     return <AnnouncementListSkeleton />;
   }
 
@@ -197,6 +199,7 @@ const CollapsibleAnnouncementList = ({
   items,
   loading,
   refreshing,
+  loadError,
   emptyMessage,
   onRefresh,
   onPressItem,
@@ -228,6 +231,7 @@ const CollapsibleAnnouncementList = ({
           items={items}
           loading={loading}
           refreshing={refreshing}
+          loadError={loadError}
           emptyMessage={emptyMessage}
           onRefresh={onRefresh}
           onPressItem={onPressItem}
@@ -241,6 +245,7 @@ const PlainAnnouncementList = ({
   items,
   loading,
   refreshing,
+  loadError,
   emptyMessage,
   onRefresh,
   onScrollForPagination,
@@ -270,6 +275,7 @@ const PlainAnnouncementList = ({
         items={items}
         loading={loading}
         refreshing={refreshing}
+        loadError={loadError}
         emptyMessage={emptyMessage}
         onRefresh={onRefresh}
         onPressItem={onPressItem}
@@ -328,6 +334,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [categories, setCategories] = useState<{ name: string; categoryId: string }[]>([]);
   const [majors, setMajors] = useState<{ name: string; majorId: string }[]>([]);
   const loadListSeqRef = useRef(0);
@@ -382,6 +389,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         setNextCursor(null);
         setHasMore(false);
         setLoading(false);
+        setLoadError(false);
         return;
       }
       const seq = ++loadListSeqRef.current;
@@ -414,11 +422,15 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           setPickItems(feedView === "전체" ? (picks ?? []) : []);
         }
         if (!res) {
-          setItems([]);
-          setNextCursor(null);
-          setHasMore(false);
+          if (!isLoadMore) {
+            setItems([]);
+            setNextCursor(null);
+            setHasMore(false);
+            setLoadError(true);
+          }
           return;
         }
+        setLoadError(false);
         if (!cursor) {
           setItems(res.items ?? []);
         } else {
@@ -695,6 +707,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     items,
     loading,
     refreshing,
+    loadError,
     emptyMessage,
     onRefresh,
     onPressItem: handlePressItem,

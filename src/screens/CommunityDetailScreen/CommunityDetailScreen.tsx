@@ -12,6 +12,7 @@ import {
   useState,
 } from "react";
 import {
+  RefreshControl,
   ScrollView,
   Text,
   View,
@@ -33,7 +34,7 @@ import ImageCarousel from "../../components/media/ImageCarousel";
 import styles from "./styles";
 import { getCommunityDetail, deleteCommunity } from "../../lib/apis/community/communityApi";
 import type { CommunityDetailResponse } from "../../lib/apis/community/types";
-import { BLACK, RED } from "../../color";
+import { BLACK, MAIN, RED } from "../../color";
 import {
   createComment,
   deleteComment,
@@ -239,6 +240,8 @@ const CommunityDetailScreen = () => {
   const [isMineFromApi, setIsMineFromApi] = useState(false);
   const [imageIndex, setImageIndex] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
+  const [detailRefreshing, setDetailRefreshing] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [reportPending, setReportPending] = useState<{
@@ -275,15 +278,27 @@ const CommunityDetailScreen = () => {
       (myUserId && authorUserId && myUserId.toLowerCase() === authorUserId.toLowerCase()),
   );
 
-  useEffect(() => {
-    (async () => {
-      setLoading(true);
+  const loadDetail = useCallback(
+    async (opts?: { silent?: boolean }) => {
+      if (!opts?.silent) setLoading(true);
       const res = await getCommunityDetail(communityId);
       setData(res);
       setIsMineFromApi(Boolean(res?.isMine));
+      setLoadError(!res);
       setLoading(false);
-    })();
-  }, [communityId]);
+    },
+    [communityId],
+  );
+
+  useEffect(() => {
+    loadDetail();
+  }, [loadDetail]);
+
+  const onRetryRefresh = useCallback(async () => {
+    setDetailRefreshing(true);
+    await loadDetail({ silent: true });
+    setDetailRefreshing(false);
+  }, [loadDetail]);
 
   useEffect(() => {
     (async () => {
@@ -646,7 +661,7 @@ const CommunityDetailScreen = () => {
     setComments((prev) => updateCommentLikeState(prev, targetId, true));
   };
 
-  if (loading) {
+  if (loading || (loadError && !data)) {
     return (
       <View style={styles.container}>
         <View style={styles.detailInner}>
@@ -655,6 +670,14 @@ const CommunityDetailScreen = () => {
             contentContainerStyle={styles.scrollContent}
             bounces={false}
             showsVerticalScrollIndicator={false}
+            refreshControl={
+              <RefreshControl
+                refreshing={detailRefreshing}
+                onRefresh={onRetryRefresh}
+                tintColor={MAIN.DEFAULT}
+                colors={[MAIN.DEFAULT]}
+              />
+            }
           >
             <CommunityDetailSkeleton />
           </ScrollView>
@@ -675,15 +698,7 @@ const CommunityDetailScreen = () => {
     );
   }
 
-  if (!data) {
-    return (
-      <View style={styles.container}>
-        <View style={[styles.scrollContent, { alignItems: "center", justifyContent: "center" }]}>
-          <Text>게시글을 불러오지 못했습니다.</Text>
-        </View>
-      </View>
-    );
-  }
+  if (!data) return null;
 
   return (
     <View style={styles.container}>
