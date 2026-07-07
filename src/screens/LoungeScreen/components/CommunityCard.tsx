@@ -1,4 +1,3 @@
-import { useState } from "react";
 import {
   View,
   Text,
@@ -29,6 +28,8 @@ type CommunityCardProps = {
   onPressAuthor?: () => void;
 };
 
+const THUMBNAIL_SIZE = 72;
+
 const CommunityCard = ({
   title,
   contentPreview,
@@ -48,8 +49,6 @@ const CommunityCard = ({
   const showContent =
     contentText.length > 0 && contentText !== titleText;
   const showMedia = Boolean(thumbnailUrl?.trim());
-  const [textBlockHeight, setTextBlockHeight] = useState(0);
-  const thumbSize = textBlockHeight > 0 ? textBlockHeight : 0;
   const handlePressAuthor = (event: GestureResponderEvent) => {
     event.stopPropagation();
     onPressAuthor?.();
@@ -71,13 +70,7 @@ const CommunityCard = ({
         </Pressable>
 
         <View style={[styles.body, showMedia && styles.bodyWithThumb]}>
-          <View
-            style={styles.textColumn}
-            onLayout={(e) => {
-              const next = Math.round(e.nativeEvent.layout.height);
-              setTextBlockHeight((prev) => (prev === next ? prev : next));
-            }}
-          >
+          <View style={styles.textColumn}>
             <View style={styles.headerRow}>
               <Text
                 style={[styles.username, styles.usernamePressable]}
@@ -124,13 +117,8 @@ const CommunityCard = ({
             </View>
           </View>
 
-          {showMedia && thumbSize > 0 ? (
-            <View
-              style={[
-                styles.thumbnailWrap,
-                { width: thumbSize, height: thumbSize },
-              ]}
-            >
+          {showMedia ? (
+            <View style={styles.thumbnailWrap}>
               <Image
                 source={{ uri: thumbnailUrl! }}
                 style={styles.thumbnail}
@@ -212,6 +200,8 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   thumbnailWrap: {
+    width: THUMBNAIL_SIZE,
+    height: THUMBNAIL_SIZE,
     flexShrink: 0,
     borderRadius: 10,
     overflow: "hidden",
