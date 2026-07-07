@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
 import { WHITE, GRAY } from "../../../color";
+import { MEDIA_MAX_WIDTH } from "./mediaSize";
 
 const styles = StyleSheet.create({
   container: {
@@ -191,9 +192,10 @@ const styles = StyleSheet.create({
   messageBubbleMedia: {
     paddingHorizontal: 4,
     paddingVertical: 4,
+    overflow: "hidden",
   },
   messageImageGrid: {
-    width: 220,
+    width: MEDIA_MAX_WIDTH,
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 4,
@@ -201,15 +203,15 @@ const styles = StyleSheet.create({
     overflow: "hidden",
   },
   messageImageGridItem: {
-    width: 108,
-    height: 108,
+    width: (MEDIA_MAX_WIDTH - 4) / 2,
+    height: (MEDIA_MAX_WIDTH - 4) / 2,
     borderRadius: 10,
     overflow: "hidden",
     backgroundColor: GRAY.DARK_1,
   },
   messageImageGridItemWide: {
-    width: 220,
-    height: 140,
+    width: MEDIA_MAX_WIDTH,
+    height: Math.round(MEDIA_MAX_WIDTH * (140 / 220)),
   },
   messageImageGridImage: {
     width: "100%",
@@ -220,7 +222,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 8,
     minWidth: 150,
-    maxWidth: 220,
+    maxWidth: MEDIA_MAX_WIDTH,
   },
   messageFileName: {
     flex: 1,

@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { Image, Pressable } from "react-native";
 import { GRAY } from "../../../color";
+import { MEDIA_MAX_WIDTH } from "./mediaSize";
 
-const MAX_WIDTH = 220;
+const MAX_WIDTH = MEDIA_MAX_WIDTH;
 const MAX_HEIGHT = 280;
 const MIN_WIDTH = 120;
 const FALLBACK_SIZE = { width: MAX_WIDTH, height: MAX_WIDTH };
