@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
@@ -37,6 +36,7 @@ import type { CurationThemeState } from "../../../screens/MainHomeScreen/curatio
 import CurationFeed, {
   type CurationFeedHandle,
 } from "../../../screens/MainHomeScreen/components/CurationFeed";
+import HomeSkeleton from "./HomeSkeleton";
 
 const NEWS_CARD_WIDTH = 138;
 const NEWS_CARD_IMAGE_HEIGHT = 193;
@@ -124,10 +124,12 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
     [],
   );
 
+  const hasLoadedOnceRef = useRef(false);
+
   const loadHome = useCallback(async (mode: "initial" | "refresh" = "initial") => {
     if (mode === "refresh") {
       setRefreshing(true);
-    } else {
+    } else if (!hasLoadedOnceRef.current) {
       setLoading(true);
     }
     try {
@@ -148,6 +150,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
         }),
       );
     } finally {
+      hasLoadedOnceRef.current = true;
       if (mode === "refresh") {
         setRefreshing(false);
       } else {
@@ -244,14 +247,9 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
       onScroll={(event) => handleVerticalScroll(event.nativeEvent.contentOffset.y)}
       scrollEventThrottle={16}
       refreshControl={homeRefreshControl}
-      contentContainerStyle={
-        loading
-          ? { flexGrow: 1, justifyContent: "center", alignItems: "center" }
-          : undefined
-      }
     >
       {loading ? (
-        <ActivityIndicator size="small" color="#666" />
+        <HomeSkeleton />
       ) : (
         <>
           <MagazineHeroCarousel

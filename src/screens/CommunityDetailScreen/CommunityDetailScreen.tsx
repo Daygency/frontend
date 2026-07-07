@@ -649,14 +649,28 @@ const CommunityDetailScreen = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <ScrollView
-          style={styles.detailScroll}
-          contentContainerStyle={styles.scrollContent}
-          bounces={false}
-          showsVerticalScrollIndicator={false}
-        >
-          <CommunityDetailSkeleton />
-        </ScrollView>
+        <View style={styles.detailInner}>
+          <ScrollView
+            style={styles.detailScroll}
+            contentContainerStyle={styles.scrollContent}
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+          >
+            <CommunityDetailSkeleton />
+          </ScrollView>
+
+          <View
+            style={[
+              styles.commentInputContainer,
+              { paddingBottom: commentInputBarPaddingBottom(keyboardHeight, bottom) },
+            ]}
+          >
+            <CommentInputBar
+              placeholder="댓글을 입력해주세요"
+              onSubmit={handleCreateComment}
+            />
+          </View>
+        </View>
       </View>
     );
   }
