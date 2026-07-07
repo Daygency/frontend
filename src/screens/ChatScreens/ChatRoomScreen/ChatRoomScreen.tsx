@@ -274,7 +274,41 @@ const ChatRoomScreen = () => {
   const { refresh: refreshChatUnread } = useChatUnread();
   const isFocused = useIsFocused();
   const { top, bottom } = useSafeAreaInsets();
-  const keyboardHeight = useKeyboardHeight();
+  const rawKeyboardHeight = useKeyboardHeight();
+  const rawKeyboardHeightRef = useRef(rawKeyboardHeight);
+  rawKeyboardHeightRef.current = rawKeyboardHeight;
+  /**
+   * Swipe-back의 인터랙티브 전환 중 입력창이 순간적으로 blur되며 keyboardWillHide가
+   * 튀는 경우가 있어, hide 반영을 전환이 끝날 때까지 붙잡아 입력창이 깜빡이며
+   * 사라지는 것을 막는다. 전환(swipe-back)과 무관한 hide(배경 탭 등 실제 키보드 dismiss)는
+   * 지연 없이 즉시 반영해, 입력창이 키보드와 같이 내려간다.
+   */
+  const isClosingTransitionRef = useRef(false);
+  const [keyboardHeight, setKeyboardHeight] = useState(rawKeyboardHeight);
+  useEffect(() => {
+    const unsubStart = navigation.addListener("transitionStart", (e: any) => {
+      if (e?.data?.closing) isClosingTransitionRef.current = true;
+    });
+    const unsubGestureCancel = navigation.addListener("gestureCancel", () => {
+      isClosingTransitionRef.current = false;
+      setKeyboardHeight(rawKeyboardHeightRef.current);
+    });
+    const unsubEnd = navigation.addListener("transitionEnd", (e: any) => {
+      if (!e?.data?.closing) isClosingTransitionRef.current = false;
+    });
+    return () => {
+      unsubStart();
+      unsubGestureCancel();
+      unsubEnd();
+    };
+  }, [navigation]);
+  useEffect(() => {
+    if (rawKeyboardHeight > 0 || !isClosingTransitionRef.current) {
+      setKeyboardHeight(rawKeyboardHeight);
+      return;
+    }
+    // swipe-back 전환이 진행 중일 때만 hide 반영을 보류 — gestureCancel/transitionEnd에서 재동기화됨
+  }, [rawKeyboardHeight]);
   const isKeyboardVisible = keyboardHeight > 0;
   const {
     chatRoomId = "",

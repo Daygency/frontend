@@ -988,7 +988,7 @@ const Navigation = () => {
         <Stack.Screen
           name={RootRoutes.CHAT_ROOM}
           component={withAuthGate(ChatRoomScreen)}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, keyboardHandlingEnabled: false }}
         />
         <Stack.Screen
           name={RootRoutes.CHAT_FILE_ARCHIVE}
