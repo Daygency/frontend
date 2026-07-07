@@ -10,6 +10,20 @@ import styles, {
 
 const SCROLL_TARGET_TOP_OFFSET = 12;
 
+const MENTION_PATTERN = /^(@\S+)(\s|$)/;
+
+const renderCommentContent = (content: string) => {
+  const match = content.match(MENTION_PATTERN);
+  if (!match) return content;
+
+  return (
+    <>
+      <Text style={styles.mentionText}>{match[1]}</Text>
+      {content.slice(match[1].length)}
+    </>
+  );
+};
+
 export type ThreadedCommentReply = {
   id: string;
   author: string;
@@ -178,7 +192,9 @@ const ThreadedCommentList = ({
                 {renderTopActions(comment)}
               </View>
 
-              <Text style={styles.bodyText}>{comment.content}</Text>
+              <Text style={styles.bodyText}>
+                {renderCommentContent(comment.content)}
+              </Text>
               {renderActions(comment, comment.id)}
 
               {!!comment.replies?.length && (
@@ -229,7 +245,9 @@ const ThreadedCommentList = ({
                           {renderTopActions(reply)}
                         </View>
 
-                        <Text style={styles.bodyText}>{reply.content}</Text>
+                        <Text style={styles.bodyText}>
+                          {renderCommentContent(reply.content)}
+                        </Text>
                         {renderActions(reply, comment.id)}
                       </View>
                     </View>

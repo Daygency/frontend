@@ -68,6 +68,9 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     color: BLACK,
   },
+  mentionText: {
+    fontWeight: "700",
+  },
   actionRow: {
     flexDirection: "row",
     alignItems: "center",
