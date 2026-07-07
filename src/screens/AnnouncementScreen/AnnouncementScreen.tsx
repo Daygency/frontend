@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   Linking,
   Pressable,
   RefreshControl,
@@ -24,6 +23,7 @@ import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import AnnouncementPickCarousel from "../../components/announcement/AnnouncementPickCarousel/AnnouncementPickCarousel";
 import { ContentRegistrationFabButton } from "../../components/ui/FabButton";
 import EmptyState, { emptyListContentStyle } from "../../components/ui/EmptyState";
+import AnnouncementListSkeleton from "./components/AnnouncementListSkeleton";
 import AnnouncementFilterSheet from "./components/AnnouncementFilterSheet";
 import AnnouncementFilterTabSheet, {
   type AnnouncementFilterTabType,
@@ -159,11 +159,7 @@ function AnnouncementListContent({
   onPressItem,
 }: AnnouncementListBodyProps) {
   if (loading && !refreshing && items.length === 0) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="small" color="#666" />
-      </View>
-    );
+    return <AnnouncementListSkeleton />;
   }
 
   if (items.length === 0) {
