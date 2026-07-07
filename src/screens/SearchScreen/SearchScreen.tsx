@@ -78,7 +78,7 @@ const SearchScreen = () => {
     async (opts?: { tag?: string | null; query?: string }) => {
       const tag = opts?.tag !== undefined ? opts.tag : selectedTag;
       const query = (opts?.query !== undefined ? opts.query : inputText).trim();
-      if (!tag && !query) return;
+      if (!query) return;
 
       const label = [tag, query].filter(Boolean).join(" ");
       if (label) {
