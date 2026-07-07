@@ -6,8 +6,6 @@ import {
   TextInput,
   ScrollView,
   Keyboard,
-  NativeSyntheticEvent,
-  TextInputKeyPressEventData,
   ActivityIndicator,
   Alert,
   Image,
@@ -586,13 +584,6 @@ const ChatRoomScreen = () => {
     }, 50);
   };
 
-  const handleKeyPress = (e: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
-    const key = e.nativeEvent.key;
-    const shiftKey = "shiftKey" in e.nativeEvent && e.nativeEvent.shiftKey;
-    if (key === "Enter" && !shiftKey) {
-      sendMessage();
-    }
-  };
 
   const toggleAttachmentMenu = () => {
     if (!isAttachmentMenuOpen) {
@@ -1135,15 +1126,13 @@ const ChatRoomScreen = () => {
           ]}
           value={message}
           onChangeText={setMessage}
-          onKeyPress={handleKeyPress}
-          onSubmitEditing={sendMessage}
           placeholder={sendReady ? "메시지를 입력하세요" : "연결 중..."}
           placeholderTextColor={GRAY.DARK_2}
           multiline
           maxLength={255}
           scrollEnabled={isKeyboardVisible}
           blurOnSubmit={false}
-          returnKeyType="send"
+          returnKeyType="default"
           autoCorrect={false}
           spellCheck={false}
           autoComplete="off"
