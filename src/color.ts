@@ -30,3 +30,8 @@ export const MAIN = {
   // DEFAULT: "#1a47a6",
   LIGHT: "#B0B7C9",
 };
+/** 로딩 스켈레톤 박스 색상 */
+export const SKELETON = {
+  DARK: "#F4F4F4",
+  LIGHT: "#F8F8F8",
+};

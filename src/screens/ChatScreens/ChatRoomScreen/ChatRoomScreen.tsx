@@ -5,7 +5,6 @@ import {
   Pressable,
   TextInput,
   ScrollView,
-  Keyboard,
   ActivityIndicator,
   Alert,
   Image,
@@ -586,9 +585,6 @@ const ChatRoomScreen = () => {
 
 
   const toggleAttachmentMenu = () => {
-    if (!isAttachmentMenuOpen) {
-      Keyboard.dismiss();
-    }
     setIsAttachmentMenuOpen((prev) => !prev);
   };
 
@@ -1072,7 +1068,7 @@ const ChatRoomScreen = () => {
 
       {/* Attachment menu */}
       {isAttachmentMenuOpen && (
-        <View style={[styles.attachmentMenu, { paddingBottom: Math.max(bottom, 8) }]}>
+        <View style={styles.attachmentMenu}>
           <Pressable
             style={styles.attachmentOption}
             onPress={handlePickAlbum}

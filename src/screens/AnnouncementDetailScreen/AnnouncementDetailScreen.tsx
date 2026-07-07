@@ -13,7 +13,7 @@ import {
   useNavigation,
   useFocusEffect as useNavFocusEffect,
 } from "@react-navigation/native";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getMyActivityReview } from "../../lib/apis/announcement/activityReviewApi";
 import { getMyApplicationForPost } from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
@@ -82,6 +82,10 @@ import {
 } from "../../lib/apis/scrap/scrapApi";
 import RecruitmentMajorChip from "../../components/shared/RecruitmentMajorChip";
 import { sharedAnnouncementStyles } from "../../components/shared/AnnouncementShared/sharedAnnouncementStyles";
+import {
+  AnnouncementDetailBodySkeleton,
+  AnnouncementDetailBottomBarSkeleton,
+} from "./components/AnnouncementDetailSkeleton";
 import styles from "./styles";
 
 export type AnnouncementDetailParams = {
@@ -158,7 +162,16 @@ const AnnouncementDetailScreen = () => {
   const { isLoggedIn, user } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
   const params = route.params ?? {};
+  /** fetchDetail 응답이 도착했을 때 그 사이 다른 공고로 이동해 postId가
+   * 바뀌었는지 확인하기 위한 최신값 ref. 렌더마다 즉시 갱신되어야
+   * 네트워크 지연으로 이전 공고의 응답이 늦게 도착해도 최신 postId와
+   * 비교해 걸러낼 수 있다. */
+  const postIdRef = useRef(params.postId);
+  postIdRef.current = params.postId;
   const [isMine, setIsMine] = useState(false);
+  /** 첫 상세 조회 완료 여부. false인 동안은 isMine 등이 기본값이라
+   * 하단 바에 방문자/작성자 여부를 잘못 추측해 보여주지 않도록 막는다. */
+  const [detailLoaded, setDetailLoaded] = useState(false);
   const [hasApplicants, setHasApplicants] = useState(false);
   const [detailData, setDetailData] = useState<{
     title: string;
@@ -267,17 +280,22 @@ const AnnouncementDetailScreen = () => {
   );
 
   const fetchDetail = useCallback((): Promise<void> => {
-    if (!params.postId) return Promise.resolve();
+    const requestedPostId = params.postId;
+    if (!requestedPostId) return Promise.resolve();
     console.log("[AnnouncementDetail] 인증 상태:", {
       isLoggedIn,
       userId: user?.socialId ?? "(없음)",
       name: user?.name ?? "(없음)",
     });
-    return getAnnouncementDetail(params.postId).then(async (res) => {
+    return getAnnouncementDetail(requestedPostId).then(async (res) => {
       console.log(
         "[AnnouncementDetail] API 응답:",
         JSON.stringify(res, null, 2),
       );
+      // 응답을 기다리는 사이 다른 공고로 이동해 postId가 바뀌었다면 이
+      // 응답은 이전 화면 것이므로 무시한다. 그렇지 않으면 나중에 도착한
+      // 이전 공고의 응답이 새 공고의 내용을 덮어써 버린다.
+      if (postIdRef.current !== requestedPostId) return;
       if (!res || typeof res !== "object") return;
       const d = res as Record<string, unknown>;
       const get = (k: string, alt?: string) =>
@@ -294,8 +312,6 @@ const AnnouncementDetailScreen = () => {
               user?.socialId?.trim() &&
                 extractedAuthor?.userId?.trim() === user.socialId.trim(),
             );
-      setIsMine(mineFlag);
-
       let resolvedAuthor = extractedAuthor;
       if (mineFlag && user?.socialId?.trim()) {
         const myProfile =
@@ -308,6 +324,12 @@ const AnnouncementDetailScreen = () => {
           profileImgUrl: myProfile?.profileImgUrl ?? user.profileImgUrl,
         });
       }
+      // getMyProfile await 도중에도 다른 공고로 이동할 수 있으므로 한 번 더 확인.
+      if (postIdRef.current !== requestedPostId) return;
+      // isMine/author를 completed 등 detailData와 같은 동기 구간에서 함께 커밋해야
+      // "isMine=true, completed=false(기본값)"인 중간 상태가 잠깐 렌더되어
+      // 완료된 공연에서 "공연 완료" 버튼이 잠깐 떴다 사라지는 현상을 막을 수 있음.
+      setIsMine(mineFlag);
       setAuthor(resolvedAuthor);
 
       const title = get("title") ?? params.title ?? "";
@@ -419,6 +441,7 @@ const AnnouncementDetailScreen = () => {
         ...(majorsList.length > 0 ? { majors: majorsList } : {}),
         ...(createdAt ? { createdAt: String(createdAt) } : {}),
       });
+      setDetailLoaded(true);
     });
   }, [
     params.postId,
@@ -447,8 +470,19 @@ const AnnouncementDetailScreen = () => {
     }, [params.postId, fetchDetail]),
   );
 
+  // postId가 바뀌면(같은 화면 인스턴스가 재사용되는 경우 포함) 이전 공고의
+  // 본문/태그/스크랩 등 postId 종속 상태를 전부 리셋한다. 리셋하지 않으면
+  // 새 fetch가 끝나기 전까지 예전 공고 내용이 그대로 보이다가 갑자기 바뀐다.
   useEffect(() => {
     setIsMine(false);
+    setDetailLoaded(false);
+    setDetailData(null);
+    setAuthor(null);
+    setHasApplicants(false);
+    setMyReviewExists(false);
+    setMyApplication(null);
+    setScraped(false);
+    setActiveImageIndex(0);
   }, [params.postId]);
 
   useNavFocusEffect(
@@ -787,7 +821,10 @@ const AnnouncementDetailScreen = () => {
   }, [detailData]);
 
   const showBottomBar =
-    showOwnerActionBar || showOwnerCompletedBar || visitorBottomBar;
+    !detailLoaded ||
+    showOwnerActionBar ||
+    showOwnerCompletedBar ||
+    visitorBottomBar;
   const scrollBottomPad = showBottomBar ? 88 + floatingBottomPad : 32;
 
   const navigateToAuthorPortfolio = () => {
@@ -857,6 +894,15 @@ const AnnouncementDetailScreen = () => {
   );
 
   const renderBottomBar = () => {
+    // 첫 조회가 끝나기 전엔 isMine/completed가 기본값이라 방문자/작성자용
+    // 문구를 잘못 추측해 보여줄 수 있으므로 로딩 완료 전엔 스켈레톤만 그린다.
+    if (!detailLoaded) {
+      return (
+        <AnnouncementDetailBottomBarSkeleton
+          paddingBottom={floatingBottomPad}
+        />
+      );
+    }
     if (!isMine && params.postId && showApplicantReviewBar) {
       return (
         <View
@@ -988,6 +1034,9 @@ const AnnouncementDetailScreen = () => {
             />
           }
         >
+          {!detailLoaded ? (
+            <AnnouncementDetailBodySkeleton />
+          ) : (
           <View style={styles.body}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>{displayTitle}</Text>
@@ -1162,6 +1211,7 @@ const AnnouncementDetailScreen = () => {
               </View>
             ) : null}
           </View>
+          )}
         </ScrollView>
       </View>
       {renderBottomBar()}

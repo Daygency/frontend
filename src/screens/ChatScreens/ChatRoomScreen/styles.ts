@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
   attachmentLabel: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#000",
+    color: GRAY.DARK_2,
   },
 });
 
