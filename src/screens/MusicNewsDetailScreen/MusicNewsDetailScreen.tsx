@@ -287,6 +287,9 @@ const MusicNewsDetailScreen = () => {
     commentId: string;
     initialContent: string;
   } | null>(null);
+  const [scrollTargetCommentId, setScrollTargetCommentId] = useState<
+    string | null
+  >(null);
   const [liked, setLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [scraped, setScraped] = useState(false);
@@ -659,6 +662,7 @@ const MusicNewsDetailScreen = () => {
     }
     await refreshComments();
     setReplyTarget(null);
+    setScrollTargetCommentId(String(created.id));
   };
 
   const handleDeleteComment = useCallback(
@@ -993,6 +997,10 @@ const MusicNewsDetailScreen = () => {
               }
               onReport={openReportComment}
               onOpenOwnActions={openOwnCommentActions}
+              scrollViewRef={scrollViewRef}
+              scrollAnchorRef={scrollContentRef}
+              scrollTargetId={scrollTargetCommentId}
+              onScrollTargetHandled={() => setScrollTargetCommentId(null)}
             />
           </View>
         </ScrollView>

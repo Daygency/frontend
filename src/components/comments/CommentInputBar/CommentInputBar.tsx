@@ -18,6 +18,7 @@ const CommentInputBar = ({
   onCancelEdit,
 }: CommentInputBarProps) => {
   const [text, setText] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const hasText = text.trim().length > 0;
 
   useEffect(() => {
@@ -30,11 +31,16 @@ const CommentInputBar = ({
 
   const handleSubmit = async () => {
     const content = text.trim();
-    if (!content) return;
+    if (!content || isSubmitting) return;
     Keyboard.dismiss();
-    await onSubmit?.(content);
     if (!editMode) {
       setText("");
+    }
+    setIsSubmitting(true);
+    try {
+      await onSubmit?.(content);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -64,15 +70,18 @@ const CommentInputBar = ({
           importantForAutofill="no"
         />
         <Pressable
-          style={[styles.sendButton, !hasText && styles.sendButtonDisabled]}
+          style={[
+            styles.sendButton,
+            (!hasText || isSubmitting) && styles.sendButtonDisabled,
+          ]}
           hitSlop={10}
-          disabled={!hasText}
+          disabled={!hasText || isSubmitting}
           onPress={handleSubmit}
         >
           <MaterialCommunityIcons
             name="send"
             size={22}
-            color={hasText ? "#000" : GRAY.DARK_2}
+            color={hasText && !isSubmitting ? "#000" : GRAY.DARK_2}
           />
         </Pressable>
       </View>
