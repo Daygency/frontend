@@ -7,6 +7,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: WHITE,
   },
+  handle: {
+    alignSelf: "center",
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: GRAY.DARK_1,
+    marginTop: 10,
+  },
   header: {
     paddingHorizontal: 20,
     paddingTop: 20,

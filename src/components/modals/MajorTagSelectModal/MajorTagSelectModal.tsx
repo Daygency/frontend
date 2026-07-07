@@ -37,6 +37,8 @@ const MajorTagSelectModal = ({
       onDismiss={onDismiss}
     >
       <View style={styles.container}>
+        <View style={styles.handle} />
+
         <View style={styles.header}>
           <Text style={styles.title}>전공 선택</Text>
         </View>
