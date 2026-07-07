@@ -1,21 +1,15 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../color";
-import {
-  PERFORMANCE_NEWS_SORT_LABEL,
-  type PerformanceNewsFilterSheetType,
-  type PerformanceNewsSortMode,
-} from "./performanceNewsFilterOptions";
+import { type PerformanceNewsFilterSheetType } from "./performanceNewsFilterOptions";
 
 type Props = {
-  sortMode: PerformanceNewsSortMode;
   selectedGenre: string | null;
   selectedRegion: string | null;
   onFilterSheetOpen: (sheet: PerformanceNewsFilterSheetType) => void;
 };
 
 const LoungePerformanceNewsFilterRow = ({
-  sortMode,
   selectedGenre,
   selectedRegion,
   onFilterSheetOpen,
@@ -25,18 +19,8 @@ const LoungePerformanceNewsFilterRow = ({
 
   return (
     <View style={styles.filterRow}>
-      <Pressable
-        style={styles.filterChip}
-        onPress={() => onFilterSheetOpen("sort")}
-      >
-        <MaterialCommunityIcons
-          name="swap-vertical"
-          size={16}
-          color={MAIN.DEFAULT}
-        />
-        <Text style={styles.filterChipText}>
-          {PERFORMANCE_NEWS_SORT_LABEL[sortMode]}
-        </Text>
+      <Pressable style={styles.filterChip} onPress={() => onFilterSheetOpen("sort")}>
+        <MaterialIcons name="sort" size={24} color="black" />
       </Pressable>
 
       <Pressable

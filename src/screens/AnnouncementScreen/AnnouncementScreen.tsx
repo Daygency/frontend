@@ -7,7 +7,7 @@ import {
   View,
   type NativeScrollEvent,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   CompositeNavigationProp,
@@ -588,8 +588,8 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     defaultLabel: string;
     selectedValues: string[];
   }[] = [
-    { type: "feed", defaultLabel: "공고 보기", selectedValues: feedView === "전체" ? [] : [feedView] },
     { type: "sort", defaultLabel: "정렬", selectedValues: [sortTab] },
+    { type: "feed", defaultLabel: "공고 보기", selectedValues: feedView === "전체" ? [] : [feedView] },
     { type: "status", defaultLabel: "모집 상태", selectedValues: selectedStatus ? [selectedStatus] : [] },
     { type: "type", defaultLabel: "공고 유형", selectedValues: selectedTypes },
     { type: "major", defaultLabel: "모집 전공", selectedValues: selectedMajors },
@@ -663,8 +663,19 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         contentContainerStyle={styles.filterChipRowContent}
       >
         {filterChips.map((chip) => {
-          const isActive =
-            chip.type !== "sort" && chip.selectedValues.length > 0;
+          if (chip.type === "sort") {
+            return (
+              <Pressable
+                key={chip.type}
+                style={styles.filterChip}
+                onPress={() => setFilterSheet(chip.type)}
+              >
+                <MaterialIcons name="sort" size={24} color="black" />
+              </Pressable>
+            );
+          }
+
+          const isActive = chip.selectedValues.length > 0;
           return (
             <Pressable
               key={chip.type}

@@ -158,7 +158,6 @@ const LoungeScreen = () => {
   const filterRow =
     activeTab === "공연 소식" ? (
       <LoungePerformanceNewsFilterRow
-        sortMode={sortMode}
         selectedGenre={selectedGenre}
         selectedRegion={selectedRegion}
         onFilterSheetOpen={setFilterSheet}
