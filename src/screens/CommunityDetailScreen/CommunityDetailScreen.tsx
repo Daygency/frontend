@@ -15,7 +15,6 @@ import {
   ScrollView,
   Text,
   View,
-  ActivityIndicator,
   Alert,
   Pressable,
 } from "react-native";
@@ -73,6 +72,7 @@ import {
   pickAuthorFromUser,
   pickProfileImgFromUser,
 } from "../../lib/community/communityAuthor";
+import CommunityDetailSkeleton from "./components/CommunityDetailSkeleton";
 
 type CommunityDetailRouteParams = {
   communityId: string;
@@ -655,9 +655,14 @@ const CommunityDetailScreen = () => {
   if (loading) {
     return (
       <View style={styles.container}>
-        <View style={[styles.scrollContent, { alignItems: "center", justifyContent: "center" }]}>
-          <ActivityIndicator />
-        </View>
+        <ScrollView
+          style={styles.detailScroll}
+          contentContainerStyle={styles.scrollContent}
+          bounces={false}
+          showsVerticalScrollIndicator={false}
+        >
+          <CommunityDetailSkeleton />
+        </ScrollView>
       </View>
     );
   }
