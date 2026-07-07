@@ -25,6 +25,9 @@ import AnnouncementPickCarousel from "../../components/announcement/Announcement
 import { ContentRegistrationFabButton } from "../../components/ui/FabButton";
 import EmptyState, { emptyListContentStyle } from "../../components/ui/EmptyState";
 import AnnouncementFilterSheet from "./components/AnnouncementFilterSheet";
+import AnnouncementFilterTabSheet, {
+  type AnnouncementFilterTabType,
+} from "./components/AnnouncementFilterTabSheet";
 import {
   ANNOUNCEMENT_SORT_OPTIONS,
   getFilterChipLabel,
@@ -53,7 +56,6 @@ import { getAnnouncementCategories } from "../../lib/apis/announcement/categoryA
 import { getMajors } from "../../lib/apis/announcement/majorApi";
 import {
   ANNOUNCEMENT_PRICE_FILTER_LABELS,
-  ANNOUNCEMENT_PRICE_FILTER_ALL,
   selectedPriceLabelsToApiParam,
 } from "../../lib/announcement/announcementPrice";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
@@ -565,22 +567,11 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     },
     price: {
       options: [...ANNOUNCEMENT_PRICE_FILTER_LABELS],
-      selectedValues:
-        selectedPriceTypes.length === 0
-          ? [ANNOUNCEMENT_PRICE_FILTER_ALL]
-          : selectedPriceTypes,
-      onToggle: (value) => {
-        if (value === ANNOUNCEMENT_PRICE_FILTER_ALL) {
-          setSelectedPriceTypes([]);
-          return;
-        }
-        setSelectedPriceTypes((prev) => {
-          const next = prev.includes(value)
-            ? prev.filter((v) => v !== value)
-            : [...prev, value];
-          return next;
-        });
-      },
+      selectedValues: selectedPriceTypes,
+      onToggle: (value) =>
+        setSelectedPriceTypes((prev) =>
+          prev.includes(value) ? prev.filter((v) => v !== value) : [...prev, value],
+        ),
     },
   };
 
@@ -601,6 +592,18 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     setFilterSheet(null);
     loadDataRef.current();
   };
+
+  const resetTabFilters = () => {
+    setSelectedStatus(null);
+    setSelectedTypes([]);
+    setSelectedMajors([]);
+    setSelectedPriceTypes([]);
+  };
+
+  const isFilterTabType = (
+    type: AnnouncementFilterSheetType,
+  ): type is AnnouncementFilterTabType =>
+    type === "status" || type === "type" || type === "major" || type === "price";
 
   const emptyMessage =
     feedViewRequiresLogin(feedView) && !isLoggedIn
@@ -706,7 +709,14 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       <View style={styles.container}>
         {pickSection}
         {filterBar}
-        {filterSheet ? (
+        {filterSheet && isFilterTabType(filterSheet) ? (
+          <AnnouncementFilterTabSheet
+            initialType={filterSheet}
+            configs={filterSheetConfig}
+            onReset={resetTabFilters}
+            onApply={closeFilterSheet}
+          />
+        ) : filterSheet ? (
           <AnnouncementFilterSheet
             type={filterSheet}
             options={filterSheetConfig[filterSheet].options}
@@ -737,7 +747,14 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       >
         <CollapsibleAnnouncementList {...listProps} />
       </AnnouncementScrollProvider>
-      {filterSheet ? (
+      {filterSheet && isFilterTabType(filterSheet) ? (
+        <AnnouncementFilterTabSheet
+          initialType={filterSheet}
+          configs={filterSheetConfig}
+          onReset={resetTabFilters}
+          onApply={closeFilterSheet}
+        />
+      ) : filterSheet ? (
         <AnnouncementFilterSheet
           type={filterSheet}
           options={filterSheetConfig[filterSheet].options}

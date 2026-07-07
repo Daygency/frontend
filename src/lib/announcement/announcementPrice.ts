@@ -113,11 +113,7 @@ export function formatAnnouncementPriceLineList(
 /** 모집공고 목록 금액 필터 */
 export const ANNOUNCEMENT_PRICE_FILTER_ALL = "전체";
 
-export const ANNOUNCEMENT_PRICE_FILTER_LABELS = [
-  ANNOUNCEMENT_PRICE_FILTER_ALL,
-  "페이",
-  "비용협의",
-] as const;
+export const ANNOUNCEMENT_PRICE_FILTER_LABELS = ["페이", "비용협의"] as const;
 
 function labelToPriceEnum(label: string): AnnouncementPriceType | undefined {
   const t = label.trim();

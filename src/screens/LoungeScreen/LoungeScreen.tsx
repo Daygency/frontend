@@ -75,11 +75,6 @@ type LoungeTabBodyProps = {
   selectedGenre: string | null;
   selectedRegion: string | null;
   selectedCommunityTag: LoungeCommunityTagOption;
-  filterSheet: PerformanceNewsFilterSheetType | null;
-  setFilterSheet: (sheet: PerformanceNewsFilterSheetType | null) => void;
-  setSortMode: (mode: PerformanceNewsSortMode) => void;
-  setSelectedGenre: (genre: string | null) => void;
-  setSelectedRegion: (region: string | null) => void;
 };
 
 const LoungeTabBody = ({
@@ -90,11 +85,6 @@ const LoungeTabBody = ({
   selectedGenre,
   selectedRegion,
   selectedCommunityTag,
-  filterSheet,
-  setFilterSheet,
-  setSortMode,
-  setSelectedGenre,
-  setSelectedRegion,
 }: LoungeTabBodyProps) => {
   const layout = useWindowDimensions();
 
@@ -128,27 +118,6 @@ const LoungeTabBody = ({
         style={styles.tabView}
       />
       <ContentRegistrationFabButton containerStyle={styles.fab} />
-      {filterSheet && activeTab === "공연 소식" ? (
-        <PerformanceNewsFilterSheet
-          type={filterSheet}
-          sortMode={sortMode}
-          selectedGenre={selectedGenre}
-          selectedRegion={selectedRegion}
-          onSelectSort={(mode) => {
-            setSortMode(mode);
-            setFilterSheet(null);
-          }}
-          onSelectGenre={(genre) => {
-            setSelectedGenre(genre);
-            setFilterSheet(null);
-          }}
-          onSelectRegion={(region) => {
-            setSelectedRegion(region);
-            setFilterSheet(null);
-          }}
-          onClose={() => setFilterSheet(null)}
-        />
-      ) : null}
     </View>
   );
 };
@@ -230,13 +199,29 @@ const LoungeScreen = () => {
           selectedGenre={selectedGenre}
           selectedRegion={selectedRegion}
           selectedCommunityTag={selectedCommunityTag}
-          filterSheet={filterSheet}
-          setFilterSheet={setFilterSheet}
-          setSortMode={setSortMode}
-          setSelectedGenre={setSelectedGenre}
-          setSelectedRegion={setSelectedRegion}
         />
       </LoungeScrollProvider>
+      {filterSheet && activeTab === "공연 소식" ? (
+        <PerformanceNewsFilterSheet
+          type={filterSheet}
+          sortMode={sortMode}
+          selectedGenre={selectedGenre}
+          selectedRegion={selectedRegion}
+          onSelectSort={(mode) => {
+            setSortMode(mode);
+            setFilterSheet(null);
+          }}
+          onSelectGenre={(genre) => {
+            setSelectedGenre(genre);
+            setFilterSheet(null);
+          }}
+          onSelectRegion={(region) => {
+            setSelectedRegion(region);
+            setFilterSheet(null);
+          }}
+          onClose={() => setFilterSheet(null)}
+        />
+      ) : null}
     </View>
   );
 };

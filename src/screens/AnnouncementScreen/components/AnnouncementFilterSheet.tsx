@@ -6,7 +6,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import SelectableTag from "../../../components/ui/SelectableTag";
 import { GRAY, MAIN, WHITE } from "../../../color";
 import {
@@ -33,14 +32,11 @@ const AnnouncementFilterSheet = ({
     <View style={styles.overlay}>
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.panel} onPress={(e) => e.stopPropagation()}>
-          <View style={styles.header}>
-            <Text style={styles.title}>
-              {ANNOUNCEMENT_FILTER_SHEET_TITLES[type]}
-            </Text>
-            <Pressable hitSlop={10} onPress={onClose}>
-              <MaterialCommunityIcons name="close" size={24} color={MAIN.DEFAULT} />
-            </Pressable>
-          </View>
+          <View style={styles.handle} />
+
+          <Text style={styles.title}>
+            {ANNOUNCEMENT_FILTER_SHEET_TITLES[type]}
+          </Text>
 
           <ScrollView
             style={styles.optionsScroll}
@@ -83,25 +79,28 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     overflow: "hidden",
-    maxHeight: "70%",
+    height: "50%",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingTop: 20,
-    paddingBottom: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: GRAY.MEDIUM,
+  handle: {
+    alignSelf: "center",
+    width: 36,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: GRAY.DARK_1,
+    marginTop: 10,
+    marginBottom: 8,
   },
   title: {
     fontSize: 18,
     fontWeight: "600",
     color: MAIN.DEFAULT,
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: GRAY.MEDIUM,
   },
   optionsScroll: {
-    flexGrow: 0,
+    flex: 1,
   },
   tagContent: {
     paddingHorizontal: 20,
