@@ -48,7 +48,7 @@ export default ({ config }) => ({
   ...config,
   expo: {
     name: "데이전시",
-    slug: "daygency",
+    slug: "mfrontend",
     version: "1.0.0",
     icon: "./assets/main_app_logo.png",
     ios: {
