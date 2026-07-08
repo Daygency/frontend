@@ -44,7 +44,9 @@ function formatListTime(iso?: string): string {
 function displayLine(item: InboxRecipientItem): string {
   const c = item.notice.content?.trim();
   if (c) return c;
-  const name = item.notice.actor?.name?.trim() || "알림";
+  const actor = item.notice.actor;
+  const activityId = actor?.activityName?.trim();
+  const name = activityId ? `@${activityId}` : actor?.name?.trim() || "알림";
   switch (item.notice.targetType) {
     case "FOLLOW":
       return `${name}님이 회원님을 팔로우했습니다.`;
