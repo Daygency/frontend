@@ -1,5 +1,6 @@
 import {
   RouteProp,
+  useFocusEffect,
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
@@ -291,9 +292,12 @@ const CommunityDetailScreen = () => {
     [communityId],
   );
 
-  useEffect(() => {
-    loadDetail();
-  }, [loadDetail]);
+  /** 최초 진입 시 + 수정 화면에서 돌아와 포커스를 다시 받을 때마다 최신 내용 반영 */
+  useFocusEffect(
+    useCallback(() => {
+      loadDetail();
+    }, [loadDetail]),
+  );
 
   const onRetryRefresh = useCallback(async () => {
     setDetailRefreshing(true);

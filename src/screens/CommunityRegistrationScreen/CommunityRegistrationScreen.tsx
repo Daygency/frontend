@@ -56,7 +56,7 @@ const PLACEHOLDER_BY_CATEGORY: Record<string, string> = {
 type CommunityRegistrationParams = { initialCategory?: string; communityId?: string };
 
 const CommunityRegistrationScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<{ CommunityRegistration: CommunityRegistrationParams }, "CommunityRegistration">>();
   const editCommunityId = route.params?.communityId?.trim();
   const isEditMode = Boolean(editCommunityId);

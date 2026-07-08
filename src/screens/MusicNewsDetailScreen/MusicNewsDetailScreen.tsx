@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
   RouteProp,
+  useFocusEffect,
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
@@ -362,11 +363,14 @@ const MusicNewsDetailScreen = () => {
     }
   }, [newsId, user?.socialId, user?.name]);
 
-  useEffect(() => {
-    if (newsId) {
-      fetchDetail();
-    }
-  }, [newsId, fetchDetail]);
+  /** 최초 진입 시 + 수정 화면에서 돌아와 포커스를 다시 받을 때마다 최신 내용 반영 */
+  useFocusEffect(
+    useCallback(() => {
+      if (newsId) {
+        fetchDetail();
+      }
+    }, [newsId, fetchDetail]),
+  );
 
   const onRetryRefresh = useCallback(async () => {
     setDetailRefreshing(true);
