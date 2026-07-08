@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { FlatList, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import CommunityCard from "../LoungeScreen/components/CommunityCard";
@@ -51,30 +51,16 @@ const MyActivityListScreen = () => {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
-    if (type !== "posts" || source === "scrap" || source === "like") return;
-    (async () => {
-      const res = await getMyPosts();
-      if (!res) {
-        setMyCommunityPosts([]);
-        return;
-      }
-      setMyCommunityPosts(res.community);
-    })();
-  }, [type, source]);
-
-  useEffect(() => {
-    if (type !== "comments") return;
-    (async () => {
+  const fetchFirst = useCallback(async () => {
+    if (type === "comments") {
       const res = await getMyComments();
       setMyComments(res ?? []);
-    })();
-  }, [type]);
+      return;
+    }
 
-  useEffect(() => {
-    if (type !== "posts" || source !== "scrap") return;
-    (async () => {
+    if (source === "scrap") {
       const res = await getMyScrappedCommunity({ limit: 20 });
       if (!res) {
         setScrappedCommunity([]);
@@ -85,12 +71,10 @@ const MyActivityListScreen = () => {
       setScrappedCommunity(res.items);
       setNextCursor(res.nextCursor);
       setHasMore(res.hasMore);
-    })();
-  }, [type, source]);
+      return;
+    }
 
-  useEffect(() => {
-    if (type !== "posts" || source !== "like") return;
-    (async () => {
+    if (source === "like") {
       const res = await getMyLikedCommunity({ limit: 20 });
       if (!res) {
         setLikedCommunity([]);
@@ -101,8 +85,26 @@ const MyActivityListScreen = () => {
       setLikedCommunity(res.items);
       setNextCursor(res.nextCursor);
       setHasMore(res.hasMore);
-    })();
+      return;
+    }
+
+    const res = await getMyPosts();
+    if (!res) {
+      setMyCommunityPosts([]);
+      return;
+    }
+    setMyCommunityPosts(res.community);
   }, [type, source]);
+
+  useEffect(() => {
+    void fetchFirst();
+  }, [fetchFirst]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchFirst();
+    setRefreshing(false);
+  }, [fetchFirst]);
 
   const myPostsData = useMemo(
     (): CommunityRow[] =>
@@ -230,6 +232,9 @@ const MyActivityListScreen = () => {
           data.length === 0,
           styles.listContent,
         )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} />
+        }
         onEndReachedThreshold={0.4}
         onEndReached={async () => {
           if (type !== "posts" || loadingMore || !hasMore) return;

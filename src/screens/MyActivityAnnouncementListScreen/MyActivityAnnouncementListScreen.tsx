@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { FlatList, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
@@ -23,13 +23,22 @@ type RootStackParamList = {
 const MyActivityAnnouncementListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [items, setItems] = useState<MyAnnouncementPostItem[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchItems = useCallback(async () => {
+    const res = await getMyAnnouncements();
+    setItems(res ?? []);
+  }, []);
 
   useEffect(() => {
-    (async () => {
-      const res = await getMyAnnouncements();
-      setItems(res ?? []);
-    })();
-  }, []);
+    void fetchItems();
+  }, [fetchItems]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchItems();
+    setRefreshing(false);
+  }, [fetchItems]);
 
   const listData = useMemo(
     () =>
@@ -54,6 +63,9 @@ const MyActivityAnnouncementListScreen = () => {
       <FlatList
         data={listData}
         keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} />
+        }
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
             <AnnouncementCard

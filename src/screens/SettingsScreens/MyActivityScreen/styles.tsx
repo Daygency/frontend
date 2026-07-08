@@ -13,6 +13,9 @@ const styles = StyleSheet.create({
   postsCommentsContainer: {
     flex: 1,
   },
+  postsCommentsScrollArea: {
+    flex: 1,
+  },
   scrollContent: {
     paddingBottom: 24,
   },

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { FlatList, Text, View } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { FlatList, RefreshControl, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import CommunityCard from "../LoungeScreen/components/CommunityCard";
@@ -29,21 +29,30 @@ const MyActivityLikedCommentsListScreen = () => {
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchFirst = useCallback(async () => {
+    const res = await getMyLikedComments({ limit: 20 });
+    if (!res) {
+      setItems([]);
+      setNextCursor(null);
+      setHasMore(false);
+      return;
+    }
+    setItems(res.items);
+    setNextCursor(res.nextCursor);
+    setHasMore(res.hasMore);
+  }, []);
 
   useEffect(() => {
-    (async () => {
-      const res = await getMyLikedComments({ limit: 20 });
-      if (!res) {
-        setItems([]);
-        setNextCursor(null);
-        setHasMore(false);
-        return;
-      }
-      setItems(res.items);
-      setNextCursor(res.nextCursor);
-      setHasMore(res.hasMore);
-    })();
-  }, []);
+    void fetchFirst();
+  }, [fetchFirst]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchFirst();
+    setRefreshing(false);
+  }, [fetchFirst]);
 
   const data = useMemo(
     (): CommentRow[] =>
@@ -71,6 +80,9 @@ const MyActivityLikedCommentsListScreen = () => {
       <FlatList
         data={data}
         keyExtractor={(item) => item.id}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} />
+        }
         renderItem={({ item }) => (
           <CommunityCard
             title={item.title}

@@ -1,5 +1,5 @@
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Alert,
   ActivityIndicator,
@@ -15,7 +15,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/forms/Form";
 import FormTextInput from "../../components/forms/FormTextInput";
-import FormDropdownInput from "../../components/forms/FormDropdownInput";
+import CommunityCategorySelectModal from "../../components/modals/CommunityCategorySelectModal";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import {
@@ -65,30 +65,32 @@ const CommunityRegistrationScreen = () => {
   const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
   const MAX_IMAGES = MAX_MULTIPART_FILES;
 
-  const categoryOptions = useMemo(
-    () =>
-      categories.map((c) => ({
-        label: c.name,
-        value: c.categoryId,
-      })),
-    [categories]
-  );
+  const [categoryModalVisible, setCategoryModalVisible] = useState(false);
 
   useEffect(() => {
     (async () => {
       const cats = await getCommunityCategories();
       if (cats && cats.length > 0) {
-        setCategories(cats);
+        const freeIndex = cats.findIndex((c) => c.name === "자유게시판");
+        const ordered =
+          freeIndex > 0
+            ? [
+                cats[freeIndex],
+                ...cats.slice(0, freeIndex),
+                ...cats.slice(freeIndex + 1),
+              ]
+            : cats;
+        setCategories(ordered);
         if (editCommunityId) return;
         const fromRoute = route.params?.initialCategory;
         if (fromRoute) {
-          const match = cats.find((c) => c.name === fromRoute);
+          const match = ordered.find((c) => c.name === fromRoute);
           if (match) {
             setCategoryId(match.categoryId);
             return;
           }
         }
-        setCategoryId(cats[0].categoryId);
+        setCategoryId(ordered[0].categoryId);
       }
     })();
   }, [route.params?.initialCategory, editCommunityId]);
@@ -199,17 +201,41 @@ const CommunityRegistrationScreen = () => {
       >
         <View style={styles.formSection}>
           <Form title="카테고리" isRequired>
-            <FormDropdownInput
-              placeholder={
-                categoryOptions.length > 0
-                  ? "카테고리를 선택하세요"
-                  : "카테고리를 불러오는 중..."
-              }
-              data={categoryOptions}
-              value={categoryId}
-              onChange={(item) => setCategoryId(item.value)}
-            />
+            <Pressable
+              style={styles.categoryTrigger}
+              onPress={() => {
+                if (categories.length > 0) setCategoryModalVisible(true);
+              }}
+            >
+              <Text
+                style={
+                  selectedCategoryName
+                    ? styles.categoryTriggerText
+                    : styles.categoryTriggerPlaceholder
+                }
+              >
+                {selectedCategoryName ||
+                  (categories.length > 0
+                    ? "카테고리를 선택하세요"
+                    : "카테고리를 불러오는 중...")}
+              </Text>
+              <MaterialCommunityIcons
+                name="chevron-down"
+                size={20}
+                color={GRAY.MEDIUM_100}
+              />
+            </Pressable>
           </Form>
+          <CommunityCategorySelectModal
+            visible={categoryModalVisible}
+            categories={categories}
+            selectedCategoryId={categoryId}
+            onSelect={(c) => {
+              setCategoryId(c.categoryId);
+              setCategoryModalVisible(false);
+            }}
+            onClose={() => setCategoryModalVisible(false)}
+          />
 
           <View style={styles.formField}>
             <Form title="제목" isRequired>

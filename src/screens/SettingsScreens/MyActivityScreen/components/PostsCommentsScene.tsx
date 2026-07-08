@@ -4,7 +4,6 @@ import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import Section from "../../../../components/ui/Section";
 import { RootRoutes } from "../../../../navigations/routes";
-import ImageScrollView from "../../../../components/media/ImageScrollView";
 import CommunityCard from "../../../LoungeScreen/components/CommunityCard";
 import EmptyState, { emptySectionStyle } from "../../../../components/ui/EmptyState";
 import SelectableTag from "../../../../components/ui/SelectableTag";
@@ -49,6 +48,7 @@ type ActivityCardItem = {
   scraps: number;
   views?: number;
   thumbnailUrl?: string;
+  targetId?: string;
 };
 
 const PostsCommentsScene = () => {
@@ -64,16 +64,40 @@ const PostsCommentsScene = () => {
   const commentsData = useMemo(
     (): ActivityCardItem[] =>
       selectedFilter === "댓글"
-        ? myComments.slice(0, 1).map((item) => ({
-            id: item.commentId,
-            title: item.postTitle?.trim() || "댓글 단 글",
-            contentPreview: item.content,
-            author: "나",
-            date: formatDate(item.createdAt),
-            likes: 0,
-            comments: 0,
-            scraps: 0,
-          }))
+        ? myComments
+            .filter((item) => item.targetType === "COMMUNITY")
+            .slice(0, 1)
+            .map((item) => ({
+              id: item.commentId,
+              title: item.postTitle?.trim() || "댓글 단 글",
+              contentPreview: item.content,
+              author: "나",
+              date: formatDate(item.createdAt),
+              likes: 0,
+              comments: 0,
+              scraps: 0,
+              targetId: item.targetId,
+            }))
+        : [],
+    [selectedFilter, myComments],
+  );
+  const newsCommentsData = useMemo(
+    (): ActivityCardItem[] =>
+      selectedFilter === "댓글"
+        ? myComments
+            .filter((item) => item.targetType === "NEWS")
+            .slice(0, 5)
+            .map((item) => ({
+              id: item.commentId,
+              title: item.postTitle?.trim() || "댓글 단 공연 소식",
+              contentPreview: item.content,
+              author: "나",
+              date: formatDate(item.createdAt),
+              likes: 0,
+              comments: 0,
+              scraps: 0,
+              targetId: item.targetId,
+            }))
         : [],
     [selectedFilter, myComments],
   );
@@ -173,47 +197,40 @@ const PostsCommentsScene = () => {
     </Section>
   );
 
-  const renderNewsSection = (scrollKey: string, newsItems?: MyNewsPostItem[]) => (
+  const renderNewsSection = (newsItems: MyNewsPostItem[]) => (
     <Section
       title="공연 소식"
       onPressMore={handlePressNews}
       styles={{ content: { paddingHorizontal: 0 } }}
     >
-      {selectedFilter === "작성글" ? (
-        newsItems && newsItems.length > 0 ? (
-          <ScrollView
-            key={scrollKey}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={localStyles.newsRow}
-          >
-            {newsItems.map((item) => (
-              <View key={item.newsId} style={localStyles.newsCard}>
-                <EventNewsCard
-                  title={item.title}
-                  place={item.place ?? ""}
-                  dateRange={formatDate(item.createdAt)}
-                  imageUrl={normalizeListThumbnailUrl(item.thumbnailUrl)}
-                  width={138}
-                  height={138}
-                />
-              </View>
-            ))}
-          </ScrollView>
-        ) : (
-          <View style={emptySectionStyle}>
-            <EmptyState message="작성한 공연 소식이 없습니다." />
-          </View>
-        )
+      {newsItems.length > 0 ? (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={localStyles.newsRow}
+        >
+          {newsItems.map((item) => (
+            <View key={item.newsId} style={localStyles.newsCard}>
+              <EventNewsCard
+                title={item.title}
+                place={item.place ?? ""}
+                dateRange={formatDate(item.createdAt)}
+                imageUrl={normalizeListThumbnailUrl(item.thumbnailUrl)}
+                width={138}
+                height={138}
+                onPress={() =>
+                  navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
+                    newsId: item.newsId,
+                  })
+                }
+              />
+            </View>
+          ))}
+        </ScrollView>
       ) : (
-        <ImageScrollView
-          key={scrollKey}
-          styles={{ container: {} }}
-          width={138}
-          height={264}
-          gap={14}
-          type="withText"
-        />
+        <View style={emptySectionStyle}>
+          <EmptyState message="작성한 공연 소식이 없습니다." />
+        </View>
       )}
     </Section>
   );
@@ -256,11 +273,7 @@ const PostsCommentsScene = () => {
   );
 
   return (
-    <ScrollView
-      style={styles.postsCommentsContainer}
-      contentContainerStyle={styles.scrollContent}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.postsCommentsContainer}>
       <View style={styles.sortFilterContainer}>
         <SelectableTag
           label="작성글"
@@ -274,30 +287,51 @@ const PostsCommentsScene = () => {
         />
       </View>
 
-      {/* 작성글: 작성글과 공연 소식 각각 별도 스크롤 상태 유지 */}
-      <View style={selectedFilter === "작성글" ? undefined : localStyles.hidden}>
-        {renderContentSection(
-          "커뮤니티",
-          postsData,
-          "작성한 글이 없습니다.",
-          handlePressCommunity,
-          (item) => navigation.navigate(RootRoutes.COMMUNITY_DETAIL, { communityId: item.id }),
-        )}
-        {renderNewsSection("posts", recentNews)}
-        {renderAnnouncementSection(latestAnnouncement)}
-      </View>
+      <ScrollView
+        style={styles.postsCommentsScrollArea}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* 작성글: 작성글과 공연 소식 각각 별도 스크롤 상태 유지 */}
+        <View style={selectedFilter === "작성글" ? undefined : localStyles.hidden}>
+          {renderContentSection(
+            "커뮤니티",
+            postsData,
+            "작성한 글이 없습니다.",
+            handlePressCommunity,
+            (item) => navigation.navigate(RootRoutes.COMMUNITY_DETAIL, { communityId: item.id }),
+          )}
+          {renderNewsSection(recentNews)}
+          {renderAnnouncementSection(latestAnnouncement)}
+        </View>
 
-      {/* 댓글: 댓글 단 글과 공연 소식 각각 별도 스크롤 상태 유지 */}
-      <View style={selectedFilter === "댓글" ? undefined : localStyles.hidden}>
-        {renderContentSection(
-          "커뮤니티",
-          commentsData,
-          "작성한 댓글이 없습니다.",
-          handlePressCommunity
-        )}
-        {renderNewsSection("comments")}
-      </View>
-    </ScrollView>
+        {/* 댓글: 댓글 단 글과 공연 소식 각각 별도 스크롤 상태 유지 */}
+        <View style={selectedFilter === "댓글" ? undefined : localStyles.hidden}>
+          {renderContentSection(
+            "커뮤니티",
+            commentsData,
+            "작성한 댓글이 없습니다.",
+            handlePressCommunity,
+            (item) =>
+              item.targetId &&
+              navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
+                communityId: item.targetId,
+              }),
+          )}
+          {renderContentSection(
+            "공연 소식",
+            newsCommentsData,
+            "댓글 단 공연 소식이 없습니다.",
+            handlePressNews,
+            (item) =>
+              item.targetId &&
+              navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
+                newsId: item.targetId,
+              }),
+          )}
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 

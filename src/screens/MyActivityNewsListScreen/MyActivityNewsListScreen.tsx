@@ -1,5 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, FlatList, Text, View, useWindowDimensions } from "react-native";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  RefreshControl,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import EventNewsCard from "../../components/cards/EventNewsCard";
@@ -48,6 +55,7 @@ const MyActivityNewsListScreen = () => {
   const [hasMore, setHasMore] = useState(true);
   const [loadingInitial, setLoadingInitial] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
 
   const emptyMessage =
     source === "scrap"
@@ -56,52 +64,52 @@ const MyActivityNewsListScreen = () => {
         ? "좋아요한 공연 소식이 없습니다."
         : "공연 소식이 없습니다.";
 
-  useEffect(() => {
+  const fetchFirst = useCallback(async () => {
     if (source === "like") {
-      (async () => {
-        setLoadingInitial(true);
-        const res = await getMyLikedNews({ limit: 20 });
-        if (!res) {
-          setLikedNews([]);
-          setNextCursor(null);
-          setHasMore(false);
-          setLoadingInitial(false);
-          return;
-        }
-        setLikedNews(res.items);
-        setNextCursor(res.nextCursor);
-        setHasMore(res.hasMore);
-        setLoadingInitial(false);
-      })();
+      const res = await getMyLikedNews({ limit: 20 });
+      if (!res) {
+        setLikedNews([]);
+        setNextCursor(null);
+        setHasMore(false);
+        return;
+      }
+      setLikedNews(res.items);
+      setNextCursor(res.nextCursor);
+      setHasMore(res.hasMore);
       return;
     }
 
     if (source === "scrap") {
-      (async () => {
-        setLoadingInitial(true);
-        const res = await getMyScrappedNews({ limit: 20 });
-        if (!res) {
-          setScrappedNews([]);
-          setNextCursor(null);
-          setHasMore(false);
-          setLoadingInitial(false);
-          return;
-        }
-        setScrappedNews(res.items);
-        setNextCursor(res.nextCursor);
-        setHasMore(res.hasMore);
-        setLoadingInitial(false);
-      })();
+      const res = await getMyScrappedNews({ limit: 20 });
+      if (!res) {
+        setScrappedNews([]);
+        setNextCursor(null);
+        setHasMore(false);
+        return;
+      }
+      setScrappedNews(res.items);
+      setNextCursor(res.nextCursor);
+      setHasMore(res.hasMore);
       return;
     }
 
+    const res = await getMyNewsPosts();
+    setMyNews(res ?? []);
+  }, [source]);
+
+  useEffect(() => {
     (async () => {
       setLoadingInitial(true);
-      const res = await getMyNewsPosts();
-      setMyNews(res ?? []);
+      await fetchFirst();
       setLoadingInitial(false);
     })();
-  }, [source]);
+  }, [fetchFirst]);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchFirst();
+    setRefreshing(false);
+  }, [fetchFirst]);
 
   const data = useMemo((): NewsListRow[] => {
     if (source === "like") {
@@ -145,6 +153,9 @@ const MyActivityNewsListScreen = () => {
           !loadingInitial && data.length === 0,
           styles.listContent,
         )}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} />
+        }
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>
             <EventNewsCard
