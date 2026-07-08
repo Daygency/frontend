@@ -27,6 +27,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     minWidth: 0,
   },
+  userInfoTouchable: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    minWidth: 0,
+  },
   avatarContainer: {
     position: "relative",
     marginRight: 12,

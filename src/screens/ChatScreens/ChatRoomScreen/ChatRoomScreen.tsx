@@ -756,6 +756,14 @@ const ChatRoomScreen = () => {
 
   const displayHandle = handle.startsWith("@") ? handle : `@${handle}`;
 
+  const goToPeerProfile = () => {
+    if (!peerUserId) return;
+    navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
+      userId: peerUserId,
+      activityName: handle,
+    });
+  };
+
   const inputBarPaddingBottom = commentInputBarPaddingBottom(keyboardHeight, bottom);
 
   if (!chatRoomId || !peerUserId) {
@@ -805,7 +813,11 @@ const ChatRoomScreen = () => {
               ) : null}
             </View>
           ) : (
-            <>
+            <Pressable
+              style={styles.userInfoTouchable}
+              onPress={goToPeerProfile}
+              disabled={!peerUserId}
+            >
               <View style={styles.avatarContainer}>
                 <UserProfileAvatar
                   peerUserId={peerUserId || undefined}
@@ -822,7 +834,7 @@ const ChatRoomScreen = () => {
                   {displayHandle}
                 </Text>
               </View>
-            </>
+            </Pressable>
           )}
         </View>
 
