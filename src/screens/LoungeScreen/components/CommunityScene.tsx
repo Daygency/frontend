@@ -207,7 +207,7 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
           />
         }
         ListEmptyComponent={
-          items.length === 0 && (loading || error) && !refreshing ? (
+          (loading || error) && !refreshing ? (
             <CommunityListSkeleton />
           ) : (
             <View style={localStyles.loaderContainer}>
