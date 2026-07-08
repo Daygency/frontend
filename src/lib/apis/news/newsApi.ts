@@ -333,6 +333,27 @@ export async function updateNews(
   }
 }
 
+/** 공연소식 첨부 이미지 1장 삭제 (DELETE /news/:id/attachments/:fileId) */
+export async function deleteNewsAttachment(
+  newsId: string,
+  fileId: string,
+): Promise<{ ok: boolean; status?: number }> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(
+      `${API_BASE}/news/${newsId}/attachments/${fileId}`,
+      {
+        method: "DELETE",
+        headers,
+      },
+    );
+    return { ok: res.ok, status: res.status };
+  } catch (e) {
+    console.warn("[deleteNewsAttachment] 에러:", e);
+    return { ok: false };
+  }
+}
+
 /** 공연소식 삭제 (DELETE /news/:id) */
 export async function deleteNews(
   id: string,

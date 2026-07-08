@@ -352,6 +352,27 @@ export async function updateCommunity(
   }
 }
 
+/** 커뮤니티 첨부 이미지 1장 삭제 (DELETE /community/:id/attachments/:fileId) */
+export async function deleteCommunityAttachment(
+  communityId: string,
+  fileId: string,
+): Promise<{ ok: boolean; status?: number }> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(
+      `${API_BASE}/community/${communityId}/attachments/${fileId}`,
+      {
+        method: "DELETE",
+        headers,
+      },
+    );
+    return { ok: res.ok, status: res.status };
+  } catch (e) {
+    console.warn("[deleteCommunityAttachment] 에러:", e);
+    return { ok: false };
+  }
+}
+
 /** 커뮤니티 삭제 (DELETE /community/:id) */
 export async function deleteCommunity(
   id: string

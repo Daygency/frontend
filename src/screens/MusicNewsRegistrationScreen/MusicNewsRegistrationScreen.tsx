@@ -21,12 +21,16 @@ import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePicke
 import { parseCoord } from "../../lib/kakao/location";
 import { GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
-import { createNewsWithFiles, getNewsDetail, updateNews, MAX_NEWS_IMAGE_FILES } from "../../lib/apis/news/newsApi";
-import { attachFilesToPost, type LocalImageAsset } from "../../lib/apis/fileApi";
 import {
-  mapAttachmentsToImageUrls,
-  pickUrlFromFileLike,
-} from "../../lib/media/attachmentImageUrl";
+  createNewsWithFiles,
+  getNewsDetail,
+  updateNews,
+  deleteNewsAttachment,
+  MAX_NEWS_IMAGE_FILES,
+} from "../../lib/apis/news/newsApi";
+import type { NewsAttachmentItem } from "../../lib/apis/news/types";
+import { attachFilesToPost, type LocalImageAsset } from "../../lib/apis/fileApi";
+import { pickUrlFromFileLike } from "../../lib/media/attachmentImageUrl";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
 
 function formatDateDisplay(d: Date): string {
@@ -77,8 +81,8 @@ const MusicNewsRegistrationScreen = () => {
   const [contact, setContact] = useState("");
   /** README: multipart 한 번에 `payload` + `files` */
   const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
-  const [hasExistingImages, setHasExistingImages] = useState(false);
-  const [existingImagesCount, setExistingImagesCount] = useState(0);
+  const [existingImages, setExistingImages] = useState<NewsAttachmentItem[]>([]);
+  const [removedExistingFileIds, setRemovedExistingFileIds] = useState<string[]>([]);
   const MAX_NEWS_IMAGES = MAX_NEWS_IMAGE_FILES;
 
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -127,15 +131,32 @@ const MusicNewsRegistrationScreen = () => {
           setUseEndDate(true);
         }
       }
-      const existingUrls = mapAttachmentsToImageUrls(detail.attachments);
-      const fromFile = pickUrlFromFileLike(
-        detail.file ? (detail.file as Record<string, unknown>) : null,
-      );
-      setHasExistingImages(existingUrls.length > 0 || Boolean(fromFile));
-      setExistingImagesCount(existingUrls.length);
+      if (detail.attachments && detail.attachments.length > 0) {
+        setExistingImages(detail.attachments);
+      } else {
+        const fileRecord = detail.file
+          ? (detail.file as Record<string, unknown>)
+          : null;
+        const legacyFileId =
+          fileRecord && typeof fileRecord.fileId === "string"
+            ? fileRecord.fileId
+            : undefined;
+        const legacyUrl = pickUrlFromFileLike(fileRecord);
+        setExistingImages(
+          legacyFileId && legacyUrl
+            ? [{ fileId: legacyFileId, imgUrl: legacyUrl, sortOrder: 0 }]
+            : [],
+        );
+      }
       setLoadingEdit(false);
     })();
   }, [editNewsId, navigation]);
+
+  /** X 버튼은 화면에서만 즉시 제거 — 실제 삭제는 "수정 완료" 시 일괄 반영 */
+  const handleRemoveExistingImage = (fileId: string) => {
+    setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId));
+    setRemovedExistingFileIds((prev) => [...prev, fileId]);
+  };
 
   const pickImage = async () => {
     try {
@@ -144,7 +165,7 @@ const MusicNewsRegistrationScreen = () => {
         Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
         return;
       }
-      const remaining = MAX_NEWS_IMAGES - pendingImages.length;
+      const remaining = MAX_NEWS_IMAGES - pendingImages.length - existingImages.length;
       if (remaining <= 0) {
         Alert.alert("알림", `이미지는 최대 ${MAX_NEWS_IMAGES}장까지입니다.`);
         return;
@@ -169,7 +190,7 @@ const MusicNewsRegistrationScreen = () => {
   };
 
   const hasRequiredImages = isEditMode
-    ? hasExistingImages || pendingImages.length > 0
+    ? existingImages.length > 0 || pendingImages.length > 0
     : pendingImages.length > 0;
 
   const setFieldRef =
@@ -247,12 +268,19 @@ const MusicNewsRegistrationScreen = () => {
           Alert.alert("수정 실패", "공연소식 수정에 실패했습니다. 다시 시도해주세요.");
           return;
         }
+        if (removedExistingFileIds.length > 0) {
+          await Promise.all(
+            removedExistingFileIds.map((fileId) =>
+              deleteNewsAttachment(editNewsId, fileId),
+            ),
+          );
+        }
         if (pendingImages.length > 0) {
           await attachFilesToPost(
             "news",
             editNewsId,
             pendingImages,
-            existingImagesCount,
+            existingImages.length,
           );
         }
         setIsSubmitting(false);
@@ -479,17 +507,37 @@ const MusicNewsRegistrationScreen = () => {
                 </Text>
               </Pressable>
               <Text style={styles.imageAddHint}>
-                {isEditMode && hasExistingImages && pendingImages.length === 0
+                {isEditMode && existingImages.length > 0 && pendingImages.length === 0
                   ? "기존 이미지가 있습니다. 새 이미지를 추가하지 않아도 됩니다."
                   : "등록 후 업로드됩니다"}
               </Text>
-              {pendingImages.length > 0 ? (
+              {existingImages.length > 0 || pendingImages.length > 0 ? (
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={styles.imagePreviewRow}
                   contentContainerStyle={{ paddingTop: 8 }}
                 >
+                  {existingImages.map((img) => (
+                    <View key={img.fileId} style={styles.imagePreviewItem}>
+                      <Image
+                        source={{ uri: img.imgUrl }}
+                        style={styles.imagePreviewThumb}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        onPress={() => handleRemoveExistingImage(img.fileId)}
+                        style={styles.imagePreviewRemove}
+                        hitSlop={8}
+                      >
+                        <MaterialCommunityIcons
+                          name="close-circle"
+                          size={20}
+                          color={MAIN.DEFAULT}
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
                   {pendingImages.map((img, idx) => (
                     <View
                       key={`${img.uri}-${idx}`}

@@ -24,10 +24,15 @@ import {
   createCommunityWithFiles,
   getCommunityDetail,
   updateCommunity,
+  deleteCommunityAttachment,
 } from "../../lib/apis/community/communityApi";
 import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
 import { attachFilesToPost, type LocalImageAsset } from "../../lib/apis/fileApi";
-import type { CommunityCategory } from "../../lib/apis/community/types";
+import type {
+  CommunityAttachmentItem,
+  CommunityCategory,
+} from "../../lib/apis/community/types";
+import { pickUrlFromFileLike } from "../../lib/media/attachmentImageUrl";
 
 const COMMUNITY_GUIDELINES = [
   "서로를 존중해주세요. 비방·명예훼손 내용은 제한될 수 있어요.",
@@ -63,7 +68,8 @@ const CommunityRegistrationScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(Boolean(editCommunityId));
   const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
-  const [existingImagesCount, setExistingImagesCount] = useState(0);
+  const [existingImages, setExistingImages] = useState<CommunityAttachmentItem[]>([]);
+  const [removedExistingFileIds, setRemovedExistingFileIds] = useState<string[]>([]);
   const MAX_IMAGES = MAX_MULTIPART_FILES;
 
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
@@ -108,10 +114,30 @@ const CommunityRegistrationScreen = () => {
       setTitle(detail.title ?? "");
       setContent(detail.content ?? "");
       if (detail.category?.categoryId) setCategoryId(detail.category.categoryId);
-      setExistingImagesCount(detail.attachments?.length ?? 0);
+      if (detail.attachments && detail.attachments.length > 0) {
+        setExistingImages(detail.attachments);
+      } else {
+        const fileRecord = detail.file;
+        const legacyFileId =
+          fileRecord && typeof fileRecord.fileId === "string"
+            ? fileRecord.fileId
+            : undefined;
+        const legacyUrl = pickUrlFromFileLike(fileRecord);
+        setExistingImages(
+          legacyFileId && legacyUrl
+            ? [{ fileId: legacyFileId, imgUrl: legacyUrl, sortOrder: 0 }]
+            : [],
+        );
+      }
       setLoadingEdit(false);
     })();
   }, [editCommunityId, navigation]);
+
+  /** X 버튼은 화면에서만 즉시 제거 — 실제 삭제는 "수정 완료" 시 일괄 반영 */
+  const handleRemoveExistingImage = (fileId: string) => {
+    setExistingImages((prev) => prev.filter((img) => img.fileId !== fileId));
+    setRemovedExistingFileIds((prev) => [...prev, fileId]);
+  };
 
   const selectedCategoryName =
     categories.find((c) => c.categoryId === categoryId)?.name ?? "";
@@ -132,7 +158,7 @@ const CommunityRegistrationScreen = () => {
         Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
         return;
       }
-      const remaining = MAX_IMAGES - pendingImages.length;
+      const remaining = MAX_IMAGES - pendingImages.length - existingImages.length;
       if (remaining <= 0) {
         Alert.alert("알림", `이미지는 최대 ${MAX_IMAGES}장까지입니다.`);
         return;
@@ -170,12 +196,19 @@ const CommunityRegistrationScreen = () => {
           Alert.alert("수정 실패", "게시글을 수정하지 못했습니다.");
           return;
         }
+        if (removedExistingFileIds.length > 0) {
+          await Promise.all(
+            removedExistingFileIds.map((fileId) =>
+              deleteCommunityAttachment(editCommunityId, fileId),
+            ),
+          );
+        }
         if (pendingImages.length > 0) {
           await attachFilesToPost(
             "community",
             editCommunityId,
             pendingImages,
-            existingImagesCount,
+            existingImages.length,
           );
         }
         navigation.goBack();
@@ -284,13 +317,49 @@ const CommunityRegistrationScreen = () => {
                   />
                 </Pressable>
               </View>
-              {pendingImages.length > 0 ? (
+              {existingImages.length > 0 || pendingImages.length > 0 ? (
                 <ScrollView
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={{ marginTop: 10 }}
                   contentContainerStyle={{ paddingTop: 8 }}
                 >
+                  {existingImages.map((img) => (
+                    <View
+                      key={img.fileId}
+                      style={{ marginRight: 8, position: "relative" }}
+                    >
+                      <Image
+                        source={{ uri: img.imgUrl }}
+                        style={{
+                          width: 72,
+                          height: 72,
+                          borderRadius: 8,
+                          backgroundColor: GRAY.MEDIUM,
+                        }}
+                        resizeMode="cover"
+                      />
+                      <Pressable
+                        onPress={() => handleRemoveExistingImage(img.fileId)}
+                        style={{
+                          position: "absolute",
+                          top: -6,
+                          right: -6,
+                          backgroundColor: "#fff",
+                          borderRadius: 12,
+                          zIndex: 1,
+                          elevation: 2,
+                        }}
+                        hitSlop={8}
+                      >
+                        <MaterialCommunityIcons
+                          name="close-circle"
+                          size={22}
+                          color={MAIN.DEFAULT}
+                        />
+                      </Pressable>
+                    </View>
+                  ))}
                   {pendingImages.map((img, idx) => (
                     <View
                       key={`${img.uri}-${idx}`}
