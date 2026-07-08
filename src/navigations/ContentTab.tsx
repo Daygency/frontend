@@ -1,5 +1,6 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import type { EventArg } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
 import { ContentRoutes } from "./routes";
 import { fireTabRetap } from "../lib/navigation/tabRetap";
 import MainHomeScreen from "../screens/MainHomeScreen/MainHomeScreen";
@@ -67,6 +68,11 @@ const ContentTab = () => {
         tabBarStyle: TAB_BAR_STYLE,
         tabBarActiveTintColor: MAIN.DEFAULT,
         tabBarInactiveTintColor: GRAY.MEDIUM_100,
+      }}
+      screenListeners={{
+        tabPress: () => {
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+        },
       }}
     >
       <Tab.Screen
