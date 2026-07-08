@@ -40,6 +40,7 @@ import { createCoffeeRoom } from "../../../lib/apis/chat/chatApi";
 import { chatRoomItemToParams } from "../../../lib/chat/chatRoomNavigation";
 import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
 import { DEFAULT_USER_PROFILE_IMAGE } from "../../../lib/media/defaultUserProfileImage";
+import { showPhotoActionSheet } from "../../../lib/ui/showPhotoActionSheet";
 import RecruitmentMajorChip from "../../shared/RecruitmentMajorChip";
 import { getProfileMajorTagLabels } from "../../../lib/profile/profileMajorTags";
 import * as ImagePicker from "expo-image-picker";
@@ -369,22 +370,13 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       void pickCoverImageFromLibrary();
       return;
     }
-    Alert.alert(
-      "배경 사진",
-      undefined,
-      [
-        {
-          text: "사진 변경",
-          onPress: () => void pickCoverImageFromLibrary(),
-        },
-        {
-          text: "기본 배경으로 변경",
-          style: "destructive" as const,
-          onPress: () => void removeCoverImage(),
-        },
-        { text: "취소", style: "cancel" },
-      ],
-    );
+    showPhotoActionSheet({
+      title: "배경 사진",
+      changeLabel: "사진 변경",
+      resetLabel: "기본 배경으로 변경",
+      onChange: () => void pickCoverImageFromLibrary(),
+      onReset: () => void removeCoverImage(),
+    });
   };
 
   const pickProfileImageFromLibrary = async () => {
@@ -461,22 +453,13 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       void pickProfileImageFromLibrary();
       return;
     }
-    Alert.alert(
-      "프로필 사진",
-      undefined,
-      [
-        {
-          text: "사진 변경",
-          onPress: () => void pickProfileImageFromLibrary(),
-        },
-        {
-          text: "기본 이미지로 변경",
-          style: "destructive" as const,
-          onPress: () => void removeProfileImage(),
-        },
-        { text: "취소", style: "cancel" },
-      ],
-    );
+    showPhotoActionSheet({
+      title: "프로필 사진",
+      changeLabel: "사진 변경",
+      resetLabel: "기본 이미지로 변경",
+      onChange: () => void pickProfileImageFromLibrary(),
+      onReset: () => void removeProfileImage(),
+    });
   };
 
   /** 같은 화면에서 재포커스 시 전체 스피너 없이 새로고침 (팔로우 버튼이 안 바뀐 것처럼 보이는 문제 방지) */

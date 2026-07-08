@@ -15,6 +15,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { DEFAULT_USER_PROFILE_IMAGE } from "../../lib/media/defaultUserProfileImage";
+import { showPhotoActionSheet } from "../../lib/ui/showPhotoActionSheet";
 import { MAIN, WHITE } from "../../color";
 import {
   getMyProfile,
@@ -331,25 +332,16 @@ const ProfileEditScreen = () => {
       void pickProfileImageFromLibrary();
       return;
     }
-    Alert.alert(
-      "프로필 사진",
-      undefined,
-      [
-        {
-          text: "사진 변경",
-          onPress: () => void pickProfileImageFromLibrary(),
-        },
-        {
-          text: "기본 이미지로 변경",
-          style: "destructive" as const,
-          onPress: () => {
-            setPickedProfileImageUri(null);
-            setProfileImageClearRequested(true);
-          },
-        },
-        { text: "취소", style: "cancel" },
-      ],
-    );
+    showPhotoActionSheet({
+      title: "프로필 사진",
+      changeLabel: "사진 변경",
+      resetLabel: "기본 이미지로 변경",
+      onChange: () => void pickProfileImageFromLibrary(),
+      onReset: () => {
+        setPickedProfileImageUri(null);
+        setProfileImageClearRequested(true);
+      },
+    });
   };
 
   const renderTabBar = () => (
