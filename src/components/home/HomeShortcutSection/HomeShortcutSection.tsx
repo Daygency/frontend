@@ -13,7 +13,11 @@ const ShortcutPill = ({ label, onPress }: ShortcutPillProps) => (
     onPress={onPress}
     style={({ pressed }) => [styles.pill, pressed && styles.pillPressed]}
   >
-    <Text style={styles.label}>{label}</Text>
+    {({ pressed }) => (
+      <Text style={[styles.label, pressed && styles.labelPressed]}>
+        {label}
+      </Text>
+    )}
   </Pressable>
 );
 
@@ -59,7 +63,7 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
   },
   pillPressed: {
-    opacity: 0.88,
+    borderColor: GRAY.MEDIUM_100,
   },
   label: {
     fontSize: 13,
@@ -67,6 +71,9 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: BLACK,
     includeFontPadding: false,
+  },
+  labelPressed: {
+    color: GRAY.MEDIUM_100,
   },
 });
 
