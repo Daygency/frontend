@@ -18,9 +18,9 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/forms/Form";
 import FormTextInput from "../../components/forms/FormTextInput";
-import FormDropdownInput from "../../components/forms/FormDropdownInput";
 import KakaoLocationField from "../../components/kakao/KakaoLocationField/KakaoLocationField";
 import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
+import AnnouncementTypeSelectModal from "../../components/modals/AnnouncementTypeSelectModal";
 import { parseCoord } from "../../lib/kakao/location";
 import SelectableTag from "../../components/ui/SelectableTag";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
@@ -266,6 +266,8 @@ const AnnouncementRegistrationScreen = () => {
   const [announcementType, setAnnouncementType] = useState(
     FALLBACK_CATEGORY_OPTIONS[0]?.value ?? "",
   );
+  const [showAnnouncementTypeSheet, setShowAnnouncementTypeSheet] =
+    useState(false);
   const [recruitmentMajors, setRecruitmentMajors] = useState<string[]>([]);
   const [content, setContent] = useState("");
   const [compensationMode, setCompensationMode] =
@@ -961,13 +963,29 @@ const AnnouncementRegistrationScreen = () => {
                   style={styles.formField}
                 >
                   <Form title="공고 유형" isRequired hasError={err.announcementType}>
-                    <FormDropdownInput
-                      placeholder="공고 유형을 선택하세요"
-                      data={categoryOptions}
-                      value={announcementType}
-                      onChange={(item) => setAnnouncementType(item.value)}
-                      hasError={err.announcementType}
-                    />
+                    <Pressable
+                      style={[
+                        styles.datePickerField,
+                        err.announcementType && styles.inputErrorBorder,
+                      ]}
+                      onPress={() => setShowAnnouncementTypeSheet(true)}
+                    >
+                      <Text
+                        style={[
+                          styles.datePickerText,
+                          !announcementType && styles.datePickerTextPlaceholder,
+                        ]}
+                      >
+                        {categoryOptions.find(
+                          (o) => o.value === announcementType,
+                        )?.label ?? "공고 유형을 선택하세요"}
+                      </Text>
+                      <MaterialCommunityIcons
+                        name="chevron-down"
+                        size={20}
+                        color={GRAY.DARK_1}
+                      />
+                    </Pressable>
                   </Form>
                 </View>
 
@@ -1285,6 +1303,16 @@ const AnnouncementRegistrationScreen = () => {
         </Pressable>
       </View>
 
+      <AnnouncementTypeSelectModal
+        visible={showAnnouncementTypeSheet}
+        options={categoryOptions}
+        selectedValue={announcementType}
+        onSelect={(option) => {
+          setAnnouncementType(option.value);
+          setShowAnnouncementTypeSheet(false);
+        }}
+        onClose={() => setShowAnnouncementTypeSheet(false)}
+      />
       <WheelDateTimePickerModal
         visible={showScheduledDatePicker}
         value={scheduledDate}
