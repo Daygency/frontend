@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { View } from "react-native";
 import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { useRoute, RouteProp } from "@react-navigation/native";
+import { useRoute, RouteProp, useFocusEffect } from "@react-navigation/native";
 import styles from "./styles";
 import { useLoungeTabFade } from "./useLoungeTabFade";
 import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
@@ -122,6 +122,15 @@ const LoungeScreen = () => {
     useState<LoungeCommunityTagOption>("전체");
   const [filterSheet, setFilterSheet] = useState<PerformanceNewsFilterSheetType | null>(
     null,
+  );
+
+  // detachInactiveScreens로 인해 탭 재부착(reattach) 시 화면이 흰 화면으로
+  // 멈추는 네이티브 페인트 누락 버그가 있어, 포커스 시 한 번 더 커밋을 강제한다.
+  const [, forceRepaintOnFocus] = useState(0);
+  useFocusEffect(
+    useCallback(() => {
+      forceRepaintOnFocus((tick) => tick + 1);
+    }, []),
   );
 
   useEffect(() => {
