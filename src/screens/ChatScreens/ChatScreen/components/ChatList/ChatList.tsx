@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
   DeviceEventEmitter,
   FlatList,
@@ -32,6 +33,8 @@ import EmptyState, {
 } from "../../../../../components/ui/EmptyState";
 import { MAIN } from "../../../../../color";
 import MyAnnouncementListItem from "./MyAnnouncementListItem";
+import ChatRoomListSkeleton from "./ChatRoomListSkeleton";
+import MyAnnouncementListSkeleton from "./MyAnnouncementListSkeleton";
 
 type ChatTopTab = "전체" | "DM" | "내 공고" | "지원 공고";
 
@@ -191,7 +194,7 @@ function ChatRoomsFlatList({
     );
   }
 
-  const isEmpty = filteredItems.length === 0;
+  const isEmpty = filteredItems.length === 0 && !(loading && !refreshing);
 
   return (
     <FlatList
@@ -217,9 +220,7 @@ function ChatRoomsFlatList({
       }
       ListEmptyComponent={
         loading && !refreshing ? (
-          <View style={{ paddingVertical: 48, alignItems: "center" }}>
-            <ActivityIndicator size="small" color="#1F2A44" />
-          </View>
+          <ChatRoomListSkeleton />
         ) : (
           <EmptyState
             message={
@@ -349,7 +350,7 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
     );
   }
 
-  const isEmpty = filteredPosts.length === 0;
+  const isEmpty = filteredPosts.length === 0 && !(loading && !refreshing);
 
   return (
     <FlatList
@@ -375,9 +376,7 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
       }
       ListEmptyComponent={
         loading && !refreshing ? (
-          <View style={{ paddingVertical: 48, alignItems: "center" }}>
-            <ActivityIndicator size="small" color="#1F2A44" />
-          </View>
+          <MyAnnouncementListSkeleton />
         ) : (
           <EmptyState
             message={
