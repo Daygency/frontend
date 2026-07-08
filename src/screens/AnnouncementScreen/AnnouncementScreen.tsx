@@ -667,7 +667,10 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
             return (
               <Pressable
                 key={chip.type}
-                style={styles.filterChip}
+                style={({ pressed }) => [
+                  styles.filterChip,
+                  pressed && styles.filterChipPressed,
+                ]}
                 onPress={() => setFilterSheet(chip.type)}
               >
                 <MaterialIcons name="sort" size={24} color="black" />
@@ -679,7 +682,11 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           return (
             <Pressable
               key={chip.type}
-              style={[styles.filterChip, isActive && styles.filterChipActive]}
+              style={({ pressed }) => [
+                styles.filterChip,
+                isActive && styles.filterChipActive,
+                pressed && styles.filterChipPressed,
+              ]}
               onPress={() => setFilterSheet(chip.type)}
             >
               <Text

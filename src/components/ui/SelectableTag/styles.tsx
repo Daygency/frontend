@@ -18,6 +18,9 @@ const styles = StyleSheet.create({
     backgroundColor: MAIN.DEFAULT,
     borderColor: MAIN.DEFAULT,
   },
+  tagPressed: {
+    opacity: 0.5,
+  },
   tagText: {
     color: BLACK,
     fontSize: 13,

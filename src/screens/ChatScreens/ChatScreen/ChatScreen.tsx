@@ -96,7 +96,11 @@ const ChatScreen = () => {
           return (
             <Pressable
               key={tab}
-              style={[styles.topTab, selected && styles.topTabSelected]}
+              style={({ pressed }) => [
+                styles.topTab,
+                selected && styles.topTabSelected,
+                pressed && styles.topTabPressed,
+              ]}
               onPress={() => setSelectedTopTab(tab)}
             >
               <Text style={[styles.topTabText, selected && styles.topTabTextSelected]}>

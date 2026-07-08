@@ -19,12 +19,19 @@ const LoungePerformanceNewsFilterRow = ({
 
   return (
     <View style={styles.filterRow}>
-      <Pressable style={styles.filterChip} onPress={() => onFilterSheetOpen("sort")}>
+      <Pressable
+        style={({ pressed }) => [styles.filterChip, pressed && styles.filterChipPressed]}
+        onPress={() => onFilterSheetOpen("sort")}
+      >
         <MaterialIcons name="sort" size={24} color="black" />
       </Pressable>
 
       <Pressable
-        style={[styles.filterChip, selectedGenre && styles.filterChipActive]}
+        style={({ pressed }) => [
+          styles.filterChip,
+          selectedGenre && styles.filterChipActive,
+          pressed && styles.filterChipPressed,
+        ]}
         onPress={() => onFilterSheetOpen("genre")}
       >
         <Text
@@ -43,7 +50,11 @@ const LoungePerformanceNewsFilterRow = ({
       </Pressable>
 
       <Pressable
-        style={[styles.filterChip, selectedRegion && styles.filterChipActive]}
+        style={({ pressed }) => [
+          styles.filterChip,
+          selectedRegion && styles.filterChipActive,
+          pressed && styles.filterChipPressed,
+        ]}
         onPress={() => onFilterSheetOpen("region")}
       >
         <Text
@@ -87,6 +98,9 @@ const styles = StyleSheet.create({
   filterChipActive: {
     borderColor: MAIN.DEFAULT,
     backgroundColor: MAIN.DEFAULT,
+  },
+  filterChipPressed: {
+    opacity: 0.5,
   },
   filterChipText: {
     color: MAIN.DEFAULT,

@@ -79,6 +79,9 @@ const styles = StyleSheet.create({
     borderColor: MAIN.DEFAULT,
     backgroundColor: MAIN.DEFAULT,
   },
+  topTabPressed: {
+    opacity: 0.5,
+  },
   topTabText: {
     fontSize: 13,
     fontWeight: "400",

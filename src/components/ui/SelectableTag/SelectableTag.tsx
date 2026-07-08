@@ -10,7 +10,11 @@ interface SelectableTagProps {
 const SelectableTag = ({ label, selected = false, onPress }: SelectableTagProps) => {
   return (
     <Pressable
-      style={[styles.tag, selected && styles.tagSelected]}
+      style={({ pressed }) => [
+        styles.tag,
+        selected && styles.tagSelected,
+        pressed && styles.tagPressed,
+      ]}
       onPress={onPress}
     >
       <Text style={[styles.tagText, selected && styles.tagTextSelected]}>

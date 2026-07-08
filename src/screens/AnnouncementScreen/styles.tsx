@@ -34,6 +34,9 @@ const styles = StyleSheet.create({
     borderColor: MAIN.DEFAULT,
     backgroundColor: MAIN.DEFAULT,
   },
+  filterChipPressed: {
+    opacity: 0.5,
+  },
   filterChipText: {
     color: MAIN.DEFAULT,
     fontSize: 13,
