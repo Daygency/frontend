@@ -122,7 +122,7 @@ const ArtistPortfolioHeader = ({
         {
           paddingTop: top + 6,
           paddingBottom: 10,
-          paddingHorizontal: 17,
+          paddingHorizontal: 12,
         },
       ]}
     >

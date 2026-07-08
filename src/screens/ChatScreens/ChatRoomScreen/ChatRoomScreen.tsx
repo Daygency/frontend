@@ -9,6 +9,7 @@ import {
   Alert,
   Image,
   Linking,
+  Keyboard,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
@@ -758,6 +759,12 @@ const ChatRoomScreen = () => {
 
   const goToPeerProfile = () => {
     if (!peerUserId) return;
+    /**
+     * CHAT_ROOM은 keyboardHandlingEnabled: false라 push 시 키보드가 자동으로
+     * 닫히지 않는다. 열린 채로 넘어가면 ArtistPortfolioHeader가 그 순간의
+     * insets.top 기준으로 렌더되며 백버튼 위치가 밀리므로, 이동 전 명시적으로 닫는다.
+     */
+    Keyboard.dismiss();
     navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
       userId: peerUserId,
       activityName: handle,

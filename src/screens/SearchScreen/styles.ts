@@ -10,14 +10,17 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    height: 44,
+    minHeight: 44,
     paddingHorizontal: 12,
-    paddingTop: 4,
+    paddingTop: 6,
     paddingBottom: 4,
   },
   backButton: {
-    padding: 4,
-    marginRight: 8,
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 4,
   },
   searchBar: {
     flex: 1,
