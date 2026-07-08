@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FlatList, RefreshControl, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, Text, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
@@ -20,14 +20,21 @@ type RootStackParamList = {
   };
 };
 
+const PAGE_LIMIT = 20;
+
 const MyActivityAnnouncementListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [items, setItems] = useState<MyAnnouncementPostItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const fetchItems = useCallback(async () => {
-    const res = await getMyAnnouncements();
-    setItems(res ?? []);
+    const res = await getMyAnnouncements({ limit: PAGE_LIMIT });
+    setItems(res?.items ?? []);
+    setNextCursor(res?.nextCursor ?? null);
+    setHasMore(res?.hasMore ?? false);
   }, []);
 
   useEffect(() => {
@@ -39,6 +46,16 @@ const MyActivityAnnouncementListScreen = () => {
     await fetchItems();
     setRefreshing(false);
   }, [fetchItems]);
+
+  const onEndReached = useCallback(async () => {
+    if (!hasMore || !nextCursor || loadingMore) return;
+    setLoadingMore(true);
+    const res = await getMyAnnouncements({ cursor: nextCursor, limit: PAGE_LIMIT });
+    setItems((prev) => [...prev, ...(res?.items ?? [])]);
+    setNextCursor(res?.nextCursor ?? null);
+    setHasMore(res?.hasMore ?? false);
+    setLoadingMore(false);
+  }, [hasMore, nextCursor, loadingMore]);
 
   const listData = useMemo(
     () =>
@@ -65,6 +82,15 @@ const MyActivityAnnouncementListScreen = () => {
         keyExtractor={(item) => item.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} />
+        }
+        onEndReached={() => void onEndReached()}
+        onEndReachedThreshold={0.35}
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={{ paddingVertical: 16 }}>
+              <ActivityIndicator />
+            </View>
+          ) : null
         }
         renderItem={({ item }) => (
           <View style={styles.cardWrapper}>

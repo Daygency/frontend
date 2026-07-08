@@ -435,27 +435,38 @@ export async function updateApplication(
 /** GET /applications/post/:postId — 해당 공고 지원 목록 (작성자만, README) */
 export async function getApplicationsForPost(
   postId: string,
+  params?: { cursor?: string; limit?: number },
 ): Promise<
-  | { ok: true; data: ApplicationEntity[] }
+  | { ok: true; data: ApplicationEntity[]; nextCursor: string | null; hasMore: boolean }
   | { ok: false; status: number; message?: string }
 > {
   try {
     const headers = await getAuthHeadersRequired();
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
     const res = await fetchWithAuth(
-      `${API_BASE}/applications/post/${encodeURIComponent(postId)}`,
+      `${API_BASE}/applications/post/${encodeURIComponent(postId)}${query ? `?${query}` : ""}`,
       { method: "GET", headers },
     );
     if (!res.ok) {
       const text = await res.text().catch(() => "");
       return { ok: false, status: res.status, message: text };
     }
-    const data = (await res.json()) as unknown;
-    const arr = Array.isArray(data) ? data : [];
+    const data = (await res.json()) as {
+      items?: unknown[];
+      nextCursor?: unknown;
+      hasMore?: unknown;
+    };
+    const arr = Array.isArray(data.items) ? data.items : [];
     return {
       ok: true,
       data: arr.map((row) =>
         parseApplicationEntity(row as Record<string, unknown>),
       ),
+      nextCursor: typeof data.nextCursor === "string" ? data.nextCursor : null,
+      hasMore: Boolean(data.hasMore),
     };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);

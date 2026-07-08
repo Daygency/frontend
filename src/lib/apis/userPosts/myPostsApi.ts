@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
+import type { PaginatedResponse } from "../pagination";
 import type {
   MyAnnouncementPostItem,
   MyCommentPostItem,
@@ -18,13 +19,39 @@ async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   };
 }
 
-export async function getMyPosts(): Promise<MyPostsResponse | null> {
+function normalizePage<T>(raw: unknown): PaginatedResponse<T> {
+  const r = (raw ?? {}) as Partial<PaginatedResponse<T>>;
+  return {
+    items: Array.isArray(r.items) ? r.items : [],
+    nextCursor: r.nextCursor ?? null,
+    hasMore: Boolean(r.hasMore),
+  };
+}
+
+export type GetMyPostsParams = {
+  communityCursor?: string;
+  newsCursor?: string;
+  announcementCursor?: string;
+  limit?: number;
+};
+
+export async function getMyPosts(
+  params?: GetMyPostsParams,
+): Promise<MyPostsResponse | null> {
   try {
     const headers = await getAuthHeadersRequired();
-    const res = await fetchWithAuth(`${API_BASE}/users/posts/my`, {
-      method: "GET",
-      headers,
-    });
+    const q = new URLSearchParams();
+    if (params?.communityCursor) q.set("communityCursor", params.communityCursor);
+    if (params?.newsCursor) q.set("newsCursor", params.newsCursor);
+    if (params?.announcementCursor) {
+      q.set("announcementCursor", params.announcementCursor);
+    }
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
+    const res = await fetchWithAuth(
+      `${API_BASE}/users/posts/my${query ? `?${query}` : ""}`,
+      { method: "GET", headers },
+    );
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
@@ -34,9 +61,9 @@ export async function getMyPosts(): Promise<MyPostsResponse | null> {
 
     const raw = (await res.json()) as Partial<MyPostsResponse>;
     return {
-      community: Array.isArray(raw.community) ? raw.community : [],
-      news: Array.isArray(raw.news) ? raw.news : [],
-      announcements: Array.isArray(raw.announcements) ? raw.announcements : [],
+      community: normalizePage(raw.community),
+      news: normalizePage(raw.news),
+      announcements: normalizePage(raw.announcements),
     };
   } catch (e) {
     console.warn("[getMyPosts] 에러:", e);
@@ -71,13 +98,21 @@ export async function getMyPostHighlights(): Promise<MyPostHighlightsResponse | 
   }
 }
 
-export async function getMyAnnouncements(): Promise<MyAnnouncementPostItem[] | null> {
+export type MyPostsListParams = { cursor?: string; limit?: number };
+
+export async function getMyAnnouncements(
+  params?: MyPostsListParams,
+): Promise<PaginatedResponse<MyAnnouncementPostItem> | null> {
   try {
     const headers = await getAuthHeadersRequired();
-    const res = await fetchWithAuth(`${API_BASE}/users/posts/my/announcements`, {
-      method: "GET",
-      headers,
-    });
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
+    const res = await fetchWithAuth(
+      `${API_BASE}/users/posts/my/announcements${query ? `?${query}` : ""}`,
+      { method: "GET", headers },
+    );
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
@@ -86,20 +121,26 @@ export async function getMyAnnouncements(): Promise<MyAnnouncementPostItem[] | n
     }
 
     const raw = await res.json();
-    return Array.isArray(raw) ? (raw as MyAnnouncementPostItem[]) : [];
+    return normalizePage<MyAnnouncementPostItem>(raw);
   } catch (e) {
     console.warn("[getMyAnnouncements] 에러:", e);
     return null;
   }
 }
 
-export async function getMyNewsPosts(): Promise<MyNewsPostItem[] | null> {
+export async function getMyNewsPosts(
+  params?: MyPostsListParams,
+): Promise<PaginatedResponse<MyNewsPostItem> | null> {
   try {
     const headers = await getAuthHeadersRequired();
-    const res = await fetchWithAuth(`${API_BASE}/users/posts/my/news`, {
-      method: "GET",
-      headers,
-    });
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
+    const res = await fetchWithAuth(
+      `${API_BASE}/users/posts/my/news${query ? `?${query}` : ""}`,
+      { method: "GET", headers },
+    );
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
@@ -108,20 +149,26 @@ export async function getMyNewsPosts(): Promise<MyNewsPostItem[] | null> {
     }
 
     const raw = await res.json();
-    return Array.isArray(raw) ? (raw as MyNewsPostItem[]) : [];
+    return normalizePage<MyNewsPostItem>(raw);
   } catch (e) {
     console.warn("[getMyNewsPosts] 에러:", e);
     return null;
   }
 }
 
-export async function getMyComments(): Promise<MyCommentPostItem[] | null> {
+export async function getMyComments(
+  params?: MyPostsListParams,
+): Promise<PaginatedResponse<MyCommentPostItem> | null> {
   try {
     const headers = await getAuthHeadersRequired();
-    const res = await fetchWithAuth(`${API_BASE}/users/posts/my/comments`, {
-      method: "GET",
-      headers,
-    });
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
+    const res = await fetchWithAuth(
+      `${API_BASE}/users/posts/my/comments${query ? `?${query}` : ""}`,
+      { method: "GET", headers },
+    );
 
     if (!res.ok) {
       const errText = await res.text().catch(() => "");
@@ -130,7 +177,7 @@ export async function getMyComments(): Promise<MyCommentPostItem[] | null> {
     }
 
     const raw = await res.json();
-    return Array.isArray(raw) ? (raw as MyCommentPostItem[]) : [];
+    return normalizePage<MyCommentPostItem>(raw);
   } catch (e) {
     console.warn("[getMyComments] 에러:", e);
     return null;

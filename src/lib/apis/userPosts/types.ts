@@ -1,3 +1,5 @@
+import type { PaginatedResponse } from "../pagination";
+
 export type MyCommunityPostItem = {
   communityId: string;
   title: string;
@@ -33,9 +35,9 @@ export type MyAnnouncementPostItem = {
 };
 
 export type MyPostsResponse = {
-  community: MyCommunityPostItem[];
-  news: MyNewsPostItem[];
-  announcements: MyAnnouncementPostItem[];
+  community: PaginatedResponse<MyCommunityPostItem>;
+  news: PaginatedResponse<MyNewsPostItem>;
+  announcements: PaginatedResponse<MyAnnouncementPostItem>;
 };
 
 export type MyPostHighlightsResponse = {

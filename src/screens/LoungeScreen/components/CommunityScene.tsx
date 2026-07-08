@@ -31,6 +31,8 @@ type CommunitySceneProps = {
   selectedTag: LoungeCommunityTagOption;
 };
 
+const PAGE_LIMIT = 20;
+
 const AnimatedFlatList = Animated.createAnimatedComponent(
   FlatList<CommunityListItem>,
 );
@@ -40,8 +42,11 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
     useLoungeScroll();
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [categories, setCategories] = useState<CommunityCategory[]>([]);
   const [items, setItems] = useState<CommunityListItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation<any>();
   const { user } = useAuth();
@@ -99,6 +104,7 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
       const categoryId = findCategoryIdByTag(selectedTag);
       const res = await getCommunityList({
         categoryId,
+        limit: PAGE_LIMIT,
       });
 
       if (!res) {
@@ -106,8 +112,9 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
         return;
       }
 
-      const nextItems = Array.isArray(res) ? res : [];
-      setItems(nextItems);
+      setItems(res.items);
+      setNextCursor(res.nextCursor);
+      setHasMore(res.hasMore);
     } finally {
       if (mode === "refresh") {
         setRefreshing(false);
@@ -120,6 +127,25 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
   const onRefresh = useCallback(() => {
     void loadCommunities("refresh");
   }, [loadCommunities]);
+
+  const onEndReached = useCallback(async () => {
+    if (!hasMore || !nextCursor || loadingMore || loading || refreshing) return;
+    setLoadingMore(true);
+    try {
+      const categoryId = findCategoryIdByTag(selectedTag);
+      const res = await getCommunityList({
+        categoryId,
+        cursor: nextCursor,
+        limit: PAGE_LIMIT,
+      });
+      if (!res) return;
+      setItems((prev) => [...prev, ...res.items]);
+      setNextCursor(res.nextCursor);
+      setHasMore(res.hasMore);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [hasMore, nextCursor, loadingMore, loading, refreshing, categories, selectedTag]);
 
   useEffect(() => {
     (async () => {
@@ -197,6 +223,8 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
         removeClippedSubviews={false}
         onScroll={communityScrollHandler}
         scrollEventThrottle={16}
+        onEndReached={() => void onEndReached()}
+        onEndReachedThreshold={0.35}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -214,6 +242,13 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
               <Text style={localStyles.emptyText}>게시글이 없습니다.</Text>
             </View>
           )
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={localStyles.loaderContainer}>
+              <Text style={localStyles.emptyText}>불러오는 중…</Text>
+            </View>
+          ) : null
         }
       />
     </View>

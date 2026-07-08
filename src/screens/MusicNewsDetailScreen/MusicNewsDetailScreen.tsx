@@ -6,6 +6,7 @@ import {
   useRoute,
 } from "@react-navigation/native";
 import {
+  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
@@ -216,6 +217,9 @@ function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem
   };
 }
 
+const COMMENTS_PAGE_LIMIT = 20;
+const COMMENTS_MAX_REFRESH_LIMIT = 50;
+
 function buildCommentTree(raw: ApiCommentItem[], myUserId?: string): CommentItem[] {
   const roots: CommentItem[] = [];
   const childrenByParent = new Map<string, CommentItem[]>();
@@ -284,7 +288,11 @@ const MusicNewsDetailScreen = () => {
     newsFromParams ?? null,
   );
   const [comments, setComments] = useState<CommentItem[]>([]);
-  const [commentTotalCount, setCommentTotalCount] = useState<number | null>(null);
+  const [commentsNextCursor, setCommentsNextCursor] = useState<string | null>(null);
+  const [commentsHasMore, setCommentsHasMore] = useState(false);
+  const [commentsLoadedCount, setCommentsLoadedCount] = useState(COMMENTS_PAGE_LIMIT);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
+  const rawCommentsRef = useRef<ApiCommentItem[]>([]);
   const [replyTarget, setReplyTarget] = useState<ReplyTarget | null>(null);
   const [editingComment, setEditingComment] = useState<{
     commentId: string;
@@ -382,7 +390,7 @@ const MusicNewsDetailScreen = () => {
   const targetNewsId = newsId ?? news?.id;
   const myUserId = user?.socialId?.trim() ?? "";
   const commentCount = Number(
-    commentTotalCount ?? (news as any)?.commentCount ?? news?.comments ?? 0,
+    (news as any)?.commentCount ?? news?.comments ?? 0,
   );
 
   useEffect(() => {
@@ -391,25 +399,54 @@ const MusicNewsDetailScreen = () => {
       const res = await getComments({
         targetType: "NEWS",
         targetId: targetNewsId,
+        limit: COMMENTS_PAGE_LIMIT,
       });
-      if (res) {
-        setComments(buildCommentTree(res, myUserId));
-        setCommentTotalCount(res.length);
-      }
+      if (!res) return;
+      rawCommentsRef.current = res.items;
+      setComments(buildCommentTree(res.items, myUserId));
+      setCommentsNextCursor(res.nextCursor);
+      setCommentsHasMore(res.hasMore);
+      setCommentsLoadedCount(COMMENTS_PAGE_LIMIT);
     })();
   }, [targetNewsId, myUserId]);
 
+  /** 댓글 작성/수정/삭제 후 재조회 — 지금까지 불러온 만큼(최대 50개)은 다시 채워서 "더보기"로 펼친 내역이 사라지지 않게 함 */
   const refreshComments = useCallback(async () => {
     if (!targetNewsId) return;
     const res = await getComments({
       targetType: "NEWS",
       targetId: targetNewsId,
+      limit: Math.min(commentsLoadedCount, COMMENTS_MAX_REFRESH_LIMIT),
     });
-    if (res) {
-      setComments(buildCommentTree(res, myUserId));
-      setCommentTotalCount(res.length);
+    if (!res) return;
+    rawCommentsRef.current = res.items;
+    setComments(buildCommentTree(res.items, myUserId));
+    setCommentsNextCursor(res.nextCursor);
+    setCommentsHasMore(res.hasMore);
+  }, [targetNewsId, myUserId, commentsLoadedCount]);
+
+  const loadMoreComments = useCallback(async () => {
+    if (!targetNewsId || !commentsHasMore || !commentsNextCursor || loadingMoreComments) {
+      return;
     }
-  }, [targetNewsId, myUserId]);
+    setLoadingMoreComments(true);
+    try {
+      const res = await getComments({
+        targetType: "NEWS",
+        targetId: targetNewsId,
+        cursor: commentsNextCursor,
+        limit: COMMENTS_PAGE_LIMIT,
+      });
+      if (!res) return;
+      rawCommentsRef.current = [...rawCommentsRef.current, ...res.items];
+      setComments(buildCommentTree(rawCommentsRef.current, myUserId));
+      setCommentsNextCursor(res.nextCursor);
+      setCommentsHasMore(res.hasMore);
+      setCommentsLoadedCount((prev) => prev + COMMENTS_PAGE_LIMIT);
+    } finally {
+      setLoadingMoreComments(false);
+    }
+  }, [targetNewsId, commentsHasMore, commentsNextCursor, loadingMoreComments, myUserId]);
 
   useEffect(() => {
     if (!targetNewsId) return;
@@ -1033,6 +1070,19 @@ const MusicNewsDetailScreen = () => {
               scrollTargetId={scrollTargetCommentId}
               onScrollTargetHandled={() => setScrollTargetCommentId(null)}
             />
+            {commentsHasMore ? (
+              <Pressable
+                onPress={() => void loadMoreComments()}
+                disabled={loadingMoreComments}
+                style={styles.loadMoreCommentsButton}
+              >
+                {loadingMoreComments ? (
+                  <ActivityIndicator color={BLACK} />
+                ) : (
+                  <Text style={styles.loadMoreCommentsText}>댓글 더보기</Text>
+                )}
+              </Pressable>
+            ) : null}
           </View>
         </ScrollView>
 

@@ -4,6 +4,7 @@ import {
   FlatList,
   Image,
   Pressable,
+  RefreshControl,
   Text,
   View,
   useWindowDimensions,
@@ -28,6 +29,17 @@ type RootStackParamList = {
 
 const HORIZONTAL_PADDING = 20;
 const CARD_GAP = 12;
+const PAGE_LIMIT = 20;
+
+function sanitizeBanners(list: HomeBannerListItem[]): HomeBannerListItem[] {
+  return list
+    .map((banner) => {
+      const imageUrl = normalizeListThumbnailUrl(banner.imageUrl);
+      if (!imageUrl) return null;
+      return { ...banner, imageUrl };
+    })
+    .filter((item): item is HomeBannerListItem => item != null);
+}
 
 const HomeBannerListScreen = () => {
   const navigation =
@@ -36,20 +48,18 @@ const HomeBannerListScreen = () => {
   const { bottom } = useSafeAreaInsets();
   const cardWidth = (width - HORIZONTAL_PADDING * 2 - CARD_GAP) / 2;
   const [banners, setBanners] = useState<HomeBannerListItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   const loadBanners = useCallback(async () => {
     setLoading(true);
-    const list = await getHomeBanners();
-    setBanners(
-      list
-        .map((banner) => {
-          const imageUrl = normalizeListThumbnailUrl(banner.imageUrl);
-          if (!imageUrl) return null;
-          return { ...banner, imageUrl };
-        })
-        .filter((item): item is HomeBannerListItem => item != null),
-    );
+    const res = await getHomeBanners({ limit: PAGE_LIMIT });
+    setBanners(sanitizeBanners(res.items));
+    setNextCursor(res.nextCursor);
+    setHasMore(res.hasMore);
     setLoading(false);
   }, []);
 
@@ -58,6 +68,22 @@ const HomeBannerListScreen = () => {
       void loadBanners();
     }, [loadBanners]),
   );
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await loadBanners();
+    setRefreshing(false);
+  }, [loadBanners]);
+
+  const onEndReached = useCallback(async () => {
+    if (!hasMore || !nextCursor || loadingMore || loading) return;
+    setLoadingMore(true);
+    const res = await getHomeBanners({ cursor: nextCursor, limit: PAGE_LIMIT });
+    setBanners((prev) => [...prev, ...sanitizeBanners(res.items)]);
+    setNextCursor(res.nextCursor);
+    setHasMore(res.hasMore);
+    setLoadingMore(false);
+  }, [hasMore, nextCursor, loadingMore, loading]);
 
   if (loading) {
     return (
@@ -73,12 +99,24 @@ const HomeBannerListScreen = () => {
       keyExtractor={(item) => item.bannerId}
       numColumns={2}
       columnWrapperStyle={styles.row}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={() => void onRefresh()} />
+      }
+      onEndReached={() => void onEndReached()}
+      onEndReachedThreshold={0.35}
       contentContainerStyle={contentContainerWhenEmpty(
         banners.length === 0,
         [styles.listContent, { paddingBottom: bottom + 24 }],
       )}
       ListEmptyComponent={
         <EmptyState message="매거진이 없습니다." />
+      }
+      ListFooterComponent={
+        loadingMore ? (
+          <View style={{ paddingVertical: 16 }}>
+            <ActivityIndicator color={MAIN.DEFAULT} />
+          </View>
+        ) : null
       }
       renderItem={({ item }) => {
         const showNewBadge = isContentNew(item.createdAt);

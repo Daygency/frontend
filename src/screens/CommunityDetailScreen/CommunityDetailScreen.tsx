@@ -13,6 +13,7 @@ import {
   useState,
 } from "react";
 import {
+  ActivityIndicator,
   RefreshControl,
   ScrollView,
   Text,
@@ -161,6 +162,9 @@ function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem
   };
 }
 
+const COMMENTS_PAGE_LIMIT = 20;
+const COMMENTS_MAX_REFRESH_LIMIT = 50;
+
 function buildCommentTree(raw: ApiCommentItem[], myUserId?: string): CommentItem[] {
   const roots: CommentItem[] = [];
   const childrenByParent = new Map<string, CommentItem[]>();
@@ -227,6 +231,10 @@ const CommunityDetailScreen = () => {
   const contentAnchorRef = useRef<View>(null);
   const [data, setData] = useState<CommunityDetailResponse | null>(null);
   const [comments, setComments] = useState<CommentItem[]>([]);
+  const [commentsNextCursor, setCommentsNextCursor] = useState<string | null>(null);
+  const [commentsHasMore, setCommentsHasMore] = useState(false);
+  const [commentsLoadedCount, setCommentsLoadedCount] = useState(COMMENTS_PAGE_LIMIT);
+  const [loadingMoreComments, setLoadingMoreComments] = useState(false);
   const [scrollTargetCommentId, setScrollTargetCommentId] = useState<
     string | null
   >(null);
@@ -305,23 +313,59 @@ const CommunityDetailScreen = () => {
     setDetailRefreshing(false);
   }, [loadDetail]);
 
+  /** 페이지네이션 재구성용 원본 플랫 댓글 목록 — 트리(`comments`)는 항상 이걸로 재생성 */
+  const rawCommentsRef = useRef<ApiCommentItem[]>([]);
+
   useEffect(() => {
     (async () => {
       const res = await getComments({
         targetType: "COMMUNITY",
         targetId: communityId,
+        limit: COMMENTS_PAGE_LIMIT,
       });
-      if (res) setComments(buildCommentTree(res, myUserId));
+      if (!res) return;
+      rawCommentsRef.current = res.items;
+      setComments(buildCommentTree(res.items, myUserId));
+      setCommentsNextCursor(res.nextCursor);
+      setCommentsHasMore(res.hasMore);
+      setCommentsLoadedCount(COMMENTS_PAGE_LIMIT);
     })();
   }, [communityId, myUserId]);
 
+  /** 댓글 작성/수정/삭제 후 재조회 — 지금까지 불러온 만큼(최대 50개)은 다시 채워서 "더보기"로 펼친 내역이 사라지지 않게 함 */
   const refreshComments = useCallback(async () => {
     const res = await getComments({
       targetType: "COMMUNITY",
       targetId: communityId,
+      limit: Math.min(commentsLoadedCount, COMMENTS_MAX_REFRESH_LIMIT),
     });
-    if (res) setComments(buildCommentTree(res, myUserId));
-  }, [communityId, myUserId]);
+    if (!res) return;
+    rawCommentsRef.current = res.items;
+    setComments(buildCommentTree(res.items, myUserId));
+    setCommentsNextCursor(res.nextCursor);
+    setCommentsHasMore(res.hasMore);
+  }, [communityId, myUserId, commentsLoadedCount]);
+
+  const loadMoreComments = useCallback(async () => {
+    if (!commentsHasMore || !commentsNextCursor || loadingMoreComments) return;
+    setLoadingMoreComments(true);
+    try {
+      const res = await getComments({
+        targetType: "COMMUNITY",
+        targetId: communityId,
+        cursor: commentsNextCursor,
+        limit: COMMENTS_PAGE_LIMIT,
+      });
+      if (!res) return;
+      rawCommentsRef.current = [...rawCommentsRef.current, ...res.items];
+      setComments(buildCommentTree(rawCommentsRef.current, myUserId));
+      setCommentsNextCursor(res.nextCursor);
+      setCommentsHasMore(res.hasMore);
+      setCommentsLoadedCount((prev) => prev + COMMENTS_PAGE_LIMIT);
+    } finally {
+      setLoadingMoreComments(false);
+    }
+  }, [commentsHasMore, commentsNextCursor, loadingMoreComments, communityId, myUserId]);
 
   useEffect(() => {
     (async () => {
@@ -826,6 +870,19 @@ const CommunityDetailScreen = () => {
           scrollTargetId={scrollTargetCommentId}
           onScrollTargetHandled={() => setScrollTargetCommentId(null)}
         />
+        {commentsHasMore ? (
+          <Pressable
+            onPress={() => void loadMoreComments()}
+            disabled={loadingMoreComments}
+            style={styles.loadMoreCommentsButton}
+          >
+            {loadingMoreComments ? (
+              <ActivityIndicator color={BLACK} />
+            ) : (
+              <Text style={styles.loadMoreCommentsText}>댓글 더보기</Text>
+            )}
+          </Pressable>
+        ) : null}
         </View>
         </ScrollView>
 

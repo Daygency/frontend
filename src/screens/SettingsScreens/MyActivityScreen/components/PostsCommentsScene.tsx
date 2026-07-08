@@ -143,7 +143,7 @@ const PostsCommentsScene = () => {
     if (selectedFilter !== "댓글") return;
     (async () => {
       const res = await getMyComments();
-      setMyComments(res ?? []);
+      setMyComments(res?.items ?? []);
     })();
   }, [selectedFilter]);
 

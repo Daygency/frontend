@@ -55,8 +55,16 @@ const MyActivityListScreen = () => {
 
   const fetchFirst = useCallback(async () => {
     if (type === "comments") {
-      const res = await getMyComments();
-      setMyComments(res ?? []);
+      const res = await getMyComments({ limit: 20 });
+      if (!res) {
+        setMyComments([]);
+        setNextCursor(null);
+        setHasMore(false);
+        return;
+      }
+      setMyComments(res.items);
+      setNextCursor(res.nextCursor);
+      setHasMore(res.hasMore);
       return;
     }
 
@@ -88,12 +96,16 @@ const MyActivityListScreen = () => {
       return;
     }
 
-    const res = await getMyPosts();
+    const res = await getMyPosts({ limit: 20 });
     if (!res) {
       setMyCommunityPosts([]);
+      setNextCursor(null);
+      setHasMore(false);
       return;
     }
-    setMyCommunityPosts(res.community);
+    setMyCommunityPosts(res.community.items);
+    setNextCursor(res.community.nextCursor);
+    setHasMore(res.community.hasMore);
   }, [type, source]);
 
   useEffect(() => {
@@ -237,9 +249,19 @@ const MyActivityListScreen = () => {
         }
         onEndReachedThreshold={0.4}
         onEndReached={async () => {
-          if (type !== "posts" || loadingMore || !hasMore) return;
+          if (loadingMore || !hasMore) return;
           setLoadingMore(true);
-          if (source === "scrap") {
+          if (type === "comments") {
+            const res = await getMyComments({
+              limit: 20,
+              cursor: nextCursor ?? undefined,
+            });
+            if (res) {
+              setMyComments((prev) => [...prev, ...res.items]);
+              setNextCursor(res.nextCursor);
+              setHasMore(res.hasMore);
+            }
+          } else if (source === "scrap") {
             const res = await getMyScrappedCommunity({
               limit: 20,
               cursor: nextCursor ?? undefined,
@@ -263,11 +285,21 @@ const MyActivityListScreen = () => {
               setNextCursor(res.nextCursor);
               setHasMore(res.hasMore);
             }
+          } else {
+            const res = await getMyPosts({
+              limit: 20,
+              communityCursor: nextCursor ?? undefined,
+            });
+            if (res) {
+              setMyCommunityPosts((prev) => [...prev, ...res.community.items]);
+              setNextCursor(res.community.nextCursor);
+              setHasMore(res.community.hasMore);
+            }
           }
           setLoadingMore(false);
         }}
         ListFooterComponent={
-          type === "posts" && (source === "scrap" || source === "like") && loadingMore ? (
+          loadingMore ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>불러오는 중...</Text>
             </View>

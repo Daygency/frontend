@@ -117,6 +117,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GRAY.DARK_2,
   },
+  loadMoreCommentsButton: {
+    marginTop: 12,
+    marginBottom: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: GRAY.MEDIUM,
+  },
+  loadMoreCommentsText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: BLACK,
+  },
 });
 
 export default styles;

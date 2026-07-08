@@ -168,6 +168,21 @@ const styles = StyleSheet.create({
     marginTop: 4,
     marginBottom: 14,
   },
+  loadMoreCommentsButton: {
+    marginTop: 12,
+    marginBottom: 8,
+    paddingVertical: 12,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: GRAY.MEDIUM_2,
+  },
+  loadMoreCommentsText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: BLACK,
+  },
   fileRow: {
     flexDirection: "row",
     alignItems: "center",

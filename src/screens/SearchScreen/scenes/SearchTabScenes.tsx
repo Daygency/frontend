@@ -323,21 +323,54 @@ export function SearchCommunityScene({ query }: SceneProps) {
   const { user } = useAuth();
   const myUserId = user?.socialId?.trim() ?? "";
   const [items, setItems] = useState<CommunityListItem[]>([]);
+  const [cursor, setCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const load = useCallback(async () => {
+  const loadFirst = useCallback(async () => {
     setLoading(true);
     const res = await getCommunityList({
+      limit: 20,
       ...(query.trim() ? { q: query.trim() } : {}),
     });
     setLoading(false);
-    setItems(res ?? []);
+    if (!res) {
+      setItems([]);
+      setCursor(null);
+      setHasMore(false);
+      return;
+    }
+    setItems(res.items);
+    setCursor(res.nextCursor);
+    setHasMore(res.hasMore);
   }, [query]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    void loadFirst();
+  }, [loadFirst]);
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadFirst();
+    setRefreshing(false);
+  };
+
+  const onEndReached = async () => {
+    if (!hasMore || !cursor || loadingMore || loading) return;
+    setLoadingMore(true);
+    const res = await getCommunityList({
+      limit: 20,
+      cursor,
+      ...(query.trim() ? { q: query.trim() } : {}),
+    });
+    setLoadingMore(false);
+    if (!res) return;
+    setItems((prev) => [...prev, ...res.items]);
+    setCursor(res.nextCursor);
+    setHasMore(res.hasMore);
+  };
 
   if (loading && items.length === 0) {
     return (
@@ -353,15 +386,10 @@ export function SearchCommunityScene({ query }: SceneProps) {
       data={items}
       keyExtractor={(item) => item.communityId}
       refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={async () => {
-            setRefreshing(true);
-            await load();
-            setRefreshing(false);
-          }}
-        />
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
+      onEndReached={() => void onEndReached()}
+      onEndReachedThreshold={0.35}
       ListEmptyComponent={
         <EmptyState
           message={
@@ -370,6 +398,13 @@ export function SearchCommunityScene({ query }: SceneProps) {
               : "커뮤니티 글이 없습니다."
           }
         />
+      }
+      ListFooterComponent={
+        loadingMore ? (
+          <View style={styles.footerLoader}>
+            <ActivityIndicator color={MAIN.DEFAULT} />
+          </View>
+        ) : null
       }
       contentContainerStyle={contentContainerWhenEmpty(
         items.length === 0,
@@ -546,13 +581,13 @@ export function SearchAllScene({ query }: SceneProps) {
       const [ann, newsRes, comm, usersRes] = await Promise.all([
         getAnnouncementList({ limit: ALL_PREVIEW_LIMIT, q }),
         getNewsList({ limit: ALL_PREVIEW_LIMIT, q }),
-        getCommunityList({ q }),
+        getCommunityList({ limit: ALL_PREVIEW_LIMIT, q }),
         getUsers({ limit: ALL_PREVIEW_LIMIT, q }),
       ]);
       if (cancelled) return;
       setAnnouncements(ann?.items ?? []);
       setNews(newsRes?.items ?? []);
-      setCommunity((comm ?? []).slice(0, ALL_PREVIEW_LIMIT));
+      setCommunity(comm?.items ?? []);
       setArtists(usersRes?.items ?? []);
       setLoading(false);
     })();

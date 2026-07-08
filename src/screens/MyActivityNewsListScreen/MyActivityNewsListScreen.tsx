@@ -93,8 +93,16 @@ const MyActivityNewsListScreen = () => {
       return;
     }
 
-    const res = await getMyNewsPosts();
-    setMyNews(res ?? []);
+    const res = await getMyNewsPosts({ limit: 20 });
+    if (!res) {
+      setMyNews([]);
+      setNextCursor(null);
+      setHasMore(false);
+      return;
+    }
+    setMyNews(res.items);
+    setNextCursor(res.nextCursor);
+    setHasMore(res.hasMore);
   }, [source]);
 
   useEffect(() => {
@@ -212,11 +220,21 @@ const MyActivityNewsListScreen = () => {
               setNextCursor(res.nextCursor);
               setHasMore(res.hasMore);
             }
+          } else {
+            const res = await getMyNewsPosts({
+              limit: 20,
+              cursor: nextCursor ?? undefined,
+            });
+            if (res) {
+              setMyNews((prev) => [...prev, ...res.items]);
+              setNextCursor(res.nextCursor);
+              setHasMore(res.hasMore);
+            }
           }
           setLoadingMore(false);
         }}
         ListFooterComponent={
-          (source === "scrap" || source === "like") && loadingMore ? (
+          loadingMore ? (
             <View style={styles.emptyContainer}>
               <Text style={styles.emptyText}>불러오는 중...</Text>
             </View>

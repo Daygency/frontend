@@ -4,6 +4,7 @@ import { fetchWithAuth } from "../fetchWithAuth";
 import type { LocalImageAsset } from "../fileApi";
 import { postBoardMultipart } from "../multipartPost";
 import { pickReportedUserIdFromUnknown } from "../../report/pickReportedUserId";
+import type { PaginatedResponse } from "../pagination";
 import type {
   CommunityCategory,
   CommunityDetailResponse,
@@ -215,11 +216,13 @@ export async function getCommunityCategories(): Promise<CommunityCategory[] | nu
 /** 커뮤니티 목록 조회 (GET /community) - 인증 불필요 */
 export async function getCommunityList(
   params?: CommunityListParams
-): Promise<CommunityListItem[] | null> {
+): Promise<PaginatedResponse<CommunityListItem> | null> {
   try {
     const q = new URLSearchParams();
     if (params?.categoryId) q.set("categoryId", params.categoryId);
     if (params?.q?.trim()) q.set("q", params.q.trim());
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
 
     const query = q.toString();
     const url = `${API_BASE}/community${query ? `?${query}` : ""}`;
@@ -236,17 +239,25 @@ export async function getCommunityList(
     // README 기준: Community 엔티티 배열 또는 호환 구조
     if (Array.isArray(raw)) {
       console.log("[getCommunityList] 배열 응답 사용:", raw.length);
-      return raw.map(normalizeCommunityListItem);
+      return {
+        items: raw.map(normalizeCommunityListItem),
+        nextCursor: null,
+        hasMore: false,
+      };
     }
 
     if (Array.isArray((raw as { items?: unknown })?.items)) {
-      const items = (raw as { items: unknown[] }).items;
-      console.log("[getCommunityList] items 배열 응답 사용:", items.length);
-      return items.map(normalizeCommunityListItem);
+      const r = raw as { items: unknown[]; nextCursor?: unknown; hasMore?: unknown };
+      console.log("[getCommunityList] items 배열 응답 사용:", r.items.length);
+      return {
+        items: r.items.map(normalizeCommunityListItem),
+        nextCursor: typeof r.nextCursor === "string" ? r.nextCursor : null,
+        hasMore: Boolean(r.hasMore),
+      };
     }
 
     console.warn("[getCommunityList] 알 수 없는 응답 형식:", raw);
-    return [];
+    return { items: [], nextCursor: null, hasMore: false };
   } catch (e) {
     console.warn("[getCommunityList] 네트워크 에러:", e);
     return null;

@@ -72,6 +72,21 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: GRAY.DARK_2,
   },
+  loadMoreButton: {
+    marginTop: 12,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: GRAY.DARK_2,
+    minHeight: 48,
+  },
+  loadMoreButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#575757",
+  },
 });
 
 export default styles;

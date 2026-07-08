@@ -23,6 +23,8 @@ export type CommentItem = {
 export type GetCommentsParams = {
   targetType: CommentTargetType;
   targetId: string;
+  cursor?: string;
+  limit?: number;
 };
 
 export type CreateCommentDto = {

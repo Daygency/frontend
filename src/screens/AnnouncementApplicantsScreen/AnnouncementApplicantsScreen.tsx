@@ -52,6 +52,32 @@ type RowModel = {
   room: ChatRoomListItem | null;
 };
 
+const PAGE_LIMIT = 20;
+
+function mergeRows(
+  applications: ApplicationEntity[],
+  rooms: ChatRoomListItem[],
+): RowModel[] {
+  return applications
+    .filter((a) => !a.deletedAt && Boolean(a.id))
+    .map((application) => {
+      const uid = application.userId;
+      const room =
+        uid != null && uid !== ""
+          ? rooms.find((r) => r.peer?.userId === uid) ?? null
+          : null;
+      return { application, room };
+    });
+}
+
+function sortRowsByCreatedAtDesc(rows: RowModel[]): RowModel[] {
+  return [...rows].sort((a, b) => {
+    const ta = Date.parse(a.application.createdAt ?? "") || 0;
+    const tb = Date.parse(b.application.createdAt ?? "") || 0;
+    return tb - ta;
+  });
+}
+
 export default function AnnouncementApplicantsScreen() {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteParams>();
@@ -60,8 +86,12 @@ export default function AnnouncementApplicantsScreen() {
   const myUserId = user?.socialId?.trim() ?? "";
 
   const [rows, setRows] = useState<RowModel[]>([]);
+  const [rooms, setRooms] = useState<ChatRoomListItem[]>([]);
+  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [openingChatId, setOpeningChatId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -72,13 +102,16 @@ export default function AnnouncementApplicantsScreen() {
     }
     setLoading(true);
     const [appsRes, roomsPage] = await Promise.all([
-      getApplicationsForPost(postId),
+      getApplicationsForPost(postId, { limit: PAGE_LIMIT }),
       getRoomsByPost(postId, { limit: 50 }),
     ]);
 
-    const rooms = roomsPage?.items ?? [];
+    const loadedRooms = roomsPage?.items ?? [];
+    setRooms(loadedRooms);
     if (!appsRes?.ok) {
       setRows([]);
+      setNextCursor(null);
+      setHasMore(false);
       setLoading(false);
       if (appsRes && !appsRes.ok && appsRes.status === 403) {
         Alert.alert("알림", "이 공고의 지원 목록을 볼 권한이 없습니다.");
@@ -86,27 +119,9 @@ export default function AnnouncementApplicantsScreen() {
       return;
     }
 
-    const applications = appsRes.data.filter((a) => {
-      if (a.deletedAt) return false;
-      return Boolean(a.id);
-    });
-
-    const merged: RowModel[] = applications.map((application) => {
-      const uid = application.userId;
-      const room =
-        uid != null && uid !== ""
-          ? rooms.find((r) => r.peer?.userId === uid) ?? null
-          : null;
-      return { application, room };
-    });
-
-    merged.sort((a, b) => {
-      const ta = Date.parse(a.application.createdAt ?? "") || 0;
-      const tb = Date.parse(b.application.createdAt ?? "") || 0;
-      return tb - ta;
-    });
-
-    setRows(merged);
+    setRows(sortRowsByCreatedAtDesc(mergeRows(appsRes.data, loadedRooms)));
+    setNextCursor(appsRes.nextCursor);
+    setHasMore(appsRes.hasMore);
     setLoading(false);
   }, [postId]);
 
@@ -121,6 +136,25 @@ export default function AnnouncementApplicantsScreen() {
     await load();
     setRefreshing(false);
   };
+
+  const onEndReached = useCallback(async () => {
+    if (!postId || !hasMore || !nextCursor || loadingMore || loading) return;
+    setLoadingMore(true);
+    try {
+      const appsRes = await getApplicationsForPost(postId, {
+        cursor: nextCursor,
+        limit: PAGE_LIMIT,
+      });
+      if (!appsRes?.ok) return;
+      setRows((prev) =>
+        sortRowsByCreatedAtDesc([...prev, ...mergeRows(appsRes.data, rooms)]),
+      );
+      setNextCursor(appsRes.nextCursor);
+      setHasMore(appsRes.hasMore);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [postId, hasMore, nextCursor, loadingMore, loading, rooms]);
 
   const displayName = (row: RowModel): string => {
     const peer = row.room?.peer;
@@ -255,8 +289,17 @@ export default function AnnouncementApplicantsScreen() {
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
+        onEndReached={() => void onEndReached()}
+        onEndReachedThreshold={0.35}
         ListEmptyComponent={
           <EmptyState message="아직 지원자가 없습니다." />
+        }
+        ListFooterComponent={
+          loadingMore ? (
+            <View style={{ paddingVertical: 16 }}>
+              <ActivityIndicator color="#1F2A44" />
+            </View>
+          ) : null
         }
         renderItem={({ item: row }) => {
           const peer = row.room?.peer;

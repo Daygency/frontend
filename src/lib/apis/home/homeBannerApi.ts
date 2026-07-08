@@ -21,14 +21,24 @@ export type HomeBannerFeedResponse = {
   hasMore: boolean;
 };
 
-export async function getHomeBanners(): Promise<HomeBannerListItem[]> {
+export async function getHomeBanners(
+  params?: { cursor?: string; limit?: number },
+): Promise<HomeBannerFeedResponse> {
   try {
-    const res = await fetch(`${API_BASE}/home-banners/all`);
-    if (!res.ok) return [];
-    const data = (await res.json()) as HomeBannerListItem[];
-    return Array.isArray(data) ? data : [];
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const query = q.toString();
+    const res = await fetch(`${API_BASE}/home-banners/all${query ? `?${query}` : ""}`);
+    if (!res.ok) return { items: [], nextCursor: null, hasMore: false };
+    const data = (await res.json()) as Partial<HomeBannerFeedResponse>;
+    return {
+      items: Array.isArray(data.items) ? data.items : [],
+      nextCursor: data.nextCursor ?? null,
+      hasMore: Boolean(data.hasMore),
+    };
   } catch {
-    return [];
+    return { items: [], nextCursor: null, hasMore: false };
   }
 }
 
@@ -52,36 +62,8 @@ export async function getHomeBannerFeed(params?: {
     // feed 미배포·구버전 서버 — /all 폴백
   }
 
-  return paginateHomeBannersFromAll(params?.cursor, limit);
-}
-
-async function paginateHomeBannersFromAll(
-  cursor: string | undefined,
-  limit: number,
-): Promise<HomeBannerFeedResponse | null> {
-  const all = await getHomeBanners();
-  if (!all.length) {
-    return { items: [], nextCursor: null, hasMore: false };
-  }
-
-  const start = cursor
-    ? (() => {
-        const index = all.findIndex((item) => item.bannerId === cursor);
-        return index >= 0 ? index + 1 : all.length;
-      })()
-    : 0;
-
-  if (start >= all.length) {
-    return { items: [], nextCursor: null, hasMore: false };
-  }
-
-  const items = all.slice(start, start + limit);
-  const hasMore = start + limit < all.length;
-  const nextCursor = hasMore
-    ? items[items.length - 1]?.bannerId ?? null
-    : null;
-
-  return { items, nextCursor, hasMore };
+  // /feed 미배포·구버전 서버 — 이제 /all 도 자체적으로 커서 페이지네이션을 지원하므로 그대로 위임
+  return getHomeBanners({ cursor: params?.cursor, limit });
 }
 
 export async function getHomeBannerDetail(

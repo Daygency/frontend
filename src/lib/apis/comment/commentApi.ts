@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
+import type { PaginatedResponse } from "../pagination";
 import type { CommentItem, CreateCommentDto, GetCommentsParams, UpdateCommentDto } from "./types";
 
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {
@@ -30,11 +31,13 @@ export async function getCommentById(id: string): Promise<CommentItem | null> {
 
 export async function getComments(
   params: GetCommentsParams,
-): Promise<CommentItem[] | null> {
+): Promise<PaginatedResponse<CommentItem> | null> {
   try {
     const q = new URLSearchParams();
     q.set("targetType", params.targetType);
     q.set("targetId", params.targetId);
+    if (params.cursor) q.set("cursor", params.cursor);
+    if (params.limit != null) q.set("limit", String(params.limit));
     const url = `${API_BASE}/comment?${q.toString()}`;
     const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
     const res = await fetch(url, {
@@ -45,8 +48,12 @@ export async function getComments(
       console.warn("[getComments] 실패:", res.status, url, errText);
       return null;
     }
-    const raw = await res.json();
-    return Array.isArray(raw) ? (raw as CommentItem[]) : [];
+    const raw = (await res.json()) as Partial<PaginatedResponse<CommentItem>>;
+    return {
+      items: Array.isArray(raw.items) ? raw.items : [],
+      nextCursor: raw.nextCursor ?? null,
+      hasMore: Boolean(raw.hasMore),
+    };
   } catch (e) {
     console.warn("[getComments] 네트워크 에러:", e);
     return null;
