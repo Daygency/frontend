@@ -113,7 +113,7 @@ const PortfolioScrollLayout = ({
         ]}
         contentContainerStyle={portfolioStyles.scrollContent}
         keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator
+        showsVerticalScrollIndicator={false}
         scrollEventThrottle={16}
         bounces={!immersiveCover}
         alwaysBounceVertical={!immersiveCover}

@@ -7,7 +7,7 @@ const PortfolioPhotoGalleryScreen = () => {
     <View style={styles.container}>
       <ScrollView
         contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator
+        showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
         <Photo embedded />
