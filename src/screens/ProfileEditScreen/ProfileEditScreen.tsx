@@ -69,7 +69,7 @@ const ProfileEditScreen = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [routes] = useState([
     { key: "top", title: "상단소개" },
-    { key: "profile", title: "프로필" },
+    { key: "profile", title: "이력" },
   ]);
 
   const [profile, setProfile] =
