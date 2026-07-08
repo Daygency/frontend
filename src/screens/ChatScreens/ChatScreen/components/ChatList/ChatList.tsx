@@ -14,7 +14,7 @@ import { RootRoutes } from "../../../../../navigations/routes";
 import type { ChatFilter } from "../../types";
 import { Text } from "react-native";
 import { useAuth } from "../../../../../contexts/AuthContext";
-import { getCoffeeRooms, getAppliedRooms } from "../../../../../lib/apis/chat/chatApi";
+import { getAllRooms, getCoffeeRooms, getAppliedRooms } from "../../../../../lib/apis/chat/chatApi";
 import type { ChatRoomListItem } from "../../../../../lib/apis/chat/types";
 import { getMyAnnouncementList } from "../../../../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../../../../lib/apis/announcement/types";
@@ -34,12 +34,7 @@ import EmptyState, {
 import { MAIN } from "../../../../../color";
 import MyAnnouncementListItem from "./MyAnnouncementListItem";
 
-type ChatTopTab = "일반" | "내 공고" | "지원 공고";
-
-/** 서브탭(일반/내 공고/지원 공고) 배지 — 공고별 방 안읽음 합산은 별도 과제 */
-export function getUnreadCountByTopTabMock(_topTab: ChatTopTab): number {
-  return 0;
-}
+type ChatTopTab = "전체" | "DM" | "내 공고" | "지원 공고";
 
 interface ChatListProps {
   topTab: ChatTopTab;
@@ -47,12 +42,18 @@ interface ChatListProps {
   searchQuery?: string;
 }
 
+const ROOM_LIST_FETCHERS = {
+  all: getAllRooms,
+  coffee: getCoffeeRooms,
+  applied: getAppliedRooms,
+};
+
 function ChatRoomsFlatList({
   mode,
   filter,
   searchQuery = "",
 }: {
-  mode: "coffee" | "applied";
+  mode: "all" | "coffee" | "applied";
   filter: ChatFilter;
   searchQuery?: string;
 }) {
@@ -74,7 +75,7 @@ function ChatRoomsFlatList({
       return;
     }
     if (!opts?.refresh) setLoading(true);
-    const fn = mode === "coffee" ? getCoffeeRooms : getAppliedRooms;
+    const fn = ROOM_LIST_FETCHERS[mode];
     const res = await fn({ limit: 30 });
     if (res) {
       setItems(res.items);
@@ -94,9 +95,9 @@ function ChatRoomsFlatList({
     }, [fetchFirst]),
   );
 
-  /** README: 지원서 제출 후 `GET /chat/rooms/applied` 목록 동기화 */
+  /** README: 지원서 제출 후 `GET /chat/rooms/applied` 목록 동기화 (전체 탭에도 지원 공고 방이 섞여 있음) */
   useEffect(() => {
-    if (mode !== "applied") return;
+    if (mode !== "applied" && mode !== "all") return;
     const sub = DeviceEventEmitter.addListener(CHAT_APPLIED_ROOMS_REFRESH, () => {
       void fetchFirst();
     });
@@ -151,7 +152,7 @@ function ChatRoomsFlatList({
   const onEndReached = async () => {
     if (!isLoggedIn || !hasMore || !cursor || loadingMore || loading) return;
     setLoadingMore(true);
-    const fn = mode === "coffee" ? getCoffeeRooms : getAppliedRooms;
+    const fn = ROOM_LIST_FETCHERS[mode];
     const res = await fn({ cursor, limit: 30 });
     if (res) {
       setItems((prev) => [...prev, ...res.items]);
@@ -304,6 +305,19 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
     }, [fetchFirst]),
   );
 
+  /** 지원자 방 읽음 처리·새 메시지로 안읽음 합산이 바뀔 때 카드 배지를 실시간으로 갱신 */
+  useEffect(() => {
+    const subs = [
+      DeviceEventEmitter.addListener(CHAT_ROOMS_REFRESH, () => {
+        void fetchFirst();
+      }),
+      DeviceEventEmitter.addListener(CHAT_ROOM_UPDATED, () => {
+        void fetchFirst();
+      }),
+    ];
+    return () => subs.forEach((sub) => sub.remove());
+  }, [fetchFirst]);
+
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchFirst({ refresh: true });
@@ -397,7 +411,13 @@ const ChatList = ({ topTab, filter = "전체", searchQuery = "" }: ChatListProps
     return <MyAnnouncementsList searchQuery={searchQuery} />;
   }
 
-  if (topTab === "일반") {
+  if (topTab === "전체") {
+    return (
+      <ChatRoomsFlatList mode="all" filter={filter} searchQuery={searchQuery} />
+    );
+  }
+
+  if (topTab === "DM") {
     return (
       <ChatRoomsFlatList mode="coffee" filter={filter} searchQuery={searchQuery} />
     );

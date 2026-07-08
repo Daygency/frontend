@@ -72,6 +72,13 @@ export default function MyAnnouncementListItem({ item, onPress }: Props) {
             {item.type}
           </Text>
         </View>
+        {(item.unreadCount ?? 0) > 0 && (
+          <View style={styles.unreadBadge}>
+            <Text style={styles.unreadBadgeText}>
+              {(item.unreadCount ?? 0) > 99 ? "99+" : String(item.unreadCount)}
+            </Text>
+          </View>
+        )}
       </View>
     </Pressable>
   );

@@ -1,31 +1,69 @@
-import { useMemo, useState } from "react";
-import { Pressable, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useState } from "react";
+import { DeviceEventEmitter, Pressable, Text, TextInput, View } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Logo from "../../../components/ui/Logo";
 import { GRAY, MAIN } from "../../../color";
 import { useAuthGate } from "../../../hooks/useRequireLogin";
+import { useAuth } from "../../../contexts/AuthContext";
 import { RootRoutes } from "../../../navigations/routes";
+import { getChatUnreadCountByTab } from "../../../lib/apis/chat/chatApi";
+import {
+  CHAT_ROOMS_REFRESH,
+  CHAT_ROOM_UPDATED,
+} from "../../../lib/chat/chatRoomsEvents";
 import styles from "./styles";
-import ChatList, { getUnreadCountByTopTabMock } from "./components/ChatList/ChatList";
+import ChatList from "./components/ChatList/ChatList";
 
-type ChatTopTab = "일반" | "내 공고" | "지원 공고";
-const TOP_TABS: ChatTopTab[] = ["일반", "내 공고", "지원 공고"];
+type ChatTopTab = "전체" | "DM" | "내 공고" | "지원 공고";
+const TOP_TABS: ChatTopTab[] = ["전체", "DM", "내 공고", "지원 공고"];
 
 const ChatScreen = () => {
   useAuthGate();
   const navigation = useNavigation<any>();
   const { top } = useSafeAreaInsets();
-  const [selectedTopTab, setSelectedTopTab] = useState<ChatTopTab>("일반");
+  const { isLoggedIn } = useAuth();
+  const [selectedTopTab, setSelectedTopTab] = useState<ChatTopTab>("전체");
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [unreadByTab, setUnreadByTab] = useState<Map<ChatTopTab, number>>(
+    new Map(),
+  );
 
-  const unreadCountByTab = useMemo(() => {
-    const map = new Map<ChatTopTab, number>();
-    TOP_TABS.forEach((t) => map.set(t, getUnreadCountByTopTabMock(t)));
-    return map;
-  }, []);
+  const refreshUnreadByTab = useCallback(async () => {
+    if (!isLoggedIn) {
+      setUnreadByTab(new Map());
+      return;
+    }
+    const counts = await getChatUnreadCountByTab();
+    if (!counts) return;
+    setUnreadByTab(
+      new Map<ChatTopTab, number>([
+        ["DM", counts.dm],
+        ["지원 공고", counts.appliedAnnouncement],
+        ["내 공고", counts.myAnnouncement],
+      ]),
+    );
+  }, [isLoggedIn]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void refreshUnreadByTab();
+    }, [refreshUnreadByTab]),
+  );
+
+  useEffect(() => {
+    const subs = [
+      DeviceEventEmitter.addListener(CHAT_ROOMS_REFRESH, () => {
+        void refreshUnreadByTab();
+      }),
+      DeviceEventEmitter.addListener(CHAT_ROOM_UPDATED, () => {
+        void refreshUnreadByTab();
+      }),
+    ];
+    return () => subs.forEach((s) => s.remove());
+  }, [refreshUnreadByTab]);
 
   const searchPlaceholder =
     selectedTopTab === "내 공고" ? "공고 제목 검색" : "이름, 메시지 검색";
@@ -92,7 +130,7 @@ const ChatScreen = () => {
       <View style={styles.topTabsRow}>
         {TOP_TABS.map((tab) => {
           const selected = selectedTopTab === tab;
-          const unreadCount = unreadCountByTab.get(tab) ?? 0;
+          const unreadCount = tab === "전체" ? 0 : (unreadByTab.get(tab) ?? 0);
           return (
             <Pressable
               key={tab}

@@ -203,6 +203,30 @@ function parseRoomsPage(data: unknown): ChatRoomsPage {
   };
 }
 
+export async function getAllRooms(params?: {
+  cursor?: string;
+  limit?: number;
+}): Promise<ChatRoomsPage | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const qs = q.toString();
+    const url = `${API_BASE}/chat/rooms/all${qs ? `?${qs}` : ""}`;
+    const res = await fetchWithAuth(url, { method: "GET", headers });
+    if (!res.ok) {
+      console.warn("[getAllRooms]", res.status, await res.text().catch(() => ""));
+      return null;
+    }
+    const data = await res.json();
+    return parseRoomsPage(data);
+  } catch (e) {
+    console.warn("[getAllRooms]", e);
+    return null;
+  }
+}
+
 export async function getCoffeeRooms(params?: {
   cursor?: string;
   limit?: number;
@@ -611,6 +635,35 @@ export async function getChatUnreadCount(): Promise<number | null> {
     return Number.isFinite(n) ? Math.max(0, n) : 0;
   } catch (e) {
     console.warn("[getChatUnreadCount]", e);
+    return null;
+  }
+}
+
+/** GET /chat/unread-count/by-tab — 채팅 탭(DM/지원 공고/내 공고)별 안읽음 합산 배지용 */
+export async function getChatUnreadCountByTab(): Promise<{
+  dm: number;
+  appliedAnnouncement: number;
+  myAnnouncement: number;
+} | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(`${API_BASE}/chat/unread-count/by-tab`, {
+      method: "GET",
+      headers,
+    });
+    if (!res.ok) return null;
+    const data = asRecord(await res.json());
+    const toCount = (raw: unknown) => {
+      const n = typeof raw === "number" ? raw : Number(raw ?? 0);
+      return Number.isFinite(n) ? Math.max(0, n) : 0;
+    };
+    return {
+      dm: toCount(data.dm),
+      appliedAnnouncement: toCount(data.appliedAnnouncement),
+      myAnnouncement: toCount(data.myAnnouncement),
+    };
+  } catch (e) {
+    console.warn("[getChatUnreadCountByTab]", e);
     return null;
   }
 }
