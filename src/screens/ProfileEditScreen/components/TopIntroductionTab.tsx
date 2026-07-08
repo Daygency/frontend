@@ -369,7 +369,7 @@ const TopIntroductionTab = ({
           <View style={styles.privateToggleTextWrap}>
             <Text style={styles.privateToggleLabel}>포트폴리오 비공개</Text>
             <Text style={styles.privateToggleDescription}>
-              다른 사용자에게 포트폴리오가 보이지 않습니다
+              다른 사용자에게 내 포트폴리오가 보이지 않습니다
             </Text>
           </View>
           <Switch

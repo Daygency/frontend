@@ -327,6 +327,10 @@ const ProfileEditScreen = () => {
   };
 
   const handleProfileImagePress = () => {
+    if (!hasCustomProfileImage) {
+      void pickProfileImageFromLibrary();
+      return;
+    }
     Alert.alert(
       "프로필 사진",
       undefined,
@@ -335,18 +339,14 @@ const ProfileEditScreen = () => {
           text: "사진 변경",
           onPress: () => void pickProfileImageFromLibrary(),
         },
-        ...(hasCustomProfileImage
-          ? [
-              {
-                text: "기본 이미지로 변경",
-                style: "destructive" as const,
-                onPress: () => {
-                  setPickedProfileImageUri(null);
-                  setProfileImageClearRequested(true);
-                },
-              },
-            ]
-          : []),
+        {
+          text: "기본 이미지로 변경",
+          style: "destructive" as const,
+          onPress: () => {
+            setPickedProfileImageUri(null);
+            setProfileImageClearRequested(true);
+          },
+        },
         { text: "취소", style: "cancel" },
       ],
     );
@@ -717,24 +717,26 @@ const ProfileEditScreen = () => {
       >
         {/* 프로필 이미지 */}
         <Pressable style={styles.profileImageSection} onPress={handleProfileImagePress}>
-          <View style={styles.profileImageWrapper}>
-            {displayProfileImgUrl ? (
-              <Image
-                source={{ uri: displayProfileImgUrl }}
-                style={styles.profileImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <Image
-                source={DEFAULT_USER_PROFILE_IMAGE}
-                style={styles.profileImage}
-                resizeMode="cover"
-              />
-            )}
+          <View style={styles.profileImageOuter}>
+            <View style={styles.profileImageWrapper}>
+              {displayProfileImgUrl ? (
+                <Image
+                  source={{ uri: displayProfileImgUrl }}
+                  style={styles.profileImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <Image
+                  source={DEFAULT_USER_PROFILE_IMAGE}
+                  style={styles.profileImage}
+                  resizeMode="cover"
+                />
+              )}
+            </View>
             <View style={styles.profileImageEditButton}>
               <MaterialCommunityIcons
                 name="camera-outline"
-                size={18}
+                size={14}
                 color={WHITE}
               />
             </View>

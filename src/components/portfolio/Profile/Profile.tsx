@@ -365,6 +365,10 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
     if (isOtherProfile || coverUploading) return;
 
     const hasCustomCover = isValidImageSource(rawCoverImgUrl);
+    if (!hasCustomCover) {
+      void pickCoverImageFromLibrary();
+      return;
+    }
     Alert.alert(
       "배경 사진",
       undefined,
@@ -373,15 +377,11 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
           text: "사진 변경",
           onPress: () => void pickCoverImageFromLibrary(),
         },
-        ...(hasCustomCover
-          ? [
-              {
-                text: "기본 배경으로 변경",
-                style: "destructive" as const,
-                onPress: () => void removeCoverImage(),
-              },
-            ]
-          : []),
+        {
+          text: "기본 배경으로 변경",
+          style: "destructive" as const,
+          onPress: () => void removeCoverImage(),
+        },
         { text: "취소", style: "cancel" },
       ],
     );
@@ -457,6 +457,10 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
     if (isOtherProfile || profileUploading) return;
 
     const hasCustomPhoto = isValidImageSource(rawProfileImgUrl);
+    if (!hasCustomPhoto) {
+      void pickProfileImageFromLibrary();
+      return;
+    }
     Alert.alert(
       "프로필 사진",
       undefined,
@@ -465,15 +469,11 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
           text: "사진 변경",
           onPress: () => void pickProfileImageFromLibrary(),
         },
-        ...(hasCustomPhoto
-          ? [
-              {
-                text: "기본 이미지로 변경",
-                style: "destructive" as const,
-                onPress: () => void removeProfileImage(),
-              },
-            ]
-          : []),
+        {
+          text: "기본 이미지로 변경",
+          style: "destructive" as const,
+          onPress: () => void removeProfileImage(),
+        },
         { text: "취소", style: "cancel" },
       ],
     );
