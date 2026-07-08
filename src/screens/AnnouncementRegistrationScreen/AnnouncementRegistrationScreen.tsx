@@ -1270,13 +1270,18 @@ const AnnouncementRegistrationScreen = () => {
         <Pressable
           style={[
             styles.registerButton,
-            !isFormValid && styles.registerButtonDisabled,
+            (!isFormValid || isSubmitting) && styles.registerButtonDisabled,
           ]}
           onPress={handleRegister}
+          disabled={isSubmitting}
         >
-          <Text style={styles.registerButtonText}>
-            {isEditMode ? "수정확인" : "등록하기"}
-          </Text>
+          {isSubmitting ? (
+            <ActivityIndicator size="small" color={WHITE} />
+          ) : (
+            <Text style={styles.registerButtonText}>
+              {isEditMode ? "수정확인" : "등록하기"}
+            </Text>
+          )}
         </Pressable>
       </View>
 

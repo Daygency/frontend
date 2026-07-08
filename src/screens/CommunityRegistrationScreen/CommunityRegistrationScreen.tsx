@@ -436,14 +436,19 @@ const CommunityRegistrationScreen = () => {
         <Pressable
           style={[
             styles.registerButton,
-            !(title && content && categoryId) && styles.registerButtonDisabled,
+            (!(title && content && categoryId) || submitting) &&
+              styles.registerButtonDisabled,
           ]}
           onPress={handleRegister}
           disabled={!(title && content && categoryId) || submitting}
         >
-          <Text style={styles.registerButtonText}>
-            {isEditMode ? "수정 완료" : "등록하기"}
-          </Text>
+          {submitting ? (
+            <ActivityIndicator size="small" color={WHITE} />
+          ) : (
+            <Text style={styles.registerButtonText}>
+              {isEditMode ? "수정 완료" : "등록하기"}
+            </Text>
+          )}
         </Pressable>
       </View>
     </View>
