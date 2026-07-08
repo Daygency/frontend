@@ -57,7 +57,6 @@ export default ({ config }) => ({
       buildNumber: "4",
       entitlements: { "aps-environment": "production" },
       infoPlist: {
-        UIBackgroundModes: ["remote-notification"],
         UIDesignRequiresCompatibility: true,
         ITSAppUsesNonExemptEncryption: false,
         NSPhotoLibraryAddUsageDescription:
