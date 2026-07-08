@@ -63,6 +63,7 @@ const ContentTab = () => {
 
   return (
     <Tab.Navigator
+      detachInactiveScreens={false}
       screenOptions={{
         headerShown: false,
         tabBarStyle: TAB_BAR_STYLE,
