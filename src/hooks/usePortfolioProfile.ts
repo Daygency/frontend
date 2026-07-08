@@ -83,14 +83,21 @@ export function usePortfolioProfile(options: Options = {}) {
         });
       }
 
-      getMyProfile().then((data) => {
-        if (!cancelled) {
-          apiResponded.current = true;
-          if (data) void saveProfileCache(data);
-          setProfile(data);
-          setIsLoading(false);
-        }
-      });
+      getMyProfile()
+        .then((data) => {
+          if (!cancelled) {
+            apiResponded.current = true;
+            if (data) void saveProfileCache(data);
+            setProfile(data);
+            setIsLoading(false);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) {
+            apiResponded.current = true;
+            setIsLoading(false);
+          }
+        });
 
       return () => {
         cancelled = true;

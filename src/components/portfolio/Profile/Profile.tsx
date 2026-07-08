@@ -538,14 +538,21 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       }
     });
 
-    getMyProfile().then((data) => {
-      if (!cancelled) {
-        apiResponded.current = true;
-        if (data) saveProfileCache(data);
-        setProfile(data);
-        if (!silent) setIsLoading(false);
-      }
-    });
+    getMyProfile()
+      .then((data) => {
+        if (!cancelled) {
+          apiResponded.current = true;
+          if (data) saveProfileCache(data);
+          setProfile(data);
+          if (!silent) setIsLoading(false);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          apiResponded.current = true;
+          if (!silent) setIsLoading(false);
+        }
+      });
 
     return () => {
       cancelled = true;

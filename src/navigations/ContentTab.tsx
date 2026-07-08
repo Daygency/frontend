@@ -68,7 +68,7 @@ const ContentTab = () => {
         tabBarStyle: TAB_BAR_STYLE,
         tabBarActiveTintColor: MAIN.DEFAULT,
         tabBarInactiveTintColor: GRAY.MEDIUM_100,
-        animation: "shift",
+        animation: "fade",
       }}
       screenListeners={{
         tabPress: () => {
