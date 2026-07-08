@@ -95,6 +95,12 @@ export type AnnouncementListParams = {
   sort?: "created" | "imminent";
 };
 
+export type AnnouncementAttachmentItem = {
+  fileId: string;
+  imgUrl: string;
+  sortOrder: number;
+};
+
 /** README: 작성·수정 성공 응답 — majors·priceType·price 포함 */
 export type CreateAnnouncementResponse = {
   postId: string;

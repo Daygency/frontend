@@ -28,6 +28,7 @@ import {
   pickUrlFromFileLike,
 } from "../../lib/media/attachmentImageUrl";
 import ImageCarousel from "../../components/media/ImageCarousel/ImageCarousel";
+import PhotoGrid from "../../components/media/PhotoGrid";
 import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
 import { parseCoord } from "../../lib/kakao/location";
 import { formatAnnouncementDistrictLabel } from "../../lib/announcement/announcementAddress";
@@ -206,7 +207,6 @@ const AnnouncementDetailScreen = () => {
     null,
   );
   const [scraped, setScraped] = useState(false);
-  const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [majorsCatalog, setMajorsCatalog] = useState<
     { name: string; majorId: string }[]
   >([]);
@@ -482,7 +482,6 @@ const AnnouncementDetailScreen = () => {
     setMyReviewExists(false);
     setMyApplication(null);
     setScraped(false);
-    setActiveImageIndex(0);
   }, [params.postId]);
 
   useNavFocusEffect(
@@ -1122,26 +1121,23 @@ const AnnouncementDetailScreen = () => {
               )}
             </View>
 
-            {imageList.length > 0 ? (
+            {imageList.length > 1 ? (
               <View
                 style={[
                   styles.bodyImageBanner,
                   addressLabel ? styles.bodyImageBannerWithDivider : null,
                 ]}
               >
-                <ImageCarousel
-                  gap={0}
-                  images={imageList}
-                  fitImageHeight
-                  onActiveIndexChange={setActiveImageIndex}
-                />
-                {imageList.length > 1 ? (
-                  <View style={styles.imageCounter}>
-                    <Text style={styles.imageCounterText}>
-                      {activeImageIndex + 1}/{imageList.length}
-                    </Text>
-                  </View>
-                ) : null}
+                <PhotoGrid images={imageList} />
+              </View>
+            ) : imageList.length === 1 ? (
+              <View
+                style={[
+                  styles.bodyImageBanner,
+                  addressLabel ? styles.bodyImageBannerWithDivider : null,
+                ]}
+              >
+                <ImageCarousel gap={0} images={imageList} fitImageHeight />
               </View>
             ) : null}
 

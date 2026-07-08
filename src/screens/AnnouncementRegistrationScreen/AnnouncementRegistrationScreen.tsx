@@ -28,12 +28,14 @@ import styles from "./styles";
 import {
   createAnnouncement,
   createAnnouncementWithFiles,
+  deleteAnnouncementAttachment,
   getAnnouncementDetail,
   updateAnnouncement,
 } from "../../lib/apis/announcement/announcementApi";
 import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
 import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
 import type {
+  AnnouncementAttachmentItem,
   ApplicationConfig,
 } from "../../lib/apis/announcement/types";
 import {
@@ -53,7 +55,7 @@ import {
   normalizeMajorSelectionKeys,
 } from "../../lib/announcement/recruitmentMajors";
 import { API_BASE } from "../../lib/apis/api";
-import { getFileId, uploadFile, type LocalImageAsset } from "../../lib/apis/fileApi";
+import { attachFilesToPost, type LocalImageAsset } from "../../lib/apis/fileApi";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
 
 const FALLBACK_CATEGORY_OPTIONS = [
@@ -285,10 +287,16 @@ const AnnouncementRegistrationScreen = () => {
   const [majorOptions, setMajorOptions] = useState(FALLBACK_MAJOR_OPTIONS);
   const [fileId, setFileId] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string>("");
-  /** 신규 등록: README `POST /announcement` multipart (`payload` + `files`) */
+  /** 신규 등록: README `POST /announcement` multipart (`payload` + `files`) / 수정: 저장 시 일괄 첨부 */
   const [createPostImages, setCreatePostImages] = useState<LocalImageAsset[]>(
     [],
   );
+  const [existingImages, setExistingImages] = useState<
+    AnnouncementAttachmentItem[]
+  >([]);
+  const [removedExistingFileIds, setRemovedExistingFileIds] = useState<
+    string[]
+  >([]);
   const MAX_POST_FILES = MAX_MULTIPART_FILES;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -437,10 +445,23 @@ const AnnouncementRegistrationScreen = () => {
           setPriceInput(n > 0 ? String(n) : "");
         }
         const fid = get("fileId");
-        if (fid) {
-          setFileId(fid);
-          setFileName("(기존 파일)");
-        }
+        if (fid) setFileId(fid);
+        const attachmentsRaw = getArr("attachments");
+        const parsedAttachments = attachmentsRaw
+          .map((a, i) => {
+            if (!a || typeof a !== "object") return null;
+            const o = a as Record<string, unknown>;
+            const img = o.imgUrl ?? o.img_url;
+            const attFileId = o.fileId ?? o.file_id;
+            if (typeof img !== "string" || !img.trim()) return null;
+            return {
+              fileId: String(attFileId ?? ""),
+              imgUrl: img,
+              sortOrder: Number(o.sortOrder ?? o.sort_order ?? i) || i,
+            };
+          })
+          .filter(Boolean) as AnnouncementAttachmentItem[];
+        setExistingImages(parsedAttachments);
         const ac = getObj("applicationConfig");
         if (Object.keys(ac).length > 0) {
           setFormConfigConfirmed(true);
@@ -483,24 +504,15 @@ const AnnouncementRegistrationScreen = () => {
       const uri = asset.uri;
       const name = asset.name ?? "file.jpg";
       const mimeType = asset.mimeType ?? "image/jpeg";
-      if (isEditMode) {
-        setFileName(name);
-        const up = await uploadFile(uri, { name, type: mimeType });
-        setFileId(getFileId(up));
-        if (!getFileId(up)) {
-          Alert.alert("알림", "파일 업로드에 실패했습니다.");
-        }
-      } else {
-        if (createPostImages.length >= MAX_POST_FILES) {
-          Alert.alert("알림", `첨부는 최대 ${MAX_POST_FILES}개까지입니다.`);
-          return;
-        }
-        setCreatePostImages((prev) => {
-          const next = [...prev, { uri, name, type: mimeType }];
-          setFileName(`${next.length}개 파일 선택됨`);
-          return next;
-        });
+      if (createPostImages.length + existingImages.length >= MAX_POST_FILES) {
+        Alert.alert("알림", `첨부는 최대 ${MAX_POST_FILES}개까지입니다.`);
+        return;
       }
+      setCreatePostImages((prev) => {
+        const next = [...prev, { uri, name, type: mimeType }];
+        setFileName(`${next.length}개 파일 선택됨`);
+        return next;
+      });
     } catch (e) {
       console.warn("[pickFileFromDocument]", e);
       Alert.alert("알림", "파일 선택에 실패했습니다.");
@@ -515,33 +527,20 @@ const AnnouncementRegistrationScreen = () => {
         Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
         return;
       }
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ["images"],
-        allowsEditing: false,
-        allowsMultipleSelection: !isEditMode,
-        selectionLimit: isEditMode ? 1 : MAX_POST_FILES,
-      });
-      if (result.canceled) return;
-
-      if (isEditMode) {
-        const asset = result.assets[0];
-        setFileName(asset.fileName ?? "image.jpg");
-        const up = await uploadFile(asset.uri, {
-          name: asset.fileName ?? "image.jpg",
-          type: asset.mimeType ?? "image/jpeg",
-        });
-        setFileId(getFileId(up));
-        if (!getFileId(up)) {
-          Alert.alert("알림", "이미지 업로드에 실패했습니다.");
-        }
-        return;
-      }
-
-      const remaining = MAX_POST_FILES - createPostImages.length;
+      const remaining =
+        MAX_POST_FILES - createPostImages.length - existingImages.length;
       if (remaining <= 0) {
         Alert.alert("알림", `첨부는 최대 ${MAX_POST_FILES}개까지입니다.`);
         return;
       }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsEditing: false,
+        allowsMultipleSelection: true,
+        selectionLimit: remaining,
+      });
+      if (result.canceled) return;
+
       const toAdd = result.assets.slice(0, remaining).map((asset) => ({
         uri: asset.uri,
         name: asset.fileName ?? "image.jpg",
@@ -556,6 +555,13 @@ const AnnouncementRegistrationScreen = () => {
       console.warn("[pickImageFromAlbum]", e);
       Alert.alert("알림", "이미지 선택에 실패했습니다.");
     }
+  };
+
+  /** X 버튼은 화면에서만 즉시 제거 — 실제 삭제는 "수정확인" 시 일괄 반영 */
+  const handleRemoveExistingImage = (removeFileId: string) => {
+    setExistingImages((prev) => prev.filter((img) => img.fileId !== removeFileId));
+    setRemovedExistingFileIds((prev) => [...prev, removeFileId]);
+    setFileId((prev) => (prev === removeFileId ? null : prev));
   };
 
   const buildApplicationConfigPayload = (): ApplicationConfig =>
@@ -678,16 +684,32 @@ const AnnouncementRegistrationScreen = () => {
     try {
       if (isEditMode && postId) {
         const res = await updateAnnouncement(postId, dto);
-        setIsSubmitting(false);
-        if (res.ok) {
-          navigation.goBack();
-        } else {
+        if (!res.ok) {
+          setIsSubmitting(false);
           const fallback =
             res.status === 403
               ? "지원자가 있는 공고는 수정할 수 없습니다."
               : "모집공고 수정에 실패했습니다. 다시 시도해주세요.";
           Alert.alert("수정 실패", res.message?.trim() || fallback);
+          return;
         }
+        if (removedExistingFileIds.length > 0) {
+          await Promise.all(
+            removedExistingFileIds.map((removeFileId) =>
+              deleteAnnouncementAttachment(postId, removeFileId),
+            ),
+          );
+        }
+        if (createPostImages.length > 0) {
+          await attachFilesToPost(
+            "announcement",
+            postId,
+            createPostImages,
+            existingImages.length,
+          );
+        }
+        setIsSubmitting(false);
+        navigation.goBack();
       } else {
         const res =
           createPostImages.length > 0
@@ -1079,78 +1101,108 @@ const AnnouncementRegistrationScreen = () => {
                         />
                       </Pressable>
                     </View>
-                    {isEditMode ? (
-                      fileName ? (
-                        <Text style={styles.fileHelperNote}>
-                          선택됨: {fileName}
-                        </Text>
-                      ) : null
-                    ) : (
-                      <>
-                        {fileName ? (
-                          <Text style={styles.fileHelperNote}>{fileName}</Text>
-                        ) : null}
-                        {createPostImages.length > 0 ? (
-                          <ScrollView
-                            horizontal
-                            showsHorizontalScrollIndicator={false}
-                            style={{ marginTop: 8 }}
+                    {fileName ? (
+                      <Text style={styles.fileHelperNote}>{fileName}</Text>
+                    ) : null}
+                    {existingImages.length > 0 || createPostImages.length > 0 ? (
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        style={{ marginTop: 8 }}
+                        contentContainerStyle={{ paddingTop: 8 }}
+                      >
+                        {existingImages.map((img) => (
+                          <View
+                            key={img.fileId}
+                            style={{ marginRight: 8, position: "relative" }}
                           >
-                            {createPostImages.map((img, idx) => (
-                              <View
-                                key={`${img.uri}-${idx}`}
-                                style={{
-                                  marginRight: 8,
-                                  position: "relative",
-                                }}
-                              >
-                                <Image
-                                  source={{ uri: img.uri }}
-                                  style={{
-                                    width: 72,
-                                    height: 72,
-                                    borderRadius: 8,
-                                    backgroundColor: GRAY.MEDIUM,
-                                  }}
-                                  resizeMode="cover"
-                                />
-                                <Pressable
-                                  onPress={() =>
-                                    setCreatePostImages((prev) => {
-                                      const next = prev.filter((_, i) => i !== idx);
-                                      setFileName(
-                                        next.length > 0
-                                          ? `${next.length}개 첨부`
-                                          : "",
-                                      );
-                                      return next;
-                                    })
-                                  }
-                                  style={{
-                                    position: "absolute",
-                                    top: -6,
-                                    right: -6,
-                                    backgroundColor: "#fff",
-                                    borderRadius: 12,
-                                  }}
-                                  hitSlop={8}
-                                >
-                                  <MaterialCommunityIcons
-                                    name="close-circle"
-                                    size={22}
-                                    color={MAIN.DEFAULT}
-                                  />
-                                </Pressable>
-                              </View>
-                            ))}
-                          </ScrollView>
-                        ) : null}
-                        <Text style={styles.fileHelperNote}>
-                          등록 시 게시글이 저장된 뒤 이미지가 순서대로 업로드됩니다. (최대{" "}
-                          {MAX_POST_FILES}장)
-                        </Text>
-                      </>
-                    )}
+                            <Image
+                              source={{ uri: img.imgUrl }}
+                              style={{
+                                width: 72,
+                                height: 72,
+                                borderRadius: 8,
+                                backgroundColor: GRAY.MEDIUM,
+                              }}
+                              resizeMode="cover"
+                            />
+                            <Pressable
+                              onPress={() => handleRemoveExistingImage(img.fileId)}
+                              style={{
+                                position: "absolute",
+                                top: -6,
+                                right: -6,
+                                backgroundColor: "#fff",
+                                borderRadius: 12,
+                                zIndex: 1,
+                                elevation: 2,
+                              }}
+                              hitSlop={8}
+                            >
+                              <MaterialCommunityIcons
+                                name="close-circle"
+                                size={22}
+                                color={MAIN.DEFAULT}
+                              />
+                            </Pressable>
+                          </View>
+                        ))}
+                        {createPostImages.map((img, idx) => (
+                          <View
+                            key={`${img.uri}-${idx}`}
+                            style={{
+                              marginRight: 8,
+                              position: "relative",
+                            }}
+                          >
+                            <Image
+                              source={{ uri: img.uri }}
+                              style={{
+                                width: 72,
+                                height: 72,
+                                borderRadius: 8,
+                                backgroundColor: GRAY.MEDIUM,
+                              }}
+                              resizeMode="cover"
+                            />
+                            <Pressable
+                              onPress={() =>
+                                setCreatePostImages((prev) => {
+                                  const next = prev.filter((_, i) => i !== idx);
+                                  setFileName(
+                                    next.length > 0
+                                      ? `${next.length}개 첨부`
+                                      : "",
+                                  );
+                                  return next;
+                                })
+                              }
+                              style={{
+                                position: "absolute",
+                                top: -6,
+                                right: -6,
+                                backgroundColor: "#fff",
+                                borderRadius: 12,
+                                zIndex: 1,
+                                elevation: 2,
+                              }}
+                              hitSlop={8}
+                            >
+                              <MaterialCommunityIcons
+                                name="close-circle"
+                                size={22}
+                                color={MAIN.DEFAULT}
+                              />
+                            </Pressable>
+                          </View>
+                        ))}
+                      </ScrollView>
+                    ) : null}
+                    <Text style={styles.fileHelperNote}>
+                      {isEditMode
+                        ? `추가한 이미지는 "수정확인" 시 저장됩니다. (최대 ${MAX_POST_FILES}장)`
+                        : `등록 시 게시글이 저장된 뒤 이미지가 순서대로 업로드됩니다. (최대 ${MAX_POST_FILES}장)`}
+                    </Text>
                   </Form>
                 </View>
               </View>

@@ -294,6 +294,27 @@ export async function updateAnnouncement(
   }
 }
 
+/** 공고 첨부 이미지 1장 삭제 (DELETE /announcement/:id/attachments/:fileId) */
+export async function deleteAnnouncementAttachment(
+  postId: string,
+  fileId: string,
+): Promise<{ ok: boolean; status?: number }> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchWithAuth(
+      `${API_BASE}/announcement/${postId}/attachments/${fileId}`,
+      {
+        method: "DELETE",
+        headers,
+      },
+    );
+    return { ok: res.ok, status: res.status };
+  } catch (e) {
+    console.warn("[deleteAnnouncementAttachment] 에러:", e);
+    return { ok: false };
+  }
+}
+
 /** 공고 삭제 (api-readme: DELETE /announcement/:id) */
 export async function deleteAnnouncement(
   id: string
