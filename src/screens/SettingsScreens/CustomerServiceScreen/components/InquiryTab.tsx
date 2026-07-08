@@ -1,7 +1,8 @@
 import React from "react";
-import { ScrollView, Text, View, Pressable } from "react-native";
+import { ScrollView, Text, Pressable, View } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { RootRoutes } from "../../../../navigations/routes";
 import ShadowCardList, {
   ShadowCardListFaqItem,
@@ -31,51 +32,41 @@ const FAQ_LIST = [
 
 const InquiryTab = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();
+  const { bottom } = useSafeAreaInsets();
 
   const handleInquiry = () => {
     navigation.navigate(RootRoutes.INQUIRY);
   };
 
   return (
-    <ScrollView
-      style={styles.tabContent}
-      contentContainerStyle={styles.contentContainer}
-      showsVerticalScrollIndicator={false}
-    >
-      {/* 1대1 문의 */}
-      <Text style={[styles.sectionTitle, styles.sectionTitleFirst]}>
-        1대1 문의
-      </Text>
-      <ShadowCardList>
-        <View style={{ padding: 20 }}>
-          <Text
-            style={{
-              fontSize: 14,
-              color: "#888",
-              marginBottom: 12,
-            }}
-          >
-            궁금한 점이 있으시면 문의해 주세요.
-          </Text>
-          <Pressable style={styles.inquiryButton} onPress={handleInquiry}>
-            <Text style={styles.inquiryButtonText}>문의하기</Text>
-          </Pressable>
-        </View>
-      </ShadowCardList>
+    <View style={styles.tabContent}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingBottom: (bottom || 0) + 100 },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* FAQ */}
+        <Text style={[styles.sectionTitle, styles.sectionTitleFirst]}>FAQ</Text>
+        <ShadowCardList>
+          {FAQ_LIST.map((faq, idx) => (
+            <ShadowCardListFaqItem
+              key={idx}
+              question={faq.question}
+              answer={faq.answer}
+              isLast={idx === FAQ_LIST.length - 1}
+            />
+          ))}
+        </ShadowCardList>
+      </ScrollView>
 
-      {/* FAQ */}
-      <Text style={styles.sectionTitle}>FAQ</Text>
-      <ShadowCardList>
-        {FAQ_LIST.map((faq, idx) => (
-          <ShadowCardListFaqItem
-            key={idx}
-            question={faq.question}
-            answer={faq.answer}
-            isLast={idx === FAQ_LIST.length - 1}
-          />
-        ))}
-      </ShadowCardList>
-    </ScrollView>
+      <View style={[styles.footer, { paddingBottom: (bottom || 0) + 12 }]}>
+        <Pressable style={styles.inquiryButton} onPress={handleInquiry}>
+          <Text style={styles.inquiryButtonText}>문의하기</Text>
+        </Pressable>
+      </View>
+    </View>
   );
 };
 

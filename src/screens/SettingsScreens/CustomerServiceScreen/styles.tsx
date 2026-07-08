@@ -26,16 +26,25 @@ const styles = StyleSheet.create({
   sectionTitleFirst: {
     marginTop: 0,
   },
+  footer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: WHITE,
+  },
   inquiryButton: {
     backgroundColor: MAIN.DEFAULT,
-    borderRadius: 16,
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 12,
+    minHeight: 52,
   },
   inquiryButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
     color: WHITE,
   },

@@ -87,9 +87,9 @@ const styles = StyleSheet.create({
   },
   faqAnswerWrap: {
     marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: GRAY.MEDIUM,
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: GRAY.DEFAULT,
   },
   faqAnswer: {
     fontSize: 13,

@@ -48,7 +48,7 @@ const InquiryDetailScreen = () => {
         </View>
       ) : null}
 
-      <Text style={styles.sectionTitle}>내가 올린 글</Text>
+      <Text style={styles.sectionTitle}>문의 내용</Text>
       <ShadowCardList>
         <View style={styles.sectionContent}>
           <Text style={styles.date}>{inquiry.date}</Text>

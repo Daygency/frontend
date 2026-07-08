@@ -89,7 +89,7 @@ const NotificationSettingsScreen = () => {
       <ShadowCardList>
         <ShadowCardListToggleItem
           label="푸시 알림"
-          description="앱을 쓰지 않을 때도 화면 상단(배너) 등으로 뜨는 시스템 알림입니다."
+          description="앱을 사용하지 않을 때도 새 소식을 알림으로 받아볼 수 있어요."
           value={pushOn}
           onValueChange={onPushChange}
           disabled={pushModuleOk === false}

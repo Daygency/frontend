@@ -15,13 +15,15 @@ import {
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { MAIN, WHITE } from "../../color";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { WHITE } from "../../color";
 import { createInquiry } from "../../lib/apis/inquiry/inquiryApi";
 
 const MAX_IMAGES = 3;
 
 const InquiryScreen = () => {
   const navigation = useNavigation<any>();
+  const { bottom } = useSafeAreaInsets();
   const [inquiryText, setInquiryText] = useState("");
   const [images, setImages] = useState<string[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -94,7 +96,10 @@ const InquiryScreen = () => {
     >
       <ScrollView
         style={styles.scrollView}
-        contentContainerStyle={styles.contentContainer}
+        contentContainerStyle={[
+          styles.contentContainer,
+          { paddingBottom: (bottom || 0) + 100 },
+        ]}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
@@ -152,7 +157,9 @@ const InquiryScreen = () => {
             </Pressable>
           )}
         </View>
+      </ScrollView>
 
+      <View style={[styles.footer, { paddingBottom: (bottom || 0) + 12 }]}>
         <Pressable
           style={[styles.submitButton, submitting && styles.submitButtonDisabled]}
           onPress={handleSubmit}
@@ -164,7 +171,7 @@ const InquiryScreen = () => {
             <Text style={styles.submitButtonText}>제출하기</Text>
           )}
         </Pressable>
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 };
@@ -264,20 +271,28 @@ const styles = StyleSheet.create({
     color: "#888",
     marginTop: 4,
   },
+  footer: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: 20,
+    paddingTop: 12,
+    backgroundColor: WHITE,
+  },
   submitButton: {
-    backgroundColor: MAIN.DEFAULT,
-    borderRadius: 16,
+    backgroundColor: "#0069FF",
+    borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
-    marginTop: 24,
     minHeight: 52,
   },
   submitButtonDisabled: {
     opacity: 0.7,
   },
   submitButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: "600",
     color: WHITE,
   },
