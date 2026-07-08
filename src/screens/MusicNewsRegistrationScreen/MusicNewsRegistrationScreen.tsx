@@ -22,7 +22,7 @@ import { parseCoord } from "../../lib/kakao/location";
 import { GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import { createNewsWithFiles, getNewsDetail, updateNews, MAX_NEWS_IMAGE_FILES } from "../../lib/apis/news/newsApi";
-import type { LocalImageAsset } from "../../lib/apis/fileApi";
+import { attachFilesToPost, type LocalImageAsset } from "../../lib/apis/fileApi";
 import {
   mapAttachmentsToImageUrls,
   pickUrlFromFileLike,
@@ -78,6 +78,7 @@ const MusicNewsRegistrationScreen = () => {
   /** README: multipart 한 번에 `payload` + `files` */
   const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
   const [hasExistingImages, setHasExistingImages] = useState(false);
+  const [existingImagesCount, setExistingImagesCount] = useState(0);
   const MAX_NEWS_IMAGES = MAX_NEWS_IMAGE_FILES;
 
   const [showStartDatePicker, setShowStartDatePicker] = useState(false);
@@ -131,6 +132,7 @@ const MusicNewsRegistrationScreen = () => {
         detail.file ? (detail.file as Record<string, unknown>) : null,
       );
       setHasExistingImages(existingUrls.length > 0 || Boolean(fromFile));
+      setExistingImagesCount(existingUrls.length);
       setLoadingEdit(false);
     })();
   }, [editNewsId, navigation]);
@@ -240,12 +242,21 @@ const MusicNewsRegistrationScreen = () => {
     try {
       if (isEditMode && editNewsId) {
         const updated = await updateNews(editNewsId, dto);
-        setIsSubmitting(false);
-        if (updated) {
-          navigation.goBack();
-        } else {
+        if (!updated) {
+          setIsSubmitting(false);
           Alert.alert("수정 실패", "공연소식 수정에 실패했습니다. 다시 시도해주세요.");
+          return;
         }
+        if (pendingImages.length > 0) {
+          await attachFilesToPost(
+            "news",
+            editNewsId,
+            pendingImages,
+            existingImagesCount,
+          );
+        }
+        setIsSubmitting(false);
+        navigation.goBack();
         return;
       }
 
@@ -477,6 +488,7 @@ const MusicNewsRegistrationScreen = () => {
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={styles.imagePreviewRow}
+                  contentContainerStyle={{ paddingTop: 8 }}
                 >
                   {pendingImages.map((img, idx) => (
                     <View

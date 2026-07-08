@@ -31,6 +31,7 @@ import CommentReplyTargetBar from "../../components/comments/CommentReplyTargetB
 import CommentAuthorAvatar from "../../components/comments/CommentAuthorAvatar/CommentAuthorAvatar";
 import ThreadedCommentList from "../../components/comments/ThreadedCommentList";
 import ImageCarousel from "../../components/media/ImageCarousel";
+import PhotoGrid from "../../components/media/PhotoGrid";
 import styles from "./styles";
 import { getCommunityDetail, deleteCommunity } from "../../lib/apis/community/communityApi";
 import type { CommunityDetailResponse } from "../../lib/apis/community/types";
@@ -761,7 +762,9 @@ const CommunityDetailScreen = () => {
             <Text style={styles.postBody}>{data.content}</Text>
           )}
 
-          {imageUrls.length > 0 ? (
+          {imageUrls.length > 1 ? (
+            <PhotoGrid images={imageUrls} />
+          ) : imageUrls.length === 1 ? (
             <View style={styles.carouselWrap}>
               <ImageCarousel
                 gap={0}
@@ -769,13 +772,6 @@ const CommunityDetailScreen = () => {
                 fitImageHeight
                 onActiveIndexChange={setImageIndex}
               />
-              {imageUrls.length > 1 ? (
-                <View style={styles.pageBadge} pointerEvents="none">
-                  <Text style={styles.pageBadgeText}>
-                    {imageIndex + 1}/{imageUrls.length}
-                  </Text>
-                </View>
-              ) : null}
             </View>
           ) : null}
 

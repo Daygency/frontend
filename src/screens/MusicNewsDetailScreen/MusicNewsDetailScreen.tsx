@@ -63,6 +63,7 @@ import {
 } from "../../lib/media/attachmentImageUrl";
 import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
 import ImageCarousel from "../../components/media/ImageCarousel";
+import PhotoGrid from "../../components/media/PhotoGrid";
 import PosterBlurHeroBanner from "../../components/media/PosterBlurHeroBanner";
 import { parseCoord } from "../../lib/kakao/location";
 import { formatPerformanceDetailDateLabel } from "../../lib/news/formatPerformanceOpenLabel";
@@ -937,7 +938,16 @@ const MusicNewsDetailScreen = () => {
                 )}
               </View>
 
-              {news.imageUrls && news.imageUrls.length > 0 ? (
+              {news.imageUrls && news.imageUrls.length > 1 ? (
+                <View
+                  style={[
+                    styles.bodyImageBanner,
+                    hasPlace ? styles.bodyImageBannerWithDivider : null,
+                  ]}
+                >
+                  <PhotoGrid images={news.imageUrls} />
+                </View>
+              ) : news.imageUrls && news.imageUrls.length === 1 ? (
                 <View
                   style={[
                     styles.bodyImageBanner,
@@ -950,13 +960,6 @@ const MusicNewsDetailScreen = () => {
                     fitImageHeight
                     onActiveIndexChange={setActiveImageIndex}
                   />
-                  {news.imageUrls.length > 1 ? (
-                    <View style={styles.imageCounter}>
-                      <Text style={styles.imageCounterText}>
-                        {activeImageIndex + 1}/{news.imageUrls.length}
-                      </Text>
-                    </View>
-                  ) : null}
                 </View>
               ) : null}
 

@@ -116,6 +116,8 @@ const styles = StyleSheet.create({
     right: -6,
     backgroundColor: WHITE,
     borderRadius: 12,
+    zIndex: 1,
+    elevation: 2,
   },
   inputErrorBorder: {
     borderColor: "#EC1313",

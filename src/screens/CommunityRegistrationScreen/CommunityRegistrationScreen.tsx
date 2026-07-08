@@ -26,7 +26,7 @@ import {
   updateCommunity,
 } from "../../lib/apis/community/communityApi";
 import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
-import type { LocalImageAsset } from "../../lib/apis/fileApi";
+import { attachFilesToPost, type LocalImageAsset } from "../../lib/apis/fileApi";
 import type { CommunityCategory } from "../../lib/apis/community/types";
 
 const COMMUNITY_GUIDELINES = [
@@ -63,6 +63,7 @@ const CommunityRegistrationScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(Boolean(editCommunityId));
   const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
+  const [existingImagesCount, setExistingImagesCount] = useState(0);
   const MAX_IMAGES = MAX_MULTIPART_FILES;
 
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
@@ -107,6 +108,7 @@ const CommunityRegistrationScreen = () => {
       setTitle(detail.title ?? "");
       setContent(detail.content ?? "");
       if (detail.category?.categoryId) setCategoryId(detail.category.categoryId);
+      setExistingImagesCount(detail.attachments?.length ?? 0);
       setLoadingEdit(false);
     })();
   }, [editCommunityId, navigation]);
@@ -167,6 +169,14 @@ const CommunityRegistrationScreen = () => {
         if (!res?.communityId) {
           Alert.alert("수정 실패", "게시글을 수정하지 못했습니다.");
           return;
+        }
+        if (pendingImages.length > 0) {
+          await attachFilesToPost(
+            "community",
+            editCommunityId,
+            pendingImages,
+            existingImagesCount,
+          );
         }
         navigation.goBack();
         return;
@@ -279,6 +289,7 @@ const CommunityRegistrationScreen = () => {
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   style={{ marginTop: 10 }}
+                  contentContainerStyle={{ paddingTop: 8 }}
                 >
                   {pendingImages.map((img, idx) => (
                     <View
@@ -307,6 +318,8 @@ const CommunityRegistrationScreen = () => {
                           right: -6,
                           backgroundColor: "#fff",
                           borderRadius: 12,
+                          zIndex: 1,
+                          elevation: 2,
                         }}
                         hitSlop={8}
                       >

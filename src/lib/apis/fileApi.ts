@@ -113,6 +113,7 @@ export async function attachFilesToPost(
   targetType: FileTargetType,
   targetId: string,
   items: LocalImageAsset[],
+  startSortOrder = 0,
 ): Promise<ApiFile[]> {
   const id = targetId?.trim();
   if (!id || items.length === 0) return [];
@@ -125,7 +126,7 @@ export async function attachFilesToPost(
       type: asset.type,
       targetType,
       targetId: id,
-      sortOrder: i,
+      sortOrder: startSortOrder + i,
     });
     if (uploaded) out.push(uploaded);
   }

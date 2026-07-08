@@ -17,16 +17,18 @@ export function buildBoardMultipartForm(
   const form = new FormData();
   form.append("payload", JSON.stringify(payload));
   const slice = files.slice(0, MAX_MULTIPART_FILES);
-  for (const f of slice) {
+  slice.forEach((f, index) => {
     form.append(
       "files",
       {
         uri: f.uri,
-        name: f.name ?? "image.jpg",
+        // expo-image-picker는 fileName을 종종 null로 주기 때문에, 고정 폴백("image.jpg")을 쓰면
+        // 여러 장을 한 요청에 append할 때 파일명이 겹쳐 일부가 누락된다 (채팅 다중 전송에서 이미 겪은 문제).
+        name: f.name ?? `image_${Date.now()}_${index + 1}.jpg`,
         type: f.type ?? "image/jpeg",
       } as unknown as Blob,
     );
-  }
+  });
   return form;
 }
 
