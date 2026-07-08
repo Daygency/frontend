@@ -316,6 +316,7 @@ export async function getChatMessages(
             : typeof m.created_at === "string"
               ? m.created_at
               : "",
+        readByPeer: Boolean(m.readByPeer ?? m.read_by_peer),
       };
     });
     return {

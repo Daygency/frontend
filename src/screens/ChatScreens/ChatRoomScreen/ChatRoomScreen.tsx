@@ -29,7 +29,7 @@ import {
 } from "../../../hooks/useKeyboardHeight";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../color";
-import styles from "./styles";
+import styles, { MESSAGE_BUBBLE_ME_COLOR } from "./styles";
 import {
   getChatMessages,
   markChatRoomRead,
@@ -73,6 +73,8 @@ type MessageItem = {
   fileName?: string | null;
   fileMime?: string | null;
   fileItems?: ChatFileItem[] | null;
+  /** 상대방이 이 메시지를 읽었는지 (내가 보낸 메시지에만 의미 있음) */
+  isReadByPeer: boolean;
 };
 
 type WsMessagePayload = {
@@ -94,6 +96,17 @@ type WsMessagePayload = {
   file_items?: unknown;
   createdAt?: string;
   created_at?: string;
+  readByPeer?: boolean;
+  read_by_peer?: boolean;
+};
+
+type ReadUpdatedPayload = {
+  chatRoomId?: string;
+  chat_room_id?: string;
+  userId?: string;
+  user_id?: string;
+  lastReadAt?: string;
+  last_read_at?: string;
 };
 
 const isImageMime = (mime?: string | null) =>
@@ -243,6 +256,7 @@ const mapToMessageItem = (
     fileName,
     fileMime,
     fileItems,
+    isReadByPeer: Boolean(m.readByPeer ?? m.read_by_peer),
   };
 };
 
@@ -482,6 +496,7 @@ const ChatRoomScreen = () => {
           fileName: m.fileName ?? null,
           fileMime: m.fileMime ?? null,
           fileItems: m.fileItems ?? null,
+          isReadByPeer: Boolean(m.readByPeer),
         })),
       );
       setLoading(false);
@@ -535,6 +550,26 @@ const ChatRoomScreen = () => {
       socket.on("message", (payload: WsMessagePayload) => {
         if (String(payload.chatRoomId) !== String(chatRoomId)) return;
         appendFromSocket(payload);
+      });
+
+      /** 상대가 방을 읽음 처리하면, 내가 보낸 메시지 중 그 시점 이전 것들의 안읽음 표시를 지움 */
+      socket.on("readUpdated", (payload: ReadUpdatedPayload) => {
+        const roomId = payload.chatRoomId ?? payload.chat_room_id;
+        const readerId = payload.userId ?? payload.user_id;
+        const lastReadAt = payload.lastReadAt ?? payload.last_read_at;
+        if (String(roomId) !== String(chatRoomId)) return;
+        if (!readerId || String(readerId) !== String(peerUserId)) return;
+        if (!lastReadAt) return;
+        const cursor = new Date(lastReadAt).getTime();
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.isFromMe &&
+            !m.isReadByPeer &&
+            new Date(m.createdAt).getTime() <= cursor
+              ? { ...m, isReadByPeer: true }
+              : m,
+          ),
+        );
       });
 
       socket.on("connect_error", (err) => {
@@ -1015,9 +1050,19 @@ const ChatRoomScreen = () => {
                       ]}
                     >
                       {showTimestamp ? (
-                        <Text style={[styles.messageTime, styles.messageTimeBeforeBubble]}>
-                          {msg.timestamp}
-                        </Text>
+                        <View style={styles.messageTimeWrapMe}>
+                          {!msg.isReadByPeer ? (
+                            <Text
+                              style={[
+                                styles.messageUnreadCount,
+                                { color: MESSAGE_BUBBLE_ME_COLOR },
+                              ]}
+                            >
+                              1
+                            </Text>
+                          ) : null}
+                          <Text style={styles.messageTime}>{msg.timestamp}</Text>
+                        </View>
                       ) : null}
                       <View style={bubbleStyle}>{bubbleContent}</View>
                     </View>

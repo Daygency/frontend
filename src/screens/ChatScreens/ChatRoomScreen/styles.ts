@@ -2,6 +2,8 @@ import { StyleSheet } from "react-native";
 import { WHITE, GRAY } from "../../../color";
 import { MEDIA_MAX_WIDTH } from "./mediaSize";
 
+export const MESSAGE_BUBBLE_ME_COLOR = "#4A5568";
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -169,7 +171,7 @@ const styles = StyleSheet.create({
   },
   messageBubbleMe: {
     maxWidth: "65%",
-    backgroundColor: "#4A5568",
+    backgroundColor: MESSAGE_BUBBLE_ME_COLOR,
     borderRadius: 16,
     paddingHorizontal: 14,
     paddingVertical: 10,
@@ -236,9 +238,14 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
     alignSelf: "flex-end",
   },
-  messageTimeBeforeBubble: {
+  messageTimeWrapMe: {
+    alignItems: "flex-end",
     marginRight: 8,
-    alignSelf: "flex-end",
+  },
+  messageUnreadCount: {
+    fontSize: 11,
+    fontWeight: "600",
+    marginBottom: 2,
   },
   messageTimeAfterBubble: {
     marginLeft: 8,

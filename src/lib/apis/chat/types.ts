@@ -51,6 +51,8 @@ export type ChatMessageDto = {
   fileMime?: string | null;
   fileItems?: ChatFileItem[] | null;
   createdAt: string;
+  /** 상대방이 이 메시지를 읽었는지 (1:1 기준) */
+  readByPeer?: boolean;
 };
 
 export type ChatMessagesPage = {
