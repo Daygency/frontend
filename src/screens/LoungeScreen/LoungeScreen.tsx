@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { useWindowDimensions, View } from "react-native";
+import { View } from "react-native";
+import Animated from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRoute, RouteProp } from "@react-navigation/native";
-import { TabView } from "react-native-tab-view";
 import styles from "./styles";
+import { useLoungeTabFade } from "./useLoungeTabFade";
 import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
 import MainHomeHeader, {
   LOUNGE_TABS,
@@ -37,8 +38,6 @@ const TAB_TO_SEARCH_TAG: Record<LoungeTab, string> = {
   커뮤니티: "커뮤니티",
 };
 
-const LOUNGE_ROUTES = LOUNGE_TABS.map((key) => ({ key, title: key }));
-
 function LoungeTabRetapBridge({ onToggleSubTab }: { onToggleSubTab: () => void }) {
   const { scrollActiveTabToTop, isActiveTabScrolledDown } = useLoungeScroll();
 
@@ -69,7 +68,6 @@ function tabToIndex(tab: LoungeTab): number {
 
 type LoungeTabBodyProps = {
   index: number;
-  setIndex: (index: number) => void;
   activeTab: LoungeTab;
   sortMode: PerformanceNewsSortMode;
   selectedGenre: string | null;
@@ -79,44 +77,32 @@ type LoungeTabBodyProps = {
 
 const LoungeTabBody = ({
   index,
-  setIndex,
   activeTab,
   sortMode,
   selectedGenre,
   selectedRegion,
   selectedCommunityTag,
 }: LoungeTabBodyProps) => {
-  const layout = useWindowDimensions();
-
-  const renderScene = ({ route: sceneRoute }: { route: { key: string } }) => {
-    switch (sceneRoute.key) {
-      case "공연 소식":
-        return (
-          <MusicNewsScene
-            sortMode={sortMode}
-            selectedGenre={selectedGenre}
-            selectedRegion={selectedRegion}
-          />
-        );
-      case "커뮤니티":
-        return <CommunityScene selectedTag={selectedCommunityTag} />;
-      default:
-        return null;
-    }
-  };
+  const { newsStyle, communityStyle } = useLoungeTabFade(index);
 
   return (
     <View style={styles.body}>
-      <TabView
-        navigationState={{ index, routes: LOUNGE_ROUTES }}
-        renderScene={renderScene}
-        onIndexChange={setIndex}
-        initialLayout={{ width: layout.width }}
-        renderTabBar={() => null}
-        swipeEnabled={false}
-        animationEnabled={false}
-        style={styles.tabView}
-      />
+      <Animated.View
+        style={[styles.sceneLayer, newsStyle]}
+        pointerEvents={index === 0 ? "auto" : "none"}
+      >
+        <MusicNewsScene
+          sortMode={sortMode}
+          selectedGenre={selectedGenre}
+          selectedRegion={selectedRegion}
+        />
+      </Animated.View>
+      <Animated.View
+        style={[styles.sceneLayer, communityStyle]}
+        pointerEvents={index === 1 ? "auto" : "none"}
+      >
+        <CommunityScene selectedTag={selectedCommunityTag} />
+      </Animated.View>
       <ContentRegistrationFabButton containerStyle={styles.fab} />
     </View>
   );
@@ -192,7 +178,6 @@ const LoungeScreen = () => {
         <LoungeTabRetapBridge onToggleSubTab={toggleSubTab} />
         <LoungeTabBody
           index={index}
-          setIndex={setIndex}
           activeTab={activeTab}
           sortMode={sortMode}
           selectedGenre={selectedGenre}

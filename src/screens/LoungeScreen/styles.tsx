@@ -13,8 +13,12 @@ const styles = StyleSheet.create({
     flex: 1,
     position: "relative",
   },
-  tabView: {
-    flex: 1,
+  sceneLayer: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   floatingHeader: {
     position: "absolute",
