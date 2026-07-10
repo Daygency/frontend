@@ -20,7 +20,7 @@ const skeletonStyles = StyleSheet.create({
   avatar: {
     width: 50,
     height: 50,
-    borderRadius: 25,
+    borderRadius: 17,
     marginRight: 16,
   },
   content: {
