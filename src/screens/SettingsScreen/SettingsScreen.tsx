@@ -17,11 +17,6 @@ const SettingsScreen = () => {
       showsVerticalScrollIndicator={false}
     >
       <SettingItem
-        icon="pulse"
-        label="내 활동"
-        onPress={() => navigation.navigate(RootRoutes.MY_ACTIVITY)}
-      />
-      <SettingItem
         icon="bell-outline"
         label="알림 설정"
         onPress={() => navigation.navigate(RootRoutes.NOTIFICATION_SETTINGS)}

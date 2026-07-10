@@ -37,22 +37,25 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: "50%",
   },
-  bannerEditBtn: {
+  bannerActionRow: {
     position: "absolute",
     right: 12,
     bottom: 12,
     flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 16,
-    backgroundColor: "rgba(31, 42, 68, 0.72)",
+    gap: 8,
   },
-  bannerEditText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: WHITE,
+  bannerActionBtn: {
+    width: 32,
+    height: 32,
+    borderRadius: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(31, 42, 68, 0.72)",
+    borderWidth: 1,
+    borderColor: "rgba(217, 217, 217, 0.5)",
+  },
+  bannerActionBtnPressed: {
+    opacity: 0.5,
   },
   profileBody: {
     paddingHorizontal: 16,

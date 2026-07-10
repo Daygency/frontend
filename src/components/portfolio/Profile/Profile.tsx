@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import styles, { PROFILE_BANNER_RATIO } from "./styles";
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, Octicons, FontAwesome } from "@expo/vector-icons";
 import { GRAY, MAIN, WHITE } from "../../../color";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigation, useFocusEffect, useRoute } from "@react-navigation/native";
@@ -720,20 +720,33 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
             </>
           ) : null}
           {!isOtherProfile ? (
-            <Pressable
-              style={styles.bannerEditBtn}
-              onPress={handleCoverImagePress}
-              disabled={coverUploading}
-            >
-              {coverUploading ? (
-                <ActivityIndicator size="small" color={WHITE} />
-              ) : (
-                <>
-                  <Ionicons name="image-outline" size={14} color={WHITE} />
-                  <Text style={styles.bannerEditText}>배경 변경</Text>
-                </>
-              )}
-            </Pressable>
+            <View style={styles.bannerActionRow}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.bannerActionBtn,
+                  pressed && styles.bannerActionBtnPressed,
+                ]}
+                onPress={() => navigation.navigate(RootRoutes.MY_ACTIVITY)}
+                hitSlop={6}
+              >
+                <Octicons name="graph" size={16} color={WHITE} />
+              </Pressable>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.bannerActionBtn,
+                  pressed && styles.bannerActionBtnPressed,
+                ]}
+                onPress={handleCoverImagePress}
+                disabled={coverUploading}
+                hitSlop={6}
+              >
+                {coverUploading ? (
+                  <ActivityIndicator size="small" color={WHITE} />
+                ) : (
+                  <FontAwesome name="photo" size={16} color={WHITE} />
+                )}
+              </Pressable>
+            </View>
           ) : null}
         </View>
         <View style={styles.profileBody}>
