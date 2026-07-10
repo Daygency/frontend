@@ -148,6 +148,7 @@ const styles = StyleSheet.create({
   avatar: {
     marginRight: 12,
     flexShrink: 0,
+    borderRadius: 15,
   },
   body: {
     flex: 1,

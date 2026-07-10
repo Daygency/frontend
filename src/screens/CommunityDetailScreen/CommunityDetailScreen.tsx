@@ -781,6 +781,7 @@ const CommunityDetailScreen = () => {
               <CommentAuthorAvatar
                 profileImgUrl={postProfileImg}
                 size={40}
+                style={styles.authorAvatar}
               />
             </Pressable>
             <View style={styles.authorMetaText}>

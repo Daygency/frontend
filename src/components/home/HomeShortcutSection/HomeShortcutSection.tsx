@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
+import SquircleView from "react-native-fast-squircle";
 import { BLACK, GRAY, WHITE } from "../../../color";
 
 const PILL_HEIGHT = 36;
@@ -9,11 +10,15 @@ type ShortcutPillProps = {
 };
 
 const ShortcutPill = ({ label, onPress }: ShortcutPillProps) => (
-  <Pressable
-    onPress={onPress}
-    style={({ pressed }) => [styles.pill, pressed && styles.pillPressed]}
-  >
-    <Text style={styles.label}>{label}</Text>
+  <Pressable onPress={onPress}>
+    {({ pressed }) => (
+      <SquircleView
+        cornerSmoothing={0.6}
+        style={[styles.pill, pressed && styles.pillPressed]}
+      >
+        <Text style={styles.label}>{label}</Text>
+      </SquircleView>
+    )}
   </Pressable>
 );
 
@@ -53,7 +58,6 @@ const styles = StyleSheet.create({
     height: PILL_HEIGHT,
     paddingHorizontal: 12,
     borderRadius: PILL_HEIGHT / 2,
-    borderCurve: "continuous",
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
     backgroundColor: WHITE,

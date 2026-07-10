@@ -4,7 +4,7 @@ import { BLACK, GRAY, RED, WHITE } from "../../../../../color";
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: WHITE,
     // borderBottomWidth: 1,

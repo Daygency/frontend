@@ -3,7 +3,7 @@ import { WHITE } from "../../../../../color";
 
 export default StyleSheet.create({
   row: {
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
     paddingVertical: 14,
     backgroundColor: WHITE,
     borderBottomWidth: 1,

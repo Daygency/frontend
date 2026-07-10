@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { DeviceEventEmitter, Pressable, Text, TextInput, View } from "react-native";
+import SquircleView from "react-native-fast-squircle";
 import { Feather } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -132,24 +133,27 @@ const ChatScreen = () => {
           const selected = selectedTopTab === tab;
           const unreadCount = tab === "전체" ? 0 : (unreadByTab.get(tab) ?? 0);
           return (
-            <Pressable
-              key={tab}
-              style={({ pressed }) => [
-                styles.topTab,
-                selected && styles.topTabSelected,
-                pressed && styles.topTabPressed,
-              ]}
-              onPress={() => setSelectedTopTab(tab)}
-            >
-              <Text style={[styles.topTabText, selected && styles.topTabTextSelected]}>
-                {tab}
-              </Text>
-              {unreadCount > 0 && (
-                <View style={styles.unreadBadge}>
-                  <Text style={styles.unreadBadgeText}>
-                    {unreadCount > 99 ? "99+" : String(unreadCount)}
+            <Pressable key={tab} onPress={() => setSelectedTopTab(tab)}>
+              {({ pressed }) => (
+                <SquircleView
+                  cornerSmoothing={0.6}
+                  style={[
+                    styles.topTab,
+                    selected && styles.topTabSelected,
+                    pressed && styles.topTabPressed,
+                  ]}
+                >
+                  <Text style={[styles.topTabText, selected && styles.topTabTextSelected]}>
+                    {tab}
                   </Text>
-                </View>
+                  {unreadCount > 0 && (
+                    <View style={styles.unreadBadge}>
+                      <Text style={styles.unreadBadgeText}>
+                        {unreadCount > 99 ? "99+" : String(unreadCount)}
+                      </Text>
+                    </View>
+                  )}
+                </SquircleView>
               )}
             </Pressable>
           );

@@ -37,6 +37,9 @@ const styles = StyleSheet.create({
     gap: 10,
     marginBottom: 16,
   },
+  authorAvatar: {
+    borderRadius: 15,
+  },
   authorMetaText: {
     flex: 1,
     minWidth: 0,

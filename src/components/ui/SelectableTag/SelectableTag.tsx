@@ -1,4 +1,5 @@
 import { Pressable, Text } from "react-native";
+import SquircleView from "react-native-fast-squircle";
 import styles from "./styles";
 
 interface SelectableTagProps {
@@ -9,17 +10,21 @@ interface SelectableTagProps {
 
 const SelectableTag = ({ label, selected = false, onPress }: SelectableTagProps) => {
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.tag,
-        selected && styles.tagSelected,
-        pressed && styles.tagPressed,
-      ]}
-      onPress={onPress}
-    >
-      <Text style={[styles.tagText, selected && styles.tagTextSelected]}>
-        {label}
-      </Text>
+    <Pressable onPress={onPress}>
+      {({ pressed }) => (
+        <SquircleView
+          cornerSmoothing={0.6}
+          style={[
+            styles.tag,
+            selected && styles.tagSelected,
+            pressed && styles.tagPressed,
+          ]}
+        >
+          <Text style={[styles.tagText, selected && styles.tagTextSelected]}>
+            {label}
+          </Text>
+        </SquircleView>
+      )}
     </Pressable>
   );
 };

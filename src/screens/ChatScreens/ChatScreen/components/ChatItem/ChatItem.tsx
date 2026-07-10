@@ -1,5 +1,6 @@
 import { Text, View } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
+import SquircleView from "react-native-fast-squircle";
 import UserProfileAvatar from "../../../../../components/ui/UserProfileAvatar";
 import styles from "./styles";
 
@@ -32,14 +33,14 @@ const ChatItem = ({
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
-        <View style={styles.avatar}>
+        <SquircleView style={styles.avatar} cornerSmoothing={0.7}>
           <UserProfileAvatar
             peerUserId={peerUserId}
             profileImgUrl={initialAvatarUrl}
             size={44}
             style={styles.avatarImage}
           />
-        </View>
+        </SquircleView>
         {isOnline && <View style={styles.onlineIndicator} />}
       </View>
 

@@ -1,10 +1,8 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
-import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
 const styles = StyleSheet.create({
   tag: {
-    ...SMOOTH_CORNERS,
     backgroundColor: WHITE,
     borderRadius: 18,
     borderWidth: 1,
