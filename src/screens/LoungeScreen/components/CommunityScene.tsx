@@ -189,6 +189,7 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
         contentPreview={item.content ?? ""}
         author={author}
         profileImageUrl={pickCommunityProfileImgUrl(item)}
+        showAvatar={false}
         date={relativeDate}
         likes={item.likeCount ?? 0}
         comments={item.commentCount ?? 0}

@@ -22,6 +22,7 @@ type CommunityCardProps = {
   scraps?: number;
   views?: number;
   profileImageUrl?: string;
+  showAvatar?: boolean;
   thumbnailUrl?: string;
   showNew?: boolean;
   onPress?: () => void;
@@ -39,6 +40,7 @@ const CommunityCard = ({
   likes,
   comments,
   profileImageUrl,
+  showAvatar = true,
   thumbnailUrl,
   onPress,
   onPressAuthor,
@@ -57,27 +59,44 @@ const CommunityCard = ({
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View style={styles.row}>
-        <Pressable
-          onPress={handlePressAuthor}
-          disabled={!onPressAuthor}
-          hitSlop={8}
-        >
-          <CommentAuthorAvatar
-            profileImgUrl={profileImageUrl}
-            size={40}
-            style={styles.avatar}
-          />
-        </Pressable>
+        {showAvatar ? (
+          <Pressable
+            onPress={handlePressAuthor}
+            disabled={!onPressAuthor}
+            hitSlop={8}
+          >
+            <CommentAuthorAvatar
+              profileImgUrl={profileImageUrl}
+              size={40}
+              style={styles.avatar}
+            />
+          </Pressable>
+        ) : null}
 
         <View style={[styles.body, showMedia && styles.bodyWithThumb]}>
           <View style={styles.textColumn}>
             <View style={styles.headerRow}>
-              <Text
-                style={[styles.username, styles.usernamePressable]}
-                numberOfLines={1}
-              >
-                {author}
-              </Text>
+              {showAvatar ? (
+                <Text
+                  style={[styles.username, styles.usernamePressable]}
+                  numberOfLines={1}
+                >
+                  {author}
+                </Text>
+              ) : (
+                <Pressable
+                  onPress={handlePressAuthor}
+                  disabled={!onPressAuthor}
+                  hitSlop={8}
+                >
+                  <Text
+                    style={[styles.username, styles.usernamePressable]}
+                    numberOfLines={1}
+                  >
+                    {author}
+                  </Text>
+                </Pressable>
+              )}
               {!!date && (
                 <Text style={styles.timestamp} numberOfLines={1}>
                   {date}
