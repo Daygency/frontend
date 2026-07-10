@@ -51,6 +51,7 @@ import {
   openChatCachedFile,
 } from "../../../lib/chat/chatFileCache";
 import ChatImageMessage from "./ChatImageMessage";
+import AnimatedMessageRow from "./AnimatedMessageRow";
 
 export type ChatRoomParams = {
   /** 백엔드 채팅방 UUID */
@@ -76,6 +77,8 @@ type MessageItem = {
   fileItems?: ChatFileItem[] | null;
   /** 상대방이 이 메시지를 읽었는지 (내가 보낸 메시지에만 의미 있음) */
   isReadByPeer: boolean;
+  /** 소켓으로 방금 도착한 메시지인지 (등장 애니메이션 여부 판단용) */
+  justArrived?: boolean;
 };
 
 type WsMessagePayload = {
@@ -459,7 +462,7 @@ const ChatRoomScreen = () => {
               : message,
           );
         }
-        return [...prev, item];
+        return [...prev, { ...item, justArrived: true }];
       });
       if (!item.isFromMe) {
         markRead(item.id);
@@ -1060,62 +1063,70 @@ const ChatRoomScreen = () => {
                     </View>
                   ) : null}
                   {msg.isFromMe ? (
-                    <View
-                      ref={rowRef}
-                      style={[
-                        styles.messageRow,
-                        styles.messageRowFromMe,
-                        isActiveMatch && styles.messageRowActiveMatch,
-                      ]}
+                    <AnimatedMessageRow
+                      shouldAnimate={Boolean(msg.justArrived)}
                     >
-                      {showTimestamp ? (
-                        <View style={styles.messageTimeWrapMe}>
-                          {!msg.isReadByPeer ? (
-                            <Text
-                              style={[
-                                styles.messageUnreadCount,
-                                { color: MESSAGE_BUBBLE_ME_COLOR },
-                              ]}
-                            >
-                              1
-                            </Text>
-                          ) : null}
-                          <Text style={styles.messageTime}>{msg.timestamp}</Text>
-                        </View>
-                      ) : null}
-                      <View style={bubbleStyle}>{bubbleContent}</View>
-                    </View>
-                  ) : (
-                    <View
-                      ref={rowRef}
-                      style={[
-                        styles.messageGroupOther,
-                        isActiveMatch && styles.messageRowActiveMatch,
-                      ]}
-                    >
-                      {showAvatar ? (
-                        <View style={styles.otherAvatar}>
-                          <UserProfileAvatar
-                            peerUserId={peerUserId || undefined}
-                            profileImgUrl={peerAvatarUrl}
-                            size={32}
-                          />
-                        </View>
-                      ) : null}
-                      <View style={styles.otherContent}>
-                        {showAvatar ? (
-                          <Text style={styles.otherName}>{handle}</Text>
+                      <View
+                        ref={rowRef}
+                        style={[
+                          styles.messageRow,
+                          styles.messageRowFromMe,
+                          isActiveMatch && styles.messageRowActiveMatch,
+                        ]}
+                      >
+                        {showTimestamp ? (
+                          <View style={styles.messageTimeWrapMe}>
+                            {!msg.isReadByPeer ? (
+                              <Text
+                                style={[
+                                  styles.messageUnreadCount,
+                                  { color: MESSAGE_BUBBLE_ME_COLOR },
+                                ]}
+                              >
+                                1
+                              </Text>
+                            ) : null}
+                            <Text style={styles.messageTime}>{msg.timestamp}</Text>
+                          </View>
                         ) : null}
-                        <View style={styles.otherBubbleRow}>
-                          <View style={bubbleStyle}>{bubbleContent}</View>
-                          {showTimestamp ? (
-                            <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
-                              {msg.timestamp}
-                            </Text>
+                        <View style={bubbleStyle}>{bubbleContent}</View>
+                      </View>
+                    </AnimatedMessageRow>
+                  ) : (
+                    <AnimatedMessageRow
+                      shouldAnimate={Boolean(msg.justArrived)}
+                    >
+                      <View
+                        ref={rowRef}
+                        style={[
+                          styles.messageGroupOther,
+                          isActiveMatch && styles.messageRowActiveMatch,
+                        ]}
+                      >
+                        {showAvatar ? (
+                          <View style={styles.otherAvatar}>
+                            <UserProfileAvatar
+                              peerUserId={peerUserId || undefined}
+                              profileImgUrl={peerAvatarUrl}
+                              size={32}
+                            />
+                          </View>
+                        ) : null}
+                        <View style={styles.otherContent}>
+                          {showAvatar ? (
+                            <Text style={styles.otherName}>{handle}</Text>
                           ) : null}
+                          <View style={styles.otherBubbleRow}>
+                            <View style={bubbleStyle}>{bubbleContent}</View>
+                            {showTimestamp ? (
+                              <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
+                                {msg.timestamp}
+                              </Text>
+                            ) : null}
+                          </View>
                         </View>
                       </View>
-                    </View>
+                    </AnimatedMessageRow>
                   )}
                 </Fragment>
               );
