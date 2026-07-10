@@ -90,8 +90,8 @@ const PerformanceNewsListCard = ({
   );
 };
 
-const POSTER_WIDTH = 112;
-const POSTER_HEIGHT = 150;
+const POSTER_WIDTH = 96;
+const POSTER_HEIGHT = 128;
 
 const styles = StyleSheet.create({
   card: {
@@ -134,26 +134,26 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   openTime: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "700",
     color: BLUE.DEFAULT,
     includeFontPadding: false,
   },
   title: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "700",
     color: MAIN.DEFAULT,
-    lineHeight: 22,
-  },
-  place: {
-    fontSize: 14,
-    color: GRAY.DARK_100,
     lineHeight: 20,
   },
-  price: {
+  place: {
     fontSize: 13,
-    color: GRAY.DARK,
+    color: GRAY.DARK_100,
     lineHeight: 18,
+  },
+  price: {
+    fontSize: 12,
+    color: GRAY.DARK,
+    lineHeight: 16,
     marginTop: 2,
   },
   badgeRow: {
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   badgeText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "700",
   },
   hotBadge: {

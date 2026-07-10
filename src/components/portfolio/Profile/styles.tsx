@@ -45,17 +45,24 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   bannerActionBtn: {
-    width: 32,
     height: 32,
     borderRadius: 8,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: 5,
+    paddingHorizontal: 10,
     backgroundColor: "rgba(31, 42, 68, 0.72)",
     borderWidth: 1,
     borderColor: "rgba(217, 217, 217, 0.5)",
   },
   bannerActionBtnPressed: {
     opacity: 0.5,
+  },
+  bannerActionText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: WHITE,
   },
   profileBody: {
     paddingHorizontal: 16,

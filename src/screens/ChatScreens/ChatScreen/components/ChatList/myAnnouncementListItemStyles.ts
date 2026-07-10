@@ -3,7 +3,7 @@ import { WHITE } from "../../../../../color";
 
 export default StyleSheet.create({
   row: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 12,
     paddingVertical: 14,
     backgroundColor: WHITE,
     borderBottomWidth: 1,
@@ -27,6 +27,8 @@ export default StyleSheet.create({
     flexGrow: 0,
     flexShrink: 1,
     minWidth: 0,
+    fontSize: 14,
+    lineHeight: 20,
   },
   personCount: {
     flexDirection: "row",
@@ -35,8 +37,8 @@ export default StyleSheet.create({
     flexShrink: 0,
   },
   personCountText: {
-    fontSize: 13,
-    lineHeight: 18,
+    fontSize: 12,
+    lineHeight: 17,
     fontWeight: "500",
     color: "#6B7280",
   },
@@ -52,7 +54,7 @@ export default StyleSheet.create({
   },
   unreadBadgeText: {
     color: WHITE,
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "700",
     includeFontPadding: false,
     textAlignVertical: "center",

@@ -10,6 +10,7 @@ import {
   Image,
   Linking,
   Keyboard,
+  AppState,
 } from "react-native";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
@@ -338,27 +339,23 @@ const ChatRoomScreen = () => {
   const { openImageViewer } = useImageViewer();
   const [peerUserId, setPeerUserId] = useState(peerUserIdParam || "");
 
-  /** 지원 직후 등 목록에 peer 가 비어 있을 때, 메시지에서 상대 ID 추론 */
+  /**
+   * 지원 직후 등 목록에 peer 가 비어 있을 때, 방 멤버십에서 상대 ID를 확정한다.
+   * (메시지 발신자로 추론하던 이전 방식은, 상대가 아직 한 번도 답장하지 않은 방에서
+   * 나 자신을 상대로 잘못 지정해 내가 보낸 메시지가 상대 메시지처럼 렌더되는 문제가 있었다.)
+   */
   useEffect(() => {
     if (!chatRoomId || peerUserId) return;
     let cancelled = false;
     (async () => {
       const page = await getChatMessages(chatRoomId, { page: 1, limit: 50 });
-      if (cancelled || !page?.items?.length) return;
-      for (const m of page.items) {
-        const uid = String(m.userId ?? "").trim();
-        if (uid && uid !== myUserId) {
-          setPeerUserId(uid);
-          return;
-        }
-      }
-      const u0 = String(page.items[0]?.userId ?? "").trim();
-      if (u0) setPeerUserId(u0);
+      if (cancelled || !page?.peerUserId) return;
+      setPeerUserId(page.peerUserId);
     })();
     return () => {
       cancelled = true;
     };
-  }, [chatRoomId, peerUserId, myUserId]);
+  }, [chatRoomId, peerUserId]);
 
   const peerAvatarUrl = peerAvatarUrlParam;
 
@@ -443,6 +440,52 @@ const ChatRoomScreen = () => {
     [chatRoomId, isFocused, refreshChatUnread],
   );
 
+  /**
+   * 소켓이 끊긴 동안 온 `readUpdated`(및 신규 메시지) 브로드캐스트는 유실될 수 있으므로,
+   * 재연결/포그라운드 복귀 시 최신 목록을 REST로 다시 받아와 안읽음 표시가 영구히
+   * 멈춰 있지 않도록 동기화한다.
+   */
+  /** 포커스/소켓 재연결/포그라운드 복귀가 겹쳐 resyncMessages가 동시에 여러 번 호출될 때,
+   * 먼저 시작한 요청의 응답이 나중에 도착해 최신 읽음 상태를 덮어쓰지 않도록 순번으로 가드 */
+  const resyncSeqRef = useRef(0);
+  const resyncMessages = useCallback(async () => {
+    if (!chatRoomId || !peerUserId) return;
+    const seq = ++resyncSeqRef.current;
+    const page = await getChatMessages(chatRoomId, { page: 1, limit: 100 });
+    if (seq !== resyncSeqRef.current) return;
+    const items = page?.items ?? [];
+    if (!items.length) return;
+    setMessages((prev) => {
+      const byId = new Map(prev.map((m) => [m.id, m]));
+      for (const m of items) {
+        const isReadByPeer = Boolean(m.readByPeer);
+        const existing = byId.get(m.id);
+        if (existing) {
+          byId.set(m.id, { ...existing, isReadByPeer });
+          continue;
+        }
+        byId.set(m.id, {
+          id: m.id,
+          text: m.content ?? "",
+          isFromMe: myUserId
+            ? String(m.userId) === myUserId
+            : String(m.userId) !== String(peerUserId),
+          timestamp: formatTime(new Date(m.createdAt)),
+          createdAt: m.createdAt,
+          fileUrl: m.fileUrl ?? null,
+          fileName: m.fileName ?? null,
+          fileMime: m.fileMime ?? null,
+          fileItems: m.fileItems ?? null,
+          isReadByPeer,
+        });
+      }
+      return Array.from(byId.values()).sort(
+        (a, b) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+      );
+    });
+  }, [chatRoomId, peerUserId, myUserId]);
+
   const appendFromSocket = useCallback(
     (payload: WsMessagePayload) => {
       const item = mapToMessageItem(payload, myUserId, peerUserId);
@@ -514,11 +557,12 @@ const ChatRoomScreen = () => {
     };
   }, [chatRoomId, peerUserId, myUserId]);
 
-  /** 방 진입/재진입 시 읽음 처리 (탭 전환 후 되돌아오는 경우 포함) */
+  /** 방 진입/재진입 시 읽음 처리 + 안읽음 표시 리싱크 (탭 전환 후 되돌아오는 경우 포함) */
   useFocusEffect(
     useCallback(() => {
       markRead();
-    }, [markRead]),
+      void resyncMessages();
+    }, [markRead, resyncMessages]),
   );
 
   useEffect(() => {
@@ -542,9 +586,15 @@ const ChatRoomScreen = () => {
         socket.emit("joinRoom", { chatRoomId });
       };
 
+      /** 최초 연결은 이미 REST로 받아온 목록을 그대로 쓰므로 리싱크 생략, 재연결부터만 동기화 */
+      let isFirstConnect = true;
       const onConnect = () => {
         join();
         setSendReady(true);
+        if (!isFirstConnect) {
+          void resyncMessages();
+        }
+        isFirstConnect = false;
       };
 
       socket.on("connect", onConnect);
@@ -593,7 +643,19 @@ const ChatRoomScreen = () => {
       socketRef.current = null;
       setSendReady(false);
     };
-  }, [chatRoomId, peerUserId, appendFromSocket]);
+  }, [chatRoomId, peerUserId, appendFromSocket, resyncMessages]);
+
+  /** 앱이 백그라운드에 있는 동안 놓쳤을 수 있는 readUpdated를 포그라운드 복귀 시 보정 */
+  const isFocusedRef = useRef(isFocused);
+  isFocusedRef.current = isFocused;
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", (nextState) => {
+      if (nextState === "active" && isFocusedRef.current) {
+        void resyncMessages();
+      }
+    });
+    return () => subscription.remove();
+  }, [resyncMessages]);
 
   const sendMessage = () => {
     const trimmed = message.trim();
@@ -833,6 +895,7 @@ const ChatRoomScreen = () => {
                   peerUserId={peerUserId || undefined}
                   profileImgUrl={peerAvatarUrl}
                   size={44}
+                  style={styles.avatarImage}
                 />
                 {isOnline && <View style={styles.onlineIndicator} />}
               </View>
@@ -1074,7 +1137,7 @@ const ChatRoomScreen = () => {
                           isActiveMatch && styles.messageRowActiveMatch,
                         ]}
                       >
-                        {showTimestamp ? (
+                        {showTimestamp || !msg.isReadByPeer ? (
                           <View style={styles.messageTimeWrapMe}>
                             {!msg.isReadByPeer ? (
                               <Text
@@ -1086,7 +1149,9 @@ const ChatRoomScreen = () => {
                                 1
                               </Text>
                             ) : null}
-                            <Text style={styles.messageTime}>{msg.timestamp}</Text>
+                            {showTimestamp ? (
+                              <Text style={styles.messageTime}>{msg.timestamp}</Text>
+                            ) : null}
                           </View>
                         ) : null}
                         <View style={bubbleStyle}>{bubbleContent}</View>
@@ -1109,6 +1174,7 @@ const ChatRoomScreen = () => {
                               peerUserId={peerUserId || undefined}
                               profileImgUrl={peerAvatarUrl}
                               size={32}
+                              style={styles.otherAvatarImage}
                             />
                           </View>
                         ) : null}

@@ -343,11 +343,16 @@ export async function getChatMessages(
         readByPeer: Boolean(m.readByPeer ?? m.read_by_peer),
       };
     });
+    const peerUserId =
+      typeof data.peerUserId === "string" && data.peerUserId
+        ? data.peerUserId
+        : null;
     return {
       items,
       total: Number(data.total ?? 0),
       page: Number(data.page ?? 1),
       limit: Number(data.limit ?? 50),
+      peerUserId,
     };
   } catch (e) {
     console.warn("[getChatMessages]", e);

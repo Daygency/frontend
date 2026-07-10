@@ -4,7 +4,7 @@ import { BLACK, GRAY, RED, WHITE } from "../../../../../color";
 const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
     paddingVertical: 12,
     backgroundColor: WHITE,
     // borderBottomWidth: 1,
@@ -15,18 +15,18 @@ const styles = StyleSheet.create({
     marginRight: 16,
   },
   avatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 44,
+    height: 44,
+    borderRadius: 15,
     backgroundColor: "#F2F3F5",
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
   },
   avatarImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 44,
+    height: 44,
+    borderRadius: 15,
   },
   avatarText: {
     fontSize: 18,
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   name: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: "600",
     color: "#1A202C",
   },
@@ -74,7 +74,7 @@ const styles = StyleSheet.create({
     marginLeft: 0,
   },
   timestamp: {
-    fontSize: 13,
+    fontSize: 12,
     color: "#A0AEC0",
     fontWeight: "400",
   },
@@ -94,13 +94,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   unreadText: {
-    fontSize: 11,
+    fontSize: 10,
     fontWeight: "600",
     color: WHITE,
   },
   message: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 13,
     color: "#718096",
     fontWeight: "500",
   },

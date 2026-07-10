@@ -19,7 +19,7 @@ import { GRAY } from "../../../color";
 import type { PerformanceNewsSortMode } from "./performanceNewsFilterOptions";
 import { useLoungeScroll } from "../LoungeScrollContext";
 
-const POSTER_WIDTH = 112;
+const POSTER_WIDTH = 96;
 
 function sortNewsItems(items: NewsListItem[], mode: PerformanceNewsSortMode) {
   return [...items].sort((a, b) => {

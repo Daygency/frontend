@@ -60,6 +60,8 @@ export type ChatMessagesPage = {
   total: number;
   page: number;
   limit: number;
+  /** 방 멤버십으로 확정된 상대방 ID (메시지가 없거나 상대가 답장하지 않은 방에서도 유효) */
+  peerUserId: string | null;
 };
 
 export type CreateCoffeeRoomBody = { peerUserId: string };

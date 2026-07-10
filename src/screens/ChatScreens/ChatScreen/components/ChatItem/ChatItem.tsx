@@ -36,7 +36,8 @@ const ChatItem = ({
           <UserProfileAvatar
             peerUserId={peerUserId}
             profileImgUrl={initialAvatarUrl}
-            size={50}
+            size={44}
+            style={styles.avatarImage}
           />
         </View>
         {isOnline && <View style={styles.onlineIndicator} />}

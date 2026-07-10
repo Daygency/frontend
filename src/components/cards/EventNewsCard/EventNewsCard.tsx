@@ -7,6 +7,7 @@ import {
   View,
   ViewStyle,
   Text,
+  TextStyle,
   type DimensionValue,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,6 +30,10 @@ interface EventNewsCardProps {
   width?: number | string;
   height?: number;
   containerStyle?: StyleProp<ViewStyle>;
+  /** 기본 텍스트 크기(제목/장소/날짜)를 이 카드 호출부에서만 덮어쓰고 싶을 때 사용 */
+  titleStyle?: StyleProp<TextStyle>;
+  placeStyle?: StyleProp<TextStyle>;
+  dateStyle?: StyleProp<TextStyle>;
   onPress?: () => void;
 }
 
@@ -47,6 +52,9 @@ const EventNewsCard = ({
   width = "100%",
   height = 193,
   containerStyle,
+  titleStyle,
+  placeStyle,
+  dateStyle,
   onPress,
 }: EventNewsCardProps) => {
   const showCounts =
@@ -84,18 +92,24 @@ const EventNewsCard = ({
         </View>
       )}
       <Text
-        style={styles.imageTitle}
+        style={[styles.imageTitle, titleStyle]}
         numberOfLines={2}
         ellipsizeMode="tail"
       >
         {title}
       </Text>
       {showPlace ? (
-        <Text style={styles.imageSpace} numberOfLines={1} ellipsizeMode="tail">
+        <Text
+          style={[styles.imageSpace, placeStyle]}
+          numberOfLines={1}
+          ellipsizeMode="tail"
+        >
           {place}
         </Text>
       ) : null}
-      {showDate ? <Text style={styles.imageDate}>{dateRange}</Text> : null}
+      {showDate ? (
+        <Text style={[styles.imageDate, dateStyle]}>{dateRange}</Text>
+      ) : null}
       {showCounts ? (
         <View style={localStyles.statsRow}>
           <View style={localStyles.statItem}>

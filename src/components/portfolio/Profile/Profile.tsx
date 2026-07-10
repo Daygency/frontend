@@ -730,6 +730,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
                 hitSlop={6}
               >
                 <Octicons name="graph" size={16} color={WHITE} />
+                <Text style={styles.bannerActionText}>내활동</Text>
               </Pressable>
               <Pressable
                 style={({ pressed }) => [
@@ -743,7 +744,10 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
                 {coverUploading ? (
                   <ActivityIndicator size="small" color={WHITE} />
                 ) : (
-                  <FontAwesome name="photo" size={16} color={WHITE} />
+                  <>
+                    <FontAwesome name="photo" size={16} color={WHITE} />
+                    <Text style={styles.bannerActionText}>배경사진</Text>
+                  </>
                 )}
               </Pressable>
             </View>

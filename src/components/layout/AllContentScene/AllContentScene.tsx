@@ -38,8 +38,8 @@ import CurationFeed, {
 } from "../../../screens/MainHomeScreen/components/CurationFeed";
 import HomeSkeleton from "./HomeSkeleton";
 
-const NEWS_CARD_WIDTH = 138;
-const NEWS_CARD_IMAGE_HEIGHT = 193;
+const NEWS_CARD_WIDTH = 118;
+const NEWS_CARD_IMAGE_HEIGHT = 165;
 const NEWS_CARD_GAP = 14;
 
 type ContentTabParamList = {
@@ -290,6 +290,9 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
                     key={item.newsId}
                     width={NEWS_CARD_WIDTH}
                     height={NEWS_CARD_IMAGE_HEIGHT}
+                    titleStyle={{ fontSize: 14, lineHeight: 18 }}
+                    placeStyle={{ fontSize: 11, lineHeight: 11 }}
+                    dateStyle={{ fontSize: 11, lineHeight: 11 }}
                     title={item.title}
                     place={item.place}
                     dateRange={formatPerformanceListDateLabel(

@@ -44,7 +44,7 @@ const styles = StyleSheet.create({
   avatar: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 15,
     backgroundColor: GRAY.MEDIUM,
     alignItems: "center",
     justifyContent: "center",
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
   avatarImage: {
     width: 44,
     height: 44,
-    borderRadius: 22,
+    borderRadius: 15,
   },
   avatarText: {
     fontSize: 18,
@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: "400",
     color: "#000",
     marginBottom: 2,
   },
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     left: 0,
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 15,
     backgroundColor: GRAY.DARK_1,
     alignItems: "center",
     justifyContent: "center",
@@ -292,7 +292,7 @@ const styles = StyleSheet.create({
   otherAvatarImage: {
     width: 32,
     height: 32,
-    borderRadius: 16,
+    borderRadius: 15,
   },
   otherAvatarText: {
     fontSize: 14,
