@@ -4,6 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import styles from "./styles";
 import SettingItem from "./components/SettingItem/SettingItem";
+import ProfileHeader from "./components/ProfileHeader/ProfileHeader";
 import { RED } from "../../color";
 import { RootRoutes } from "../../navigations/routes";
 
@@ -16,23 +17,26 @@ const SettingsScreen = () => {
       contentContainerStyle={styles.contentContainer}
       showsVerticalScrollIndicator={false}
     >
-      <SettingItem
-        icon="bell-outline"
-        label="알림 설정"
-        onPress={() => navigation.navigate(RootRoutes.NOTIFICATION_SETTINGS)}
-      />
-      <SettingItem
-        icon="help-circle-outline"
-        label="고객센터"
-        onPress={() => navigation.navigate(RootRoutes.CUSTOMER_SERVICE)}
-      />
-      <SettingItem
-        icon="account-outline"
-        label="계정"
-        color={RED.DEFAULT}
-        onPress={() => navigation.navigate(RootRoutes.ACCOUNT)}
-        isLast
-      />
+      <ProfileHeader />
+      <View style={styles.listSection}>
+        <SettingItem
+          icon="bell-outline"
+          label="알림 설정"
+          onPress={() => navigation.navigate(RootRoutes.NOTIFICATION_SETTINGS)}
+        />
+        <SettingItem
+          icon="help-circle-outline"
+          label="고객센터"
+          onPress={() => navigation.navigate(RootRoutes.CUSTOMER_SERVICE)}
+        />
+        <SettingItem
+          icon="account-outline"
+          label="계정"
+          color={RED.DEFAULT}
+          onPress={() => navigation.navigate(RootRoutes.ACCOUNT)}
+          isLast
+        />
+      </View>
     </ScrollView>
   );
 };

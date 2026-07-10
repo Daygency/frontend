@@ -244,6 +244,76 @@ export async function setPushEnabled(isPushEnabled: boolean): Promise<boolean> {
   }
 }
 
+export type PushCategoryPreferences = {
+  follow: boolean;
+  application: boolean;
+  review: boolean;
+  inquiry: boolean;
+};
+
+function parsePushCategoryPreferences(
+  raw: unknown,
+): PushCategoryPreferences | null {
+  if (!raw || typeof raw !== "object") return null;
+  const o = raw as Record<string, unknown>;
+  if (
+    typeof o.follow !== "boolean" ||
+    typeof o.application !== "boolean" ||
+    typeof o.review !== "boolean" ||
+    typeof o.inquiry !== "boolean"
+  ) {
+    return null;
+  }
+  return {
+    follow: o.follow,
+    application: o.application,
+    review: o.review,
+    inquiry: o.inquiry,
+  };
+}
+
+/**
+ * GET /notifications/push-category-preferences — 케이스별(팔로우/지원/후기/문의) 푸시 수신 여부
+ */
+export async function getPushCategoryPreferences(): Promise<PushCategoryPreferences | null> {
+  try {
+    const headers = await authJsonHeaders();
+    const res = await fetchNotificationPath(
+      "/notifications/push-category-preferences",
+      { method: "GET", headers },
+    );
+    if (!res.ok) return null;
+    return parsePushCategoryPreferences(await res.json());
+  } catch (e) {
+    if (__DEV__) console.warn("[getPushCategoryPreferences]", e);
+    return null;
+  }
+}
+
+/**
+ * PATCH /notifications/push-category-preferences — 케이스별 푸시 수신 여부 설정(부분 업데이트)
+ */
+export async function setPushCategoryPreferences(
+  patch: Partial<PushCategoryPreferences>,
+): Promise<PushCategoryPreferences | null> {
+  try {
+    const headers = await authJsonHeaders();
+    const res = await fetchNotificationPath(
+      "/notifications/push-category-preferences",
+      {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify(patch),
+      },
+    );
+    if (!res.ok) return null;
+    return parsePushCategoryPreferences(await res.json());
+  } catch (e) {
+    if (__DEV__) console.warn("[setPushCategoryPreferences]", e);
+    return null;
+  }
+}
+
 /**
  * GET /notifications — 인박스 (커서 페이지네이션)
  * @see README.md (알림 API)

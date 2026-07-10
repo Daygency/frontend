@@ -1,10 +1,10 @@
-import messaging from "@react-native-firebase/messaging";
 import React, { useCallback, useEffect, useState } from "react";
-import { ScrollView } from "react-native";
+import { ActivityIndicator, ScrollView, View } from "react-native";
 import {
-  getPushEnabled,
+  getPushCategoryPreferences,
+  setPushCategoryPreferences,
   setPushEnabled,
-  unregisterPushDevice,
+  type PushCategoryPreferences,
 } from "../../../lib/apis/notifications/notificationsApi";
 import { syncFcmTokenToServer } from "../../../lib/fcmServerSync";
 import ShadowCardList, {
@@ -12,73 +12,106 @@ import ShadowCardList, {
 } from "../../../components/lists/ShadowCardList";
 import {
   getOsPushPermission,
-  getPushReceivePreference,
   isFcmMessagingAvailable,
   isPushSupportedNative,
   requestOsPushPermission,
-  setPushReceivePreference,
+  type PermissionStatus,
 } from "../../../lib/pushNotifications";
+import { MAIN } from "../../../color";
 import styles from "./styles";
 
+type CategoryKey = keyof PushCategoryPreferences;
+
+const CATEGORY_ITEMS: {
+  key: CategoryKey;
+  label: string;
+  description: string;
+}[] = [
+  {
+    key: "follow",
+    label: "팔로우",
+    description: "누군가 나를 팔로우하면 알림을 받아요.",
+  },
+  {
+    key: "application",
+    label: "지원 알림",
+    description: "공고 지원 관련 소식을 알림으로 받아요.",
+  },
+  {
+    key: "review",
+    label: "활동 후기",
+    description: "상대방이 활동 후기를 남기면 알림을 받아요.",
+  },
+  {
+    key: "inquiry",
+    label: "문의 답변",
+    description: "고객센터 문의에 답변이 달리면 알림을 받아요.",
+  },
+];
+
+const DEFAULT_PREFS: PushCategoryPreferences = {
+  follow: true,
+  application: true,
+  review: true,
+  inquiry: true,
+};
+
 const NotificationSettingsScreen = () => {
-  const [pushOn, setPushOn] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   /** null: 확인 전, false: FCM 네이티브 없음(Expo Go 등) */
   const [pushModuleOk, setPushModuleOk] = useState<boolean | null>(null);
+  const [osPermission, setOsPermission] =
+    useState<PermissionStatus>("undetermined");
+  const [prefs, setPrefs] = useState<PushCategoryPreferences>(DEFAULT_PREFS);
 
-  const refreshPushState = useCallback(async () => {
+  const refreshState = useCallback(async () => {
     if (!isPushSupportedNative()) {
       setPushModuleOk(false);
-      setPushOn(false);
+      setIsLoading(false);
       return;
     }
     const ok = await isFcmMessagingAvailable();
     setPushModuleOk(ok);
     if (!ok) {
-      setPushOn(false);
+      setIsLoading(false);
       return;
     }
-    const [pref, perm, serverEnabled] = await Promise.all([
-      getPushReceivePreference(),
+    const [perm, serverPrefs] = await Promise.all([
       getOsPushPermission(),
-      getPushEnabled(),
+      getPushCategoryPreferences(),
     ]);
-    const enabled = serverEnabled ?? pref;
-    setPushOn(enabled && perm === "granted");
+    setOsPermission(perm);
+    if (serverPrefs) setPrefs(serverPrefs);
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    void refreshPushState();
-  }, [refreshPushState]);
+    void refreshState();
+  }, [refreshState]);
 
-  const onPushChange = async (value: boolean) => {
+  const onCategoryChange = async (key: CategoryKey, value: boolean) => {
     if (!isPushSupportedNative()) return;
     if (!(await isFcmMessagingAvailable())) return;
-    if (value) {
-      await setPushReceivePreference(true);
+
+    if (value && osPermission !== "granted") {
       const perm = await requestOsPushPermission();
-      if (perm !== "granted") {
-        await setPushReceivePreference(false);
-        setPushOn(false);
-        return;
-      }
-      setPushOn(true);
+      setOsPermission(perm);
+      if (perm !== "granted") return;
       void setPushEnabled(true);
       void syncFcmTokenToServer();
-      return;
     }
-    try {
-      if (await isFcmMessagingAvailable()) {
-        const t = await messaging().getToken();
-        if (t) void unregisterPushDevice({ fcmToken: t });
-      }
-    } catch {
-      /* ignore */
-    }
-    await setPushReceivePreference(false);
-    await setPushEnabled(false);
-    setPushOn(false);
-    await refreshPushState();
+
+    setPrefs((prev) => ({ ...prev, [key]: value }));
+    void setPushCategoryPreferences({ [key]: value });
   };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator color={MAIN.DEFAULT} />
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -87,14 +120,17 @@ const NotificationSettingsScreen = () => {
       showsVerticalScrollIndicator={false}
     >
       <ShadowCardList>
-        <ShadowCardListToggleItem
-          label="푸시 알림"
-          description="앱을 사용하지 않을 때도 새 소식을 알림으로 받아볼 수 있어요."
-          value={pushOn}
-          onValueChange={onPushChange}
-          disabled={pushModuleOk === false}
-          isLast
-        />
+        {CATEGORY_ITEMS.map((item, index) => (
+          <ShadowCardListToggleItem
+            key={item.key}
+            label={item.label}
+            description={item.description}
+            value={osPermission === "granted" && prefs[item.key]}
+            onValueChange={(value) => onCategoryChange(item.key, value)}
+            disabled={pushModuleOk === false}
+            isLast={index === CATEGORY_ITEMS.length - 1}
+          />
+        ))}
       </ShadowCardList>
     </ScrollView>
   );

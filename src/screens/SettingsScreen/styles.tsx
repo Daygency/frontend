@@ -7,7 +7,10 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
   },
   contentContainer: {
-    padding: 20,
+    paddingBottom: 20,
+  },
+  listSection: {
+    marginTop: 12,
   },
 });
 

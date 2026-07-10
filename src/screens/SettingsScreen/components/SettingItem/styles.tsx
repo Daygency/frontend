@@ -1,13 +1,15 @@
 import { StyleSheet } from "react-native";
+import { GRAY } from "../../../../color";
 
 const styles = StyleSheet.create({
   itemContainer: {
-    marginBottom: 16,
-    paddingVertical: 20,
+    paddingVertical: 16,
     paddingHorizontal: 20,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: GRAY.MEDIUM_2,
   },
   lastItem: {
-    marginBottom: 0,
+    borderBottomWidth: 0,
   },
   content: {
     flexDirection: "row",
@@ -19,9 +21,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   label: {
-    marginLeft: 12,
-    fontSize: 16,
-    fontWeight: "500",
+    marginLeft: 10,
+    fontSize: 15,
+    fontWeight: "400",
   },
 });
 
