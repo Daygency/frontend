@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { TabView } from "react-native-tab-view";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -51,14 +51,21 @@ const SearchScreen = () => {
 
   useFocusEffect(
     useCallback(() => {
-      loadRecent();
       if (initialTag != null && TAG_TO_SEARCH_CATEGORY[initialTag]) {
         setSelectedTag(initialTag);
       }
-      const timer = setTimeout(() => searchInputRef.current?.focus(), 50);
-      return () => clearTimeout(timer);
-    }, [loadRecent, initialTag]),
+    }, [initialTag]),
   );
+
+  // Defer recent-search loading and keyboard focus until the native push
+  // animation finishes, so they don't compete with it and cause jank.
+  useEffect(() => {
+    const unsubscribe = (navigation as any).addListener("transitionEnd", () => {
+      loadRecent();
+      searchInputRef.current?.focus();
+    });
+    return unsubscribe;
+  }, [navigation, loadRecent]);
 
   const handleRemoveItem = async (term: string) => {
     await removeRecentSearch(term);
@@ -165,7 +172,6 @@ const SearchScreen = () => {
             onChangeText={setInputText}
             returnKeyType="search"
             onSubmitEditing={handleSubmitSearch}
-            autoFocus
           />
         </View>
         {isShowingResults && (
