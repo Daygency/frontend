@@ -1,5 +1,13 @@
 import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
+import {
+  MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
+  MAIN_HOME_TOP_BAR_TITLE_SIZE,
+} from "../MainHomeTopBar/styles";
+
+// 인라인 모드에서는 밑줄을 절대 위치로 텍스트 바로 아래에 띄워서, 밑줄 때문에
+// 상단바 전체 높이가 늘어나 다른 요소(태그 필터 줄 등)가 밀려 내려가는 걸 막는다.
+const INLINE_INDICATOR_TOP = MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT + 6;
 
 const styles = StyleSheet.create({
   container: {
@@ -14,6 +22,13 @@ const styles = StyleSheet.create({
   containerDense: {
     paddingBottom: 4,
   },
+  containerInline: {
+    paddingHorizontal: 0,
+    paddingTop: 0,
+    paddingBottom: 0,
+    alignItems: "center",
+    gap: 14,
+  },
   tabButton: {
     alignItems: "center",
   },
@@ -23,6 +38,10 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: GRAY.DARK,
     includeFontPadding: false,
+  },
+  tabLabelInline: {
+    fontSize: MAIN_HOME_TOP_BAR_TITLE_SIZE,
+    lineHeight: MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
   },
   tabLabelSelected: {
     fontWeight: "600",
@@ -40,6 +59,11 @@ const styles = StyleSheet.create({
     marginTop: 6,
     backgroundColor: MAIN.DEFAULT,
     borderRadius: 1,
+  },
+  tabIndicatorInline: {
+    position: "absolute",
+    top: INLINE_INDICATOR_TOP,
+    marginTop: 0,
   },
   tabIndicatorDark: {
     backgroundColor: WHITE,

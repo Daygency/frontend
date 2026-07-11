@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   },
   filterBar: {
     backgroundColor: WHITE,
-    paddingTop: 8,
+    paddingTop: 4,
   },
   communityTagScroll: {
     flexGrow: 0,

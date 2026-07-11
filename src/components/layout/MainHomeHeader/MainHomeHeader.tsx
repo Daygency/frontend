@@ -15,6 +15,8 @@ interface MainHomeHeaderProps<T extends string = MainHomeTab> {
   variant?: "light" | "dark";
   /** 라운지 등 탭-필터 간격을 좁힐 때 */
   dense?: boolean;
+  /** 상단 타이틀 자리에 인라인으로 끼워 넣을 때 (좌우 패딩/세로 여백 제거, 세로 중앙 정렬) */
+  inline?: boolean;
 }
 
 const MainHomeHeader = <T extends string = MainHomeTab>({
@@ -23,6 +25,7 @@ const MainHomeHeader = <T extends string = MainHomeTab>({
   onTabChange,
   variant = "light",
   dense = false,
+  inline = false,
 }: MainHomeHeaderProps<T>) => {
   const [labelWidths, setLabelWidths] = useState<Partial<Record<string, number>>>(
     {},
@@ -36,7 +39,13 @@ const MainHomeHeader = <T extends string = MainHomeTab>({
   const isDark = variant === "dark";
 
   return (
-    <View style={[styles.container, dense && styles.containerDense]}>
+    <View
+      style={[
+        styles.container,
+        dense && styles.containerDense,
+        inline && styles.containerInline,
+      ]}
+    >
       {tabs.map((tab) => {
         const selected = activeTab === tab;
         const indicatorWidth = labelWidths[tab];
@@ -53,6 +62,7 @@ const MainHomeHeader = <T extends string = MainHomeTab>({
               onLayout={handleLabelLayout(tab)}
               style={[
                 styles.tabLabel,
+                inline && styles.tabLabelInline,
                 isDark && styles.tabLabelDark,
                 selected && (isDark ? styles.tabLabelSelectedDark : styles.tabLabelSelected),
               ]}
@@ -63,11 +73,12 @@ const MainHomeHeader = <T extends string = MainHomeTab>({
               <View
                 style={[
                   styles.tabIndicator,
+                  inline && styles.tabIndicatorInline,
                   isDark && styles.tabIndicatorDark,
                   { width: indicatorWidth },
                 ]}
               />
-            ) : (
+            ) : inline ? null : (
               <View style={styles.tabIndicatorPlaceholder} />
             )}
           </Pressable>

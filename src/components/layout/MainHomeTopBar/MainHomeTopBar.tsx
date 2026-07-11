@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, type ReactNode } from "react";
 import { useNotificationUnread } from "../../../contexts/NotificationUnreadContext";
 import {
   Image,
@@ -40,6 +40,8 @@ interface MainHomeTopBarProps {
   titleMenuOptions?: readonly string[];
   selectedTitleMenuOption?: string;
   onTitleMenuOptionChange?: (option: string) => void;
+  /** 타이틀 자리에 로고/드롭다운 대신 임의의 컴포넌트(예: 서브탭 스위처)를 넣고 싶을 때 */
+  titleContent?: ReactNode;
 }
 
 const MainHomeTopBar = ({
@@ -51,6 +53,7 @@ const MainHomeTopBar = ({
   titleMenuOptions,
   selectedTitleMenuOption,
   onTitleMenuOptionChange,
+  titleContent,
 }: MainHomeTopBarProps) => {
   const navigation = useNavigation<MainHomeTopBarNavigationProp>();
   const { isLoggedIn } = useAuth();
@@ -105,6 +108,10 @@ const MainHomeTopBar = ({
   };
 
   const renderTitle = () => {
+    if (titleContent) {
+      return titleContent;
+    }
+
     if (hasTitleMenu) {
       return (
         <>

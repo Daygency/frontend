@@ -170,16 +170,15 @@ const LoungeScreen = () => {
         activeTabIndex={index}
         topBar={
           <MainHomeTopBar
-            logoName="라운지"
             initialTag={TAB_TO_SEARCH_TAG[activeTab]}
-          />
-        }
-        tabBar={
-          <MainHomeHeader
-            tabs={LOUNGE_TABS}
-            activeTab={activeTab}
-            onTabChange={(tab) => setIndex(tabToIndex(tab as LoungeTab))}
-            dense
+            titleContent={
+              <MainHomeHeader
+                tabs={LOUNGE_TABS}
+                activeTab={activeTab}
+                onTabChange={(tab) => setIndex(tabToIndex(tab as LoungeTab))}
+                inline
+              />
+            }
           />
         }
         filterBar={<View style={styles.filterBar}>{filterRow}</View>}

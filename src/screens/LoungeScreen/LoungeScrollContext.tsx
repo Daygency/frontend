@@ -21,7 +21,6 @@ import Animated, {
 import { TAB_RESCROLL_THRESHOLD } from "../../lib/navigation/tabRetap";
 
 const DEFAULT_TOP_BAR_HEIGHT = 50;
-const DEFAULT_TAB_BAR_HEIGHT = 42;
 const DEFAULT_FILTER_BAR_HEIGHT = 45;
 
 type LoungeScrollContextValue = {
@@ -47,7 +46,6 @@ export function useLoungeScroll() {
 type LoungeScrollProviderProps = {
   children: ReactNode;
   topBar: ReactNode;
-  tabBar: ReactNode;
   filterBar: ReactNode;
   activeTabIndex: number;
 };
@@ -83,7 +81,6 @@ function useLoungeScrollHandler(
 export function LoungeScrollProvider({
   children,
   topBar,
-  tabBar,
   filterBar,
   activeTabIndex: activeTabIndexProp,
 }: LoungeScrollProviderProps) {
@@ -117,10 +114,9 @@ export function LoungeScrollProvider({
   }, []);
 
   const [topBarHeight, setTopBarHeight] = useState(DEFAULT_TOP_BAR_HEIGHT);
-  const [tabBarHeight, setTabBarHeight] = useState(DEFAULT_TAB_BAR_HEIGHT);
   const [filterBarHeight, setFilterBarHeight] = useState(DEFAULT_FILTER_BAR_HEIGHT);
 
-  const headerTotalHeight = topBarHeight + tabBarHeight;
+  const headerTotalHeight = topBarHeight;
   const listTopInset = headerTotalHeight + filterBarHeight;
   const maxHeaderCollapse = headerTotalHeight;
 
@@ -211,13 +207,10 @@ export function LoungeScrollProvider({
           headerCollapseNews={headerCollapseNews}
           headerCollapseCommunity={headerCollapseCommunity}
           topBarHeight={topBarHeight}
-          tabBarHeight={tabBarHeight}
           headerTotalHeight={headerTotalHeight}
           onTopBarLayout={setTopBarHeight}
-          onTabBarLayout={setTabBarHeight}
           onFilterBarLayout={setFilterBarHeight}
           topBar={topBar}
-          tabBar={tabBar}
           filterBar={filterBar}
         />
       </View>
@@ -227,16 +220,13 @@ export function LoungeScrollProvider({
 
 type LoungeCollapsibleChromeProps = {
   topBar: ReactNode;
-  tabBar: ReactNode;
   filterBar: ReactNode;
   activeTabIndex: SharedValue<number>;
   headerCollapseNews: SharedValue<number>;
   headerCollapseCommunity: SharedValue<number>;
   topBarHeight: number;
-  tabBarHeight: number;
   headerTotalHeight: number;
   onTopBarLayout: (height: number) => void;
-  onTabBarLayout: (height: number) => void;
   onFilterBarLayout: (height: number) => void;
 };
 
@@ -251,20 +241,16 @@ function getHeaderCollapse(
 
 function LoungeCollapsibleChrome({
   topBar,
-  tabBar,
   filterBar,
   activeTabIndex,
   headerCollapseNews,
   headerCollapseCommunity,
   topBarHeight,
-  tabBarHeight,
   headerTotalHeight,
   onTopBarLayout,
-  onTabBarLayout,
   onFilterBarLayout,
 }: LoungeCollapsibleChromeProps) {
   const topBarMeasured = useRef(false);
-  const tabBarMeasured = useRef(false);
 
   const topBarStyle = useAnimatedStyle(() => {
     const collapse = getHeaderCollapse(
@@ -285,26 +271,6 @@ function LoungeCollapsibleChrome({
       ],
     };
   }, [topBarHeight]);
-
-  const tabBarStyle = useAnimatedStyle(() => {
-    const collapse = getHeaderCollapse(
-      activeTabIndex.value,
-      headerCollapseNews.value,
-      headerCollapseCommunity.value,
-    );
-    return {
-      transform: [
-        {
-          translateY: -interpolate(
-            collapse,
-            [0, headerTotalHeight],
-            [0, headerTotalHeight],
-            Extrapolation.CLAMP,
-          ),
-        },
-      ],
-    };
-  }, [headerTotalHeight]);
 
   const filterBarStyle = useAnimatedStyle(() => {
     const collapse = getHeaderCollapse(
@@ -335,15 +301,6 @@ function LoungeCollapsibleChrome({
     }
   };
 
-  const handleTabBarLayout = (event: LayoutChangeEvent) => {
-    if (tabBarMeasured.current) return;
-    const height = event.nativeEvent.layout.height;
-    if (height > 0) {
-      tabBarMeasured.current = true;
-      onTabBarLayout(height);
-    }
-  };
-
   const handleFilterBarLayout = (event: LayoutChangeEvent) => {
     const height = event.nativeEvent.layout.height;
     if (height > 0) onFilterBarLayout(height);
@@ -360,12 +317,6 @@ function LoungeCollapsibleChrome({
           style={[chromeStyles.topBarSlot, topBarStyle]}
         >
           {topBar}
-        </Animated.View>
-        <Animated.View
-          onLayout={handleTabBarLayout}
-          style={[chromeStyles.tabBarSlot, { top: topBarHeight }, tabBarStyle]}
-        >
-          {tabBar}
         </Animated.View>
       </View>
       <Animated.View
@@ -392,12 +343,6 @@ const chromeStyles = {
   topBarSlot: {
     position: "absolute" as const,
     top: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#ffffff",
-  },
-  tabBarSlot: {
-    position: "absolute" as const,
     left: 0,
     right: 0,
     backgroundColor: "#ffffff",
