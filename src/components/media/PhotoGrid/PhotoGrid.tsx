@@ -65,11 +65,11 @@ const PhotoGrid = ({ images }: PhotoGridProps) => {
     <View style={[styles.container, styles.row]}>
       {renderTile(images[0], 0, styles.twoThirds)}
       <View style={[styles.column, styles.oneThirdColumn]}>
-        {renderTile(images[1], 1, styles.full)}
+        {renderTile(images[1], 1, styles.rightTile)}
         {renderTile(
           images[2],
           2,
-          styles.full,
+          styles.rightTile,
           hiddenCount > 0 ? hiddenCount : undefined,
         )}
       </View>

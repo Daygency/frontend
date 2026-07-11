@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
   },
   tileInner: {
     flex: 1,
-    borderRadius: 10,
+    borderRadius: 6,
     overflow: "hidden",
     backgroundColor: GRAY.DEFAULT,
   },
@@ -56,6 +56,10 @@ const styles = StyleSheet.create({
   },
   /** 3장: 오른쪽 두 장을 담는 좁은 세로 컬럼 */
   oneThirdColumn: {
+    flex: 1,
+  },
+  /** 3장 이상: 오른쪽 컬럼 안의 타일 — flex:1 두 개가 컬럼 높이(왼쪽 큰 사진과 동일)를 정확히 반씩 나눠 가짐 */
+  rightTile: {
     flex: 1,
   },
 });

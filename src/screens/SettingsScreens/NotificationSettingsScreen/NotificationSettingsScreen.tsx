@@ -47,6 +47,16 @@ const CATEGORY_ITEMS: {
     label: "문의 답변",
     description: "고객센터 문의에 답변이 달리면 알림을 받아요.",
   },
+  {
+    key: "comment",
+    label: "댓글",
+    description: "내 게시물에 댓글·대댓글이 달리면 알림을 받아요.",
+  },
+  {
+    key: "like",
+    label: "좋아요",
+    description: "내 게시물에 좋아요를 받으면 알림을 받아요.",
+  },
 ];
 
 const DEFAULT_PREFS: PushCategoryPreferences = {
@@ -54,6 +64,8 @@ const DEFAULT_PREFS: PushCategoryPreferences = {
   application: true,
   review: true,
   inquiry: true,
+  comment: true,
+  like: true,
 };
 
 const NotificationSettingsScreen = () => {

@@ -249,6 +249,8 @@ export type PushCategoryPreferences = {
   application: boolean;
   review: boolean;
   inquiry: boolean;
+  comment: boolean;
+  like: boolean;
 };
 
 function parsePushCategoryPreferences(
@@ -260,7 +262,9 @@ function parsePushCategoryPreferences(
     typeof o.follow !== "boolean" ||
     typeof o.application !== "boolean" ||
     typeof o.review !== "boolean" ||
-    typeof o.inquiry !== "boolean"
+    typeof o.inquiry !== "boolean" ||
+    typeof o.comment !== "boolean" ||
+    typeof o.like !== "boolean"
   ) {
     return null;
   }
@@ -269,11 +273,13 @@ function parsePushCategoryPreferences(
     application: o.application,
     review: o.review,
     inquiry: o.inquiry,
+    comment: o.comment,
+    like: o.like,
   };
 }
 
 /**
- * GET /notifications/push-category-preferences — 케이스별(팔로우/지원/후기/문의) 푸시 수신 여부
+ * GET /notifications/push-category-preferences — 케이스별(팔로우/지원/후기/문의/댓글/좋아요) 푸시 수신 여부
  */
 export async function getPushCategoryPreferences(): Promise<PushCategoryPreferences | null> {
   try {
