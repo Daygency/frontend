@@ -33,7 +33,7 @@ import {
 import styles from "./styles";
 
 const HORIZONTAL_GAP = 12;
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 8;
 
 export type CurationFeedHandle = {
   scrollToTop: () => void;
@@ -41,6 +41,7 @@ export type CurationFeedHandle = {
 };
 
 type CurationFeedProps = {
+  isActive?: boolean;
   onCurationThemeChange?: (theme: CurationThemeState | null) => void;
 };
 
@@ -53,7 +54,7 @@ function normalizeBanner(
 }
 
 const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
-  function CurationFeed({ onCurationThemeChange }, ref) {
+  function CurationFeed({ isActive, onCurationThemeChange }, ref) {
     const navigation = useNavigation<any>();
     const { width } = useWindowDimensions();
     const listRef = useRef<FlatList<HomeBannerListItem>>(null);
@@ -171,9 +172,15 @@ const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
       [applyFeaturedTheme],
     );
 
+    const wasActiveRef = useRef(false);
+
     useEffect(() => {
-      void loadPage(null, "initial");
-    }, [loadPage]);
+      const active = isActive ?? true;
+      if (active && !wasActiveRef.current) {
+        void loadPage(null, "initial");
+      }
+      wasActiveRef.current = active;
+    }, [isActive, loadPage]);
 
     const onRefresh = useCallback(() => {
       if (refreshing || loadingMore) return;

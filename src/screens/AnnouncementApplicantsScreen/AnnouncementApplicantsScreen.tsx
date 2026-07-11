@@ -52,7 +52,7 @@ type RowModel = {
   room: ChatRoomListItem | null;
 };
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 8;
 
 function mergeRows(
   applications: ApplicationEntity[],

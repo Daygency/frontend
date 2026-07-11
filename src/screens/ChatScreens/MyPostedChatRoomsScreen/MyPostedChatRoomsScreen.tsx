@@ -55,7 +55,7 @@ export default function MyPostedChatRoomsScreen() {
       return;
     }
     if (!opts?.refresh) setLoading(true);
-    const res = await getRoomsByPost(postId, { limit: 30 });
+    const res = await getRoomsByPost(postId, { limit: 8 });
     if (res) {
       setRooms(res.items);
       setCursor(res.nextCursor);
@@ -83,7 +83,7 @@ export default function MyPostedChatRoomsScreen() {
   const onEndReached = async () => {
     if (!hasMore || !cursor || loadingMore || loading) return;
     setLoadingMore(true);
-    const res = await getRoomsByPost(postId, { cursor, limit: 30 });
+    const res = await getRoomsByPost(postId, { cursor, limit: 8 });
     if (res) {
       setRooms((prev) => [...prev, ...res.items]);
       setCursor(res.nextCursor);

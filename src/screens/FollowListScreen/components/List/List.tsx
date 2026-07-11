@@ -23,7 +23,7 @@ interface ListProps {
   userId: string;
 }
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 8;
 
 const List = ({ type, userId }: ListProps) => {
   const [items, setItems] = useState<FollowListItemDto[]>([]);

@@ -12,7 +12,7 @@ import { getFaqs, type FaqItem } from "../../../../lib/apis/faq/faqApi";
 import { MAIN } from "../../../../color";
 import styles from "../styles";
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 8;
 
 const InquiryTab = () => {
   const navigation = useNavigation<NativeStackNavigationProp<any>>();

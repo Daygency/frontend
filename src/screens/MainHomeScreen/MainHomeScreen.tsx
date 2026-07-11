@@ -33,18 +33,18 @@ const WHITE_LOGO = require("../../../assets/daygency_logo_white.png");
 const WHITE_LOGO_ASPECT_RATIO = 660 / 595;
 
 const DEFAULT_TAB_BAR_STYLE = {
-  paddingTop: 8,
-  paddingBottom: 10,
-  height: 90,
+  paddingTop: 6,
+  paddingBottom: 6,
+  height: 80,
   backgroundColor: WHITE,
   borderTopWidth: 1,
   borderTopColor: GRAY.MEDIUM,
 } as const;
 
 const CURATION_TAB_BAR_STYLE = {
-  paddingTop: 8,
-  paddingBottom: 10,
-  height: 90,
+  paddingTop: 6,
+  paddingBottom: 6,
+  height: 80,
   backgroundColor: BLACK,
   borderTopWidth: 0,
 } as const;
@@ -172,6 +172,7 @@ const MainHomeScreen = () => {
             <AllContentScene
               ref={curationSceneRef}
               tab="매거진"
+              isActive={isCuration}
               onCurationThemeChange={handleCurationThemeChange}
             />
           </View>

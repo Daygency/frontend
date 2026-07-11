@@ -55,7 +55,7 @@ const MyActivityListScreen = () => {
 
   const fetchFirst = useCallback(async () => {
     if (type === "comments") {
-      const res = await getMyComments({ limit: 20 });
+      const res = await getMyComments({ limit: 8 });
       if (!res) {
         setMyComments([]);
         setNextCursor(null);
@@ -69,7 +69,7 @@ const MyActivityListScreen = () => {
     }
 
     if (source === "scrap") {
-      const res = await getMyScrappedCommunity({ limit: 20 });
+      const res = await getMyScrappedCommunity({ limit: 8 });
       if (!res) {
         setScrappedCommunity([]);
         setNextCursor(null);
@@ -83,7 +83,7 @@ const MyActivityListScreen = () => {
     }
 
     if (source === "like") {
-      const res = await getMyLikedCommunity({ limit: 20 });
+      const res = await getMyLikedCommunity({ limit: 8 });
       if (!res) {
         setLikedCommunity([]);
         setNextCursor(null);
@@ -96,7 +96,7 @@ const MyActivityListScreen = () => {
       return;
     }
 
-    const res = await getMyPosts({ limit: 20 });
+    const res = await getMyPosts({ limit: 8 });
     if (!res) {
       setMyCommunityPosts([]);
       setNextCursor(null);
@@ -253,7 +253,7 @@ const MyActivityListScreen = () => {
           setLoadingMore(true);
           if (type === "comments") {
             const res = await getMyComments({
-              limit: 20,
+              limit: 8,
               cursor: nextCursor ?? undefined,
             });
             if (res) {
@@ -263,7 +263,7 @@ const MyActivityListScreen = () => {
             }
           } else if (source === "scrap") {
             const res = await getMyScrappedCommunity({
-              limit: 20,
+              limit: 8,
               cursor: nextCursor ?? undefined,
             });
             if (res) {
@@ -273,7 +273,7 @@ const MyActivityListScreen = () => {
             }
           } else if (source === "like") {
             const res = await getMyLikedCommunity({
-              limit: 20,
+              limit: 8,
               cursor: nextCursor ?? undefined,
             });
             if (res) {
@@ -287,7 +287,7 @@ const MyActivityListScreen = () => {
             }
           } else {
             const res = await getMyPosts({
-              limit: 20,
+              limit: 8,
               communityCursor: nextCursor ?? undefined,
             });
             if (res) {

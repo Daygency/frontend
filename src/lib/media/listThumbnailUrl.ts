@@ -2,6 +2,7 @@ import type { CommunityListItem } from "../apis/community/types";
 import type { NewsListItem } from "../apis/news/types";
 import { resolveProfileImageUrlForDisplay } from "../chat/resolveProfileImageUrl";
 import {
+  mapAttachmentsToImageUrls,
   pickFirstAttachmentImgUrl,
   pickUrlFromFileLike,
 } from "./attachmentImageUrl";
@@ -42,4 +43,14 @@ export function pickCommunityListThumbnailUrl(
   );
   if (fromAtt) return fromAtt;
   return item.file ? pickUrlFromFileLike(item.file as Record<string, unknown>) : undefined;
+}
+
+/** GET /community 목록 항목 — 목록 카드용 갤러리 이미지 전체 (여러 장 첨부 지원) */
+export function pickCommunityListImageUrls(item: CommunityListItem): string[] {
+  const fromAttachments = mapAttachmentsToImageUrls(
+    (item as CommunityListItem & { attachments?: unknown }).attachments,
+  );
+  if (fromAttachments.length > 0) return fromAttachments;
+  const single = pickCommunityListThumbnailUrl(item);
+  return single ? [single] : [];
 }

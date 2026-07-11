@@ -45,7 +45,7 @@ const MyReviewsScene = () => {
 
   const loadFirst = useCallback(async () => {
     setLoading(true);
-    const res = await getMyActivityReviewList({ limit: 20 });
+    const res = await getMyActivityReviewList({ limit: 8 });
     if (!res) {
       setItems([]);
       setNextCursor(null);
@@ -73,7 +73,7 @@ const MyReviewsScene = () => {
   const loadMore = useCallback(async () => {
     if (!hasMore || loadingMore || !nextCursor) return;
     setLoadingMore(true);
-    const res = await getMyActivityReviewList({ cursor: nextCursor, limit: 20 });
+    const res = await getMyActivityReviewList({ cursor: nextCursor, limit: 8 });
     if (res) {
       setItems((prev) => [...prev, ...res.items]);
       setNextCursor(res.nextCursor);

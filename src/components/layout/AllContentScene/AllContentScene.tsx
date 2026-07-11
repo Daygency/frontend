@@ -67,6 +67,7 @@ export type AllContentSceneHandle = {
 
 interface AllContentSceneProps {
   tab?: MainHomeContentTab;
+  isActive?: boolean;
   onCurationThemeChange?: (theme: CurationThemeState | null) => void;
 }
 
@@ -74,6 +75,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
   function AllContentScene(
     {
       tab = "홈",
+      isActive,
       onCurationThemeChange,
     },
     ref,
@@ -243,6 +245,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
     return (
       <CurationFeed
         ref={curationFeedRef}
+        isActive={isActive}
         onCurationThemeChange={onCurationThemeChange}
       />
     );

@@ -70,7 +70,7 @@ const ArtistScene = () => {
     async (opts?: { skipLoadingSpinner?: boolean }) => {
       if (!opts?.skipLoadingSpinner) setLoading(true);
       const res = await getUsers({
-        limit: 20,
+        limit: 8,
         ...(majorIdsQuery ? { majorIds: majorIdsQuery } : {}),
       });
       if (!opts?.skipLoadingSpinner) setLoading(false);
@@ -101,7 +101,7 @@ const ArtistScene = () => {
     if (!hasMore || !cursor || loadingMore || loading) return;
     setLoadingMore(true);
     const res = await getUsers({
-      limit: 20,
+      limit: 8,
       cursor,
       ...(majorIdsQuery ? { majorIds: majorIdsQuery } : {}),
     });

@@ -89,7 +89,7 @@ const ReceivedReviewsList = ({
   const fetchPage = useCallback(
     async (cursor?: string | null) => {
       const trimmedUserId = userId?.trim();
-      const limit = previewLimit != null ? previewLimit + 1 : 20;
+      const limit = previewLimit != null ? previewLimit + 1 : 8;
       if (trimmedUserId) {
         return getUserReceivedActivityReviewList(trimmedUserId, {
           cursor: cursor ?? undefined,

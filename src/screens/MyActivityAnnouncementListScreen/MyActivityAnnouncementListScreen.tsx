@@ -20,7 +20,7 @@ type RootStackParamList = {
   };
 };
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 8;
 
 const MyActivityAnnouncementListScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();

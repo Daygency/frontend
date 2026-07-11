@@ -25,9 +25,9 @@ import { GRAY, MAIN, WHITE } from "../color";
 const Tab = createBottomTabNavigator();
 
 const TAB_BAR_STYLE = {
-  paddingTop: 8,
-  paddingBottom: 10,
-  height: 90,
+  paddingTop: 6,
+  paddingBottom: 6,
+  height: 80,
   backgroundColor: WHITE,
   borderTopWidth: 1,
   borderTopColor: GRAY.MEDIUM,
@@ -68,6 +68,7 @@ const ContentTab = () => {
         tabBarStyle: TAB_BAR_STYLE,
         tabBarActiveTintColor: MAIN.DEFAULT,
         tabBarInactiveTintColor: GRAY.MEDIUM_100,
+        tabBarShowLabel: false,
         animation: "fade",
       }}
       screenListeners={{

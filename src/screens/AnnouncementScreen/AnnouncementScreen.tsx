@@ -400,7 +400,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         const { status, categoryId, majorIds, priceType, sort } = buildListParams();
         const params = {
           cursor,
-          limit: 20,
+          limit: 8,
           status,
           categoryId,
           majorIds: majorIds || undefined,

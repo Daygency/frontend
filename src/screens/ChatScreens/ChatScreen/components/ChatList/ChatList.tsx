@@ -78,7 +78,7 @@ function ChatRoomsFlatList({
     }
     if (!opts?.refresh) setLoading(true);
     const fn = ROOM_LIST_FETCHERS[mode];
-    const res = await fn({ limit: 30 });
+    const res = await fn({ limit: 8 });
     if (res) {
       setItems(res.items);
       setCursor(res.nextCursor);
@@ -155,7 +155,7 @@ function ChatRoomsFlatList({
     if (!isLoggedIn || !hasMore || !cursor || loadingMore || loading) return;
     setLoadingMore(true);
     const fn = ROOM_LIST_FETCHERS[mode];
-    const res = await fn({ cursor, limit: 30 });
+    const res = await fn({ cursor, limit: 8 });
     if (res) {
       setItems((prev) => [...prev, ...res.items]);
       setCursor(res.nextCursor);
@@ -286,7 +286,7 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
       return;
     }
     if (!opts?.refresh) setLoading(true);
-    const res = await getMyAnnouncementList({ limit: 20 });
+    const res = await getMyAnnouncementList({ limit: 8 });
     if (res) {
       setPosts(res.items);
       setCursor(res.nextCursor);
@@ -327,7 +327,7 @@ function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
   const onEndReached = async () => {
     if (!isLoggedIn || !hasMore || !cursor || loadingMore || loading) return;
     setLoadingMore(true);
-    const res = await getMyAnnouncementList({ cursor, limit: 20 });
+    const res = await getMyAnnouncementList({ cursor, limit: 8 });
     if (res) {
       setPosts((prev) => [...prev, ...res.items]);
       setCursor(res.nextCursor);

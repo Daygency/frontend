@@ -77,6 +77,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: BLACK,
     fontWeight: "600",
+    minWidth: 14,
+    fontVariant: ["tabular-nums"],
   },
   sectionInlineRow: {
     flexDirection: "row",

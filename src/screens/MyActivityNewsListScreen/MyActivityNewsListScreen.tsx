@@ -66,7 +66,7 @@ const MyActivityNewsListScreen = () => {
 
   const fetchFirst = useCallback(async () => {
     if (source === "like") {
-      const res = await getMyLikedNews({ limit: 20 });
+      const res = await getMyLikedNews({ limit: 8 });
       if (!res) {
         setLikedNews([]);
         setNextCursor(null);
@@ -80,7 +80,7 @@ const MyActivityNewsListScreen = () => {
     }
 
     if (source === "scrap") {
-      const res = await getMyScrappedNews({ limit: 20 });
+      const res = await getMyScrappedNews({ limit: 8 });
       if (!res) {
         setScrappedNews([]);
         setNextCursor(null);
@@ -93,7 +93,7 @@ const MyActivityNewsListScreen = () => {
       return;
     }
 
-    const res = await getMyNewsPosts({ limit: 20 });
+    const res = await getMyNewsPosts({ limit: 8 });
     if (!res) {
       setMyNews([]);
       setNextCursor(null);
@@ -194,7 +194,7 @@ const MyActivityNewsListScreen = () => {
           setLoadingMore(true);
           if (source === "scrap") {
             const res = await getMyScrappedNews({
-              limit: 20,
+              limit: 8,
               cursor: nextCursor ?? undefined,
             });
             if (res) {
@@ -208,7 +208,7 @@ const MyActivityNewsListScreen = () => {
             }
           } else if (source === "like") {
             const res = await getMyLikedNews({
-              limit: 20,
+              limit: 8,
               cursor: nextCursor ?? undefined,
             });
             if (res) {
@@ -222,7 +222,7 @@ const MyActivityNewsListScreen = () => {
             }
           } else {
             const res = await getMyNewsPosts({
-              limit: 20,
+              limit: 8,
               cursor: nextCursor ?? undefined,
             });
             if (res) {

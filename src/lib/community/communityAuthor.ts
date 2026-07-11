@@ -34,6 +34,16 @@ export function pickCommunityAuthorUserId(
   return id || undefined;
 }
 
+export function pickCommunityAuthorActivityName(
+  item: { user?: unknown } | null | undefined,
+): string | undefined {
+  const user = item?.user;
+  if (!user || typeof user !== "object") return undefined;
+  const u = user as Record<string, unknown>;
+  const v = u.activityName ?? u.activity_name;
+  return typeof v === "string" && v.trim() ? v.trim() : undefined;
+}
+
 export function pickAuthorFromUser(
   user: Record<string, unknown> | null | undefined,
 ): string {

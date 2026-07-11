@@ -162,7 +162,7 @@ function mapCommentToUi(comment: ApiCommentItem, myUserId?: string): CommentItem
   };
 }
 
-const COMMENTS_PAGE_LIMIT = 20;
+const COMMENTS_PAGE_LIMIT = 8;
 const COMMENTS_MAX_REFRESH_LIMIT = 50;
 
 function buildCommentTree(raw: ApiCommentItem[], myUserId?: string): CommentItem[] {

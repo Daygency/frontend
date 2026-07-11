@@ -23,7 +23,7 @@ import UserProfileAvatar from "../../components/ui/UserProfileAvatar";
 import { GRAY } from "../../color";
 import styles from "./styles";
 
-const PAGE_SIZE = 20;
+const PAGE_SIZE = 8;
 
 function formatListTime(iso?: string): string {
   if (!iso?.trim()) return "";

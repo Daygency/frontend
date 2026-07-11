@@ -83,7 +83,7 @@ const ScrapScene = () => {
       }
 
       const res = await getMyScrappedAnnouncements({
-        limit: 20,
+        limit: 8,
         cursor: mode === "more" ? (nextCursor ?? undefined) : undefined,
       });
 

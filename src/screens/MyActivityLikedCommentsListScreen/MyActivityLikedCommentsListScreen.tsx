@@ -32,7 +32,7 @@ const MyActivityLikedCommentsListScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchFirst = useCallback(async () => {
-    const res = await getMyLikedComments({ limit: 20 });
+    const res = await getMyLikedComments({ limit: 8 });
     if (!res) {
       setItems([]);
       setNextCursor(null);
@@ -103,7 +103,7 @@ const MyActivityLikedCommentsListScreen = () => {
           if (loadingMore || !hasMore || !nextCursor) return;
           setLoadingMore(true);
           const res = await getMyLikedComments({
-            limit: 20,
+            limit: 8,
             cursor: nextCursor ?? undefined,
           });
           if (res) {

@@ -46,7 +46,7 @@ export async function getHomeBannerFeed(params?: {
   cursor?: string;
   limit?: number;
 }): Promise<HomeBannerFeedResponse | null> {
-  const limit = params?.limit ?? 20;
+  const limit = params?.limit ?? 8;
 
   try {
     const search = new URLSearchParams();

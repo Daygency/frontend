@@ -11,7 +11,7 @@ import styles from "../styles";
 type FilterType = "answered" | "unanswered";
 type InquiryHistoryItemModel = ReturnType<typeof mapInquiryToItem>;
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 8;
 
 const InquiryHistoryTab = () => {
   const [filter, setFilter] = useState<FilterType>("unanswered");

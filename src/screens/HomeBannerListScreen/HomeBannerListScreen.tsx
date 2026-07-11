@@ -29,7 +29,7 @@ type RootStackParamList = {
 
 const HORIZONTAL_PADDING = 20;
 const CARD_GAP = 12;
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 8;
 
 function sanitizeBanners(list: HomeBannerListItem[]): HomeBannerListItem[] {
   return list

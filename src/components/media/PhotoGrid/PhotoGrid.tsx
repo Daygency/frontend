@@ -5,6 +5,8 @@ import { useImageViewerOptional } from "../../../contexts/ImageViewerContext";
 
 interface PhotoGridProps {
   images: string[];
+  /** 지정 시 이미지 뷰어 대신 탭을 이 콜백으로 위임 (예: 목록 카드에서 상세 페이지로 이동) */
+  onPress?: (index: number) => void;
 }
 
 /**
@@ -12,12 +14,18 @@ interface PhotoGridProps {
  * 1장은 꽉 찬 정사각형, 2장은 반반, 3장 이상은 큰 사진 1장 + 작은 사진 2장이며
  * 4장 이상이면 세 번째(마지막) 타일에 "+N" 딤드 오버레이로 나머지 장수를 표시.
  */
-const PhotoGrid = ({ images }: PhotoGridProps) => {
+const PhotoGrid = ({ images, onPress }: PhotoGridProps) => {
   const imageViewer = useImageViewerOptional();
 
   if (images.length === 0) return null;
 
-  const openViewer = (index: number) => imageViewer?.openImageViewer(images, index);
+  const openViewer = (index: number) => {
+    if (onPress) {
+      onPress(index);
+      return;
+    }
+    imageViewer?.openImageViewer(images, index);
+  };
 
   const renderTile = (
     uri: string,

@@ -99,6 +99,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: BLACK,
+    minWidth: 14,
+    fontVariant: ["tabular-nums"],
   },
   sectionDivider: {
     height: StyleSheet.hairlineWidth,

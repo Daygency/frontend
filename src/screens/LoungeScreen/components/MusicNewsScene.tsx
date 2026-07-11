@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -8,7 +8,7 @@ import {
   View,
 } from "react-native";
 import Animated from "react-native-reanimated";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import PerformanceNewsListCard from "./PerformanceNewsListCard";
 import MusicNewsListSkeleton from "./MusicNewsListSkeleton";
@@ -120,7 +120,7 @@ const MusicNewsScene = ({
 
       const res = await getNewsList({
         cursor: cursor ?? undefined,
-        limit: 20,
+        limit: 8,
         q: searchKeyword,
         sort: sortMode,
       });
@@ -144,10 +144,12 @@ const MusicNewsScene = ({
     [searchKeyword, sortMode],
   );
 
-  useEffect(() => {
-    setNextCursor(null);
-    void loadPage(null, false, "initial");
-  }, [loadPage]);
+  useFocusEffect(
+    useCallback(() => {
+      setNextCursor(null);
+      void loadPage(null, false, "initial");
+    }, [loadPage]),
+  );
 
   const displayedItems = useMemo(() => {
     const filtered = applyClientFilters(items, selectedGenre, selectedRegion);

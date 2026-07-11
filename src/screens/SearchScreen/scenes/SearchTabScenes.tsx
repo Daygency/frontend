@@ -95,7 +95,7 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
   const loadFirst = useCallback(async () => {
     setLoading(true);
     const res = await getAnnouncementList({
-      limit: 20,
+      limit: 8,
       ...(query.trim() ? { q: query.trim() } : {}),
     });
     setLoading(false);
@@ -124,7 +124,7 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
     if (!hasMore || !cursor || loadingMore || loading) return;
     setLoadingMore(true);
     const res = await getAnnouncementList({
-      limit: 20,
+      limit: 8,
       cursor,
       ...(query.trim() ? { q: query.trim() } : {}),
     });
@@ -217,7 +217,7 @@ export function SearchNewsScene({ query }: SceneProps) {
   const loadFirst = useCallback(async () => {
     setLoading(true);
     const res = await getNewsList({
-      limit: 20,
+      limit: 8,
       ...(query.trim() ? { q: query.trim() } : {}),
     });
     setLoading(false);
@@ -246,7 +246,7 @@ export function SearchNewsScene({ query }: SceneProps) {
     if (!hasMore || !cursor || loadingMore || loading) return;
     setLoadingMore(true);
     const res = await getNewsList({
-      limit: 20,
+      limit: 8,
       cursor,
       ...(query.trim() ? { q: query.trim() } : {}),
     });
@@ -332,7 +332,7 @@ export function SearchCommunityScene({ query }: SceneProps) {
   const loadFirst = useCallback(async () => {
     setLoading(true);
     const res = await getCommunityList({
-      limit: 20,
+      limit: 8,
       ...(query.trim() ? { q: query.trim() } : {}),
     });
     setLoading(false);
@@ -361,7 +361,7 @@ export function SearchCommunityScene({ query }: SceneProps) {
     if (!hasMore || !cursor || loadingMore || loading) return;
     setLoadingMore(true);
     const res = await getCommunityList({
-      limit: 20,
+      limit: 8,
       cursor,
       ...(query.trim() ? { q: query.trim() } : {}),
     });
@@ -461,7 +461,7 @@ export function SearchArtistScene({ query }: SceneProps) {
   const loadFirst = useCallback(async () => {
     setLoading(true);
     const res = await getUsers({
-      limit: 20,
+      limit: 8,
       ...(query.trim() ? { q: query.trim() } : {}),
     });
     setLoading(false);
@@ -484,7 +484,7 @@ export function SearchArtistScene({ query }: SceneProps) {
     if (!hasMore || !cursor || loadingMore || loading) return;
     setLoadingMore(true);
     const res = await getUsers({
-      limit: 20,
+      limit: 8,
       cursor,
       ...(query.trim() ? { q: query.trim() } : {}),
     });

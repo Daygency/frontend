@@ -58,6 +58,7 @@ function normalizeCommunityListItem(raw: unknown): CommunityListItem {
     viewCount: pickNumber(r.viewCount, r.view_count),
     likeCount: pickNumber(r.likeCount, r.like_count),
     commentCount: pickNumber(r.commentCount, r.comment_count),
+    scrapCount: pickNumber(r.scrapCount, r.scrap_count),
     thumbnailUrl: pickFirstThumbnailUrlString(
       r.thumbnailUrl,
       r.thumbnail_url,

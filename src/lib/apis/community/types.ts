@@ -11,6 +11,7 @@ export type CommunityListItem = {
   viewCount?: number;
   likeCount?: number;
   commentCount?: number;
+  scrapCount?: number;
   /** README 목록 썸네일 */
   thumbnailUrl?: string | null;
   /** README: 업로드 이미지 (목록 썸네일 폴백) */

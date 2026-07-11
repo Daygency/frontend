@@ -7,7 +7,7 @@ import {
   Text,
 } from "react-native";
 import Animated from "react-native-reanimated";
-import { useNavigation } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import styles from "../styles";
 import CommunityCard from "./CommunityCard";
 import CommunityListSkeleton from "./CommunityListSkeleton";
@@ -15,9 +15,10 @@ import type { LoungeCommunityTagOption } from "./LoungeCommunityTagRow";
 import { ContentRoutes, RootRoutes } from "../../../navigations/routes";
 import { getCommunityCategories, getCommunityList } from "../../../lib/apis/community/communityApi";
 import type { CommunityCategory, CommunityListItem } from "../../../lib/apis/community/types";
-import { pickCommunityListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
+import { pickCommunityListImageUrls } from "../../../lib/media/listThumbnailUrl";
 import {
   pickCommunityAuthor,
+  pickCommunityAuthorActivityName,
   pickCommunityAuthorUserId,
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
@@ -31,7 +32,7 @@ type CommunitySceneProps = {
   selectedTag: LoungeCommunityTagOption;
 };
 
-const PAGE_LIMIT = 20;
+const PAGE_LIMIT = 8;
 
 const AnimatedFlatList = Animated.createAnimatedComponent(
   FlatList<CommunityListItem>,
@@ -154,9 +155,11 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
     })();
   }, []);
 
-  useEffect(() => {
-    void loadCommunities();
-  }, [loadCommunities]);
+  useFocusEffect(
+    useCallback(() => {
+      void loadCommunities();
+    }, [loadCommunities]),
+  );
 
   const navigateToAuthorProfile = useCallback(
     (authorUserId?: string, activityName?: string) => {
@@ -182,18 +185,27 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
     const relativeDate = formatRelativeTime(item.createdAt);
     const author = pickCommunityAuthor(item);
     const authorUserId = pickCommunityAuthorUserId(item);
+    const isOwnPost = Boolean(
+      myUserId && authorUserId && authorUserId.toLowerCase() === myUserId.toLowerCase(),
+    );
 
     return (
       <CommunityCard
+        communityId={item.communityId}
         title={item.title}
         contentPreview={item.content ?? ""}
         author={author}
+        activityName={pickCommunityAuthorActivityName(item)}
         profileImageUrl={pickCommunityProfileImgUrl(item)}
-        showAvatar={false}
+        showAvatar
         date={relativeDate}
         likes={item.likeCount ?? 0}
         comments={item.commentCount ?? 0}
-        thumbnailUrl={pickCommunityListThumbnailUrl(item)}
+        scraps={item.scrapCount ?? 0}
+        views={item.viewCount}
+        images={pickCommunityListImageUrls(item)}
+        authorUserId={authorUserId}
+        isOwnPost={isOwnPost}
         onPress={() =>
           navigation.navigate(RootRoutes.COMMUNITY_DETAIL, {
             communityId: item.communityId,

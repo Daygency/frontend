@@ -21,6 +21,8 @@ const styles = StyleSheet.create({
   tileInner: {
     flex: 1,
     borderRadius: 6,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
     overflow: "hidden",
     backgroundColor: GRAY.DEFAULT,
   },
