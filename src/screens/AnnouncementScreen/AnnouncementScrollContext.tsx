@@ -3,11 +3,17 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
 import { useFocusEffect } from "@react-navigation/native";
-import { View, type LayoutChangeEvent, type NativeScrollEvent } from "react-native";
+import {
+  View,
+  type LayoutChangeEvent,
+  type NativeScrollEvent,
+  type ScrollView,
+} from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -18,6 +24,7 @@ import Animated, {
   withTiming,
   type SharedValue,
 } from "react-native-reanimated";
+import { TAB_RESCROLL_THRESHOLD } from "../../lib/navigation/tabRetap";
 
 const DEFAULT_TOP_BAR_HEIGHT = 50;
 const DEFAULT_FILTER_BAR_HEIGHT = 48;
@@ -25,6 +32,9 @@ const DEFAULT_FILTER_BAR_HEIGHT = 48;
 type AnnouncementScrollContextValue = {
   listTopInset: number;
   scrollHandler: ReturnType<typeof useAnimatedScrollHandler>;
+  setActiveScrollRef: (node: ScrollView | null) => void;
+  scrollToTop: () => void;
+  isScrolledDown: () => boolean;
 };
 
 const AnnouncementScrollContext =
@@ -62,6 +72,29 @@ export function AnnouncementScrollProvider({
   const listTopInset = topBarHeight + filterBarHeight;
   const maxHeaderCollapse = topBarHeight;
 
+  const activeScrollViewRef = useRef<ScrollView | null>(null);
+  const scrollOffsetRef = useRef(0);
+
+  const setActiveScrollRef = useCallback((node: ScrollView | null) => {
+    activeScrollViewRef.current = node;
+  }, []);
+
+  const onOffsetChange = useCallback((offsetY: number) => {
+    scrollOffsetRef.current = offsetY;
+  }, []);
+
+  const scrollToTop = useCallback(() => {
+    activeScrollViewRef.current?.scrollTo({ y: 0, animated: true });
+    headerCollapse.value = withTiming(0, { duration: 200 });
+  }, [headerCollapse]);
+
+  const isScrolledDown = useCallback(() => {
+    return (
+      scrollOffsetRef.current > TAB_RESCROLL_THRESHOLD ||
+      headerCollapse.value > TAB_RESCROLL_THRESHOLD
+    );
+  }, [headerCollapse]);
+
   const onPaginationScroll = useCallback(
     (layoutHeight: number, offsetY: number, contentHeight: number) => {
       onScrollForPagination?.({
@@ -90,6 +123,7 @@ export function AnnouncementScrollProvider({
         }
 
         lastScrollY.value = y;
+        runOnJS(onOffsetChange)(y);
 
         if (onScrollForPagination) {
           runOnJS(onPaginationScroll)(
@@ -100,7 +134,7 @@ export function AnnouncementScrollProvider({
         }
       },
     },
-    [maxHeaderCollapse, onScrollForPagination],
+    [maxHeaderCollapse, onOffsetChange, onScrollForPagination],
   );
 
   // 탭을 벗어났다가 돌아오면 스크롤 위치는 유지하되 숨겨진 헤더는 다시 보이게 한다.
@@ -114,8 +148,11 @@ export function AnnouncementScrollProvider({
     () => ({
       listTopInset,
       scrollHandler,
+      setActiveScrollRef,
+      scrollToTop,
+      isScrolledDown,
     }),
-    [listTopInset, scrollHandler],
+    [isScrolledDown, listTopInset, scrollHandler, scrollToTop, setActiveScrollRef],
   );
 
   return (

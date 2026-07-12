@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, WHITE } from "../../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -11,14 +11,32 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   containerPressed: {
-    opacity: 0.7,
+    opacity: 0.85,
+  },
+  topRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 10,
   },
   statusChip: {
     flexDirection: "row",
     alignItems: "center",
-    alignSelf: "flex-start",
     gap: 6,
-    marginBottom: 10,
+  },
+  applicantButton: {
+    backgroundColor: GRAY.MEDIUM_2,
+    borderRadius: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+  },
+  applicantButtonPressed: {
+    backgroundColor: WHITE,
+  },
+  applicantButtonText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: GRAY.DARK_100,
   },
   statusDot: {
     width: 7,

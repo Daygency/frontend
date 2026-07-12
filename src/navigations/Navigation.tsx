@@ -8,9 +8,8 @@ import SignupFlowScreen from "../screens/OnboardingScreens/SignupFlowScreen/Sign
 import SplashScreenView from "../screens/OnboardingScreens/SplashScreen/SplashScreen";
 import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/AnnouncementDetailScreen";
 import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
-import ApplicationStatusListScreen, {
-  type ApplicationStatusListParams,
-} from "../screens/ApplicationStatusListScreen/ApplicationStatusListScreen";
+import ApplicationStatusListScreen from "../screens/ApplicationStatusListScreen/ApplicationStatusListScreen";
+import MyAnnouncementStatusListScreen from "../screens/MyAnnouncementStatusListScreen/MyAnnouncementStatusListScreen";
 import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
 import type { FollowListParams } from "../screens/FollowListScreen/types";
 import CommunityDetailScreen from "../screens/CommunityDetailScreen";
@@ -177,12 +176,44 @@ const Navigation = () => {
         <Stack.Screen
           name={RootRoutes.APPLICATION_STATUS_LIST}
           component={withAuthGate(ApplicationStatusListScreen)}
-          options={({ navigation, route }) => ({
+          options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>
                 <Text style={styles.title} numberOfLines={1}>
-                  {(route.params as ApplicationStatusListParams | undefined)
-                    ?.label ?? "지원 현황"}
+                  지원 현황
+                </Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.MY_ANNOUNCEMENT_STATUS_LIST}
+          component={withAuthGate(MyAnnouncementStatusListScreen)}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title} numberOfLines={1}>
+                  내가 만든 공고
                 </Text>
               </View>
             ),

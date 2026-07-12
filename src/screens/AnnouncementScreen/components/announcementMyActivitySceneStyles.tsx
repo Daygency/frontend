@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../../color";
+import { BLACK, GRAY } from "../../../color";
 
 const styles = StyleSheet.create({
   scrollContent: {
@@ -49,23 +49,8 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: BLACK,
   },
-  loadingCard: {
-    flexDirection: "row",
-    backgroundColor: WHITE,
-    borderRadius: 16,
-    minHeight: 96,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   myPostSection: {
     marginTop: 32,
-  },
-  emptyCard: {
-    backgroundColor: GRAY.DEFAULT_1,
-    borderRadius: 16,
-    paddingVertical: 32,
-    alignItems: "center",
-    justifyContent: "center",
   },
 });
 

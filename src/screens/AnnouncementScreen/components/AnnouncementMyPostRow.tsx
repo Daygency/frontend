@@ -12,7 +12,10 @@ type AnnouncementMyPostRowProps = {
   createdAt?: string;
   completed?: boolean;
   summary: AnnouncementApplicantSummary | null;
+  /** 카드 본문을 눌렀을 때 — 해당 공고 상세로 이동 */
   onPress: () => void;
+  /** 우측 상단 버튼을 눌렀을 때 — 지원자 현황으로 이동 */
+  onPressApplicants: () => void;
 };
 
 function parseCreatedAtTime(createdAt?: string): number {
@@ -43,6 +46,7 @@ const AnnouncementMyPostRow = ({
   completed,
   summary,
   onPress,
+  onPressApplicants,
 }: AnnouncementMyPostRowProps) => {
   const isOpen = status === "모집중";
   const dateLabel = formatCreatedDate(createdAt);
@@ -52,9 +56,20 @@ const AnnouncementMyPostRow = ({
       style={({ pressed }) => [styles.container, pressed && styles.containerPressed]}
       onPress={onPress}
     >
-      <View style={styles.statusChip}>
-        <View style={[styles.statusDot, isOpen ? styles.statusDotOpen : styles.statusDotClosed]} />
-        <Text style={styles.statusText}>{status}</Text>
+      <View style={styles.topRow}>
+        <View style={styles.statusChip}>
+          <View style={[styles.statusDot, isOpen ? styles.statusDotOpen : styles.statusDotClosed]} />
+          <Text style={styles.statusText}>{status}</Text>
+        </View>
+        <Pressable
+          style={({ pressed }) => [
+            styles.applicantButton,
+            pressed && styles.applicantButtonPressed,
+          ]}
+          onPress={onPressApplicants}
+        >
+          <Text style={styles.applicantButtonText}>지원자 현황</Text>
+        </Pressable>
       </View>
 
       <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">

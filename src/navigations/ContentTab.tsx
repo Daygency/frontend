@@ -91,6 +91,7 @@ const ContentTab = () => {
       <Tab.Screen
         name={ContentRoutes.ACTIVITY}
         component={AnnouncementScreen}
+        listeners={retapSubTabListener}
         options={{
           tabBarIcon: ({ color }) => (
             <Entypo name="megaphone" size={24} color={color} />

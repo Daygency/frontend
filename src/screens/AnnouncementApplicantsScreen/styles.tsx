@@ -1,8 +1,5 @@
 import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../color";
-import { SMOOTH_CORNERS } from "../../cornerSmoothing";
-
-const ORANGE = "#F97316";
+import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
 export default StyleSheet.create({
   container: {
@@ -10,123 +7,86 @@ export default StyleSheet.create({
     backgroundColor: WHITE,
   },
   listContent: {
-    paddingHorizontal: 16,
-    paddingTop: 12,
     paddingBottom: 28,
-    gap: 12,
   },
-  applicantCard: {
-    backgroundColor: WHITE,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#EFEFEF",
-    padding: 14,
-    gap: 12,
-  },
-  cardTopRow: {
+  tableRow: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 10,
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: GRAY.MEDIUM_2,
   },
-  cardHeader: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 12,
+  nameCell: {
     flex: 1,
     minWidth: 0,
+    gap: 2,
   },
-  statusTag: {
-    ...SMOOTH_CORNERS,
+  nameText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: BLACK,
+  },
+  handleText: {
+    fontSize: 11,
+    color: GRAY.MEDIUM_100,
+  },
+  statusCell: {
+    minWidth: 40,
+    alignItems: "flex-start",
+  },
+  statusDashText: {
+    fontSize: 13,
+    color: GRAY.MEDIUM_100,
+  },
+  statusPill: {
+    borderRadius: 11,
     paddingHorizontal: 8,
-    height: 24,
-    borderRadius: 12,
+    height: 22,
     alignItems: "center",
     justifyContent: "center",
-    flexShrink: 0,
-    maxWidth: "42%",
   },
-  statusTagText: {
-    fontSize: 12,
+  statusPillText: {
+    fontSize: 11,
     fontWeight: "600",
   },
-  statusTagSubmitted: {
-    backgroundColor: "#F3F4F6",
-  },
-  statusTagTextSubmitted: {
-    color: "#4B5563",
-  },
-  statusTagAccepted: {
+  statusPillAccepted: {
     backgroundColor: "#DCFCE7",
   },
-  statusTagTextAccepted: {
+  statusPillTextAccepted: {
     color: "#15803D",
   },
-  statusTagRejected: {
+  statusPillRejected: {
     backgroundColor: "#FEE2E2",
   },
-  statusTagTextRejected: {
+  statusPillTextRejected: {
     color: "#B91C1C",
   },
-  statusTagReview: {
-    backgroundColor: "#FFEDD5",
-  },
-  statusTagTextReview: {
-    color: ORANGE,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: GRAY.MEDIUM_2,
-  },
-  cardHeaderText: {
-    flex: 1,
-    minWidth: 0,
-  },
-  applicantName: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: "#111827",
-  },
-  timeText: {
-    fontSize: 12,
-    color: "#9CA3AF",
-    marginTop: 2,
-  },
-  previewText: {
-    fontSize: 13,
-    color: "#6B7280",
-    lineHeight: 18,
-  },
-  buttonRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
   outlineBtn: {
-    flex: 1,
-    paddingVertical: 11,
-    borderRadius: 10,
     borderWidth: 1,
     borderColor: MAIN.DEFAULT,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    height: 30,
     alignItems: "center",
     justifyContent: "center",
   },
   outlineBtnText: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: "600",
     color: MAIN.DEFAULT,
   },
   primaryBtn: {
-    flex: 1,
-    paddingVertical: 11,
-    borderRadius: 10,
     backgroundColor: MAIN.DEFAULT,
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    height: 30,
     alignItems: "center",
     justifyContent: "center",
   },
   primaryBtnText: {
-    fontSize: 14,
+    fontSize: 11,
     fontWeight: "600",
     color: WHITE,
   },

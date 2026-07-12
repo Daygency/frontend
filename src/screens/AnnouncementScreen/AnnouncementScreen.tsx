@@ -69,6 +69,10 @@ import {
   AnnouncementScrollProvider,
   useAnnouncementScroll,
 } from "./AnnouncementScrollContext";
+import {
+  createSubTabRetapHandler,
+  registerTabRetapHandler,
+} from "../../lib/navigation/tabRetap";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -200,6 +204,23 @@ function AnnouncementListContent({
   );
 }
 
+function AnnouncementTabRetapBridge({ onToggleSubTab }: { onToggleSubTab: () => void }) {
+  const { isScrolledDown, scrollToTop } = useAnnouncementScroll();
+
+  useEffect(() => {
+    return registerTabRetapHandler(
+      ContentRoutes.ACTIVITY,
+      createSubTabRetapHandler({
+        isScrolledDown,
+        scrollToTop,
+        toggleSubTab: onToggleSubTab,
+      }),
+    );
+  }, [isScrolledDown, onToggleSubTab, scrollToTop]);
+
+  return null;
+}
+
 const CollapsibleAnnouncementList = ({
   items,
   loading,
@@ -212,7 +233,12 @@ const CollapsibleAnnouncementList = ({
 }: AnnouncementListBodyProps & {
   scrollViewRef?: RefObject<ScrollView | null>;
 }) => {
-  const { listTopInset, scrollHandler } = useAnnouncementScroll();
+  const { listTopInset, scrollHandler, setActiveScrollRef } = useAnnouncementScroll();
+
+  useEffect(() => {
+    setActiveScrollRef(scrollViewRef?.current ?? null);
+    return () => setActiveScrollRef(null);
+  }, [scrollViewRef, setActiveScrollRef]);
 
   return (
     <View style={styles.scrollContentWrapper}>
@@ -476,8 +502,16 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     setFilterReloadEpoch((prev) => prev + 1);
   }, [navigation]);
 
+  const toggleTab = useCallback(() => {
+    setTab((prev) => (prev === "모집공고" ? "내 활동" : "모집공고"));
+  }, []);
+
   useEffect(() => {
-    const unsubscribe = navigation.addListener("tabPress", resetFiltersFromTab);
+    const unsubscribe = navigation.addListener("tabPress", () => {
+      // 이미 이 하단탭에 있는 상태에서 재탭한 경우엔 서브탭 토글로 처리한다 (AnnouncementTabRetapBridge 참고)
+      if (navigation.isFocused()) return;
+      resetFiltersFromTab();
+    });
     return unsubscribe;
   }, [navigation, resetFiltersFromTab]);
 
@@ -795,6 +829,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         filterBar={tab === "모집공고" ? filterBar : null}
         onScrollForPagination={tab === "모집공고" ? handlePaginationScroll : undefined}
       >
+        <AnnouncementTabRetapBridge onToggleSubTab={toggleTab} />
         {tab === "모집공고" ? (
           <CollapsibleAnnouncementList {...listProps} scrollViewRef={scrollViewRef} />
         ) : (

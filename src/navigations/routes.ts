@@ -19,6 +19,7 @@ export const RootRoutes = {
   ANNOUNCEMENT_REGISTRATION: "AnnouncementRegistration",
   APPLICATION: "Application",
   APPLICATION_STATUS_LIST: "ApplicationStatusList",
+  MY_ANNOUNCEMENT_STATUS_LIST: "MyAnnouncementStatusList",
   FOLLOW_LIST: "FollowList",
   COMMUNITY_DETAIL: "CommunityDetail",
   COMMUNITY_REGISTRATION: "CommunityRegistration",

@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { FlatList, View } from "react-native";
 import { RouteProp, useNavigation, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AnnouncementCard from "../../components/cards/AnnouncementCard";
 import EmptyState, { contentContainerWhenEmpty } from "../../components/ui/EmptyState";
+import MainHomeHeader from "../../components/layout/MainHomeHeader";
 import { RootRoutes } from "../../navigations/routes";
 import type { AnnouncementListItem } from "../../lib/apis/announcement/types";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
@@ -10,9 +12,12 @@ import { announcementListRecruitmentStatus } from "../../lib/announcement/announ
 import { resolveAnnouncementAuthorLabel } from "../../lib/announcement/announcementAuthor";
 import styles from "./styles";
 
+export const APPLICATION_STATUS_TABS = ["지원완료", "수락", "거절"] as const;
+export type ApplicationStatusTab = (typeof APPLICATION_STATUS_TABS)[number];
+
 export type ApplicationStatusListParams = {
-  label: string;
-  items: AnnouncementListItem[];
+  initialTab: ApplicationStatusTab;
+  groups: Record<ApplicationStatusTab, AnnouncementListItem[]>;
 };
 
 type RootStackParamList = {
@@ -37,10 +42,27 @@ type ApplicationStatusListRouteProp = RouteProp<
 const ApplicationStatusListScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<ApplicationStatusListRouteProp>();
-  const items = route.params?.items ?? [];
+  const groups = route.params?.groups;
+  const [activeTab, setActiveTab] = useState<ApplicationStatusTab>(
+    route.params?.initialTab ?? "지원완료",
+  );
+  const items = groups?.[activeTab] ?? [];
+
+  const tabOptions = APPLICATION_STATUS_TABS.map((tab) => ({
+    tab,
+    label: `${tab} (${groups?.[tab]?.length ?? 0})`,
+  }));
 
   return (
     <View style={styles.container}>
+      <MainHomeHeader
+        tabs={tabOptions.map((option) => option.label)}
+        activeTab={tabOptions.find((option) => option.tab === activeTab)?.label ?? ""}
+        onTabChange={(label) => {
+          const found = tabOptions.find((option) => option.label === label);
+          if (found) setActiveTab(found.tab);
+        }}
+      />
       <FlatList
         data={items}
         keyExtractor={(item) => item.postId}
