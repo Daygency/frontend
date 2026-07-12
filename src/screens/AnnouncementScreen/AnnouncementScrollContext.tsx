@@ -6,6 +6,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { View, type LayoutChangeEvent, type NativeScrollEvent } from "react-native";
 import Animated, {
   Extrapolation,
@@ -14,6 +15,7 @@ import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
   type SharedValue,
 } from "react-native-reanimated";
 
@@ -99,6 +101,13 @@ export function AnnouncementScrollProvider({
       },
     },
     [maxHeaderCollapse, onScrollForPagination],
+  );
+
+  // 탭을 벗어났다가 돌아오면 스크롤 위치는 유지하되 숨겨진 헤더는 다시 보이게 한다.
+  useFocusEffect(
+    useCallback(() => {
+      headerCollapse.value = withTiming(0, { duration: 200 });
+    }, [headerCollapse]),
   );
 
   const value = useMemo(

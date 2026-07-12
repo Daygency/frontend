@@ -8,6 +8,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { View, type FlatList, type LayoutChangeEvent } from "react-native";
 import Animated, {
   Extrapolation,
@@ -16,6 +17,7 @@ import Animated, {
   useAnimatedScrollHandler,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
   type SharedValue,
 } from "react-native-reanimated";
 import { TAB_RESCROLL_THRESHOLD } from "../../lib/navigation/tabRetap";
@@ -176,6 +178,14 @@ export function LoungeScrollProvider({
       headerCollapseCommunity.value > TAB_RESCROLL_THRESHOLD
     );
   }, [activeTabIndexProp, headerCollapseCommunity, headerCollapseNews]);
+
+  // 탭을 벗어났다가 돌아오면 스크롤 위치는 유지하되 숨겨진 헤더는 다시 보이게 한다.
+  useFocusEffect(
+    useCallback(() => {
+      headerCollapseNews.value = withTiming(0, { duration: 200 });
+      headerCollapseCommunity.value = withTiming(0, { duration: 200 });
+    }, [headerCollapseCommunity, headerCollapseNews]),
+  );
 
   const value = useMemo(
     () => ({
