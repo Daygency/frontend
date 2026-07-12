@@ -168,6 +168,19 @@ function formatTimeDisplay(d: Date): string {
   return `${h}:${m}`;
 }
 
+function isPastSchedule(date: Date, time: Date): boolean {
+  const combined = new Date(
+    date.getFullYear(),
+    date.getMonth(),
+    date.getDate(),
+    time.getHours(),
+    time.getMinutes(),
+    0,
+    0,
+  );
+  return combined.getTime() < Date.now();
+}
+
 function dateToISO(d: Date, timeOverride?: string): string {
   const y = d.getFullYear();
   const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -204,6 +217,7 @@ type TabType = "announcement" | "applicationForm";
 
 type ValidationField =
   | "title"
+  | "scheduledDate"
   | "announcementType"
   | "content"
   | "price"
@@ -581,6 +595,7 @@ const AnnouncementRegistrationScreen = () => {
     hasTypeError: boolean,
   ): ValidationField | null => {
     if (!title.trim()) return "title";
+    if (isPastSchedule(scheduledDate, scheduledTime)) return "scheduledDate";
     if (hasTypeError) return "announcementType";
     if (isPriceInvalid()) return "price";
     if (!content.trim()) return "content";
@@ -758,7 +773,8 @@ const AnnouncementRegistrationScreen = () => {
 
   const err = {
     title: submitAttempted && !title.trim(),
-    scheduledDate: false,
+    scheduledDate:
+      submitAttempted && isPastSchedule(scheduledDate, scheduledTime),
     deadline: false,
     announcementType:
       submitAttempted &&
@@ -842,7 +858,11 @@ const AnnouncementRegistrationScreen = () => {
                   </Form>
                 </View>
 
-                <View style={styles.formField}>
+                <View
+                  ref={setFieldRef("scheduledDate")}
+                  collapsable={false}
+                  style={styles.formField}
+                >
                   <View style={styles.scheduleLocationBox}>
                     <View style={styles.scheduleField}>
                       <Form
@@ -871,9 +891,16 @@ const AnnouncementRegistrationScreen = () => {
                       </Form>
                     </View>
                     <View style={styles.scheduleField}>
-                      <Form title="예정 시간" isRequired={false}>
+                      <Form
+                        title="예정 시간"
+                        isRequired={false}
+                        hasError={err.scheduledDate}
+                      >
                         <Pressable
-                          style={styles.datePickerField}
+                          style={[
+                            styles.datePickerField,
+                            err.scheduledDate && styles.inputErrorBorder,
+                          ]}
                           onPress={() => setShowScheduledTimePicker(true)}
                         >
                           <Text style={styles.datePickerText}>
@@ -1319,6 +1346,7 @@ const AnnouncementRegistrationScreen = () => {
         pickerMode="date"
         title="예정일 선택"
         description="공고 예정일을 선택하세요."
+        minimumDate={new Date()}
         onConfirm={(selected) => {
           setScheduledDate(selected);
           setShowScheduledDatePicker(false);

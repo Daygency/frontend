@@ -163,7 +163,7 @@ export default function AcceptedPerformersSection({
   return (
     <View style={styles.wrap}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>합격 연주자</Text>
+        <Text style={styles.sectionTitle}>수락 연주자</Text>
         <Pressable
           onPress={openApplicants}
           style={({ pressed }) => [
@@ -182,7 +182,7 @@ export default function AcceptedPerformersSection({
         </View>
       ) : rows.length === 0 ? (
         <Text style={styles.emptyText}>
-          아직 합격 처리된 연주자가 없습니다.
+          아직 수락 처리된 연주자가 없습니다.
         </Text>
       ) : (
         <ScrollView

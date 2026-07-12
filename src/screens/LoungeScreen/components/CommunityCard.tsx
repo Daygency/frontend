@@ -220,7 +220,7 @@ const CommunityCard = ({
                   following && styles.followBtnTextActive,
                 ]}
               >
-                {following ? "팔로잉" : "팔로우"}
+                {following ? "팔로우 중" : "팔로우"}
               </Text>
             </Pressable>
           ) : null}
@@ -473,7 +473,7 @@ const styles = StyleSheet.create({
   footerLeft: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 20,
+    gap: 14,
   },
   footerItem: {
     flexDirection: "row",
@@ -534,7 +534,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
     paddingHorizontal: 14,
     paddingVertical: 9,
-    borderRadius: 16,
+    borderRadius: 8,
     backgroundColor: GRAY.MEDIUM,
   },
   followBtnActive: {
@@ -556,6 +556,7 @@ const styles = StyleSheet.create({
     color: BLACK,
     lineHeight: 21,
     marginBottom: 4,
+    marginLeft: 62,
   },
   feedContent: {
     fontSize: 13,
@@ -563,12 +564,15 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_100,
     lineHeight: 18,
     marginBottom: 8,
+    marginLeft: 62,
   },
   feedMediaWrap: {
     width: "70%",
+    marginLeft: 62,
   },
   feedFooter: {
     marginTop: 8,
+    marginLeft: 66,
   },
 });
 

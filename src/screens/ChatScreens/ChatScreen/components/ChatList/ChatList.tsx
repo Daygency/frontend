@@ -36,7 +36,7 @@ import MyAnnouncementListItem from "./MyAnnouncementListItem";
 import ChatRoomListSkeleton from "./ChatRoomListSkeleton";
 import MyAnnouncementListSkeleton from "./MyAnnouncementListSkeleton";
 
-type ChatTopTab = "전체" | "DM" | "내 공고" | "지원 공고";
+type ChatTopTab = "전체" | "1:1" | "내 공고" | "지원 공고";
 
 interface ChatListProps {
   topTab: ChatTopTab;
@@ -415,7 +415,7 @@ const ChatList = ({ topTab, filter = "전체", searchQuery = "" }: ChatListProps
     );
   }
 
-  if (topTab === "DM") {
+  if (topTab === "1:1") {
     return (
       <ChatRoomsFlatList mode="coffee" filter={filter} searchQuery={searchQuery} />
     );

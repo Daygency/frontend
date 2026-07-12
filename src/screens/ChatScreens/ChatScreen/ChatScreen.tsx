@@ -17,8 +17,8 @@ import {
 import styles from "./styles";
 import ChatList from "./components/ChatList/ChatList";
 
-type ChatTopTab = "전체" | "DM" | "내 공고" | "지원 공고";
-const TOP_TABS: ChatTopTab[] = ["전체", "DM", "내 공고", "지원 공고"];
+type ChatTopTab = "전체" | "1:1" | "내 공고" | "지원 공고";
+const TOP_TABS: ChatTopTab[] = ["전체", "1:1", "내 공고", "지원 공고"];
 
 const ChatScreen = () => {
   useAuthGate();
@@ -41,7 +41,7 @@ const ChatScreen = () => {
     if (!counts) return;
     setUnreadByTab(
       new Map<ChatTopTab, number>([
-        ["DM", counts.dm],
+        ["1:1", counts.dm],
         ["지원 공고", counts.appliedAnnouncement],
         ["내 공고", counts.myAnnouncement],
       ]),

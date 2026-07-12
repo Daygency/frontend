@@ -24,6 +24,11 @@ import {
   isActivityNameAlphanumeric,
   sanitizeActivityName,
 } from "../../../lib/profile/activityNameValidation";
+import {
+  NAME_SPECIAL_CHAR_MESSAGE,
+  isNameValid,
+  sanitizeName,
+} from "../../../lib/profile/nameValidation";
 import { styles, roleSelectionStyles } from "./styles";
 
 export type UserRole = "artist" | "planner";
@@ -50,6 +55,7 @@ const SignupFlowScreen = () => {
   >(null);
   const [activityNameMessage, setActivityNameMessage] = useState<string>("");
   const [isActivityNameVerified, setIsActivityNameVerified] = useState(false);
+  const [nameMessage, setNameMessage] = useState<string>("");
   const [agreeAll, setAgreeAll] = useState(false);
   const [ageChecked, setAgeChecked] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
@@ -60,6 +66,8 @@ const SignupFlowScreen = () => {
     ageChecked &&
     termsChecked &&
     privacyChecked &&
+    name.trim().length > 0 &&
+    isNameValid(name) &&
     activityName.trim().length > 0 &&
     isActivityNameAlphanumeric(activityName) &&
     isActivityNameVerified &&
@@ -117,6 +125,10 @@ const SignupFlowScreen = () => {
   const handleComplete = async () => {
     if (!allRequiredChecked) return;
     try {
+      if (!name.trim() || !isNameValid(name)) {
+        Alert.alert("이름 형식", NAME_SPECIAL_CHAR_MESSAGE);
+        return;
+      }
       if (!isActivityNameAlphanumeric(activityName)) {
         Alert.alert("활동 아이디 형식", ACTIVITY_NAME_ALPHANUMERIC_MESSAGE);
         return;
@@ -134,7 +146,7 @@ const SignupFlowScreen = () => {
 
       await completeSignup({
         role: selectedRole,
-        name: name.trim() || undefined,
+        name: name.trim(),
         activityName: activityName.trim(),
       });
     } catch {
@@ -300,7 +312,7 @@ const SignupFlowScreen = () => {
                     isNameFocused && styles.labelFocused,
                   ]}
                 >
-                  이름 (선택)
+                  이름
                 </Text>
                 <TextInput
                   style={[
@@ -308,12 +320,29 @@ const SignupFlowScreen = () => {
                     isNameFocused && styles.inputFocused,
                   ]}
                   value={name}
-                  onChangeText={setName}
-                  placeholder="미입력 시 자동 생성"
+                  onChangeText={(text) => {
+                    const nextName = sanitizeName(text);
+                    setName(nextName);
+                    setNameMessage(
+                      text === nextName ? "" : NAME_SPECIAL_CHAR_MESSAGE,
+                    );
+                  }}
+                  placeholder="이름을 입력하세요."
                   placeholderTextColor={GRAY.MEDIUM_100}
                   onFocus={() => setIsNameFocused(true)}
                   onBlur={() => setIsNameFocused(false)}
                 />
+                {!!nameMessage && (
+                  <Text
+                    style={{
+                      marginTop: 4,
+                      fontSize: 12,
+                      color: "#F44336",
+                    }}
+                  >
+                    {nameMessage}
+                  </Text>
+                )}
               </View>
 
               <View style={styles.inputSection}>

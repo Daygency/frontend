@@ -76,8 +76,8 @@ const MusicNewsRegistrationScreen = () => {
   const [ticketPrice, setTicketPrice] = useState("");
   const [isFreeTicket, setIsFreeTicket] = useState(false);
   const [startedAt, setStartedAt] = useState<Date>(defaultStart);
-  const [endedAt, setEndedAt] = useState<Date | null>(null);
-  const [useEndDate, setUseEndDate] = useState(false);
+  const [endedAt, setEndedAt] = useState<Date | null>(defaultStart);
+  const [useEndDate, setUseEndDate] = useState(true);
   const [contact, setContact] = useState("");
   /** README: multipart 한 번에 `payload` + `files` */
   const [pendingImages, setPendingImages] = useState<LocalImageAsset[]>([]);
@@ -130,6 +130,8 @@ const MusicNewsRegistrationScreen = () => {
           setEndedAt(end);
           setUseEndDate(true);
         }
+      } else {
+        setUseEndDate(false);
       }
       if (detail.attachments && detail.attachments.length > 0) {
         setExistingImages(detail.attachments);
@@ -449,15 +451,22 @@ const MusicNewsRegistrationScreen = () => {
               <Pressable
                 style={styles.toggleButton}
                 onPress={() => {
-                  setUseEndDate(!useEndDate);
-                  if (!useEndDate && !endedAt) setEndedAt(startedAt);
+                  if (!useEndDate) return;
+                  setUseEndDate(false);
                 }}
               >
-                <Text style={styles.toggleText}>{useEndDate ? "사용함" : "사용 안 함"}</Text>
+                <Text
+                  style={[
+                    styles.toggleText,
+                    !useEndDate && { color: GRAY.DARK_2 },
+                  ]}
+                >
+                  {useEndDate ? "사용함" : "사용 안 함"}
+                </Text>
                 <MaterialCommunityIcons
                   name={useEndDate ? "checkbox-marked" : "checkbox-blank-outline"}
                   size={20}
-                  color={MAIN.DEFAULT}
+                  color={useEndDate ? MAIN.DEFAULT : GRAY.DARK_2}
                 />
               </Pressable>
             </View>

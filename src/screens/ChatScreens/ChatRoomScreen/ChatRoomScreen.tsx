@@ -372,6 +372,19 @@ const ChatRoomScreen = () => {
   const messageRowRefs = useRef<Record<string, View | null>>({});
   const socketRef = useRef<Socket | null>(null);
 
+  /**
+   * 키보드가 올라와 입력창이 밀리는 만큼, 마지막 메시지가 가려지지 않도록 같이 스크롤.
+   * setTimeout 대신 requestAnimationFrame으로 다음 프레임에 바로 실행해
+   * 키보드가 올라오는 애니메이션과 거의 동시에 스크롤이 시작되게 한다.
+   */
+  useEffect(() => {
+    if (!isKeyboardVisible) return;
+    const frame = requestAnimationFrame(() => {
+      scrollViewRef.current?.scrollToEnd({ animated: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [isKeyboardVisible]);
+
   const matchIndices = useMemo(
     () => findMessageMatchIndices(messages, searchQuery),
     [messages, searchQuery],

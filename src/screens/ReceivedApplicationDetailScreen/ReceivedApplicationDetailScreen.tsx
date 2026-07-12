@@ -159,7 +159,7 @@ export default function ReceivedApplicationDetailScreen() {
   const onSetStatus = useCallback(
     (next: "ACCEPTED" | "REJECTED") => {
       if (pendingKind) return;
-      const verb = next === "ACCEPTED" ? "합격" : "탈락";
+      const verb = next === "ACCEPTED" ? "수락" : "거절";
       Alert.alert("확인", `이 지원자를 ${verb} 처리할까요?`, [
         { text: "취소", style: "cancel" },
         {
@@ -369,7 +369,7 @@ export default function ReceivedApplicationDetailScreen() {
           {pendingKind === "REJECT" ? (
             <ActivityIndicator color={RED.DEFAULT} size="small" />
           ) : (
-            <Text style={styles.rejectBtnText}>탈락</Text>
+            <Text style={styles.rejectBtnText}>거절</Text>
           )}
         </Pressable>
         <Pressable
@@ -383,7 +383,7 @@ export default function ReceivedApplicationDetailScreen() {
           {pendingKind === "ACCEPT" ? (
             <ActivityIndicator color={WHITE} size="small" />
           ) : (
-            <Text style={styles.acceptBtnText}>합격</Text>
+            <Text style={styles.acceptBtnText}>수락</Text>
           )}
         </Pressable>
       </View>

@@ -8,8 +8,8 @@ export function applicationStatusLabel(
   const map: Record<ApplicationReviewStatus, string> = {
     SUBMITTED: "검토 대기",
     DOCUMENT_REVIEW: "서류 검토 중",
-    ACCEPTED: "합격",
-    REJECTED: "탈락",
+    ACCEPTED: "수락",
+    REJECTED: "거절",
   };
   return map[s] ?? s;
 }

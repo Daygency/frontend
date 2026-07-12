@@ -36,7 +36,7 @@ export type UserRole = "artist" | "planner";
 
 export type SignupParams = {
   role: UserRole;
-  name?: string; // 미입력 시 null
+  name: string;
   activityName?: string;
 };
 

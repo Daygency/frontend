@@ -26,6 +26,8 @@ const styles = StyleSheet.create({
   },
   slide: {
     borderRadius: 10,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
     overflow: "hidden",
     backgroundColor: GRAY.DEFAULT,
   },
