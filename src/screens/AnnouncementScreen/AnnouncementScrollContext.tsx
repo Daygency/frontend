@@ -179,15 +179,11 @@ function AnnouncementCollapsibleChrome({
   }), [topBarHeight]);
 
   const handleTopBarLayout = (event: LayoutChangeEvent) => {
-    const height = event.nativeEvent.layout.height;
-    if (height > 0) {
-      onTopBarLayout(height);
-    }
+    onTopBarLayout(event.nativeEvent.layout.height);
   };
 
   const handleFilterBarLayout = (event: LayoutChangeEvent) => {
-    const height = event.nativeEvent.layout.height;
-    if (height > 0) onFilterBarLayout(height);
+    onFilterBarLayout(event.nativeEvent.layout.height);
   };
 
   return (

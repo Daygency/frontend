@@ -40,6 +40,8 @@ import type { ContentTabParamList } from "../../navigations/types";
 import { AnnouncementDetailParams } from "../AnnouncementDetailScreen/AnnouncementDetailScreen";
 import styles from "./styles";
 import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
+import MainHomeHeader from "../../components/layout/MainHomeHeader";
+import AnnouncementMyActivityScene from "./components/AnnouncementMyActivityScene";
 import {
   getAnnouncementList,
   getMyAnnouncementList,
@@ -89,6 +91,9 @@ const FEED_VIEW_OPTIONS: AnnouncementFeedView[] = [
   "내가 올린 공고",
   "지원한 공고",
 ];
+
+const ANNOUNCEMENT_TABS = ["모집공고", "내 활동"] as const;
+type AnnouncementTab = (typeof ANNOUNCEMENT_TABS)[number];
 
 function feedViewRequiresLogin(view: AnnouncementFeedView): boolean {
   return view === "내가 올린 공고" || view === "지원한 공고";
@@ -294,6 +299,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const { top } = useSafeAreaInsets();
   const { isLoggedIn } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
+  const [tab, setTab] = useState<AnnouncementTab>("모집공고");
   const [selectedStatus, setSelectedStatus] = useState<string | null>(null);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [selectedMajors, setSelectedMajors] = useState<string[]>([]);
@@ -458,6 +464,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const resetFiltersFromTab = useCallback(() => {
     scrollViewRef.current?.scrollTo({ y: 0, animated: true });
     skipFocusLoadRef.current = true;
+    setTab("모집공고");
     setSelectedStatus(null);
     setSelectedTypes([]);
     setSelectedMajors([]);
@@ -500,7 +507,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
 
   useEffect(() => {
     setFilterSheet(null);
-  }, [feedView, sortTab]);
+  }, [feedView, sortTab, tab]);
 
   useEffect(() => {
     const nextFeedView = route.params?.initialFeedView;
@@ -716,7 +723,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   );
 
   const pickSection =
-    feedView === "전체" && pickItems.length > 0 ? (
+    tab === "모집공고" && feedView === "전체" && pickItems.length > 0 ? (
       <View style={{ paddingBottom: 8 }}>
         <AnnouncementPickCarousel
           items={pickItems}
@@ -771,23 +778,37 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       <AnnouncementScrollProvider
         topBar={
           <View>
-            <MainHomeTopBar logoName="모집공고" initialTag="모집공고" />
+            <MainHomeTopBar
+              initialTag="모집공고"
+              titleContent={
+                <MainHomeHeader
+                  tabs={ANNOUNCEMENT_TABS}
+                  activeTab={tab}
+                  onTabChange={(t) => setTab(t as AnnouncementTab)}
+                  inline
+                />
+              }
+            />
             {pickSection}
           </View>
         }
-        filterBar={filterBar}
-        onScrollForPagination={handlePaginationScroll}
+        filterBar={tab === "모집공고" ? filterBar : null}
+        onScrollForPagination={tab === "모집공고" ? handlePaginationScroll : undefined}
       >
-        <CollapsibleAnnouncementList {...listProps} scrollViewRef={scrollViewRef} />
+        {tab === "모집공고" ? (
+          <CollapsibleAnnouncementList {...listProps} scrollViewRef={scrollViewRef} />
+        ) : (
+          <AnnouncementMyActivityScene />
+        )}
       </AnnouncementScrollProvider>
-      {filterSheet && isFilterTabType(filterSheet) ? (
+      {tab === "모집공고" && filterSheet && isFilterTabType(filterSheet) ? (
         <AnnouncementFilterTabSheet
           initialType={filterSheet}
           configs={filterSheetConfig}
           onReset={resetTabFilters}
           onApply={closeFilterSheet}
         />
-      ) : filterSheet ? (
+      ) : tab === "모집공고" && filterSheet ? (
         <AnnouncementFilterSheet
           type={filterSheet}
           options={filterSheetConfig[filterSheet].options}
@@ -796,7 +817,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
           onClose={closeFilterSheet}
         />
       ) : null}
-      <ContentRegistrationFabButton />
+      {tab === "모집공고" ? <ContentRegistrationFabButton /> : null}
     </View>
   );
 };

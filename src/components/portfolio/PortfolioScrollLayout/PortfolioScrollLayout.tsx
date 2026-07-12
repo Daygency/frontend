@@ -1,7 +1,6 @@
 import React, { isValidElement, cloneElement, useRef, useCallback } from "react";
 import type { ReactElement, ReactNode } from "react";
 import {
-  ActivityIndicator,
   Animated,
   Text,
   View,
@@ -24,7 +23,7 @@ import portfolioStyles, { portfolioSectionStyles } from "../styles";
 import { PORTFOLIO_IMMERSIVE_BG } from "../../../constants/portfolio";
 import { RootRoutes } from "../../../navigations/routes";
 import { usePortfolioProfile } from "../../../hooks/usePortfolioProfile";
-import { GRAY, MAIN } from "../../../color";
+import { GRAY } from "../../../color";
 
 type Props = {
   header: ReactNode;
@@ -126,11 +125,7 @@ const PortfolioScrollLayout = ({
           clampScrollTop(event.nativeEvent.contentOffset.y);
         }}
       >
-        {profileLoading ? (
-          <View style={layoutStyles.loadingWrap}>
-            <ActivityIndicator size="small" color={MAIN.DEFAULT} />
-          </View>
-        ) : showPrivateNotice ? (
+        {profileLoading ? null : showPrivateNotice ? (
           <View
             style={[
               layoutStyles.privateNotice,
@@ -193,11 +188,6 @@ const layoutStyles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10,
-  },
-  loadingWrap: {
-    paddingVertical: 80,
-    alignItems: "center",
-    justifyContent: "center",
   },
   privateNotice: {
     justifyContent: "center",
