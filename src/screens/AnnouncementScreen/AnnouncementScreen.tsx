@@ -8,7 +8,7 @@ import {
   type NativeScrollEvent,
 } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
 import {
   CompositeNavigationProp,
   useFocusEffect,
@@ -203,12 +203,16 @@ const CollapsibleAnnouncementList = ({
   emptyMessage,
   onRefresh,
   onPressItem,
-}: AnnouncementListBodyProps) => {
+  scrollViewRef,
+}: AnnouncementListBodyProps & {
+  scrollViewRef?: RefObject<ScrollView | null>;
+}) => {
   const { listTopInset, scrollHandler } = useAnnouncementScroll();
 
   return (
     <View style={styles.scrollContentWrapper}>
       <AnimatedScrollView
+        ref={scrollViewRef}
         style={{ flex: 1 }}
         contentContainerStyle={[
           styles.scrollContent,
@@ -339,6 +343,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [majors, setMajors] = useState<{ name: string; majorId: string }[]>([]);
   const loadListSeqRef = useRef(0);
   const skipFocusLoadRef = useRef(false);
+  const scrollViewRef = useRef<ScrollView>(null);
   const [filterReloadEpoch, setFilterReloadEpoch] = useState(0);
 
   const buildListParams = useCallback(() => {
@@ -451,6 +456,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   loadDataRef.current = loadData;
 
   const resetFiltersFromTab = useCallback(() => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
     skipFocusLoadRef.current = true;
     setSelectedStatus(null);
     setSelectedTypes([]);
@@ -772,7 +778,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
         filterBar={filterBar}
         onScrollForPagination={handlePaginationScroll}
       >
-        <CollapsibleAnnouncementList {...listProps} />
+        <CollapsibleAnnouncementList {...listProps} scrollViewRef={scrollViewRef} />
       </AnnouncementScrollProvider>
       {filterSheet && isFilterTabType(filterSheet) ? (
         <AnnouncementFilterTabSheet
