@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useToast } from "../../contexts/ToastContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
@@ -227,6 +228,7 @@ type AnnouncementRegistrationParams = { postId?: string };
 
 const AnnouncementRegistrationScreen = () => {
   const navigation = useNavigation();
+  const { showToast } = useToast();
   const route = useRoute();
   const postId = (route.params as { postId?: string } | undefined)?.postId;
   const isEditMode = !!postId;
@@ -734,6 +736,7 @@ const AnnouncementRegistrationScreen = () => {
             : await createAnnouncement(dto);
         setIsSubmitting(false);
         if (res.ok) {
+          showToast("모집공고가 등록되었습니다");
           (navigation as { dispatch?: (action: object) => void }).dispatch?.(
             CommonActions.reset({
               index: 0,

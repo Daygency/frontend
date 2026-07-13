@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { MAIN, WHITE } from "../../color";
+import { GRAY, MAIN, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -54,13 +54,18 @@ const styles = StyleSheet.create({
     color: MAIN.DEFAULT,
   },
   btnCancel: {
-    marginTop: 8,
-    paddingVertical: 12,
+    marginBottom: 8,
+    paddingVertical: 15,
     alignItems: "center",
     justifyContent: "center",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: GRAY.DARK_1,
   },
   btnCancelText: {
-    fontSize: 15,
+    fontSize: 16,
+    lineHeight: 24,
+    letterSpacing: 0.3,
     fontWeight: "600",
     color: "#EC1313",
   },

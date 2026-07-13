@@ -159,7 +159,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
     fontWeight: "400",
     color: GRAY.DARK_100,
-    marginBottom: 14,
   },
   profileIntroSection: {
     marginBottom: 14,
@@ -183,7 +182,7 @@ const styles = StyleSheet.create({
     minWidth: 100,
     height: 36,
     paddingHorizontal: 16,
-    borderRadius: 20,
+    borderRadius: 10,
     backgroundColor: MAIN.DEFAULT,
     justifyContent: "center",
     alignItems: "center",
@@ -191,7 +190,7 @@ const styles = StyleSheet.create({
   otherFollowBtnOutline: {
     backgroundColor: WHITE,
     borderWidth: 1,
-    borderColor: MAIN.DEFAULT,
+    borderColor: GRAY.DARK_1,
   },
   otherFollowBtnText: {
     fontSize: 14,
@@ -206,10 +205,8 @@ const styles = StyleSheet.create({
     minWidth: 100,
     height: 36,
     paddingHorizontal: 16,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: GRAY.DARK_2,
-    backgroundColor: WHITE,
+    borderRadius: 10,
+    backgroundColor: GRAY.DEFAULT,
     justifyContent: "center",
     alignItems: "center",
   },

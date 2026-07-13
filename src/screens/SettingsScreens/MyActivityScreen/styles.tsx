@@ -1,10 +1,30 @@
 import { StyleSheet } from "react-native";
-import { WHITE } from "../../../color";
+import { MAIN, WHITE } from "../../../color";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: WHITE,
+  },
+  centerFill: {
+    flex: 1,
+    backgroundColor: WHITE,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 16,
+  },
+  loginBtn: {
+    height: 40,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    backgroundColor: MAIN.DEFAULT,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loginBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: WHITE,
   },
   tabView: {
     flex: 1,

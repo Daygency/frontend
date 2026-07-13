@@ -81,6 +81,8 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import RecruitmentMajorChip from "../../components/shared/RecruitmentMajorChip";
+import { createAnnouncementRoom } from "../../lib/apis/chat/chatApi";
+import { chatRoomItemToParams } from "../../lib/chat/chatRoomNavigation";
 import {
   AnnouncementDetailBodySkeleton,
   AnnouncementDetailBottomBarSkeleton,
@@ -204,7 +206,12 @@ const AnnouncementDetailScreen = () => {
   const [myApplication, setMyApplication] = useState<ApplicationEntity | null>(
     null,
   );
+  /** 내 지원 여부 조회 완료 여부. false인 동안은 myApplication이 기본값(null)이라
+   * "지원하기"를 잘못 보여줄 수 있으므로 로딩 완료 전엔 스켈레톤만 그린다. */
+  const [applicationStatusLoaded, setApplicationStatusLoaded] =
+    useState(false);
   const [scraped, setScraped] = useState(false);
+  const [chatInquiryLoading, setChatInquiryLoading] = useState(false);
   const [majorsCatalog, setMajorsCatalog] = useState<
     { name: string; majorId: string }[]
   >([]);
@@ -222,6 +229,26 @@ const AnnouncementDetailScreen = () => {
       );
     });
   }, []);
+
+  const handleOpenChatInquiry = useCallback(async () => {
+    if (!ensureLoggedIn()) return;
+    if (!params.postId || chatInquiryLoading) return;
+    setChatInquiryLoading(true);
+    try {
+      const myUserId = user?.socialId?.trim();
+      const room = await createAnnouncementRoom(
+        { postId: params.postId },
+        myUserId ? { myUserId } : undefined,
+      );
+      if (room?.id) {
+        navigation.navigate(RootRoutes.CHAT_ROOM, chatRoomItemToParams(room));
+      } else {
+        Alert.alert("문의하기", "지원 완료 후 채팅으로 문의할 수 있어요.");
+      }
+    } finally {
+      setChatInquiryLoading(false);
+    }
+  }, [ensureLoggedIn, params.postId, chatInquiryLoading, user?.socialId, navigation]);
 
   const handleOpenReport = useCallback(() => {
     if (!ensureLoggedIn()) return;
@@ -479,6 +506,7 @@ const AnnouncementDetailScreen = () => {
     setHasApplicants(false);
     setMyReviewExists(false);
     setMyApplication(null);
+    setApplicationStatusLoaded(false);
     setScraped(false);
   }, [params.postId]);
 
@@ -488,9 +516,11 @@ const AnnouncementDetailScreen = () => {
       if (!postId || !isLoggedIn) {
         setMyReviewExists(false);
         setMyApplication(null);
+        setApplicationStatusLoaded(true);
         return;
       }
       let cancelled = false;
+      setApplicationStatusLoaded(false);
       (async () => {
         const review = await getMyActivityReview(postId);
         if (cancelled) return;
@@ -503,6 +533,7 @@ const AnnouncementDetailScreen = () => {
         } else {
           setMyApplication(null);
         }
+        if (!cancelled) setApplicationStatusLoaded(true);
       })();
       return () => {
         cancelled = true;
@@ -720,65 +751,89 @@ const AnnouncementDetailScreen = () => {
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <AnnouncementDetailOptionsMenu
-          isMine={isMine}
-          postId={params.postId}
-          canEdit={!displayCompleted && !hasApplicants}
-          onEdit={() => {
-            if (displayCompleted) {
-              Alert.alert("알림", "종료된 공고는 수정할 수 없습니다.");
-              return;
-            }
-            if (hasApplicants) {
-              Alert.alert(
-                "알림",
-                "지원자가 있는 공고는 수정할 수 없습니다.",
-              );
-              return;
-            }
-            if (params.postId) {
-              navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION, {
-                postId: params.postId,
-              });
-            }
-          }}
-          onDelete={() => {
-            if (!params.postId) return;
-            Alert.alert("삭제 확인", "정말 삭제하시겠습니까?", [
-              { text: "취소", style: "cancel" },
-              {
-                text: "삭제",
-                style: "destructive",
-                onPress: async () => {
-                  try {
-                    const { ok, status } = await deleteAnnouncement(
-                      params.postId!,
-                    );
-                    if (ok) {
-                      navigation.goBack();
-                    } else {
-                      const msg =
-                        status === 401
-                          ? "인증이 필요합니다. 다시 로그인해주세요."
-                          : status === 403
-                            ? "삭제 권한이 없습니다."
-                            : status === 404
-                              ? "공고를 찾을 수 없습니다."
-                              : "삭제에 실패했습니다.";
-                      Alert.alert("알림", msg);
+        <View style={styles.headerRightWrap}>
+          {!isMine ? (
+            <Pressable
+              style={[
+                styles.chatInquiryButton,
+                chatInquiryLoading && styles.chatInquiryButtonPending,
+              ]}
+              onPress={handleOpenChatInquiry}
+              disabled={chatInquiryLoading}
+              hitSlop={6}
+            >
+              <Text style={styles.chatInquiryButtonText}>문의하기</Text>
+            </Pressable>
+          ) : null}
+          <AnnouncementDetailOptionsMenu
+            isMine={isMine}
+            postId={params.postId}
+            canEdit={!displayCompleted && !hasApplicants}
+            onEdit={() => {
+              if (displayCompleted) {
+                Alert.alert("알림", "종료된 공고는 수정할 수 없습니다.");
+                return;
+              }
+              if (hasApplicants) {
+                Alert.alert(
+                  "알림",
+                  "지원자가 있는 공고는 수정할 수 없습니다.",
+                );
+                return;
+              }
+              if (params.postId) {
+                navigation.navigate(RootRoutes.ANNOUNCEMENT_REGISTRATION, {
+                  postId: params.postId,
+                });
+              }
+            }}
+            onDelete={() => {
+              if (!params.postId) return;
+              Alert.alert("삭제 확인", "정말 삭제하시겠습니까?", [
+                { text: "취소", style: "cancel" },
+                {
+                  text: "삭제",
+                  style: "destructive",
+                  onPress: async () => {
+                    try {
+                      const { ok, status } = await deleteAnnouncement(
+                        params.postId!,
+                      );
+                      if (ok) {
+                        navigation.goBack();
+                      } else {
+                        const msg =
+                          status === 401
+                            ? "인증이 필요합니다. 다시 로그인해주세요."
+                            : status === 403
+                              ? "삭제 권한이 없습니다."
+                              : status === 404
+                                ? "공고를 찾을 수 없습니다."
+                                : "삭제에 실패했습니다.";
+                        Alert.alert("알림", msg);
+                      }
+                    } catch (e) {
+                      Alert.alert("알림", "삭제에 실패했습니다.");
                     }
-                  } catch (e) {
-                    Alert.alert("알림", "삭제에 실패했습니다.");
-                  }
+                  },
                 },
-              },
-            ]);
-          }}
-          onReport={handleOpenReport}
-        />
+              ]);
+            }}
+            onReport={handleOpenReport}
+          />
+        </View>
       ),
     });
-  }, [navigation, isMine, params.postId, hasApplicants, displayCompleted, handleOpenReport]);
+  }, [
+    navigation,
+    isMine,
+    params.postId,
+    hasApplicants,
+    displayCompleted,
+    handleOpenReport,
+    handleOpenChatInquiry,
+    chatInquiryLoading,
+  ]);
 
   const imageList = detailData?.imageUrls ?? [];
   const attachmentList = detailData?.attachments ?? [];
@@ -892,8 +947,10 @@ const AnnouncementDetailScreen = () => {
 
   const renderBottomBar = () => {
     // 첫 조회가 끝나기 전엔 isMine/completed가 기본값이라 방문자/작성자용
-    // 문구를 잘못 추측해 보여줄 수 있으므로 로딩 완료 전엔 스켈레톤만 그린다.
-    if (!detailLoaded) {
+    // 문구를 잘못 추측해 보여줄 수 있고, 방문자의 경우 내 지원 여부 조회가
+    // 끝나기 전엔 지원했는지 알 수 없어 "지원하기"를 잘못 보여줄 수 있으므로
+    // 두 조회가 모두 끝나기 전엔 스켈레톤만 그린다.
+    if (!detailLoaded || (!isMine && !applicationStatusLoaded)) {
       return (
         <AnnouncementDetailBottomBarSkeleton
           paddingBottom={floatingBottomPad}
@@ -972,7 +1029,25 @@ const AnnouncementDetailScreen = () => {
     }
 
     if (!isMine && params.postId && showApplicantAlreadyAppliedBar) {
-      return renderVisitorBottomWithScrap("이미 지원한 공고입니다.");
+      return (
+        <View
+          style={[
+            styles.floatingBottomBar,
+            { paddingBottom: floatingBottomPad },
+          ]}
+        >
+          <Pressable style={styles.btnBookmark} onPress={handleToggleScrap}>
+            <Ionicons
+              name={scraped ? "bookmark" : "bookmark-outline"}
+              size={22}
+              color={WHITE}
+            />
+          </Pressable>
+          <Pressable style={styles.btnApply} onPress={navigateToApplication}>
+            <Text style={styles.btnApplyText}>지원서 수정하기</Text>
+          </Pressable>
+        </View>
+      );
     }
 
     if (showOwnerCompletedBar) {

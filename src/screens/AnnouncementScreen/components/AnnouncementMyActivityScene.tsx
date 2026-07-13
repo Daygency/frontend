@@ -5,6 +5,7 @@ import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import EmptyState from "../../../components/ui/EmptyState";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useRequireLogin } from "../../../hooks/useRequireLogin";
 import { MAIN } from "../../../color";
 import { RootRoutes } from "../../../navigations/routes";
 import {
@@ -46,6 +47,7 @@ function myPostStatusTab(item: AnnouncementListItem): MyAnnouncementStatusTab {
 
 const AnnouncementMyActivityScene = () => {
   const { isLoggedIn } = useAuth();
+  const { requireLogin } = useRequireLogin();
   const { listTopInset, scrollHandler, setActiveScrollRef } = useAnnouncementScroll();
   const scrollViewRef = useRef<ScrollView>(null);
   const navigation =
@@ -144,6 +146,9 @@ const AnnouncementMyActivityScene = () => {
     return (
       <View style={[styles.centerFill, { paddingTop: listTopInset }]}>
         <EmptyState message="로그인이 필요합니다" />
+        <Pressable style={styles.loginBtn} onPress={requireLogin}>
+          <Text style={styles.loginBtnText}>로그인하기</Text>
+        </Pressable>
       </View>
     );
   }

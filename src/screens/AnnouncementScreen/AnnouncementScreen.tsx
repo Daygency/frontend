@@ -68,6 +68,7 @@ import { MAIN, WHITE } from "../../color";
 import {
   AnnouncementScrollProvider,
   useAnnouncementScroll,
+  type AnnouncementScrollProviderHandle,
 } from "./AnnouncementScrollContext";
 import {
   createSubTabRetapHandler,
@@ -375,7 +376,9 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   const [majors, setMajors] = useState<{ name: string; majorId: string }[]>([]);
   const loadListSeqRef = useRef(0);
   const skipFocusLoadRef = useRef(false);
+  const skipHeaderResetRef = useRef(false);
   const scrollViewRef = useRef<ScrollView>(null);
+  const scrollProviderRef = useRef<AnnouncementScrollProviderHandle>(null);
   const [filterReloadEpoch, setFilterReloadEpoch] = useState(0);
 
   const buildListParams = useCallback(() => {
@@ -502,9 +505,22 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
     setFilterReloadEpoch((prev) => prev + 1);
   }, [navigation]);
 
-  const toggleTab = useCallback(() => {
-    setTab((prev) => (prev === "모집공고" ? "내 활동" : "모집공고"));
+  const changeTab = useCallback((next: AnnouncementTab) => {
+    setTab(next);
   }, []);
+
+  const toggleTab = useCallback(() => {
+    changeTab(tab === "모집공고" ? "내 활동" : "모집공고");
+  }, [changeTab, tab]);
+
+  const prevTabRef = useRef(tab);
+  useEffect(() => {
+    // 내 활동 탭에서 모집공고 탭으로 전환되어 올 때만 접힌 헤더를 다시 펼친다.
+    if (prevTabRef.current === "내 활동" && tab === "모집공고") {
+      scrollProviderRef.current?.resetHeader();
+    }
+    prevTabRef.current = tab;
+  }, [tab]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener("tabPress", () => {
@@ -561,6 +577,17 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
       }
       loadDataRef.current();
     }, [feedView, isLoggedIn, sortTab]),
+  );
+
+  /** 상세페이지에서 되돌아온 경우는 제외하고, 다른 곳에서 이 화면으로 돌아왔을 때만 접힌 헤더를 다시 펼친다. */
+  useFocusEffect(
+    useCallback(() => {
+      if (skipHeaderResetRef.current) {
+        skipHeaderResetRef.current = false;
+        return;
+      }
+      scrollProviderRef.current?.resetHeader();
+    }, []),
   );
 
   const loadMore = () => {
@@ -671,6 +698,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
 
   const handlePressItem = useCallback(
     (item: AnnouncementListItem) => {
+      skipHeaderResetRef.current = true;
       navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
         title: item.title,
         type: item.type,
@@ -810,6 +838,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
   return (
     <View style={[styles.container, { paddingTop: top }]}>
       <AnnouncementScrollProvider
+        ref={scrollProviderRef}
         topBar={
           <View>
             <MainHomeTopBar
@@ -818,7 +847,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                 <MainHomeHeader
                   tabs={ANNOUNCEMENT_TABS}
                   activeTab={tab}
-                  onTabChange={(t) => setTab(t as AnnouncementTab)}
+                  onTabChange={(t) => changeTab(t as AnnouncementTab)}
                   inline
                 />
               }

@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
 import { PORTFOLIO_BODY_BG, PORTFOLIO_SECTION_GAP } from "../../../constants/portfolio";
 
 const styles = StyleSheet.create({
@@ -13,6 +13,20 @@ const styles = StyleSheet.create({
     backgroundColor: PORTFOLIO_BODY_BG,
     justifyContent: "center",
     alignItems: "center",
+    gap: 16,
+  },
+  loginBtn: {
+    height: 40,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    backgroundColor: MAIN.DEFAULT,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loginBtnText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: WHITE,
   },
   contentSheet: {
     backgroundColor: WHITE,

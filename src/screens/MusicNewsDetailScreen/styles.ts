@@ -122,7 +122,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     paddingVertical: 14,
     borderTopWidth: 1,
-    borderBottomWidth: 1,
     borderColor: GRAY.MEDIUM_2,
   },
   sectionBlock: {

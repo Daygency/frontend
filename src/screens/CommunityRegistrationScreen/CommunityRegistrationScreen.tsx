@@ -11,6 +11,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useToast } from "../../contexts/ToastContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/forms/Form";
@@ -57,6 +58,7 @@ type CommunityRegistrationParams = { initialCategory?: string; communityId?: str
 
 const CommunityRegistrationScreen = () => {
   const navigation = useNavigation<any>();
+  const { showToast } = useToast();
   const route = useRoute<RouteProp<{ CommunityRegistration: CommunityRegistrationParams }, "CommunityRegistration">>();
   const editCommunityId = route.params?.communityId?.trim();
   const isEditMode = Boolean(editCommunityId);
@@ -225,6 +227,7 @@ const CommunityRegistrationScreen = () => {
         Alert.alert("등록 실패", "게시글을 등록하지 못했습니다.");
         return;
       }
+      showToast("게시글이 등록되었습니다");
       navigation.goBack();
     } finally {
       setSubmitting(false);

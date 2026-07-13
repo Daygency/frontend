@@ -802,7 +802,7 @@ const Navigation = () => {
         />
         <Stack.Screen
           name={RootRoutes.MY_ACTIVITY}
-          component={withAuthGate(MyActivityScreen)}
+          component={MyActivityScreen}
           options={({ navigation }) => ({
             headerTitle: () => (
               <View style={styles.titleWrap}>

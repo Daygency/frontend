@@ -137,7 +137,6 @@ const styles = StyleSheet.create({
     marginBottom: 14,
     paddingVertical: 14,
     borderTopWidth: 1,
-    borderBottomWidth: 1,
     borderColor: GRAY.MEDIUM_2,
   },
   description: {
@@ -250,6 +249,25 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     fontWeight: "600",
     color: GRAY.DARK,
+  },
+  headerRightWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  chatInquiryButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: GRAY.MEDIUM_2,
+  },
+  chatInquiryButtonPending: {
+    opacity: 0.5,
+  },
+  chatInquiryButtonText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: BLACK,
   },
 });
 

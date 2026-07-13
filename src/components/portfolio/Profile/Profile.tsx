@@ -30,6 +30,7 @@ import {
   saveProfileCache,
 } from "../../../lib/profileCache";
 import { useAuth } from "../../../contexts/AuthContext";
+import { useToast } from "../../../contexts/ToastContext";
 import { useRequireLogin } from "../../../hooks/useRequireLogin";
 import {
   followUser,
@@ -102,6 +103,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
   const [following, setFollowing] = useState(false);
   const [followLoading, setFollowLoading] = useState(false);
   const [chatLoading, setChatLoading] = useState(false);
+  const { showToast } = useToast();
 
   const legalName =
     profile?.name?.trim() ||
@@ -180,6 +182,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
           if (typeof inferred === "boolean") setFollowing(inferred);
         }
       }
+      showToast("팔로우했습니다");
       return;
     }
     Alert.alert(
@@ -188,55 +191,47 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
     );
   };
 
-  const onPressUnfollow = () => {
+  const onPressUnfollow = async () => {
     if (!canSocialActions || !viewingUserId || followLoading) return;
-    Alert.alert("언팔로우", "이 사용자를 언팔로우할까요?", [
-      { text: "취소", style: "cancel" },
-      {
-        text: "언팔로우",
-        style: "destructive",
-        onPress: async () => {
-          setFollowLoading(true);
-          const res = await unfollowUser(viewingUserId);
-          setFollowLoading(false);
-          if (res.ok) {
-            setFollowing(false);
-            if (res.status !== 404) {
-              setProfile((prev) => {
-                if (!prev) return prev;
-                const p = prev as PublicProfileResponseDto;
-                if (p.userId !== viewingUserId) return prev;
-                return {
-                  ...p,
-                  followerCount: Math.max(
-                    0,
-                    safeFollowCount(p.followerCount) - 1,
-                  ),
-                };
-              });
-            }
-            const fresh = await getUserPublicProfile(viewingUserId);
-            if (fresh) {
-              setProfile(fresh);
-              if (typeof fresh.isFollowing === "boolean") {
-                setFollowing(fresh.isFollowing);
-              } else if (canSocialActions) {
-                const inferred = await checkIsUserInMyFollowingList(
-                  myUserId,
-                  viewingUserId,
-                );
-                if (typeof inferred === "boolean") setFollowing(inferred);
-              }
-            }
-            return;
-          }
-          Alert.alert(
-            "언팔로우",
-            res.message ?? `요청에 실패했습니다. (${res.status})`,
+    setFollowLoading(true);
+    const res = await unfollowUser(viewingUserId);
+    setFollowLoading(false);
+    if (res.ok) {
+      setFollowing(false);
+      if (res.status !== 404) {
+        setProfile((prev) => {
+          if (!prev) return prev;
+          const p = prev as PublicProfileResponseDto;
+          if (p.userId !== viewingUserId) return prev;
+          return {
+            ...p,
+            followerCount: Math.max(
+              0,
+              safeFollowCount(p.followerCount) - 1,
+            ),
+          };
+        });
+      }
+      const fresh = await getUserPublicProfile(viewingUserId);
+      if (fresh) {
+        setProfile(fresh);
+        if (typeof fresh.isFollowing === "boolean") {
+          setFollowing(fresh.isFollowing);
+        } else if (canSocialActions) {
+          const inferred = await checkIsUserInMyFollowingList(
+            myUserId,
+            viewingUserId,
           );
-        },
-      },
-    ]);
+          if (typeof inferred === "boolean") setFollowing(inferred);
+        }
+      }
+      showToast("언팔로우했습니다");
+      return;
+    }
+    Alert.alert(
+      "언팔로우",
+      res.message ?? `요청에 실패했습니다. (${res.status})`,
+    );
   };
 
   const navigateToFollowList = (tab: "following" | "followers") => {

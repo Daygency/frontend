@@ -1,13 +1,14 @@
 import {
   createContext,
+  forwardRef,
   useCallback,
   useContext,
+  useImperativeHandle,
   useMemo,
   useRef,
   useState,
   type ReactNode,
 } from "react";
-import { useFocusEffect } from "@react-navigation/native";
 import {
   View,
   type LayoutChangeEvent,
@@ -57,12 +58,18 @@ type AnnouncementScrollProviderProps = {
   onScrollForPagination?: (event: NativeScrollEvent) => void;
 };
 
-export function AnnouncementScrollProvider({
-  children,
-  topBar,
-  filterBar,
-  onScrollForPagination,
-}: AnnouncementScrollProviderProps) {
+export type AnnouncementScrollProviderHandle = {
+  /** 리스트 스크롤 위치는 유지한 채 접혀 있던 헤더만 다시 펼친다. */
+  resetHeader: () => void;
+};
+
+export const AnnouncementScrollProvider = forwardRef<
+  AnnouncementScrollProviderHandle,
+  AnnouncementScrollProviderProps
+>(function AnnouncementScrollProvider(
+  { children, topBar, filterBar, onScrollForPagination },
+  ref,
+) {
   const lastScrollY = useSharedValue(0);
   const headerCollapse = useSharedValue(0);
 
@@ -137,12 +144,11 @@ export function AnnouncementScrollProvider({
     [maxHeaderCollapse, onOffsetChange, onScrollForPagination],
   );
 
-  // 탭을 벗어났다가 돌아오면 스크롤 위치는 유지하되 숨겨진 헤더는 다시 보이게 한다.
-  useFocusEffect(
-    useCallback(() => {
-      headerCollapse.value = withTiming(0, { duration: 200 });
-    }, [headerCollapse]),
-  );
+  const resetHeader = useCallback(() => {
+    headerCollapse.value = withTiming(0, { duration: 200 });
+  }, [headerCollapse]);
+
+  useImperativeHandle(ref, () => ({ resetHeader }), [resetHeader]);
 
   const value = useMemo(
     () => ({
@@ -170,7 +176,7 @@ export function AnnouncementScrollProvider({
       </View>
     </AnnouncementScrollContext.Provider>
   );
-}
+});
 
 type AnnouncementCollapsibleChromeProps = {
   topBar: ReactNode;

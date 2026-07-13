@@ -103,7 +103,7 @@ function birthApiToYearDisplay(birth: string): string {
 }
 
 /**
- * README: `POST /applications` 성공 시 서버가 공고 전용 채팅방을 만들고 첫 메시지를 보냄.
+ * README: `POST /applications` 성공 시 서버가 공고 전용 채팅방을 만듦(메시지는 보내지 않음).
  * `GET /chat/rooms/by-post/:postId` 로 방이 잡힐 때까지 짧게 재시도.
  */
 async function fetchAnnouncementRoomAfterApply(
@@ -538,19 +538,11 @@ const ApplicationScreen = () => {
         if (res.ok) {
           setApplicationId(res.data.id);
           emitChatAppliedRoomsRefresh();
-          const room = await fetchAnnouncementRoomAfterApply(postId);
-          if (room?.id) {
-            const chatParams = chatRoomItemToParams(room);
-            navigation.dispatch(
-              StackActions.replace(RootRoutes.CHAT_ROOM, chatParams),
-            );
-          } else {
-            Alert.alert(
-              "지원 완료",
-              "지원서가 제출되었습니다. 채팅 탭의 지원 공고에서 대화방을 확인해 주세요.",
-              [{ text: "확인", onPress: () => navigation.goBack() }],
-            );
-          }
+          Alert.alert(
+            "지원 완료",
+            "지원서가 제출되었습니다. 공고 상세의 문의하기 버튼으로 채팅을 시작할 수 있어요.",
+            [{ text: "확인", onPress: () => navigation.goBack() }],
+          );
         } else {
           Alert.alert(
             "오류",
@@ -875,6 +867,15 @@ const ApplicationScreen = () => {
             </Pressable>
           </>
         ) : null}
+        {recruitmentOpen && applicationId ? (
+          <Pressable
+            style={[styles.btnCancel, submitting && { opacity: 0.6 }]}
+            disabled={submitting}
+            onPress={onCancelApplication}
+          >
+            <Text style={styles.btnCancelText}>지원 취소</Text>
+          </Pressable>
+        ) : null}
         <Pressable
           style={[
             styles.btnApply,
@@ -892,15 +893,6 @@ const ApplicationScreen = () => {
                 : "제출하기"}
           </Text>
         </Pressable>
-        {recruitmentOpen && applicationId ? (
-          <Pressable
-            style={[styles.btnCancel, submitting && { opacity: 0.6 }]}
-            disabled={submitting}
-            onPress={onCancelApplication}
-          >
-            <Text style={styles.btnCancelText}>지원 취소</Text>
-          </Pressable>
-        ) : null}
       </View>
     </View>
   );

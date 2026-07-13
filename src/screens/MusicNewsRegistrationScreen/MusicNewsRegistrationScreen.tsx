@@ -12,6 +12,7 @@ import {
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useToast } from "../../contexts/ToastContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/forms/Form";
@@ -58,6 +59,7 @@ type ValidationField = "title" | "content" | "place" | "images";
 
 const MusicNewsRegistrationScreen = () => {
   const navigation = useNavigation<any>();
+  const { showToast } = useToast();
   const route = useRoute<RouteProp<{ MusicNewsRegistration: { newsId?: string } }, "MusicNewsRegistration">>();
   const editNewsId = route.params?.newsId?.trim();
   const isEditMode = Boolean(editNewsId);
@@ -293,6 +295,7 @@ const MusicNewsRegistrationScreen = () => {
       const res = await createNewsWithFiles(dto, pendingImages);
       setIsSubmitting(false);
       if (res) {
+        showToast("공연소식이 등록되었습니다");
         navigation.dispatch?.(
           CommonActions.reset({
             index: 0,

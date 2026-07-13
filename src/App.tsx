@@ -21,6 +21,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ChatUnreadProvider } from "./contexts/ChatUnreadContext";
 import { NotificationUnreadProvider } from "./contexts/NotificationUnreadContext";
 import { ImageViewerProvider } from "./contexts/ImageViewerContext";
+import { ToastProvider } from "./contexts/ToastContext";
 import Navigation from "./navigations/Navigation";
 import SplashScreenView from "./screens/OnboardingScreens/SplashScreen/SplashScreen";
 
@@ -141,9 +142,11 @@ const App = () => {
           <ChatUnreadProvider>
             <NotificationUnreadProvider>
               <ImageViewerProvider>
-                <FcmTokenSyncBridge />
-                <StatusBar style="dark" />
-                <Navigation />
+                <ToastProvider>
+                  <FcmTokenSyncBridge />
+                  <StatusBar style="dark" />
+                  <Navigation />
+                </ToastProvider>
               </ImageViewerProvider>
             </NotificationUnreadProvider>
           </ChatUnreadProvider>
