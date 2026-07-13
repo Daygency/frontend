@@ -21,7 +21,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
 import AcceptedPerformersSection from "./AcceptedPerformersSection";
-import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
 import { GRAY, MAIN, WHITE } from "../../color";
 import {
   mapAttachmentsToImageUrls,
@@ -82,7 +81,6 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import RecruitmentMajorChip from "../../components/shared/RecruitmentMajorChip";
-import { sharedAnnouncementStyles } from "../../components/shared/AnnouncementShared/sharedAnnouncementStyles";
 import {
   AnnouncementDetailBodySkeleton,
   AnnouncementDetailBottomBarSkeleton,
@@ -1039,35 +1037,26 @@ const AnnouncementDetailScreen = () => {
           <View style={styles.body}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>{displayTitle}</Text>
+            </View>
+
+            <View style={styles.badgeRow}>
               {author ? (
-                <Pressable
-                  style={styles.authorChip}
-                  onPress={navigateToAuthorPortfolio}
-                >
-                  <ApplicantAvatar
-                    peerUserId={author.userId}
-                    peer={{
-                      userId: author.userId,
-                      name: author.name,
-                      activityName: author.activityName,
-                      profileImageUrl: author.profileImgUrl,
-                    }}
-                    size={28}
-                  />
+                <Pressable onPress={navigateToAuthorPortfolio}>
                   <Text style={styles.authorName} numberOfLines={1}>
                     {authorDisplayLabel}
                   </Text>
                 </Pressable>
               ) : null}
-            </View>
-
-            <View style={styles.badgeRow}>
+              {author && displayType ? (
+                <Text style={styles.metaDot}>·</Text>
+              ) : null}
               {displayType ? (
-                <View style={sharedAnnouncementStyles.typeTag}>
-                  <Text style={sharedAnnouncementStyles.typeTagText}>
-                    {displayType}
-                  </Text>
-                </View>
+                <Text style={styles.metaText} numberOfLines={1}>
+                  {displayType}
+                </Text>
+              ) : null}
+              {(author || displayType) && venueLabel ? (
+                <Text style={styles.metaDot}>·</Text>
               ) : null}
               {venueLabel ? (
                 <Text style={styles.locationText} numberOfLines={1}>

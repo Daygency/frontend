@@ -21,24 +21,6 @@ import { useLoungeScroll } from "../LoungeScrollContext";
 
 const POSTER_WIDTH = 96;
 
-function sortNewsItems(items: NewsListItem[], mode: PerformanceNewsSortMode) {
-  return [...items].sort((a, b) => {
-    if (mode === "created") {
-      const ta = new Date(a.createdAt ?? 0).getTime();
-      const tb = new Date(b.createdAt ?? 0).getTime();
-      if (Number.isFinite(ta) && Number.isFinite(tb) && ta !== tb) {
-        return tb - ta;
-      }
-      return String(b.newsId).localeCompare(String(b.newsId));
-    }
-
-    const ta = new Date(a.startedAt).getTime();
-    const tb = new Date(b.startedAt).getTime();
-    if (!Number.isFinite(ta) || !Number.isFinite(tb)) return 0;
-    return ta - tb;
-  });
-}
-
 function applyClientFilters(
   items: NewsListItem[],
   genre: string | null,
@@ -80,6 +62,10 @@ const localStyles = StyleSheet.create({
   },
 });
 
+const renderSeparator = () => <View style={localStyles.separator} />;
+
+const keyExtractor = (item: NewsListItem) => item.newsId;
+
 type MusicNewsSceneProps = {
   sortMode: PerformanceNewsSortMode;
   selectedGenre: string | null;
@@ -102,6 +88,7 @@ const MusicNewsScene = ({
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isFetchingMoreRef = useRef(false);
 
   const searchKeyword = useMemo(() => {
     return selectedRegion ?? selectedGenre ?? undefined;
@@ -114,8 +101,11 @@ const MusicNewsScene = ({
       mode: "initial" | "refresh" | "more" = "initial",
     ) => {
       if (append && !cursor) return;
-      if (mode === "more") setLoadingMore(true);
-      else if (mode === "refresh") setRefreshing(true);
+      if (mode === "more") {
+        if (isFetchingMoreRef.current) return;
+        isFetchingMoreRef.current = true;
+        setLoadingMore(true);
+      } else if (mode === "refresh") setRefreshing(true);
       else setLoading(true);
 
       const res = await getNewsList({
@@ -125,8 +115,10 @@ const MusicNewsScene = ({
         sort: sortMode,
       });
 
-      if (mode === "more") setLoadingMore(false);
-      else if (mode === "refresh") setRefreshing(false);
+      if (mode === "more") {
+        isFetchingMoreRef.current = false;
+        setLoadingMore(false);
+      } else if (mode === "refresh") setRefreshing(false);
       else setLoading(false);
 
       if (!res) {
@@ -151,11 +143,10 @@ const MusicNewsScene = ({
     }, [loadPage]),
   );
 
-  const displayedItems = useMemo(() => {
-    const filtered = applyClientFilters(items, selectedGenre, selectedRegion);
-    if (sortMode === "imminent") return filtered;
-    return sortNewsItems(filtered, sortMode);
-  }, [items, sortMode, selectedGenre, selectedRegion]);
+  const displayedItems = useMemo(
+    () => applyClientFilters(items, selectedGenre, selectedRegion),
+    [items, selectedGenre, selectedRegion],
+  );
 
   const refresh = useCallback(() => {
     if (refreshing || loadingMore) return;
@@ -163,20 +154,39 @@ const MusicNewsScene = ({
     void loadPage(null, false, "refresh");
   }, [loadPage, refreshing, loadingMore]);
 
-  const endReachReadyRef = useRef(false);
-
   const handleEndReached = useCallback(() => {
-    if (!endReachReadyRef.current) return;
-    if (loadingMore || refreshing || loading || !hasMore || !nextCursor) return;
+    if (
+      !hasMore ||
+      !nextCursor ||
+      loadingMore ||
+      loading ||
+      refreshing ||
+      isFetchingMoreRef.current
+    )
+      return;
     void loadPage(nextCursor, true, "more");
-  }, [loadPage, loadingMore, refreshing, loading, hasMore, nextCursor]);
+  }, [hasMore, nextCursor, loadingMore, loading, refreshing, loadPage]);
+
+  const handleItemPress = useCallback(
+    (newsId: string) => {
+      navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, { newsId });
+    },
+    [navigation],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: NewsListItem }) => (
+      <PerformanceNewsListCard item={item} onPress={handleItemPress} />
+    ),
+    [handleItemPress],
+  );
 
   return (
     <View style={styles.newsSceneContainer}>
       <AnimatedFlatList
         ref={setNewsListRef}
         data={displayedItems}
-        keyExtractor={(item) => item.newsId}
+        keyExtractor={keyExtractor}
         style={localStyles.flatList}
         contentContainerStyle={[
           localStyles.listContent,
@@ -184,26 +194,18 @@ const MusicNewsScene = ({
         ]}
         onScroll={newsScrollHandler}
         scrollEventThrottle={16}
-        renderItem={({ item }) => (
-          <PerformanceNewsListCard
-            item={item}
-            onPress={() =>
-              navigation.navigate(RootRoutes.MUSIC_NEWS_DETAIL, {
-                newsId: item.newsId,
-              })
-            }
-          />
-        )}
-        ItemSeparatorComponent={() => <View style={localStyles.separator} />}
+        renderItem={renderItem}
+        ItemSeparatorComponent={renderSeparator}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={refresh} />
         }
-        onMomentumScrollBegin={() => {
-          endReachReadyRef.current = true;
-        }}
         onEndReached={handleEndReached}
-        onEndReachedThreshold={0.5}
+        onEndReachedThreshold={0.35}
+        initialNumToRender={8}
+        maxToRenderPerBatch={8}
+        windowSize={7}
+        updateCellsBatchingPeriod={50}
         ListFooterComponent={
           loadingMore ? (
             <View style={localStyles.footerLoader}>

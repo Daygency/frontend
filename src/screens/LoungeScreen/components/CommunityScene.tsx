@@ -189,9 +189,13 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
       myUserId && authorUserId && authorUserId.toLowerCase() === myUserId.toLowerCase(),
     );
 
+    const categoryTag =
+      typeof item.category === "string" ? item.category : item.category?.name;
+
     return (
       <CommunityCard
         communityId={item.communityId}
+        tag={categoryTag}
         title={item.title}
         contentPreview={item.content ?? ""}
         author={author}

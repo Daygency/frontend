@@ -257,13 +257,13 @@ const CommunityCard = ({
             >
               <Ionicons
                 name={liked ? "heart" : "heart-outline"}
-                size={20}
-                color={liked ? RED.DEFAULT : BLACK}
+                size={17}
+                color={liked ? RED.DEFAULT : GRAY.DARK_100}
               />
               <Text style={styles.footerTextLarge}>{likeCount}</Text>
             </Pressable>
             <Pressable style={styles.footerItemLarge} onPress={onPress} hitSlop={8}>
-              <Ionicons name="chatbubble-outline" size={20} color={BLACK} />
+              <Ionicons name="chatbubble-outline" size={17} color={GRAY.DARK_100} />
               <Text style={styles.footerTextLarge}>{comments}</Text>
             </Pressable>
             <Pressable
@@ -274,8 +274,8 @@ const CommunityCard = ({
             >
               <Ionicons
                 name={scraped ? "bookmark" : "bookmark-outline"}
-                size={20}
-                color={BLACK}
+                size={17}
+                color={GRAY.DARK_100}
               />
               <Text style={styles.footerTextLarge}>{scrapCount}</Text>
             </Pressable>
@@ -390,7 +390,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: GRAY.MEDIUM_2,
+    borderBottomColor: GRAY.DARK_1,
     backgroundColor: "transparent",
   },
   row: {
@@ -493,10 +493,10 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   footerTextLarge: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "400",
-    color: BLACK,
-    minWidth: 14,
+    color: GRAY.DARK_100,
+    minWidth: 12,
     fontVariant: ["tabular-nums"],
   },
 
@@ -514,7 +514,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   feedAuthorTextCol: {
-    marginLeft: 10,
+    marginLeft: 6,
     flexShrink: 1,
     minWidth: 0,
   },
@@ -556,7 +556,6 @@ const styles = StyleSheet.create({
     color: BLACK,
     lineHeight: 21,
     marginBottom: 4,
-    marginLeft: 62,
   },
   feedContent: {
     fontSize: 13,
@@ -564,15 +563,17 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_100,
     lineHeight: 18,
     marginBottom: 8,
-    marginLeft: 62,
   },
   feedMediaWrap: {
-    width: "70%",
-    marginLeft: 62,
+    width: "100%",
+    borderRadius: 12,
+    overflow: "hidden",
+    marginBottom: 4,
+    // PhotoGrid 타일의 내부 padding(3px)만큼 밀어내어 사진 가장자리가 제목/본문 텍스트와 같은 좌우 여백에 맞춰지도록 함
+    marginHorizontal: -3,
   },
   feedFooter: {
     marginTop: 8,
-    marginLeft: 66,
   },
 });
 

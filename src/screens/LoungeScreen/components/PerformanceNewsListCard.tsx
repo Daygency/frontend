@@ -1,3 +1,4 @@
+import { memo, useCallback } from "react";
 import {
   Image,
   Pressable,
@@ -16,7 +17,7 @@ import { pickNewsListThumbnailUrl } from "../../../lib/media/listThumbnailUrl";
 
 type PerformanceNewsListCardProps = {
   item: NewsListItem;
-  onPress?: () => void;
+  onPress?: (newsId: string) => void;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -30,11 +31,14 @@ const PerformanceNewsListCard = ({
   const openLabel =
     display.openLabel ||
     formatPerformanceListDateLabel(item.startedAt, item.endedAt);
+  const handlePress = useCallback(() => {
+    onPress?.(item.newsId);
+  }, [onPress, item.newsId]);
 
   return (
     <Pressable
       style={({ pressed }) => [styles.card, pressed && styles.pressed, style]}
-      onPress={onPress}
+      onPress={handlePress}
     >
       <View style={styles.posterWrap}>
         {imageUrl ? (
@@ -185,4 +189,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PerformanceNewsListCard;
+export default memo(PerformanceNewsListCard);

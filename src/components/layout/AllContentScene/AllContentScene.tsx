@@ -21,7 +21,6 @@ import AnnouncementCard from "../../cards/AnnouncementCard";
 import EventNewsCard from "../../cards/EventNewsCard";
 import GrayCard from "../../cards/GrayCard";
 import MagazineHeroCarousel from "../../media/MagazineHeroCarousel/MagazineHeroCarousel";
-import HomeShortcutSection from "../../home/HomeShortcutSection/HomeShortcutSection";
 import { isContentNew } from "../../../lib/content/newBadge";
 import { ContentRoutes } from "../../../navigations/routes";
 import { RootRoutes } from "../../../navigations/routes";
@@ -221,19 +220,6 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
     );
   };
 
-  const handleAnnouncementShortcutPress = useCallback(
-    (initialFeedView: "내가 올린 공고" | "지원한 공고") => {
-      (navigation as { navigate: (a: string, b?: object) => void }).navigate(
-        "ContentTab",
-        {
-          screen: ContentRoutes.ACTIVITY,
-          params: { initialFeedView },
-        },
-      );
-    },
-    [navigation],
-  );
-
   const handleNewsMore = () => {
     (navigation as { navigate: (a: string, b?: object) => void }).navigate(
       "ContentTab",
@@ -271,11 +257,11 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
               );
             }}
           />
-          <HomeShortcutSection
-            onPressApplied={() => handleAnnouncementShortcutPress("지원한 공고")}
-            onPressPosted={() => handleAnnouncementShortcutPress("내가 올린 공고")}
-          />
-          <Section title="공연소식" onPressMore={handleNewsMore} styles={{ content: { paddingHorizontal: 0 } }}>
+          <Section
+            title="공연소식"
+            onPressMore={handleNewsMore}
+            styles={{ container: { marginTop: 28 }, content: { paddingHorizontal: 0 } }}
+          >
             {newsItems.length === 0 ? (
               <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24, paddingHorizontal: 20 }}>공연소식이 없습니다</Text>
             ) : (
@@ -315,7 +301,11 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
               </ScrollView>
             )}
           </Section>
-          <Section title="모집공고" onPressMore={handleAnnouncementMore}>
+          <Section
+            title="모집공고"
+            onPressMore={handleAnnouncementMore}
+            styles={{ container: { marginTop: -8 } }}
+          >
             {announcements.length === 0 ? (
               <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24 }}>모집공고가 없습니다</Text>
             ) : (
