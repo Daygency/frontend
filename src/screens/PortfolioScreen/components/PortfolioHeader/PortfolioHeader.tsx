@@ -80,8 +80,7 @@ const PortfolioHeader = ({
       style={[
         portfolioHeaderStyles.headerContainer,
         {
-          paddingTop: top + 6,
-          paddingBottom: 10,
+          paddingTop: top,
           paddingHorizontal: 17,
         },
         !useScrollFade &&
@@ -197,8 +196,8 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   headerIconButton: {
-    width: 44,
-    height: 44,
+    width: 38,
+    height: 38,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -34,7 +34,7 @@ type LoungeRouteParams = {
 };
 
 const TAB_TO_SEARCH_TAG: Record<LoungeTab, string> = {
-  "공연 소식": "공연소식",
+  공연소식: "공연소식",
   커뮤니티: "커뮤니티",
 };
 
@@ -56,9 +56,9 @@ function LoungeTabRetapBridge({ onToggleSubTab }: { onToggleSubTab: () => void }
 }
 
 function resolveInitialTab(initialTab?: LoungeRouteParams["initialTab"]): LoungeTab {
-  if (initialTab === "음악계 소식") return "공연 소식";
+  if (initialTab === "음악계 소식") return "공연소식";
   if (initialTab && LOUNGE_TABS.includes(initialTab)) return initialTab;
-  return "공연 소식";
+  return "공연소식";
 }
 
 function tabToIndex(tab: LoungeTab): number {
@@ -142,7 +142,7 @@ const LoungeScreen = () => {
   }, [index]);
 
   const activeTab = useMemo(
-    () => LOUNGE_TABS[index] ?? "공연 소식",
+    () => LOUNGE_TABS[index] ?? "공연소식",
     [index],
   );
 
@@ -151,7 +151,7 @@ const LoungeScreen = () => {
   };
 
   const filterRow =
-    activeTab === "공연 소식" ? (
+    activeTab === "공연소식" ? (
       <LoungePerformanceNewsFilterRow
         selectedGenre={selectedGenre}
         selectedRegion={selectedRegion}
@@ -193,7 +193,7 @@ const LoungeScreen = () => {
           selectedCommunityTag={selectedCommunityTag}
         />
       </LoungeScrollProvider>
-      {filterSheet && activeTab === "공연 소식" ? (
+      {filterSheet && activeTab === "공연소식" ? (
         <PerformanceNewsFilterSheet
           type={filterSheet}
           sortMode={sortMode}

@@ -20,6 +20,8 @@ export const portfolioHeaderStyles = StyleSheet.create({
   },
   topRow: {
     minHeight: 44,
+    paddingTop: 6,
+    paddingBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",

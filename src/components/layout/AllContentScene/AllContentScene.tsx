@@ -237,7 +237,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
   const handleNewsMore = () => {
     (navigation as { navigate: (a: string, b?: object) => void }).navigate(
       "ContentTab",
-      { screen: ContentRoutes.CHAT, params: { initialTab: "공연 소식" } },
+      { screen: ContentRoutes.CHAT, params: { initialTab: "공연소식" } },
     );
   };
 

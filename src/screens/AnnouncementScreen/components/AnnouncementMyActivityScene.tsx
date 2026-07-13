@@ -3,7 +3,6 @@ import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native"
 import Animated from "react-native-reanimated";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { StatValueSkeleton } from "./AnnouncementMyActivitySkeleton";
 import EmptyState from "../../../components/ui/EmptyState";
 import { useAuth } from "../../../contexts/AuthContext";
 import { MAIN } from "../../../color";
@@ -30,6 +29,7 @@ import {
   type AnnouncementApplicantSummary,
 } from "../../../lib/application/announcementApplicantSummary";
 import { useAnnouncementScroll } from "../AnnouncementScrollContext";
+import { PORTFOLIO_BODY_BG } from "../../../constants/portfolio";
 import styles from "./announcementMyActivitySceneStyles";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
@@ -137,6 +137,9 @@ const AnnouncementMyActivityScene = () => {
     }
   }, [load]);
 
+  const applicationStatsReady = !loading || result != null;
+  const myPostStatsReady = !myAnnouncementsLoading || myAnnouncements.length > 0;
+
   if (!isLoggedIn) {
     return (
       <View style={[styles.centerFill, { paddingTop: listTopInset }]}>
@@ -148,7 +151,7 @@ const AnnouncementMyActivityScene = () => {
   return (
     <AnimatedScrollView
       ref={scrollViewRef}
-      style={{ flex: 1 }}
+      style={{ flex: 1, backgroundColor: PORTFOLIO_BODY_BG }}
       contentContainerStyle={[styles.scrollContent, { paddingTop: listTopInset }]}
       onScroll={scrollHandler}
       scrollEventThrottle={16}
@@ -162,72 +165,68 @@ const AnnouncementMyActivityScene = () => {
         />
       }
     >
-      <Text style={styles.sectionTitle}>지원 현황</Text>
-      <View style={styles.statCard}>
-        {APPLICATION_STATUS_TABS.map((tab, index) => {
-          const groupItems = applicationStatusGroups[tab];
-          return (
-            <View
-              key={tab}
-              style={{ flexDirection: "row", flex: 1, alignItems: "center" }}
-            >
-              {index > 0 ? <View style={styles.statDivider} /> : null}
-              <Pressable
-                style={styles.statColumn}
-                disabled={loading && !result}
-                onPress={() =>
-                  navigation.navigate(RootRoutes.APPLICATION_STATUS_LIST, {
-                    initialTab: tab,
-                    groups: applicationStatusGroups,
-                  })
-                }
-              >
-                <Text style={styles.statLabel}>{tab}</Text>
-                {loading && !result ? (
-                  <StatValueSkeleton />
-                ) : (
-                  <Text style={styles.statValue}>{groupItems.length}</Text>
-                )}
-              </Pressable>
-            </View>
-          );
-        })}
-      </View>
-
-      <View style={styles.myPostSection}>
-        <Text style={styles.sectionTitle}>내가 만든 공고</Text>
-        <View style={styles.statCard}>
-          {MY_ANNOUNCEMENT_STATUS_TABS.map((tab, index) => {
-            const groupItems = myPostGroups[tab];
-            return (
-              <View
-                key={tab}
-                style={{ flexDirection: "row", flex: 1, alignItems: "center" }}
-              >
-                {index > 0 ? <View style={styles.statDivider} /> : null}
-                <Pressable
-                  style={styles.statColumn}
-                  disabled={myAnnouncementsLoading && myAnnouncements.length === 0}
-                  onPress={() =>
-                    navigation.navigate(RootRoutes.MY_ANNOUNCEMENT_STATUS_LIST, {
-                      initialTab: tab,
-                      groups: myPostGroups,
-                      applicantSummaries,
-                    })
-                  }
+      {applicationStatsReady ? (
+        <View style={[styles.contentSheet, styles.firstContentSheet]}>
+          <Text style={styles.sectionTitle}>지원 현황</Text>
+          <View style={styles.statCard}>
+            {APPLICATION_STATUS_TABS.map((tab, index) => {
+              const groupItems = applicationStatusGroups[tab];
+              return (
+                <View
+                  key={tab}
+                  style={{ flexDirection: "row", flex: 1, alignItems: "center" }}
                 >
-                  <Text style={styles.statLabel}>{tab}</Text>
-                  {myAnnouncementsLoading && myAnnouncements.length === 0 ? (
-                    <StatValueSkeleton />
-                  ) : (
+                  {index > 0 ? <View style={styles.statDivider} /> : null}
+                  <Pressable
+                    style={styles.statColumn}
+                    onPress={() =>
+                      navigation.navigate(RootRoutes.APPLICATION_STATUS_LIST, {
+                        initialTab: tab,
+                        groups: applicationStatusGroups,
+                      })
+                    }
+                  >
+                    <Text style={styles.statLabel}>{tab}</Text>
                     <Text style={styles.statValue}>{groupItems.length}</Text>
-                  )}
-                </Pressable>
-              </View>
-            );
-          })}
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
         </View>
-      </View>
+      ) : null}
+
+      {myPostStatsReady ? (
+        <View style={styles.contentSheet}>
+          <Text style={styles.sectionTitle}>내가 만든 공고</Text>
+          <View style={styles.statCard}>
+            {MY_ANNOUNCEMENT_STATUS_TABS.map((tab, index) => {
+              const groupItems = myPostGroups[tab];
+              return (
+                <View
+                  key={tab}
+                  style={{ flexDirection: "row", flex: 1, alignItems: "center" }}
+                >
+                  {index > 0 ? <View style={styles.statDivider} /> : null}
+                  <Pressable
+                    style={styles.statColumn}
+                    onPress={() =>
+                      navigation.navigate(RootRoutes.MY_ANNOUNCEMENT_STATUS_LIST, {
+                        initialTab: tab,
+                        groups: myPostGroups,
+                        applicantSummaries,
+                      })
+                    }
+                  >
+                    <Text style={styles.statLabel}>{tab}</Text>
+                    <Text style={styles.statValue}>{groupItems.length}</Text>
+                  </Pressable>
+                </View>
+              );
+            })}
+          </View>
+        </View>
+      ) : null}
     </AnimatedScrollView>
   );
 };

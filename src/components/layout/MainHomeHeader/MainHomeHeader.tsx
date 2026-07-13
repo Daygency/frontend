@@ -5,7 +5,7 @@ import styles from "./styles";
 export const MAIN_HOME_TABS = ["홈", "매거진"] as const;
 export type MainHomeTab = (typeof MAIN_HOME_TABS)[number];
 
-export const LOUNGE_TABS = ["공연 소식", "커뮤니티"] as const;
+export const LOUNGE_TABS = ["공연소식", "커뮤니티"] as const;
 export type LoungeTab = (typeof LOUNGE_TABS)[number];
 
 interface MainHomeHeaderProps<T extends string = MainHomeTab> {

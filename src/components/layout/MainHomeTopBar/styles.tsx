@@ -33,8 +33,8 @@ const styles = StyleSheet.create({
   iconButton: {
     position: "relative",
     flexShrink: 0,
-    width: 44,
-    height: 44,
+    width: 38,
+    height: 38,
     alignItems: "center",
     justifyContent: "center",
   },

@@ -10,6 +10,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingBottom: 10,
     paddingTop: 6,
+    minHeight: 44,
   },
   title: {
     marginLeft: 4,
@@ -21,11 +22,15 @@ const styles = StyleSheet.create({
   iconContainer: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 20,
+    gap: 12,
   },
   iconButton: {
     position: "relative",
     flexShrink: 0,
+    width: 38,
+    height: 38,
+    alignItems: "center",
+    justifyContent: "center",
   },
 });
 
