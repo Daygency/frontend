@@ -4,11 +4,11 @@ import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
 const styles = StyleSheet.create({
   tag: {
     backgroundColor: WHITE,
-    borderRadius: 18,
+    borderRadius: 15,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
-    paddingHorizontal: 12,
-    height: 36,
+    paddingHorizontal: 9,
+    height: 30,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -21,11 +21,11 @@ const styles = StyleSheet.create({
   },
   tagText: {
     color: BLACK,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "400",
     includeFontPadding: false,
     textAlignVertical: "center",
-    lineHeight: 18,
+    lineHeight: 16,
   },
   tagTextSelected: {
     color: WHITE,

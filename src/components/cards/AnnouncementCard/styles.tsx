@@ -92,8 +92,8 @@ export default StyleSheet.create({
     flexShrink: 1,
   },
   locationTagText: {
-    fontSize: 11,
-    lineHeight: 14,
+    fontSize: 10,
+    lineHeight: 13,
     letterSpacing: 0.2,
     color: BLACK,
     fontWeight: "500",

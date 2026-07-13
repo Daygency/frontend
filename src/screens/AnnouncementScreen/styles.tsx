@@ -26,8 +26,8 @@ const styles = StyleSheet.create({
     borderRadius: 100,
     borderWidth: 1,
     borderColor: GRAY.MEDIUM_2,
-    paddingHorizontal: 12,
-    height: 36,
+    paddingHorizontal: 9,
+    height: 30,
     gap: 4,
   },
   filterChipActive: {
@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   },
   filterChipText: {
     color: MAIN.DEFAULT,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: "400",
   },
   filterChipTextActive: {

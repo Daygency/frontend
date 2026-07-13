@@ -80,10 +80,6 @@ const MainHomeTopBar = ({
   const displayedTitle = hasTitleMenu
     ? selectedTitleMenuOption
     : (logoName ?? "");
-  const unreadNotificationLabel =
-    unreadNotificationCount > 99
-      ? "99+"
-      : String(unreadNotificationCount);
 
   const handleSearchPress = () => {
     if (initialTag) {
@@ -237,11 +233,7 @@ const MainHomeTopBar = ({
         >
           <Octicons name="bell" size={21} color={iconColor} />
           {unreadNotificationCount > 0 ? (
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationBadgeText}>
-                {unreadNotificationLabel}
-              </Text>
-            </View>
+            <View style={styles.notificationBadge} />
           ) : null}
         </Pressable>
         <Pressable
