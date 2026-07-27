@@ -34,14 +34,14 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 6,
   },
   latestPost: {
     fontSize: 14,
     lineHeight: 22,
     fontWeight: "400",
     color: BLACK,
-    flex: 1,
+    flexShrink: 1,
     minWidth: 0,
   },
   itemPressed: {

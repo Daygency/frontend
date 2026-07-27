@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import type { EventArg } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ContentRoutes } from "./routes";
 import { fireTabRetap } from "../lib/navigation/tabRetap";
 import MainHomeScreen from "../screens/MainHomeScreen/MainHomeScreen";
@@ -24,18 +25,21 @@ import { GRAY, MAIN, WHITE } from "../color";
 
 const Tab = createBottomTabNavigator();
 
-const TAB_BAR_STYLE = {
-  paddingTop: 6,
-  paddingBottom: 6,
-  height: 80,
-  backgroundColor: WHITE,
-  borderTopWidth: 1,
-  borderTopColor: GRAY.MEDIUM,
-} as const;
+const TAB_BAR_CONTENT_HEIGHT = 68;
 
 const ContentTab = () => {
   const { isLoggedIn, requireLogin } = useAuth();
   const { unreadCount } = useChatUnread();
+  const insets = useSafeAreaInsets();
+
+  const tabBarStyle = {
+    paddingTop: 6,
+    paddingBottom: Math.max(insets.bottom, 6),
+    height: TAB_BAR_CONTENT_HEIGHT + insets.bottom,
+    backgroundColor: WHITE,
+    borderTopWidth: 1,
+    borderTopColor: GRAY.MEDIUM,
+  } as const;
 
   const requireLoginOnTabPress = (
     e: EventArg<"tabPress", true, undefined>,
@@ -65,7 +69,7 @@ const ContentTab = () => {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarStyle: TAB_BAR_STYLE,
+        tabBarStyle,
         tabBarActiveTintColor: MAIN.DEFAULT,
         tabBarInactiveTintColor: GRAY.MEDIUM_100,
         tabBarShowLabel: false,
