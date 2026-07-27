@@ -36,6 +36,12 @@ const styles = StyleSheet.create({
     color: MAIN.DEFAULT,
     fontWeight: "600",
   },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: GRAY.DEFAULT,
+  },
   openBadgeInline: {
     alignSelf: "flex-start",
     paddingHorizontal: 10,

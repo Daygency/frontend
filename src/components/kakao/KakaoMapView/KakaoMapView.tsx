@@ -1,20 +1,22 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
+  ActivityIndicator,
   Alert,
+  Dimensions,
+  Image,
   Linking,
   Platform,
   Pressable,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
-import MapView, { Marker, PROVIDER_GOOGLE } from "react-native-maps";
+import { API_BASE } from "../../../lib/apis/api";
 import {
   getNativeMapLink,
   getNativeMapOpenLabel,
   hasMapCoords,
 } from "../../../lib/kakao/location";
-import { GRAY, MAIN } from "../../../color";
+import { MAIN } from "../../../color";
 import styles from "./styles";
 
 type KakaoMapViewProps = {
@@ -24,7 +26,11 @@ type KakaoMapViewProps = {
   height?: number;
 };
 
-const PREVIEW_DELTA = 0.008;
+const MAX_STATIC_MAP_SIZE = 1024;
+const STATIC_MAP_WIDTH = Math.min(
+  MAX_STATIC_MAP_SIZE,
+  Math.round(Dimensions.get("window").width),
+);
 
 export default function KakaoMapView({
   latitude,
@@ -32,20 +38,24 @@ export default function KakaoMapView({
   place,
   height = 180,
 }: KakaoMapViewProps) {
+  const [imageFailed, setImageFailed] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
   const coords = hasMapCoords({ latitude, longitude })
     ? { latitude: latitude!, longitude: longitude! }
     : null;
   const placeLabel = place?.trim() ?? "";
 
-  const region = useMemo(() => {
+  const staticMapUrl = useMemo(() => {
     if (!coords) return null;
-    return {
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-      latitudeDelta: PREVIEW_DELTA,
-      longitudeDelta: PREVIEW_DELTA,
-    };
-  }, [coords]);
+    const clampedHeight = Math.min(MAX_STATIC_MAP_SIZE, Math.round(height));
+    const params = new URLSearchParams({
+      latitude: String(coords.latitude),
+      longitude: String(coords.longitude),
+      width: String(STATIC_MAP_WIDTH),
+      height: String(clampedHeight),
+    });
+    return `${API_BASE}/naver-map/static?${params.toString()}`;
+  }, [coords, height]);
 
   const openMap = async () => {
     const url = getNativeMapLink({
@@ -73,7 +83,7 @@ export default function KakaoMapView({
     Platform.OS === "ios" ? "ios" : "android",
   );
 
-  if (!coords) {
+  if (!coords || !staticMapUrl || imageFailed) {
     return (
       <View style={[styles.container, styles.addressOnly, { minHeight: height }]}>
         <Text style={styles.addressText} numberOfLines={3}>
@@ -93,26 +103,21 @@ export default function KakaoMapView({
 
   return (
     <View style={[styles.container, { height }]}>
-      <MapView
-        style={StyleSheet.absoluteFill}
-        region={region!}
-        provider={Platform.OS === "android" ? PROVIDER_GOOGLE : undefined}
-        scrollEnabled={false}
-        zoomEnabled={false}
-        pitchEnabled={false}
-        rotateEnabled={false}
-        toolbarEnabled={false}
-        moveOnMarkerPress={false}
-        {...Platform.select({
-          android: { liteMode: true },
-          default: {},
-        })}
-      >
-        <Marker
-          coordinate={{ latitude: coords.latitude, longitude: coords.longitude }}
-          title={placeLabel || undefined}
-        />
-      </MapView>
+      <Image
+        source={{ uri: staticMapUrl }}
+        style={{ width: "100%", height }}
+        resizeMode="cover"
+        onLoadEnd={() => setImageLoading(false)}
+        onError={() => {
+          setImageLoading(false);
+          setImageFailed(true);
+        }}
+      />
+      {imageLoading ? (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator color={MAIN.DEFAULT} />
+        </View>
+      ) : null}
       <Pressable
         style={styles.openBadge}
         onPress={openMap}

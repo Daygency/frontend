@@ -29,9 +29,6 @@ if (googleServicesJsonBase64) {
 const hasPlist = fs.existsSync(plistPath);
 const hasGoogleServicesJson = fs.existsSync(googleServicesJsonPath);
 
-const googleMapsApiKey =
-  process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY?.trim() ?? "";
-
 const googleIosUrlScheme =
   process.env.EXPO_PUBLIC_GOOGLE_IOS_URL_SCHEME?.trim() ?? "";
 
@@ -70,11 +67,6 @@ export default ({ config }) => ({
       googleServicesFile: hasGoogleServicesJson
         ? "./google-services.json"
         : undefined,
-      config: {
-        googleMaps: {
-          apiKey: googleMapsApiKey,
-        },
-      },
     },
     plugins: [
       [
