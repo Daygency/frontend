@@ -1,5 +1,6 @@
 import { useCallback } from "react";
-import { Platform, Pressable, StyleSheet, Text } from "react-native";
+import { Modal, Pressable, StyleSheet, Text } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, {
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
@@ -60,60 +61,68 @@ export const AnnouncementStatusSheet = ({
         appearsOnIndex={0}
         disappearsOnIndex={-1}
         pressBehavior="close"
-        style={[props.style, styles.backdropZIndex]}
       />
     ),
     [],
   );
 
-  if (!visible) return null;
-
   return (
-    <BottomSheet
-      index={0}
-      enableDynamicSizing
-      enablePanDownToClose
-      onClose={onClose}
-      backdropComponent={renderBackdrop}
-      containerStyle={styles.containerZIndex}
-      backgroundStyle={styles.sheetBackground}
-      handleIndicatorStyle={styles.handleIndicator}
+    <Modal
+      transparent
+      visible={visible}
+      animationType="none"
+      onRequestClose={onClose}
+      statusBarTranslucent
     >
-      <BottomSheetView style={styles.sheetContent}>
-        <Text style={styles.title}>공고 상태 변경</Text>
-        {STATUS_OPTIONS.map((opt) => {
-          const selected = opt.value === value;
-          const isDanger = opt.value === "종료";
-          return (
-            <Pressable
-              key={opt.value}
-              style={({ pressed }) => [
-                styles.optionRow,
-                pressed && styles.optionRowPressed,
-              ]}
-              onPress={() => onSelect(opt.value)}
-            >
-              <Text
-                style={[
-                  styles.optionText,
-                  isDanger && styles.optionTextDanger,
-                  selected && !isDanger && styles.optionTextSelected,
-                ]}
-              >
-                {opt.label}
-              </Text>
-              {selected ? (
-                <Ionicons
-                  name="checkmark"
-                  size={18}
-                  color={isDanger ? RED.DEFAULT : MAIN.DEFAULT}
-                />
-              ) : null}
-            </Pressable>
-          );
-        })}
-      </BottomSheetView>
-    </BottomSheet>
+      {visible ? (
+        <GestureHandlerRootView style={styles.gestureRoot}>
+          <BottomSheet
+            index={0}
+            enableDynamicSizing
+            enablePanDownToClose
+            onClose={onClose}
+            backdropComponent={renderBackdrop}
+            backgroundStyle={styles.sheetBackground}
+            handleIndicatorStyle={styles.handleIndicator}
+          >
+            <BottomSheetView style={styles.sheetContent}>
+              <Text style={styles.title}>공고 상태 변경</Text>
+              {STATUS_OPTIONS.map((opt) => {
+                const selected = opt.value === value;
+                const isDanger = opt.value === "종료";
+                return (
+                  <Pressable
+                    key={opt.value}
+                    style={({ pressed }) => [
+                      styles.optionRow,
+                      pressed && styles.optionRowPressed,
+                    ]}
+                    onPress={() => onSelect(opt.value)}
+                  >
+                    <Text
+                      style={[
+                        styles.optionText,
+                        isDanger && styles.optionTextDanger,
+                        selected && !isDanger && styles.optionTextSelected,
+                      ]}
+                    >
+                      {opt.label}
+                    </Text>
+                    {selected ? (
+                      <Ionicons
+                        name="checkmark"
+                        size={18}
+                        color={isDanger ? RED.DEFAULT : MAIN.DEFAULT}
+                      />
+                    ) : null}
+                  </Pressable>
+                );
+              })}
+            </BottomSheetView>
+          </BottomSheet>
+        </GestureHandlerRootView>
+      ) : null}
+    </Modal>
   );
 };
 
@@ -135,17 +144,8 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: BLACK,
   },
-  backdropZIndex: {
-    zIndex: 100,
-    ...Platform.select({
-      android: { elevation: 100 },
-    }),
-  },
-  containerZIndex: {
-    zIndex: 100,
-    ...Platform.select({
-      android: { elevation: 100 },
-    }),
+  gestureRoot: {
+    flex: 1,
   },
   sheetBackground: {
     backgroundColor: WHITE,
