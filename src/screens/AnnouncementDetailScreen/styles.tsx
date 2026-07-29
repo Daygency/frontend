@@ -170,16 +170,6 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     backgroundColor: WHITE,
   },
-  addressInCard: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: GRAY.DEFAULT,
-  },
-  addressText: {
-    fontSize: 13,
-    lineHeight: 20,
-    color: GRAY.DARK,
-  },
   attachmentsCard: {
     marginBottom: 14,
     gap: 8,

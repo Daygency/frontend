@@ -29,7 +29,6 @@ import {
 import ImageCarousel from "../../components/media/ImageCarousel/ImageCarousel";
 import PhotoGrid from "../../components/media/PhotoGrid";
 import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
-import { parseCoord } from "../../lib/kakao/location";
 import { formatAnnouncementDistrictLabel } from "../../lib/announcement/announcementAddress";
 import { extractAnnouncementAuthorFromDetail } from "../../lib/announcement/extractAnnouncementAuthor";
 import type { AnnouncementAuthor } from "../../lib/announcement/extractAnnouncementAuthor";
@@ -182,8 +181,6 @@ const AnnouncementDetailScreen = () => {
     applicationConfig: ApplicationConfig | null;
     content?: string;
     address?: string;
-    latitude?: number | null;
-    longitude?: number | null;
     deadlineAt?: string;
     scheduledAt?: string;
     imageUrls?: string[];
@@ -457,8 +454,6 @@ const AnnouncementDetailScreen = () => {
         ...(typeof rawAddress === "string" && rawAddress.trim()
           ? { address: rawAddress }
           : {}),
-        latitude: parseCoord(d.latitude),
-        longitude: parseCoord(d.longitude),
         ...(deadlineAt ? { deadlineAt } : {}),
         ...(scheduledAt ? { scheduledAt } : {}),
         ...(imageUrls.length > 0 ? { imageUrls } : {}),
@@ -1209,15 +1204,7 @@ const AnnouncementDetailScreen = () => {
               <View style={styles.sectionBlock}>
                 <Text style={styles.sectionHeading}>지역</Text>
                 <View style={styles.locationCard}>
-                  <KakaoMapView
-                    latitude={detailData?.latitude}
-                    longitude={detailData?.longitude}
-                    place={addressLabel}
-                    height={200}
-                  />
-                  <View style={styles.addressInCard}>
-                    <Text style={styles.addressText}>{addressLabel}</Text>
-                  </View>
+                  <KakaoMapView place={addressLabel} />
                 </View>
               </View>
             ) : null}

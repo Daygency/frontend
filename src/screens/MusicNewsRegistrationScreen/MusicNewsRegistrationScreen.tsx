@@ -17,9 +17,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import Form from "../../components/forms/Form";
 import FormTextInput from "../../components/forms/FormTextInput";
-import KakaoLocationField from "../../components/kakao/KakaoLocationField/KakaoLocationField";
+import JusoAddressField from "../../components/juso/JusoAddressField/JusoAddressField";
 import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
-import { parseCoord } from "../../lib/kakao/location";
 import { GRAY, MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import {
@@ -72,8 +71,6 @@ const MusicNewsRegistrationScreen = () => {
   const [content, setContent] = useState("");
   const [placeValue, setPlaceValue] = useState({
     address: "",
-    latitude: null as number | null,
-    longitude: null as number | null,
   });
   const [ticketPrice, setTicketPrice] = useState("");
   const [isFreeTicket, setIsFreeTicket] = useState(false);
@@ -109,11 +106,7 @@ const MusicNewsRegistrationScreen = () => {
       }
       setTitle(detail.title ?? "");
       setContent(detail.content ?? "");
-      setPlaceValue({
-        address: detail.place ?? "",
-        latitude: parseCoord(detail.latitude),
-        longitude: parseCoord(detail.longitude),
-      });
+      setPlaceValue({ address: detail.place ?? "" });
       setContact(detail.contact ?? "");
       if (detail.ticketPrice === 0) {
         setIsFreeTicket(true);
@@ -242,12 +235,6 @@ const MusicNewsRegistrationScreen = () => {
       title: title.trim(),
       content: content.trim().slice(0, 255),
       place: placeValue.address.trim().slice(0, 100),
-      ...(placeValue.latitude != null && placeValue.longitude != null
-        ? {
-            latitude: placeValue.latitude,
-            longitude: placeValue.longitude,
-          }
-        : {}),
       startedAt: dateToISO(startedAt),
       ...(contact.trim()
         ? { contact: contact.trim().slice(0, 30) }
@@ -386,8 +373,8 @@ const MusicNewsRegistrationScreen = () => {
             style={styles.formField}
           >
             <Form title="장소" isRequired hasError={err.place}>
-              <KakaoLocationField
-                placeholder="공연 장소를 입력하세요"
+              <JusoAddressField
+                placeholder="공연 장소의 주소를 입력하세요"
                 value={placeValue}
                 onChange={setPlaceValue}
                 hasError={err.place}

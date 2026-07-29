@@ -357,7 +357,9 @@ const CommunityDetailScreen = () => {
         limit: COMMENTS_PAGE_LIMIT,
       });
       if (!res) return;
-      rawCommentsRef.current = [...rawCommentsRef.current, ...res.items];
+      const merged = new Map(rawCommentsRef.current.map((c) => [c.id, c]));
+      res.items.forEach((c) => merged.set(c.id, c));
+      rawCommentsRef.current = Array.from(merged.values());
       setComments(buildCommentTree(rawCommentsRef.current, myUserId));
       setCommentsNextCursor(res.nextCursor);
       setCommentsHasMore(res.hasMore);

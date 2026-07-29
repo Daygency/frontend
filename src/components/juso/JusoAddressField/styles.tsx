@@ -68,24 +68,10 @@ const styles = StyleSheet.create({
   resultRowPressed: {
     backgroundColor: GRAY.DEFAULT,
   },
-  resultTitle: {
-    fontSize: 15,
-    color: BLACK,
-    fontWeight: "600",
-    marginBottom: 4,
-  },
   resultAddress: {
-    fontSize: 13,
-    color: GRAY.DARK,
-    lineHeight: 18,
-  },
-  mapBlock: {
-    gap: 8,
-  },
-  mapLabel: {
-    fontSize: 13,
-    color: GRAY.DARK,
-    fontWeight: "500",
+    fontSize: 14,
+    color: BLACK,
+    lineHeight: 19,
   },
 });
 

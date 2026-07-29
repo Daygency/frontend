@@ -10,24 +10,13 @@ const styles = StyleSheet.create({
     borderColor: GRAY.MEDIUM,
     backgroundColor: GRAY.DEFAULT,
   },
-  openBadge: {
-    position: "absolute",
-    right: 10,
-    bottom: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: MAIN.DEFAULT,
-  },
   openBadgeText: {
     color: WHITE,
     fontSize: 12,
     fontWeight: "600",
   },
   addressOnly: {
-    minHeight: 120,
     padding: 16,
-    justifyContent: "space-between",
     gap: 12,
   },
   addressText: {
@@ -35,12 +24,6 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: MAIN.DEFAULT,
     fontWeight: "600",
-  },
-  loadingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: GRAY.DEFAULT,
   },
   openBadgeInline: {
     alignSelf: "flex-start",

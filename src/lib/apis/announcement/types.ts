@@ -25,8 +25,6 @@ export type CreateAnnouncementDto = {
   deadlineAt?: string | null; // ISO 8601, null = 상시 모집
   scheduledAt: string; // ISO 8601
   address: string;
-  latitude?: number | null;
-  longitude?: number | null;
   fileId?: string; // UUID (선택)
   categoryId: string; // UUID
   majorIds?: string[];

@@ -67,7 +67,6 @@ import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
 import ImageCarousel from "../../components/media/ImageCarousel";
 import PhotoGrid from "../../components/media/PhotoGrid";
 import PosterBlurHeroBanner from "../../components/media/PosterBlurHeroBanner";
-import { parseCoord } from "../../lib/kakao/location";
 import { formatPerformanceDetailDateLabel } from "../../lib/news/formatPerformanceOpenLabel";
 import { formatNewsTicketPrice } from "../../lib/news/buildPerformanceNewsDisplay";
 import { pickUserNickname } from "../../lib/user/pickUserNickname";
@@ -79,8 +78,6 @@ export type MusicNewsDetailItem = {
   id: string;
   title: string;
   place: string;
-  latitude?: number | null;
-  longitude?: number | null;
   date: string;
   time: string;
   contact: string;
@@ -163,8 +160,6 @@ function mapApiToItem(res: NewsDetailResponse): MusicNewsDetailItem {
     id: res.newsId,
     title: res.title,
     place: res.place,
-    latitude: parseCoord(res.latitude),
-    longitude: parseCoord(res.longitude),
     date: dateStr,
     time: timeStr || "00:00",
     contact: res.contact ?? "",
@@ -438,7 +433,9 @@ const MusicNewsDetailScreen = () => {
         limit: COMMENTS_PAGE_LIMIT,
       });
       if (!res) return;
-      rawCommentsRef.current = [...rawCommentsRef.current, ...res.items];
+      const merged = new Map(rawCommentsRef.current.map((c) => [c.id, c]));
+      res.items.forEach((c) => merged.set(c.id, c));
+      rawCommentsRef.current = Array.from(merged.values());
       setComments(buildCommentTree(rawCommentsRef.current, myUserId));
       setCommentsNextCursor(res.nextCursor);
       setCommentsHasMore(res.hasMore);
@@ -1008,15 +1005,7 @@ const MusicNewsDetailScreen = () => {
                 <View ref={mapSectionRef} style={styles.sectionBlock}>
                   <Text style={styles.sectionHeading}>지역</Text>
                   <View style={styles.locationCard}>
-                    <KakaoMapView
-                      latitude={news.latitude}
-                      longitude={news.longitude}
-                      place={news.place}
-                      height={200}
-                    />
-                    <View style={styles.addressInCard}>
-                      <Text style={styles.addressText}>{news.place}</Text>
-                    </View>
+                    <KakaoMapView place={news.place} />
                   </View>
                 </View>
               ) : null}
