@@ -19,7 +19,9 @@ import type { ApplicationEntity } from "../../lib/apis/application/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
-import AnnouncementStatusMenu, {
+import {
+  AnnouncementStatusSheet,
+  AnnouncementStatusTrigger,
   AnnouncementStatusValue,
 } from "./AnnouncementStatusMenu";
 import AcceptedPerformersSection from "./AcceptedPerformersSection";
@@ -196,6 +198,7 @@ const AnnouncementDetailScreen = () => {
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [statusSheetVisible, setStatusSheetVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -732,10 +735,10 @@ const AnnouncementDetailScreen = () => {
       headerRight: () => (
         <View style={styles.headerRightWrap}>
           {detailLoaded && isMine && params.postId ? (
-            <AnnouncementStatusMenu
+            <AnnouncementStatusTrigger
               value={currentAnnouncementStatus}
-              onSelect={handleChangeStatus}
               disabled={statusUpdating}
+              onPress={() => setStatusSheetVisible(true)}
             />
           ) : null}
           {detailLoaded && !isMine ? (
@@ -821,7 +824,6 @@ const AnnouncementDetailScreen = () => {
     handleOpenChatInquiry,
     chatInquiryLoading,
     currentAnnouncementStatus,
-    handleChangeStatus,
     statusUpdating,
   ]);
 
@@ -1230,6 +1232,15 @@ const AnnouncementDetailScreen = () => {
         onClose={() => !reportSubmitting && setReportModalVisible(false)}
         onSelect={handlePickReportCategory}
         submitting={reportSubmitting}
+      />
+      <AnnouncementStatusSheet
+        visible={statusSheetVisible}
+        value={currentAnnouncementStatus}
+        onClose={() => setStatusSheetVisible(false)}
+        onSelect={(next) => {
+          setStatusSheetVisible(false);
+          handleChangeStatus(next);
+        }}
       />
     </View>
   );

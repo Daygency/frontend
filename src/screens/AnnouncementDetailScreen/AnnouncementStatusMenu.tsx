@@ -1,5 +1,5 @@
-import { useCallback, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { useCallback } from "react";
+import { Platform, Pressable, StyleSheet, Text } from "react-native";
 import BottomSheet, {
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
@@ -16,19 +16,43 @@ const STATUS_OPTIONS: { value: AnnouncementStatusValue; label: string }[] = [
   { value: "종료", label: "종료하기" },
 ];
 
-interface AnnouncementStatusMenuProps {
+interface AnnouncementStatusTriggerProps {
   value: AnnouncementStatusValue;
-  onSelect: (next: AnnouncementStatusValue) => void;
   disabled?: boolean;
+  onPress: () => void;
 }
 
-const AnnouncementStatusMenu = ({
+/** 헤더에 들어가는 트리거 버튼. 실제 바텀시트는 화면 최상위에서 별도로 렌더링됨(헤더 컨테이너 안에서는
+ * BottomSheet의 전체 화면 오버레이가 잘릴 수 있어 분리). */
+export const AnnouncementStatusTrigger = ({
+  value,
+  disabled = false,
+  onPress,
+}: AnnouncementStatusTriggerProps) => (
+  <Pressable
+    style={[styles.trigger, disabled && styles.triggerDisabled]}
+    onPress={onPress}
+    disabled={disabled}
+    hitSlop={6}
+  >
+    <Text style={styles.triggerText}>{value}</Text>
+    <Ionicons name="chevron-down" size={14} color={BLACK} />
+  </Pressable>
+);
+
+interface AnnouncementStatusSheetProps {
+  visible: boolean;
+  value: AnnouncementStatusValue;
+  onSelect: (next: AnnouncementStatusValue) => void;
+  onClose: () => void;
+}
+
+export const AnnouncementStatusSheet = ({
+  visible,
   value,
   onSelect,
-  disabled = false,
-}: AnnouncementStatusMenuProps) => {
-  const [sheetVisible, setSheetVisible] = useState(false);
-
+  onClose,
+}: AnnouncementStatusSheetProps) => {
   const renderBackdrop = useCallback(
     (props: BottomSheetBackdropProps) => (
       <BottomSheetBackdrop
@@ -42,70 +66,54 @@ const AnnouncementStatusMenu = ({
     [],
   );
 
-  const handleSelect = (next: AnnouncementStatusValue) => {
-    setSheetVisible(false);
-    if (next !== value) onSelect(next);
-  };
+  if (!visible) return null;
 
   return (
-    <View>
-      <Pressable
-        style={[styles.trigger, disabled && styles.triggerDisabled]}
-        onPress={() => setSheetVisible(true)}
-        disabled={disabled}
-        hitSlop={6}
-      >
-        <Text style={styles.triggerText}>{value}</Text>
-        <Ionicons name="chevron-down" size={14} color={BLACK} />
-      </Pressable>
-      {sheetVisible ? (
-        <BottomSheet
-          index={0}
-          enableDynamicSizing
-          enablePanDownToClose
-          onClose={() => setSheetVisible(false)}
-          backdropComponent={renderBackdrop}
-          containerStyle={styles.containerZIndex}
-          backgroundStyle={styles.sheetBackground}
-          handleIndicatorStyle={styles.handleIndicator}
-        >
-          <BottomSheetView style={styles.sheetContent}>
-            <Text style={styles.title}>공고 상태 변경</Text>
-            {STATUS_OPTIONS.map((opt) => {
-              const selected = opt.value === value;
-              const isDanger = opt.value === "종료";
-              return (
-                <Pressable
-                  key={opt.value}
-                  style={({ pressed }) => [
-                    styles.optionRow,
-                    pressed && styles.optionRowPressed,
-                  ]}
-                  onPress={() => handleSelect(opt.value)}
-                >
-                  <Text
-                    style={[
-                      styles.optionText,
-                      isDanger && styles.optionTextDanger,
-                      selected && !isDanger && styles.optionTextSelected,
-                    ]}
-                  >
-                    {opt.label}
-                  </Text>
-                  {selected ? (
-                    <Ionicons
-                      name="checkmark"
-                      size={18}
-                      color={isDanger ? RED.DEFAULT : MAIN.DEFAULT}
-                    />
-                  ) : null}
-                </Pressable>
-              );
-            })}
-          </BottomSheetView>
-        </BottomSheet>
-      ) : null}
-    </View>
+    <BottomSheet
+      index={0}
+      enableDynamicSizing
+      enablePanDownToClose
+      onClose={onClose}
+      backdropComponent={renderBackdrop}
+      containerStyle={styles.containerZIndex}
+      backgroundStyle={styles.sheetBackground}
+      handleIndicatorStyle={styles.handleIndicator}
+    >
+      <BottomSheetView style={styles.sheetContent}>
+        <Text style={styles.title}>공고 상태 변경</Text>
+        {STATUS_OPTIONS.map((opt) => {
+          const selected = opt.value === value;
+          const isDanger = opt.value === "종료";
+          return (
+            <Pressable
+              key={opt.value}
+              style={({ pressed }) => [
+                styles.optionRow,
+                pressed && styles.optionRowPressed,
+              ]}
+              onPress={() => onSelect(opt.value)}
+            >
+              <Text
+                style={[
+                  styles.optionText,
+                  isDanger && styles.optionTextDanger,
+                  selected && !isDanger && styles.optionTextSelected,
+                ]}
+              >
+                {opt.label}
+              </Text>
+              {selected ? (
+                <Ionicons
+                  name="checkmark"
+                  size={18}
+                  color={isDanger ? RED.DEFAULT : MAIN.DEFAULT}
+                />
+              ) : null}
+            </Pressable>
+          );
+        })}
+      </BottomSheetView>
+    </BottomSheet>
   );
 };
 
@@ -185,5 +193,3 @@ const styles = StyleSheet.create({
     color: RED.DEFAULT,
   },
 });
-
-export default AnnouncementStatusMenu;
