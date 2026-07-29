@@ -43,7 +43,6 @@ export const RootRoutes = {
   CHAT_ROOM_OPTIONS: "ChatRoomOptions",
   CHAT_FILE_ARCHIVE: "ChatFileArchive",
   PDF_VIEWER: "PdfViewer",
-  MY_POSTED_CHAT_ROOMS: "MyPostedChatRooms",
   ANNOUNCEMENT_APPLICANTS: "AnnouncementApplicants",
   /** README: POST /announcement/:postId/reviews */
   ACTIVITY_REVIEW: "ActivityReview",

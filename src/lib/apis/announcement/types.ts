@@ -57,10 +57,6 @@ export type AnnouncementListItem = {
   majors?: { majorId: string; name: string }[];
   /** 누적 조회수(목록·내 공고 목록 등 DB 저장값) */
   viewCount?: number;
-  /** 내 공고 목록 — 해당 공고 1:1 채팅방 수 */
-  chatRoomCount?: number;
-  /** 내 공고 목록 — 해당 공고 채팅방들의 안 읽은 메시지 합산 */
-  unreadCount?: number;
   /** 공연·모집 장소 (목록 API가 내려줄 때) */
   address?: string;
   /** 마감일 ISO 8601 — 목록 API가 `deadlineAt`으로 반환 (D-day 표시 보정·카드에 사용) */

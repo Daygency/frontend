@@ -12,17 +12,13 @@ import { RouteProp, useFocusEffect, useNavigation, useRoute } from "@react-navig
 import { RootRoutes } from "../../navigations/routes";
 import EmptyState, { contentContainerWhenEmpty } from "../../components/ui/EmptyState";
 import {
-  getApplicationById,
   getApplicationsForPost,
 } from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity, ApplicationReviewStatus } from "../../lib/apis/application/types";
-import {
-  createAnnouncementRoom,
-  getRoomsByPost,
-} from "../../lib/apis/chat/chatApi";
-import type { ChatRoomListItem } from "../../lib/apis/chat/types";
+import { createAnnouncementRoom } from "../../lib/apis/chat/chatApi";
+import type { ChatPeerSummary } from "../../lib/apis/chat/types";
 import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
-import { chatRoomItemToParamsWithApplicantFallback } from "../../lib/chat/chatRoomNavigation";
+import { chatRoomItemToParams } from "../../lib/chat/chatRoomNavigation";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./styles";
 
@@ -39,11 +35,6 @@ type RouteParams = RouteProp<
   "AnnouncementApplicants"
 >;
 
-type RowModel = {
-  application: ApplicationEntity;
-  room: ChatRoomListItem | null;
-};
-
 const PAGE_LIMIT = 20;
 
 function displayName(application: ApplicationEntity): string {
@@ -57,24 +48,21 @@ function displayHandle(application: ApplicationEntity): string {
   return activityName ? `@${activityName}` : "-";
 }
 
-function mergeRows(
-  applications: ApplicationEntity[],
-  rooms: ChatRoomListItem[],
-): RowModel[] {
-  return applications.map((application) => {
-    const uid = application.userId;
-    const room =
-      uid != null && uid !== ""
-        ? (rooms.find((r) => r.peer?.userId === uid) ?? null)
-        : null;
-    return { application, room };
-  });
+function toPeerSummary(application: ApplicationEntity): ChatPeerSummary | null {
+  const uid = (application.userId ?? application.applicant?.userId ?? "").trim();
+  if (!uid && !application.applicant) return null;
+  return {
+    userId: uid,
+    name: application.applicant?.name ?? undefined,
+    activityName: application.applicant?.activityName,
+    profileImgUrl: application.applicant?.profileImgUrl,
+  };
 }
 
-function sortRowsByCreatedAtDesc(rows: RowModel[]): RowModel[] {
-  return [...rows].sort((a, b) => {
-    const ta = Date.parse(a.application.createdAt ?? "") || 0;
-    const tb = Date.parse(b.application.createdAt ?? "") || 0;
+function sortByCreatedAtDesc(items: ApplicationEntity[]): ApplicationEntity[] {
+  return [...items].sort((a, b) => {
+    const ta = Date.parse(a.createdAt ?? "") || 0;
+    const tb = Date.parse(b.createdAt ?? "") || 0;
     return tb - ta;
   });
 }
@@ -104,14 +92,13 @@ export default function AnnouncementApplicantsScreen() {
   const { user } = useAuth();
   const myUserId = user?.socialId?.trim() ?? "";
 
-  const [rows, setRows] = useState<RowModel[]>([]);
-  const [rooms, setRooms] = useState<ChatRoomListItem[]>([]);
+  const [rows, setRows] = useState<ApplicationEntity[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [openingChatId, setOpeningChatId] = useState<string | null>(null);
+  const [openingChat, setOpeningChat] = useState(false);
 
   const load = useCallback(async () => {
     if (!postId) {
@@ -120,13 +107,7 @@ export default function AnnouncementApplicantsScreen() {
       return;
     }
     setLoading(true);
-    const [appsRes, roomsPage] = await Promise.all([
-      getApplicationsForPost(postId, { limit: PAGE_LIMIT }),
-      getRoomsByPost(postId, { limit: 50 }),
-    ]);
-
-    const loadedRooms = roomsPage?.items ?? [];
-    setRooms(loadedRooms);
+    const appsRes = await getApplicationsForPost(postId, { limit: PAGE_LIMIT });
     if (!appsRes?.ok) {
       setRows([]);
       setNextCursor(null);
@@ -138,7 +119,7 @@ export default function AnnouncementApplicantsScreen() {
       return;
     }
 
-    setRows(sortRowsByCreatedAtDesc(mergeRows(appsRes.data, loadedRooms)));
+    setRows(sortByCreatedAtDesc(appsRes.data));
     setNextCursor(appsRes.nextCursor);
     setHasMore(appsRes.hasMore);
     setLoading(false);
@@ -165,15 +146,13 @@ export default function AnnouncementApplicantsScreen() {
         limit: PAGE_LIMIT,
       });
       if (!appsRes?.ok) return;
-      setRows((prev) =>
-        sortRowsByCreatedAtDesc([...prev, ...mergeRows(appsRes.data, rooms)]),
-      );
+      setRows((prev) => sortByCreatedAtDesc([...prev, ...appsRes.data]));
       setNextCursor(appsRes.nextCursor);
       setHasMore(appsRes.hasMore);
     } finally {
       setLoadingMore(false);
     }
-  }, [postId, hasMore, nextCursor, loadingMore, loading, rooms]);
+  }, [postId, hasMore, nextCursor, loadingMore, loading]);
 
   const openApplicationDetail = (applicationId: string) => {
     navigation.navigate(RootRoutes.RECEIVED_APPLICATION_DETAIL, {
@@ -182,50 +161,22 @@ export default function AnnouncementApplicantsScreen() {
     });
   };
 
-  const resolveApplicantUserId = async (
-    app: ApplicationEntity,
-  ): Promise<string | undefined> => {
-    const direct = app.userId?.trim();
-    if (direct) return direct;
-    const res = await getApplicationById(app.id);
-    if (res.ok && res.data.userId?.trim()) return res.data.userId.trim();
-    return undefined;
-  };
-
-  const openChat = async (row: RowModel) => {
-    const app = row.application;
-    const uid = await resolveApplicantUserId(app);
-    if (!uid) {
-      Alert.alert(
-        "알림",
-        "지원자 사용자 ID를 확인할 수 없습니다. 잠시 후 다시 시도해 주세요.",
-      );
-      return;
-    }
-
-    const appWithUser = { ...app, userId: uid };
-
-    if (row.room) {
-      const params = chatRoomItemToParamsWithApplicantFallback(row.room, appWithUser);
-      navigation.navigate(RootRoutes.CHAT_ROOM, params);
-      return;
-    }
-
-    setOpeningChatId(app.id);
+  /** 수락된 지원자와의 채팅 — 공고당 그룹채팅방 1개를 열고(없으면 생성) 이동 */
+  const openGroupChat = async () => {
+    if (openingChat) return;
+    setOpeningChat(true);
     try {
-      const created = await createAnnouncementRoom(
-        { postId, applicantUserId: uid },
+      const room = await createAnnouncementRoom(
+        { postId },
         myUserId ? { myUserId } : undefined,
       );
-      if (created) {
-        const params = chatRoomItemToParamsWithApplicantFallback(created, appWithUser);
-        navigation.navigate(RootRoutes.CHAT_ROOM, params);
-        void load();
+      if (room?.id) {
+        navigation.navigate(RootRoutes.CHAT_ROOM, chatRoomItemToParams(room));
       } else {
         Alert.alert("채팅", "채팅방을 열지 못했습니다. 잠시 후 다시 시도해 주세요.");
       }
     } finally {
-      setOpeningChatId(null);
+      setOpeningChat(false);
     }
   };
 
@@ -244,7 +195,7 @@ export default function AnnouncementApplicantsScreen() {
       <FlatList
         style={{ flex: 1 }}
         data={rows}
-        keyExtractor={(row) => row.application.id}
+        keyExtractor={(app) => app.id}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
@@ -258,15 +209,13 @@ export default function AnnouncementApplicantsScreen() {
             </View>
           ) : null
         }
-        renderItem={({ item: row }) => {
-          const app = row.application;
-          const peer = row.room?.peer;
-          const busy = openingChatId === app.id;
+        renderItem={({ item: app }) => {
+          const isAccepted = app.status === "ACCEPTED";
           return (
             <View style={styles.tableRow}>
               <ApplicantAvatar
-                peerUserId={app.userId ?? peer?.userId}
-                peer={peer ?? null}
+                peerUserId={app.userId ?? app.applicant?.userId}
+                peer={toPeerSummary(app)}
                 size={36}
               />
               <View style={styles.nameCell}>
@@ -286,17 +235,19 @@ export default function AnnouncementApplicantsScreen() {
               >
                 <Text style={styles.outlineBtnText}>지원서보기</Text>
               </Pressable>
-              <Pressable
-                style={[styles.primaryBtn, busy && { opacity: 0.7 }]}
-                disabled={busy}
-                onPress={() => void openChat(row)}
-              >
-                {busy ? (
-                  <ActivityIndicator color="#fff" size="small" />
-                ) : (
-                  <Text style={styles.primaryBtnText}>채팅하기</Text>
-                )}
-              </Pressable>
+              {isAccepted ? (
+                <Pressable
+                  style={[styles.primaryBtn, openingChat && { opacity: 0.7 }]}
+                  disabled={openingChat}
+                  onPress={() => void openGroupChat()}
+                >
+                  {openingChat ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <Text style={styles.primaryBtnText}>채팅하기</Text>
+                  )}
+                </Pressable>
+              ) : null}
             </View>
           );
         }}

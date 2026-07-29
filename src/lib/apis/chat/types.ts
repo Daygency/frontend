@@ -1,6 +1,6 @@
 /** README.md — 채팅 REST / Socket 스펙 기준 */
 
-export type ChatRoomKind = "COFFEE" | "ANNOUNCEMENT";
+export type ChatRoomKind = "COFFEE" | "GROUP";
 
 export type ChatFileItem = {
   fileUrl: string;
@@ -21,7 +21,10 @@ export type ChatRoomListItem = {
   id: string;
   kind: ChatRoomKind;
   post?: { postId?: string; title?: string } | null;
+  /** COFFEE(1:1)에서만 채워짐 */
   peer?: ChatPeerSummary | null;
+  /** GROUP(다대다)에서만 채워짐 — 나를 제외한 멤버 전원 */
+  members?: ChatPeerSummary[] | null;
   lastMessage?: {
     content?: string | null;
     fileUrl?: string | null;
@@ -62,6 +65,8 @@ export type ChatMessagesPage = {
   limit: number;
   /** 방 멤버십으로 확정된 상대방 ID (메시지가 없거나 상대가 답장하지 않은 방에서도 유효) */
   peerUserId: string | null;
+  /** GROUP 방에서만 채워짐 — 발신자 이름/아바타 표시용 (나 제외) */
+  members: ChatPeerSummary[] | null;
 };
 
 export type CreateCoffeeRoomBody = { peerUserId: string };

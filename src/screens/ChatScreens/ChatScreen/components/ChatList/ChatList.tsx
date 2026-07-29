@@ -14,10 +14,13 @@ import { RootRoutes } from "../../../../../navigations/routes";
 import type { ChatFilter } from "../../types";
 import { Text } from "react-native";
 import { useAuth } from "../../../../../contexts/AuthContext";
-import { getAllRooms, getCoffeeRooms, getAppliedRooms } from "../../../../../lib/apis/chat/chatApi";
+import {
+  getAllRooms,
+  getCoffeeRooms,
+  getAppliedRooms,
+  getMyAnnouncementGroupRooms,
+} from "../../../../../lib/apis/chat/chatApi";
 import type { ChatRoomListItem } from "../../../../../lib/apis/chat/types";
-import { getMyAnnouncementList } from "../../../../../lib/apis/announcement/announcementApi";
-import type { AnnouncementListItem } from "../../../../../lib/apis/announcement/types";
 import { formatChatListTime } from "../../../../../lib/chat/formatChatTime";
 import { chatRoomItemToParams } from "../../../../../lib/chat/chatRoomNavigation";
 import {
@@ -26,15 +29,13 @@ import {
   CHAT_ROOM_UPDATED,
   type ChatRoomUpdatedPayload,
 } from "../../../../../lib/chat/chatRoomsEvents";
-import { matchesAnnouncement, matchesChatRoom } from "../../../../../lib/chat/chatSearch";
+import { matchesChatRoom } from "../../../../../lib/chat/chatSearch";
 import EmptyState, {
   contentContainerWhenEmpty,
   emptyScreenStyle,
 } from "../../../../../components/ui/EmptyState";
 import { MAIN } from "../../../../../color";
-import MyAnnouncementListItem from "./MyAnnouncementListItem";
 import ChatRoomListSkeleton from "./ChatRoomListSkeleton";
-import MyAnnouncementListSkeleton from "./MyAnnouncementListSkeleton";
 
 type ChatTopTab = "전체" | "1:1" | "내 공고" | "지원 공고";
 
@@ -48,6 +49,7 @@ const ROOM_LIST_FETCHERS = {
   all: getAllRooms,
   coffee: getCoffeeRooms,
   applied: getAppliedRooms,
+  myAnnouncements: getMyAnnouncementGroupRooms,
 };
 
 function ChatRoomsFlatList({
@@ -55,7 +57,7 @@ function ChatRoomsFlatList({
   filter,
   searchQuery = "",
 }: {
-  mode: "all" | "coffee" | "applied";
+  mode: "all" | "coffee" | "applied" | "myAnnouncements";
   filter: ChatFilter;
   searchQuery?: string;
 }) {
@@ -176,7 +178,7 @@ function ChatRoomsFlatList({
 
   const openRoom = (room: ChatRoomListItem) => {
     const params = chatRoomItemToParams(room);
-    if (!params.peerUserId) {
+    if (room.kind !== "GROUP" && !params.peerUserId) {
       Alert.alert(
         "채팅방",
         "상대 정보를 불러오지 못했습니다. 앱을 다시 실행하거나 잠시 후 다시 시도해 주세요.",
@@ -237,7 +239,7 @@ function ChatRoomsFlatList({
         const peer = item.peer;
         const titleFromPost = item.post?.title;
         const displayName =
-          item.kind === "ANNOUNCEMENT" && titleFromPost
+          item.kind === "GROUP" && titleFromPost
             ? titleFromPost
             : peer?.name ?? peer?.activityName ?? "채팅";
         const last = item.lastMessage?.content ?? "";
@@ -269,144 +271,15 @@ function ChatRoomsFlatList({
   );
 }
 
-function MyAnnouncementsList({ searchQuery = "" }: { searchQuery?: string }) {
-  const navigation = useNavigation<any>();
-  const { isLoggedIn } = useAuth();
-  const [posts, setPosts] = useState<AnnouncementListItem[]>([]);
-  const [cursor, setCursor] = useState<string | null>(null);
-  const [hasMore, setHasMore] = useState(true);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-
-  const fetchFirst = useCallback(async (opts?: { refresh?: boolean }) => {
-    if (!isLoggedIn) {
-      setPosts([]);
-      setLoading(false);
-      return;
-    }
-    if (!opts?.refresh) setLoading(true);
-    const res = await getMyAnnouncementList({ limit: 8 });
-    if (res) {
-      setPosts(res.items);
-      setCursor(res.nextCursor);
-      setHasMore(res.hasMore);
-    } else {
-      setPosts([]);
-      setCursor(null);
-      setHasMore(false);
-    }
-    if (!opts?.refresh) setLoading(false);
-  }, [isLoggedIn]);
-
-  useFocusEffect(
-    useCallback(() => {
-      void fetchFirst();
-    }, [fetchFirst]),
-  );
-
-  /** 지원자 방 읽음 처리·새 메시지로 안읽음 합산이 바뀔 때 카드 배지를 실시간으로 갱신 */
-  useEffect(() => {
-    const subs = [
-      DeviceEventEmitter.addListener(CHAT_ROOMS_REFRESH, () => {
-        void fetchFirst();
-      }),
-      DeviceEventEmitter.addListener(CHAT_ROOM_UPDATED, () => {
-        void fetchFirst();
-      }),
-    ];
-    return () => subs.forEach((sub) => sub.remove());
-  }, [fetchFirst]);
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchFirst({ refresh: true });
-    setRefreshing(false);
-  };
-
-  const onEndReached = async () => {
-    if (!isLoggedIn || !hasMore || !cursor || loadingMore || loading) return;
-    setLoadingMore(true);
-    const res = await getMyAnnouncementList({ cursor, limit: 8 });
-    if (res) {
-      setPosts((prev) => [...prev, ...res.items]);
-      setCursor(res.nextCursor);
-      setHasMore(res.hasMore);
-    }
-    setLoadingMore(false);
-  };
-
-  const filteredPosts = useMemo(() => {
-    const q = searchQuery.trim();
-    if (!q) return posts;
-    return posts.filter((item) => matchesAnnouncement(item, q));
-  }, [posts, searchQuery]);
-
-  if (!isLoggedIn) {
-    return (
-      <View style={emptyScreenStyle}>
-        <EmptyState message="로그인 후 내 공고 목록을 불러올 수 있습니다." />
-      </View>
-    );
-  }
-
-  const isEmpty = filteredPosts.length === 0 && !(loading && !refreshing);
-
-  return (
-    <FlatList
-      style={{ flex: 1 }}
-      data={filteredPosts}
-      keyExtractor={(p) => p.postId}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={MAIN.DEFAULT}
-          colors={[MAIN.DEFAULT]}
-        />
-      }
-      onEndReached={onEndReached}
-      onEndReachedThreshold={0.4}
-      ListFooterComponent={
-        loadingMore ? (
-          <View style={{ padding: 16 }}>
-            <ActivityIndicator color="#1F2A44" />
-          </View>
-        ) : null
-      }
-      ListEmptyComponent={
-        loading && !refreshing ? (
-          <MyAnnouncementListSkeleton />
-        ) : (
-          <EmptyState
-            message={
-              searchQuery.trim()
-                ? "검색 결과가 없습니다."
-                : "작성한 공고가 없습니다."
-            }
-          />
-        )
-      }
-      renderItem={({ item }) => (
-        <MyAnnouncementListItem
-          item={item}
-          onPress={() =>
-            navigation.navigate(RootRoutes.MY_POSTED_CHAT_ROOMS, {
-              announcement: item,
-            })
-          }
-        />
-      )}
-      contentContainerStyle={contentContainerWhenEmpty(isEmpty, {
-        paddingBottom: 20,
-      })}
-    />
-  );
-}
-
 const ChatList = ({ topTab, filter = "전체", searchQuery = "" }: ChatListProps) => {
   if (topTab === "내 공고") {
-    return <MyAnnouncementsList searchQuery={searchQuery} />;
+    return (
+      <ChatRoomsFlatList
+        mode="myAnnouncements"
+        filter={filter}
+        searchQuery={searchQuery}
+      />
+    );
   }
 
   if (topTab === "전체") {

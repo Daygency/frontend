@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   Alert,
   Pressable,
   RefreshControl,
@@ -20,6 +19,11 @@ import type { ApplicationEntity } from "../../lib/apis/application/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
+import {
+  AnnouncementStatusSheet,
+  AnnouncementStatusTrigger,
+  AnnouncementStatusValue,
+} from "./AnnouncementStatusMenu";
 import AcceptedPerformersSection from "./AcceptedPerformersSection";
 import { GRAY, MAIN, WHITE } from "../../color";
 import {
@@ -56,7 +60,6 @@ import {
   effectiveAnnouncementDaysLeft,
   formatAnnouncementDDayLabel,
   isAnnouncementRecruitingOpen,
-  isRecruitmentDeadlineDatePassed,
   resolveAnnouncementRecruitmentStatus,
 } from "../../lib/announcement/announcementDeadline";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
@@ -80,7 +83,7 @@ import {
   getScraps,
 } from "../../lib/apis/scrap/scrapApi";
 import RecruitmentMajorChip from "../../components/shared/RecruitmentMajorChip";
-import { createAnnouncementRoom } from "../../lib/apis/chat/chatApi";
+import { createAnnouncementRoom, createCoffeeRoom } from "../../lib/apis/chat/chatApi";
 import { chatRoomItemToParams } from "../../lib/chat/chatRoomNavigation";
 import {
   AnnouncementDetailBodySkeleton,
@@ -173,6 +176,9 @@ const AnnouncementDetailScreen = () => {
    * 하단 바에 방문자/작성자 여부를 잘못 추측해 보여주지 않도록 막는다. */
   const [detailLoaded, setDetailLoaded] = useState(false);
   const [hasApplicants, setHasApplicants] = useState(false);
+  /** 수락된 지원자 수 — 공고 그룹채팅방 멤버 수와 동일(수락 시 방에 합류). 0명이면 방이 없어
+   * "채팅 바로가기"를 눌러도 열 수 없으므로 버튼 활성화 여부 판단에 사용. */
+  const [acceptedApplicantCount, setAcceptedApplicantCount] = useState(0);
   const [detailData, setDetailData] = useState<{
     title: string;
     type: string;
@@ -194,8 +200,8 @@ const AnnouncementDetailScreen = () => {
     createdAt?: string;
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
-  const [closingEarly, setClosingEarly] = useState(false);
-  const [completing, setCompleting] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [statusSheetVisible, setStatusSheetVisible] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -209,6 +215,7 @@ const AnnouncementDetailScreen = () => {
     useState(false);
   const [scraped, setScraped] = useState(false);
   const [chatInquiryLoading, setChatInquiryLoading] = useState(false);
+  const [ownerChatOpening, setOwnerChatOpening] = useState(false);
   const [majorsCatalog, setMajorsCatalog] = useState<
     { name: string; majorId: string }[]
   >([]);
@@ -229,8 +236,38 @@ const AnnouncementDetailScreen = () => {
 
   const handleOpenChatInquiry = useCallback(async () => {
     if (!ensureLoggedIn()) return;
-    if (!params.postId || chatInquiryLoading) return;
+    const authorUserId =
+      pickReportedUserIdFromUnknown(author) ?? author?.userId?.trim();
+    const myUserId = user?.socialId?.trim();
+    if (!authorUserId || chatInquiryLoading) return;
+    if (authorUserId === myUserId) {
+      Alert.alert("채팅", "본인과는 채팅할 수 없습니다.");
+      return;
+    }
     setChatInquiryLoading(true);
+    try {
+      const room = await createCoffeeRoom(
+        { peerUserId: authorUserId },
+        myUserId ? { myUserId } : undefined,
+      );
+      if (room?.id) {
+        navigation.navigate(RootRoutes.CHAT_ROOM, chatRoomItemToParams(room));
+      } else {
+        Alert.alert(
+          "채팅",
+          "채팅방을 열 수 없습니다. 네트워크 또는 서버 응답을 확인해 주세요.",
+        );
+      }
+    } finally {
+      setChatInquiryLoading(false);
+    }
+  }, [ensureLoggedIn, author, chatInquiryLoading, user?.socialId, navigation]);
+
+  /** 작성자 — 공고당 그룹채팅방 1개를 열고(없으면 생성) 바로 이동 */
+  const openOwnerGroupChat = useCallback(async () => {
+    if (!params.postId || ownerChatOpening || acceptedApplicantCount === 0)
+      return;
+    setOwnerChatOpening(true);
     try {
       const myUserId = user?.socialId?.trim();
       const room = await createAnnouncementRoom(
@@ -240,12 +277,18 @@ const AnnouncementDetailScreen = () => {
       if (room?.id) {
         navigation.navigate(RootRoutes.CHAT_ROOM, chatRoomItemToParams(room));
       } else {
-        Alert.alert("문의하기", "지원 완료 후 채팅으로 문의할 수 있어요.");
+        Alert.alert("채팅", "채팅방을 열지 못했습니다. 잠시 후 다시 시도해 주세요.");
       }
     } finally {
-      setChatInquiryLoading(false);
+      setOwnerChatOpening(false);
     }
-  }, [ensureLoggedIn, params.postId, chatInquiryLoading, user?.socialId, navigation]);
+  }, [
+    params.postId,
+    ownerChatOpening,
+    acceptedApplicantCount,
+    user?.socialId,
+    navigation,
+  ]);
 
   const handleOpenReport = useCallback(() => {
     if (!ensureLoggedIn()) return;
@@ -536,24 +579,32 @@ const AnnouncementDetailScreen = () => {
     }, [params.postId, isLoggedIn, isMine]),
   );
 
-  useEffect(() => {
-    if (!params.postId || !isMine) {
-      setHasApplicants(false);
-      return;
-    }
-    let cancelled = false;
-    void getApplicationsForPost(params.postId).then((res) => {
-      if (cancelled) return;
-      if (res?.ok) {
-        setHasApplicants(res.data.length > 0);
-      } else {
+  useNavFocusEffect(
+    useCallback(() => {
+      if (!params.postId || !isMine) {
         setHasApplicants(false);
+        setAcceptedApplicantCount(0);
+        return;
       }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [params.postId, isMine]);
+      let cancelled = false;
+      void getApplicationsForPost(params.postId).then((res) => {
+        if (cancelled) return;
+        if (res?.ok) {
+          setHasApplicants(res.data.length > 0);
+          const accepted = res.data.filter(
+            (a) => !a.deletedAt && a.status === "ACCEPTED" && Boolean(a.id),
+          );
+          setAcceptedApplicantCount(accepted.length);
+        } else {
+          setHasApplicants(false);
+          setAcceptedApplicantCount(0);
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [params.postId, isMine]),
+  );
 
   const targetPostId = params.postId;
 
@@ -606,8 +657,11 @@ const AnnouncementDetailScreen = () => {
   const displayViewCount =
     detailData?.viewCount ?? params.viewCount;
   const displayCompleted = detailData?.completed ?? false;
-
-  const deadlineAtForUi = detailData?.deadlineAt;
+  const currentAnnouncementStatus: AnnouncementStatusValue = displayCompleted
+    ? "종료"
+    : displayStatus === "모집중"
+      ? "모집중"
+      : "모집마감";
 
   const isRecruitingOpen =
     isAnnouncementRecruitingOpen(
@@ -649,104 +703,92 @@ const AnnouncementDetailScreen = () => {
       showApplicantClosedBar);
 
   /** 작성자 + 공연 완료 후 — 종료 안내 */
-  const showOwnerCompletedBar =
-    isMine && Boolean(params.postId) && displayCompleted;
-  /** 작성자 + 모집 중·마감 후 미완료 — 조기 마감 / 공연 완료 */
-  const showOwnerActionBar =
-    isMine &&
-    Boolean(params.postId) &&
-    !displayCompleted &&
-    (isRecruitingOpen || displayStatus === "모집마감");
+  /** 작성자 — 상태와 무관하게 항상 책갈피 + 채팅 바로가기 노출 */
+  const showOwnerBar = isMine && Boolean(params.postId);
 
-  const showEarlyCloseButton =
-    showOwnerActionBar &&
-    displayStatus === "모집중" &&
-    !isRecruitmentDeadlineDatePassed(deadlineAtForUi);
-
-  const onEarlyClose = useCallback(() => {
-    if (!params.postId) return;
-    Alert.alert(
-      "조기 마감",
-      "지금 모집을 마감하면 더 이상 새 지원을 받을 수 없습니다. 진행할까요?",
-      [
+  const handleChangeStatus = useCallback(
+    (next: AnnouncementStatusValue) => {
+      if (!params.postId || statusUpdating) return;
+      const CONFIRM: Record<
+        AnnouncementStatusValue,
+        { title: string; message: string; confirmText: string }
+      > = {
+        모집중: {
+          title: "모집중으로 변경",
+          message: "다시 지원을 받을 수 있도록 모집 상태로 되돌릴까요?",
+          confirmText: "변경",
+        },
+        모집마감: {
+          title: "모집마감으로 변경",
+          message: "더 이상 새 지원을 받지 않도록 모집을 마감할까요?",
+          confirmText: "변경",
+        },
+        종료: {
+          title: "공고 종료",
+          message: "공고를 종료 처리합니다. 진행할까요?",
+          confirmText: "종료하기",
+        },
+      };
+      const { title, message, confirmText } = CONFIRM[next];
+      Alert.alert(title, message, [
         { text: "취소", style: "cancel" },
         {
-          text: "마감하기",
-          style: "destructive",
+          text: confirmText,
+          style: next === "종료" ? "destructive" : "default",
           onPress: async () => {
-            setClosingEarly(true);
+            setStatusUpdating(true);
             try {
-              const res = await updateAnnouncement(params.postId!, {
-                status: "CLOSED",
-              });
+              const dto =
+                next === "종료"
+                  ? { completed: true }
+                  : {
+                      status: (next === "모집중" ? "OPEN" : "CLOSED") as
+                        | "OPEN"
+                        | "CLOSED",
+                      completed: false,
+                    };
+              const res = await updateAnnouncement(params.postId!, dto);
               if (res.ok) {
                 setDetailData((prev) =>
                   prev
-                    ? { ...prev, status: "모집마감" }
+                    ? {
+                        ...prev,
+                        status: next === "모집중" ? "모집중" : "모집마감",
+                        completed: next === "종료",
+                      }
                     : prev,
                 );
-                // 조기 마감 직후에는 로컬 상태를 우선 반영해 버튼이 즉시 "공연 완료"로 전환되게 함.
-                // (일부 응답에서 isRecruiting이 지연 갱신되어 바로 재조회하면 UI가 되돌아갈 수 있음)
-                Alert.alert("알림", "모집이 마감되었습니다.");
-              } else {
-                Alert.alert(
-                  "알림",
-                  res.message?.trim() || "조기 마감에 실패했습니다.",
-                );
-              }
-            } catch {
-              Alert.alert("알림", "조기 마감에 실패했습니다.");
-            } finally {
-              setClosingEarly(false);
-            }
-          },
-        },
-      ],
-    );
-  }, [params.postId, fetchDetail]);
-
-  const onMarkComplete = useCallback(() => {
-    if (!params.postId) return;
-    Alert.alert(
-      "공연 완료",
-      "공연·일정을 마친 것으로 표시합니다. 진행할까요?",
-      [
-        { text: "취소", style: "cancel" },
-        {
-          text: "완료하기",
-          onPress: async () => {
-            setCompleting(true);
-            try {
-              const res = await updateAnnouncement(params.postId!, {
-                completed: true,
-              });
-              if (res.ok) {
-                setDetailData((prev) =>
-                  prev ? { ...prev, completed: true } : prev,
-                );
                 await fetchDetail();
-                Alert.alert("알림", "완료 처리되었습니다.");
+                Alert.alert("알림", "상태가 변경되었습니다.");
               } else {
                 Alert.alert(
                   "알림",
-                  res.message?.trim() || "완료 처리에 실패했습니다.",
+                  res.message?.trim() || "상태 변경에 실패했습니다.",
                 );
               }
             } catch {
-              Alert.alert("알림", "완료 처리에 실패했습니다.");
+              Alert.alert("알림", "상태 변경에 실패했습니다.");
             } finally {
-              setCompleting(false);
+              setStatusUpdating(false);
             }
           },
         },
-      ],
-    );
-  }, [params.postId, fetchDetail]);
+      ]);
+    },
+    [params.postId, statusUpdating, fetchDetail],
+  );
 
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <View style={styles.headerRightWrap}>
+          {detailLoaded && isMine && params.postId ? (
+            <AnnouncementStatusTrigger
+              value={currentAnnouncementStatus}
+              disabled={statusUpdating}
+              onPress={() => setStatusSheetVisible(true)}
+            />
+          ) : null}
           {detailLoaded && !isMine ? (
             <Pressable
               style={[
@@ -829,6 +871,8 @@ const AnnouncementDetailScreen = () => {
     handleOpenReport,
     handleOpenChatInquiry,
     chatInquiryLoading,
+    currentAnnouncementStatus,
+    statusUpdating,
   ]);
 
   const imageList = detailData?.imageUrls ?? [];
@@ -869,10 +913,7 @@ const AnnouncementDetailScreen = () => {
   }, [detailData]);
 
   const showBottomBar =
-    !detailLoaded ||
-    showOwnerActionBar ||
-    showOwnerCompletedBar ||
-    visitorBottomBar;
+    !detailLoaded || showOwnerBar || visitorBottomBar;
   const scrollBottomPad = showBottomBar ? 88 + floatingBottomPad : 32;
 
   const navigateToAuthorPortfolio = () => {
@@ -908,23 +949,6 @@ const AnnouncementDetailScreen = () => {
   };
 
   const renderVisitorBottomWithScrap = (message: string) => (
-    <View
-      style={[styles.floatingBottomBar, { paddingBottom: floatingBottomPad }]}
-    >
-      <Pressable style={styles.btnBookmark} onPress={handleToggleScrap}>
-        <Ionicons
-          name={scraped ? "bookmark" : "bookmark-outline"}
-          size={22}
-          color={WHITE}
-        />
-      </Pressable>
-      <View style={[styles.btnApply, styles.visitorInfoBar]}>
-        <Text style={styles.visitorInfoText}>{message}</Text>
-      </View>
-    </View>
-  );
-
-  const renderOwnerInfoBar = (message: string) => (
     <View
       style={[styles.floatingBottomBar, { paddingBottom: floatingBottomPad }]}
     >
@@ -1046,11 +1070,7 @@ const AnnouncementDetailScreen = () => {
       );
     }
 
-    if (showOwnerCompletedBar) {
-      return renderOwnerInfoBar("종료된 공연입니다.");
-    }
-
-    if (showOwnerActionBar) {
+    if (showOwnerBar) {
       return (
         <View
           style={[
@@ -1058,22 +1078,27 @@ const AnnouncementDetailScreen = () => {
             { paddingBottom: floatingBottomPad },
           ]}
         >
+          <Pressable style={styles.btnBookmark} onPress={handleToggleScrap}>
+            <Ionicons
+              name={scraped ? "bookmark" : "bookmark-outline"}
+              size={22}
+              color={WHITE}
+            />
+          </Pressable>
           <Pressable
-            style={[styles.btnApply, styles.btnApplyFull]}
-            disabled={showEarlyCloseButton ? closingEarly : completing}
-            onPress={showEarlyCloseButton ? onEarlyClose : onMarkComplete}
+            style={[
+              styles.btnApply,
+              (ownerChatOpening || acceptedApplicantCount === 0) &&
+                styles.btnApplyDisabled,
+            ]}
+            onPress={openOwnerGroupChat}
+            disabled={ownerChatOpening || acceptedApplicantCount === 0}
           >
-            {showEarlyCloseButton ? (
-              closingEarly ? (
-                <ActivityIndicator color={WHITE} />
-              ) : (
-                <Text style={styles.btnApplyText}>조기 마감</Text>
-              )
-            ) : completing ? (
-              <ActivityIndicator color={WHITE} />
-            ) : (
-              <Text style={styles.btnApplyText}>공연 완료</Text>
-            )}
+            <View style={styles.btnApplyContentRow}>
+              <Text style={styles.btnApplyText}>채팅 바로가기</Text>
+              <Ionicons name="person" size={15} color={WHITE} />
+              <Text style={styles.btnApplyText}>{acceptedApplicantCount}</Text>
+            </View>
           </Pressable>
         </View>
       );
@@ -1268,6 +1293,15 @@ const AnnouncementDetailScreen = () => {
         onClose={() => !reportSubmitting && setReportModalVisible(false)}
         onSelect={handlePickReportCategory}
         submitting={reportSubmitting}
+      />
+      <AnnouncementStatusSheet
+        visible={statusSheetVisible}
+        value={currentAnnouncementStatus}
+        onClose={() => setStatusSheetVisible(false)}
+        onSelect={(next) => {
+          setStatusSheetVisible(false);
+          handleChangeStatus(next);
+        }}
       />
     </View>
   );

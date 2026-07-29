@@ -10,11 +10,8 @@ import {
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
-import { getRoomsByPost } from "../../lib/apis/chat/chatApi";
-import type { ChatRoomListItem } from "../../lib/apis/chat/types";
 import type { ChatPeerSummary } from "../../lib/apis/chat/types";
 import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
-import { pickProfileImageUrlDeep } from "../../lib/chat/peerImageFields";
 import { RootRoutes } from "../../navigations/routes";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
 
@@ -35,47 +32,21 @@ type Props = {
   }) => void;
 };
 
-type RowModel = {
-  application: ApplicationEntity;
-  room: ChatRoomListItem | null;
-};
-
-function displayName(row: RowModel): string {
-  const peer = row.room?.peer;
-  const fromPeer = peer?.name ?? peer?.activityName ?? "";
-  const fromApp = row.application.name?.trim() ?? "";
-  return fromPeer || fromApp || "지원자";
+function displayName(application: ApplicationEntity): string {
+  const fromApplicant =
+    application.applicant?.name ?? application.applicant?.activityName ?? "";
+  const fromApp = application.name?.trim() ?? "";
+  return fromApplicant || fromApp || "지원자";
 }
 
-function resolvePeerForAvatar(row: RowModel): ChatPeerSummary | null {
-  const peer = row.room?.peer;
-  const uid = (row.application.userId ?? peer?.userId ?? "").trim();
-  if (!uid) return peer ?? null;
-
-  const profileImgUrl =
-    pickProfileImageUrlDeep(peer) ??
-    row.application.applicant?.profileImgUrl?.trim() ??
-    row.application.profileImgUrl?.trim() ??
-    peer?.profileImgUrl?.trim() ??
-    peer?.profileImageUrl?.trim();
-
-  if (peer) {
-    if (!profileImgUrl) return peer;
-    return {
-      ...peer,
-      profileImgUrl,
-      profileImageUrl: profileImgUrl,
-    };
-  }
-
-  if (!profileImgUrl) {
-    return { userId: uid };
-  }
-
+function toPeerSummary(application: ApplicationEntity): ChatPeerSummary | null {
+  const uid = (application.userId ?? application.applicant?.userId ?? "").trim();
+  if (!uid && !application.applicant) return null;
   return {
     userId: uid,
-    profileImgUrl,
-    profileImageUrl: profileImgUrl,
+    name: application.applicant?.name ?? undefined,
+    activityName: application.applicant?.activityName,
+    profileImgUrl: application.applicant?.profileImgUrl,
   };
 }
 
@@ -90,7 +61,7 @@ export default function AcceptedPerformersSection({
   onWriteReview,
 }: Props) {
   const navigation = useNavigation<any>();
-  const [rows, setRows] = useState<RowModel[]>([]);
+  const [rows, setRows] = useState<ApplicationEntity[]>([]);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(async () => {
@@ -100,12 +71,7 @@ export default function AcceptedPerformersSection({
       return;
     }
     setLoading(true);
-    const [appsRes, roomsPage] = await Promise.all([
-      getApplicationsForPost(postId),
-      getRoomsByPost(postId, { limit: 50 }),
-    ]);
-
-    const rooms = roomsPage?.items ?? [];
+    const appsRes = await getApplicationsForPost(postId);
     if (!appsRes?.ok) {
       setRows([]);
       setLoading(false);
@@ -118,22 +84,13 @@ export default function AcceptedPerformersSection({
       return Boolean(a.id);
     });
 
-    const merged: RowModel[] = applications.map((application) => {
-      const uid = application.userId;
-      const room =
-        uid != null && uid !== ""
-          ? (rooms.find((r) => r.peer?.userId === uid) ?? null)
-          : null;
-      return { application, room };
-    });
-
-    merged.sort((a, b) => {
-      const ta = Date.parse(a.application.createdAt ?? "") || 0;
-      const tb = Date.parse(b.application.createdAt ?? "") || 0;
+    applications.sort((a, b) => {
+      const ta = Date.parse(a.createdAt ?? "") || 0;
+      const tb = Date.parse(b.createdAt ?? "") || 0;
       return tb - ta;
     });
 
-    setRows(merged);
+    setRows(applications);
     setLoading(false);
   }, [postId]);
 
@@ -190,10 +147,13 @@ export default function AcceptedPerformersSection({
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.carouselContent}
         >
-          {rows.map((row) => {
-            const peer = row.room?.peer;
-            const id = row.application.id;
-            const uid = (row.application.userId ?? peer?.userId ?? "").trim();
+          {rows.map((application) => {
+            const id = application.id;
+            const uid = (
+              application.userId ??
+              application.applicant?.userId ??
+              ""
+            ).trim();
             return (
               <View key={id} style={styles.card}>
                 <Pressable
@@ -201,12 +161,12 @@ export default function AcceptedPerformersSection({
                   onPress={() => openApplication(id)}
                 >
                   <ApplicantAvatar
-                    peerUserId={row.application.userId ?? peer?.userId}
-                    peer={resolvePeerForAvatar(row)}
+                    peerUserId={application.userId ?? application.applicant?.userId}
+                    peer={toPeerSummary(application)}
                     size={AVATAR}
                   />
                   <Text style={styles.name} numberOfLines={2}>
-                    {displayName(row)}
+                    {displayName(application)}
                   </Text>
                 </Pressable>
                 {displayCompleted && showReviewEntry && onWriteReview && uid ? (
@@ -216,10 +176,10 @@ export default function AcceptedPerformersSection({
                       onWriteReview({
                         userId: uid,
                         activityName:
-                          peer?.activityName?.trim() ||
-                          peer?.name?.trim() ||
-                          displayName(row),
-                        handle: peer?.name?.trim(),
+                          application.applicant?.activityName?.trim() ||
+                          application.applicant?.name?.trim() ||
+                          displayName(application),
+                        handle: application.applicant?.name?.trim(),
                       })
                     }
                   >

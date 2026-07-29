@@ -10,7 +10,6 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   RouteProp,
-  StackActions,
   useNavigation,
   useRoute,
 } from "@react-navigation/native";
@@ -31,9 +30,6 @@ import {
   getMyApplicationForPost,
   updateApplication,
 } from "../../lib/apis/application/applicationApi";
-import { getAppliedRooms, getRoomsByPost } from "../../lib/apis/chat/chatApi";
-import type { ChatRoomListItem } from "../../lib/apis/chat/types";
-import { chatRoomItemToParams } from "../../lib/chat/chatRoomNavigation";
 import { emitChatAppliedRoomsRefresh } from "../../lib/chat/chatRoomsEvents";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
 import type { ApplicationGender } from "../../lib/apis/application/types";
@@ -100,37 +96,6 @@ function birthYearToIso8601(year: string): string {
 function birthApiToYearDisplay(birth: string): string {
   const m = /^(\d{4})/.exec(birth.trim());
   return m ? m[1] : birth.trim().slice(0, 4);
-}
-
-/**
- * README: `POST /applications` 성공 시 서버가 공고 전용 채팅방을 만듦(메시지는 보내지 않음).
- * `GET /chat/rooms/by-post/:postId` 로 방이 잡힐 때까지 짧게 재시도.
- */
-async function fetchAnnouncementRoomAfterApply(
-  pid: string,
-): Promise<ChatRoomListItem | null> {
-  for (let attempt = 0; attempt < 5; attempt++) {
-    const byPost = await getRoomsByPost(pid);
-    let room =
-      byPost?.items?.find((r) => r.kind === "ANNOUNCEMENT") ??
-      byPost?.items?.[0] ??
-      null;
-    if (room?.peer?.userId) return room;
-
-    const applied = await getAppliedRooms({ limit: 50 });
-    const fromApplied = applied?.items.find(
-      (r) =>
-        r.kind === "ANNOUNCEMENT" &&
-        (r.post?.postId === pid || String(r.post?.postId) === String(pid)),
-    );
-    if (fromApplied?.peer?.userId) return fromApplied;
-    if (fromApplied?.id) room = fromApplied;
-    if (room?.peer?.userId) return room;
-    if (room?.id) return room;
-
-    if (attempt < 4) await new Promise((r) => setTimeout(r, 450));
-  }
-  return null;
 }
 
 function httpErrorMessage(status: number): string {
@@ -438,25 +403,6 @@ const ApplicationScreen = () => {
     return base;
   };
 
-  const onOpenChatInquiry = async () => {
-    if (!postId) return;
-    setSubmitting(true);
-    try {
-      const room = await fetchAnnouncementRoomAfterApply(postId);
-      if (room?.id) {
-        const chatParams = chatRoomItemToParams(room);
-        navigation.dispatch(StackActions.replace(RootRoutes.CHAT_ROOM, chatParams));
-      } else {
-        Alert.alert(
-          "채팅",
-          "채팅 탭의 지원 공고에서 해당 공고를 연 뒤 채팅으로 문의해 주세요.",
-        );
-      }
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   const onCancelApplication = () => {
     if (!applicationId) return;
     Alert.alert(
@@ -540,7 +486,7 @@ const ApplicationScreen = () => {
           emitChatAppliedRoomsRefresh();
           Alert.alert(
             "지원 완료",
-            "지원서가 제출되었습니다. 공고 상세의 문의하기 버튼으로 채팅을 시작할 수 있어요.",
+            "지원서가 제출되었습니다. 수락되면 채팅 탭에서 대화할 수 있어요.",
             [{ text: "확인", onPress: () => navigation.goBack() }],
           );
         } else {
@@ -854,18 +800,9 @@ const ApplicationScreen = () => {
         ]}
       >
         {!recruitmentOpen && applicationId ? (
-          <>
-            <Text style={styles.closedHint}>
-              모집이 마감되어 지원을 취소할 수 없습니다. 문의는 공고 채팅을 이용해 주세요.
-            </Text>
-            <Pressable
-              style={[styles.chatInquiryButton, submitting && { opacity: 0.6 }]}
-              disabled={submitting}
-              onPress={onOpenChatInquiry}
-            >
-              <Text style={styles.chatInquiryText}>채팅으로 문의</Text>
-            </Pressable>
-          </>
+          <Text style={styles.closedHint}>
+            모집이 마감되어 지원을 취소할 수 없습니다. 수락되면 채팅 탭에서 대화할 수 있어요.
+          </Text>
         ) : null}
         {recruitmentOpen && applicationId ? (
           <Pressable

@@ -54,21 +54,35 @@ import {
 import ChatImageMessage from "./ChatImageMessage";
 import AnimatedMessageRow from "./AnimatedMessageRow";
 
+export type ChatRoomMemberParam = {
+  userId: string;
+  name?: string | null;
+  activityName?: string;
+  profileImageUrl?: string;
+};
+
 export type ChatRoomParams = {
   /** 백엔드 채팅방 UUID */
   chatRoomId: string;
-  /** 상대 user UUID (내 메시지 판별용). 없으면 첫 메시지 로드 시 추론 */
+  /** 상대 user UUID (내 메시지 판별용). 없으면 첫 메시지 로드 시 추론. 그룹방이면 없음 */
   peerUserId?: string;
   name: string;
   handle: string;
   isOnline?: boolean;
   /** 상대 프로필 이미지 (목록/프로필에서 전달) */
   peerAvatarUrl?: string;
+  /** 다대다 그룹채팅방 여부 — 공고 그룹채팅 */
+  isGroup?: boolean;
+  /** 그룹방 멤버(나 제외) — 발신자 이름/아바타 표시용 */
+  members?: ChatRoomMemberParam[];
+  /** 그룹방 헤더 탭 시 이동할 공고 상세 postId */
+  postId?: string;
 };
 
 type MessageItem = {
   id: string;
   text: string;
+  senderId: string;
   isFromMe: boolean;
   timestamp: string;
   createdAt: string;
@@ -76,7 +90,7 @@ type MessageItem = {
   fileName?: string | null;
   fileMime?: string | null;
   fileItems?: ChatFileItem[] | null;
-  /** 상대방이 이 메시지를 읽었는지 (내가 보낸 메시지에만 의미 있음) */
+  /** 상대방이 이 메시지를 읽었는지 (1:1에서 내가 보낸 메시지에만 의미 있음, 그룹방은 항상 무시) */
   isReadByPeer: boolean;
   /** 소켓으로 방금 도착한 메시지인지 (등장 애니메이션 여부 판단용) */
   justArrived?: boolean;
@@ -235,6 +249,7 @@ const mapToMessageItem = (
   m: WsMessagePayload,
   myUserId: string,
   peerUserId: string,
+  isGroup: boolean,
 ): MessageItem | null => {
   const id = String(m.id ?? "");
   const createdAt = m.createdAt ?? m.created_at;
@@ -254,7 +269,10 @@ const mapToMessageItem = (
   return {
     id,
     text: m.content ?? "",
-    isFromMe: myUserId ? uid === myUserId : uid !== String(peerUserId),
+    senderId: uid,
+    isFromMe: myUserId
+      ? uid === myUserId
+      : !isGroup && uid !== String(peerUserId),
     timestamp: formatTime(new Date(createdAt)),
     createdAt,
     fileUrl,
@@ -333,19 +351,30 @@ const ChatRoomScreen = () => {
     handle = "",
     isOnline = false,
     peerAvatarUrl: peerAvatarUrlParam,
+    isGroup = false,
+    members: membersParam,
+    postId,
   } = route.params ?? {};
 
   const myUserId = String(user?.socialId ?? "");
   const { openImageViewer } = useImageViewer();
   const [peerUserId, setPeerUserId] = useState(peerUserIdParam || "");
+  const [members, setMembers] = useState<ChatRoomMemberParam[]>(
+    membersParam ?? [],
+  );
+  const membersById = useMemo(
+    () => new Map(members.map((m) => [m.userId, m])),
+    [members],
+  );
 
   /**
    * 지원 직후 등 목록에 peer 가 비어 있을 때, 방 멤버십에서 상대 ID를 확정한다.
    * (메시지 발신자로 추론하던 이전 방식은, 상대가 아직 한 번도 답장하지 않은 방에서
    * 나 자신을 상대로 잘못 지정해 내가 보낸 메시지가 상대 메시지처럼 렌더되는 문제가 있었다.)
+   * 그룹방은 단일 상대가 없으므로 건너뛴다.
    */
   useEffect(() => {
-    if (!chatRoomId || peerUserId) return;
+    if (!chatRoomId || peerUserId || isGroup) return;
     let cancelled = false;
     (async () => {
       const page = await getChatMessages(chatRoomId, { page: 1, limit: 50 });
@@ -462,10 +491,20 @@ const ChatRoomScreen = () => {
    * 먼저 시작한 요청의 응답이 나중에 도착해 최신 읽음 상태를 덮어쓰지 않도록 순번으로 가드 */
   const resyncSeqRef = useRef(0);
   const resyncMessages = useCallback(async () => {
-    if (!chatRoomId || !peerUserId) return;
+    if (!chatRoomId || (!isGroup && !peerUserId)) return;
     const seq = ++resyncSeqRef.current;
     const page = await getChatMessages(chatRoomId, { page: 1, limit: 100 });
     if (seq !== resyncSeqRef.current) return;
+    if (isGroup && page?.members?.length) {
+      setMembers(
+        page.members.map((m) => ({
+          userId: m.userId,
+          name: m.name,
+          activityName: m.activityName,
+          profileImageUrl: m.profileImageUrl,
+        })),
+      );
+    }
     const items = page?.items ?? [];
     if (!items.length) return;
     setMessages((prev) => {
@@ -480,9 +519,10 @@ const ChatRoomScreen = () => {
         byId.set(m.id, {
           id: m.id,
           text: m.content ?? "",
+          senderId: String(m.userId),
           isFromMe: myUserId
             ? String(m.userId) === myUserId
-            : String(m.userId) !== String(peerUserId),
+            : !isGroup && String(m.userId) !== String(peerUserId),
           timestamp: formatTime(new Date(m.createdAt)),
           createdAt: m.createdAt,
           fileUrl: m.fileUrl ?? null,
@@ -497,11 +537,11 @@ const ChatRoomScreen = () => {
           new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
       );
     });
-  }, [chatRoomId, peerUserId, myUserId]);
+  }, [chatRoomId, peerUserId, myUserId, isGroup]);
 
   const appendFromSocket = useCallback(
     (payload: WsMessagePayload) => {
-      const item = mapToMessageItem(payload, myUserId, peerUserId);
+      const item = mapToMessageItem(payload, myUserId, peerUserId, isGroup);
       if (!item) return;
       setMessages((prev) => {
         if (prev.some((m) => m.id === item.id)) {
@@ -527,11 +567,11 @@ const ChatRoomScreen = () => {
         scrollViewRef.current?.scrollToEnd({ animated: true });
       }, 50);
     },
-    [peerUserId, myUserId, markRead],
+    [peerUserId, myUserId, isGroup, markRead],
   );
 
   useEffect(() => {
-    if (!chatRoomId || !peerUserId) {
+    if (!chatRoomId || (!isGroup && !peerUserId)) {
       setLoading(false);
       return;
     }
@@ -541,15 +581,26 @@ const ChatRoomScreen = () => {
       setLoading(true);
       const page = await getChatMessages(chatRoomId, { page: 1, limit: 100 });
       if (cancelled) return;
+      if (isGroup && page?.members?.length) {
+        setMembers(
+          page.members.map((m) => ({
+            userId: m.userId,
+            name: m.name,
+            activityName: m.activityName,
+            profileImageUrl: m.profileImageUrl,
+          })),
+        );
+      }
       const items = page?.items ?? [];
       const chronological = [...items].reverse();
       setMessages(
         chronological.map((m) => ({
           id: m.id,
           text: m.content ?? "",
+          senderId: String(m.userId),
           isFromMe: myUserId
             ? String(m.userId) === myUserId
-            : String(m.userId) !== String(peerUserId),
+            : !isGroup && String(m.userId) !== String(peerUserId),
           timestamp: formatTime(new Date(m.createdAt)),
           createdAt: m.createdAt,
           fileUrl: m.fileUrl ?? null,
@@ -568,7 +619,7 @@ const ChatRoomScreen = () => {
     return () => {
       cancelled = true;
     };
-  }, [chatRoomId, peerUserId, myUserId]);
+  }, [chatRoomId, peerUserId, myUserId, isGroup]);
 
   /** 방 진입/재진입 시 읽음 처리 + 안읽음 표시 리싱크 (탭 전환 후 되돌아오는 경우 포함) */
   useFocusEffect(
@@ -579,7 +630,7 @@ const ChatRoomScreen = () => {
   );
 
   useEffect(() => {
-    if (!chatRoomId || !peerUserId) return;
+    if (!chatRoomId || (!isGroup && !peerUserId)) return;
 
     let cancelled = false;
 
@@ -619,8 +670,12 @@ const ChatRoomScreen = () => {
         appendFromSocket(payload);
       });
 
-      /** 상대가 방을 읽음 처리하면, 내가 보낸 메시지 중 그 시점 이전 것들의 안읽음 표시를 지움 */
+      /**
+       * 상대가 방을 읽음 처리하면, 내가 보낸 메시지 중 그 시점 이전 것들의 안읽음 표시를 지움.
+       * 그룹방은 메시지별 읽음 표시를 아예 그리지 않으므로 처리하지 않는다.
+       */
       socket.on("readUpdated", (payload: ReadUpdatedPayload) => {
+        if (isGroup) return;
         const roomId = payload.chatRoomId ?? payload.chat_room_id;
         const readerId = payload.userId ?? payload.user_id;
         const lastReadAt = payload.lastReadAt ?? payload.last_read_at;
@@ -656,7 +711,7 @@ const ChatRoomScreen = () => {
       socketRef.current = null;
       setSendReady(false);
     };
-  }, [chatRoomId, peerUserId, appendFromSocket, resyncMessages]);
+  }, [chatRoomId, peerUserId, isGroup, appendFromSocket, resyncMessages]);
 
   /** 앱이 백그라운드에 있는 동안 놓쳤을 수 있는 readUpdated를 포그라운드 복귀 시 보정 */
   const isFocusedRef = useRef(isFocused);
@@ -833,16 +888,21 @@ const ChatRoomScreen = () => {
     }
   };
 
-  const displayHandle = handle.startsWith("@") ? handle : `@${handle}`;
+  const displayHandle = handle ? (handle.startsWith("@") ? handle : `@${handle}`) : "";
 
   const goToPeerProfile = () => {
-    if (!peerUserId) return;
     /**
      * CHAT_ROOM은 keyboardHandlingEnabled: false라 push 시 키보드가 자동으로
-     * 닫히지 않는다. 열린 채로 넘어가면 ArtistPortfolioHeader가 그 순간의
-     * insets.top 기준으로 렌더되며 백버튼 위치가 밀리므로, 이동 전 명시적으로 닫는다.
+     * 닫히지 않는다. 열린 채로 넘어가면 ArtistPortfolioHeader/AnnouncementDetailScreen가
+     * 그 순간의 insets.top 기준으로 렌더되며 백버튼 위치가 밀리므로, 이동 전 명시적으로 닫는다.
      */
     Keyboard.dismiss();
+    if (isGroup) {
+      if (!postId) return;
+      navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, { postId });
+      return;
+    }
+    if (!peerUserId) return;
     navigation.navigate(RootRoutes.ARTIST_PORTFOLIO, {
       userId: peerUserId,
       activityName: handle,
@@ -851,7 +911,7 @@ const ChatRoomScreen = () => {
 
   const inputBarPaddingBottom = commentInputBarPaddingBottom(keyboardHeight, bottom);
 
-  if (!chatRoomId || !peerUserId) {
+  if (!chatRoomId || (!isGroup && !peerUserId)) {
     return (
       <View style={[styles.container, { paddingTop: top, justifyContent: "center", alignItems: "center", paddingHorizontal: 24 }]}>
         <Text style={{ color: GRAY.DARK_2, textAlign: "center" }}>
@@ -901,12 +961,12 @@ const ChatRoomScreen = () => {
             <Pressable
               style={styles.userInfoTouchable}
               onPress={goToPeerProfile}
-              disabled={!peerUserId}
+              disabled={isGroup ? !postId : !peerUserId}
             >
               <View style={styles.avatarContainer}>
                 <UserProfileAvatar
-                  peerUserId={peerUserId || undefined}
-                  profileImgUrl={peerAvatarUrl}
+                  peerUserId={isGroup ? undefined : peerUserId || undefined}
+                  profileImgUrl={isGroup ? undefined : peerAvatarUrl}
                   size={44}
                   style={styles.avatarImage}
                 />
@@ -917,7 +977,7 @@ const ChatRoomScreen = () => {
                   {name ?? "채팅방"}
                 </Text>
                 <Text style={styles.handle} numberOfLines={1}>
-                  {displayHandle}
+                  {isGroup ? `멤버 ${members.length + 1}명` : displayHandle}
                 </Text>
               </View>
             </Pressable>
@@ -1004,18 +1064,28 @@ const ChatRoomScreen = () => {
               const showDateDivider =
                 !prevMsg ||
                 !isSameDay(new Date(prevMsg.createdAt), new Date(msg.createdAt));
+              /** 그룹방은 실제 발신자(userId), 1:1은 나/상대 여부로 "같은 발신자" 판단 */
+              const isSameSender = (a: MessageItem, b: MessageItem) =>
+                isGroup ? a.senderId === b.senderId : a.isFromMe === b.isFromMe;
               /** 같은 발신자의 같은 시각(분) 메시지가 이어지면, 가장 최근 것에만 시각 표기 */
               const showTimestamp =
                 !nextMsg ||
-                nextMsg.isFromMe !== msg.isFromMe ||
+                !isSameSender(nextMsg, msg) ||
                 nextMsg.timestamp !== msg.timestamp ||
                 !isSameDay(new Date(nextMsg.createdAt), new Date(msg.createdAt));
               /** 같은 발신자의 같은 시각(분) 메시지가 이어지면, 가장 과거 것에만 프로필 사진 표기 */
               const showAvatar =
                 !prevMsg ||
-                prevMsg.isFromMe !== msg.isFromMe ||
+                !isSameSender(prevMsg, msg) ||
                 prevMsg.timestamp !== msg.timestamp ||
                 !isSameDay(new Date(prevMsg.createdAt), new Date(msg.createdAt));
+              const sender = isGroup ? membersById.get(msg.senderId) : undefined;
+              const senderName =
+                sender?.activityName?.trim() ||
+                sender?.name?.trim() ||
+                "알 수 없음";
+              const senderAvatarUrl = isGroup ? sender?.profileImageUrl : peerAvatarUrl;
+              const senderUserIdForAvatar = isGroup ? msg.senderId : peerUserId;
               const isActiveMatch = activeMatchMessageId === msg.id;
               const rowRef = (node: View | null) => {
                 messageRowRefs.current[msg.id] = node;
@@ -1150,9 +1220,9 @@ const ChatRoomScreen = () => {
                           isActiveMatch && styles.messageRowActiveMatch,
                         ]}
                       >
-                        {showTimestamp || !msg.isReadByPeer ? (
+                        {showTimestamp || (!isGroup && !msg.isReadByPeer) ? (
                           <View style={styles.messageTimeWrapMe}>
-                            {!msg.isReadByPeer ? (
+                            {!isGroup && !msg.isReadByPeer ? (
                               <Text
                                 style={[
                                   styles.messageUnreadCount,
@@ -1184,8 +1254,8 @@ const ChatRoomScreen = () => {
                         {showAvatar ? (
                           <View style={styles.otherAvatar}>
                             <UserProfileAvatar
-                              peerUserId={peerUserId || undefined}
-                              profileImgUrl={peerAvatarUrl}
+                              peerUserId={senderUserIdForAvatar || undefined}
+                              profileImgUrl={senderAvatarUrl}
                               size={32}
                               style={styles.otherAvatarImage}
                             />
@@ -1193,7 +1263,9 @@ const ChatRoomScreen = () => {
                         ) : null}
                         <View style={styles.otherContent}>
                           {showAvatar ? (
-                            <Text style={styles.otherName}>{handle}</Text>
+                            <Text style={styles.otherName}>
+                              {isGroup ? senderName : handle}
+                            </Text>
                           ) : null}
                           <View style={styles.otherBubbleRow}>
                             <View style={bubbleStyle}>{bubbleContent}</View>

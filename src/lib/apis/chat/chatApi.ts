@@ -9,7 +9,11 @@ import type {
   CreateAnnouncementRoomBody,
   CreateCoffeeRoomBody,
 } from "./types";
-import { mergePeerFromRoomRow, peerFromMembers } from "../../chat/peerImageFields";
+import {
+  mergePeerFromRoomRow,
+  peerFromMembers,
+  pickProfileImageUrlDeep,
+} from "../../chat/peerImageFields";
 
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {
   const token = await AsyncStorage.getItem(AUTH_TOKEN_KEY);
@@ -148,6 +152,35 @@ function normalizeLastMessage(raw: unknown): ChatRoomListItem["lastMessage"] {
   };
 }
 
+function normalizeMemberSummary(raw: unknown) {
+  const p = asRecord(raw);
+  const userId = String(p.userId ?? p.user_id ?? "").trim();
+  if (!userId) return null;
+  const name =
+    typeof p.name === "string" && p.name.trim() ? p.name.trim() : undefined;
+  const activityNameRaw =
+    typeof p.activityName === "string"
+      ? p.activityName
+      : typeof p.activity_name === "string"
+        ? p.activity_name
+        : undefined;
+  return {
+    userId,
+    name,
+    activityName: activityNameRaw?.trim() || undefined,
+    profileImageUrl: pickProfileImageUrlDeep(p),
+  };
+}
+
+/** 목록/메시지 응답의 `members[]`(플랫 요약) 파싱 — GROUP 방 발신자 이름/아바타 표시용 */
+function normalizeMemberSummaries(raw: unknown) {
+  if (!Array.isArray(raw)) return null;
+  const items = raw
+    .map(normalizeMemberSummary)
+    .filter(Boolean) as NonNullable<ReturnType<typeof normalizeMemberSummary>>[];
+  return items.length > 0 ? items : null;
+}
+
 function normalizeRoomItem(
   raw: unknown,
   opts?: { myUserId?: string },
@@ -155,15 +188,16 @@ function normalizeRoomItem(
   const r = asRecord(raw);
   const id = String(r.id ?? "");
   if (!id) return null;
-  const kind = (r.kind === "ANNOUNCEMENT" || r.kind === "COFFEE"
-    ? r.kind
-    : String(r.kind).toUpperCase() === "ANNOUNCEMENT"
-      ? "ANNOUNCEMENT"
-      : "COFFEE") as ChatRoomListItem["kind"];
+  const kindRaw = String(r.kind ?? "").toUpperCase();
+  const kind: ChatRoomListItem["kind"] = kindRaw === "GROUP" ? "GROUP" : "COFFEE";
 
   let peer = mergePeerFromRoomRow(r);
   if (!peer?.userId?.trim() && opts?.myUserId?.trim()) {
     peer = peerFromMembers(r.members, opts.myUserId) ?? peer;
+  }
+  const members = normalizeMemberSummaries(r.members);
+  if (kind === "GROUP") {
+    peer = null;
   }
 
   const unreadRaw = r.unreadCount ?? r.unread_count;
@@ -174,6 +208,7 @@ function normalizeRoomItem(
     kind,
     post: normalizePost(r.post),
     peer,
+    members,
     lastMessage: normalizeLastMessage(r.lastMessage ?? r.last_message),
     unreadCount: Number.isFinite(unreadCount) ? Math.max(0, unreadCount) : 0,
     createdAt:
@@ -299,6 +334,35 @@ export async function getRoomsByPost(
   }
 }
 
+/** "내 공고" 탭 — 내가 작성한 공고들의 그룹채팅방 목록 */
+export async function getMyAnnouncementGroupRooms(params?: {
+  cursor?: string;
+  limit?: number;
+}): Promise<ChatRoomsPage | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const q = new URLSearchParams();
+    if (params?.cursor) q.set("cursor", params.cursor);
+    if (params?.limit != null) q.set("limit", String(params.limit));
+    const qs = q.toString();
+    const url = `${API_BASE}/chat/rooms/my-announcements${qs ? `?${qs}` : ""}`;
+    const res = await fetchWithAuth(url, { method: "GET", headers });
+    if (!res.ok) {
+      console.warn(
+        "[getMyAnnouncementGroupRooms]",
+        res.status,
+        await res.text().catch(() => ""),
+      );
+      return null;
+    }
+    const data = await res.json();
+    return parseRoomsPage(data);
+  } catch (e) {
+    console.warn("[getMyAnnouncementGroupRooms]", e);
+    return null;
+  }
+}
+
 export async function getChatMessages(
   roomId: string,
   params?: { page?: number; limit?: number },
@@ -340,19 +404,24 @@ export async function getChatMessages(
             : typeof m.created_at === "string"
               ? m.created_at
               : "",
-        readByPeer: Boolean(m.readByPeer ?? m.read_by_peer),
+        readByPeer:
+          m.readByPeer != null || m.read_by_peer != null
+            ? Boolean(m.readByPeer ?? m.read_by_peer)
+            : undefined,
       };
     });
     const peerUserId =
       typeof data.peerUserId === "string" && data.peerUserId
         ? data.peerUserId
         : null;
+    const members = normalizeMemberSummaries(data.members);
     return {
       items,
       total: Number(data.total ?? 0),
       page: Number(data.page ?? 1),
       limit: Number(data.limit ?? 50),
       peerUserId,
+      members,
     };
   } catch (e) {
     console.warn("[getChatMessages]", e);

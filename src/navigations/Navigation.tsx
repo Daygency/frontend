@@ -34,7 +34,6 @@ import ChatRoomScreen from "../screens/ChatScreens/ChatRoomScreen/ChatRoomScreen
 import ChatRoomOptionsScreen from "../screens/ChatScreens/ChatRoomOptionsScreen/ChatRoomOptionsScreen";
 import ChatFileArchiveScreen from "../screens/ChatScreens/ChatFileArchiveScreen/ChatFileArchiveScreen";
 import PdfViewerScreen from "../screens/PdfViewerScreen/PdfViewerScreen";
-import MyPostedChatRoomsScreen from "../screens/ChatScreens/MyPostedChatRoomsScreen/MyPostedChatRoomsScreen";
 import AnnouncementApplicantsScreen from "../screens/AnnouncementApplicantsScreen/AnnouncementApplicantsScreen";
 import ActivityReviewScreen from "../screens/ActivityReviewScreen/ActivityReviewScreen";
 import ReceivedApplicationDetailScreen from "../screens/ReceivedApplicationDetailScreen/ReceivedApplicationDetailScreen";
@@ -1123,35 +1122,6 @@ const Navigation = () => {
           name={RootRoutes.ACTIVITY_REVIEW}
           component={withAuthGate(ActivityReviewScreen)}
           options={{ headerShown: false }}
-        />
-        <Stack.Screen
-          name={RootRoutes.MY_POSTED_CHAT_ROOMS}
-          component={withAuthGate(MyPostedChatRoomsScreen)}
-          options={({ navigation }) => ({
-            headerTitle: () => (
-              <View style={styles.titleWrap}>
-                <Text style={styles.title}>내가 올린 공고</Text>
-              </View>
-            ),
-            headerShadowVisible: false,
-            headerShown: true,
-            headerTitleAlign: "left",
-            headerLeft: () => (
-              <Pressable
-                onPress={() => {
-                  if (navigation.canGoBack()) navigation.goBack();
-                }}
-                hitSlop={10}
-                style={styles.leftIcon}
-              >
-                <MaterialCommunityIcons
-                  name="chevron-left"
-                  size={30}
-                  color="#000"
-                />
-              </Pressable>
-            ),
-          })}
         />
         <Stack.Screen
           name={RootRoutes.ANNOUNCEMENT_APPLICANTS}
