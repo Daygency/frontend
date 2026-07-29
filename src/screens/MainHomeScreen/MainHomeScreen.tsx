@@ -22,6 +22,7 @@ import CurationBottomGradient from "./CurationBottomGradient";
 import ContentRegistrationFabButton from "../../components/ui/FabButton/ContentRegistrationFabButton";
 import styles from "./styles";
 import { ContentRoutes } from "../../navigations/routes";
+import { getTabBarDimensions } from "../../navigations/ContentTab";
 import {
   createSubTabRetapHandler,
   registerTabRetapHandler,
@@ -32,23 +33,6 @@ const MAIN_LOGO = require("../../../assets/daygency_logo_main.png");
 const WHITE_LOGO = require("../../../assets/daygency_logo_white.png");
 const WHITE_LOGO_ASPECT_RATIO = 660 / 595;
 
-const DEFAULT_TAB_BAR_STYLE = {
-  paddingTop: 6,
-  paddingBottom: 6,
-  height: 80,
-  backgroundColor: WHITE,
-  borderTopWidth: 1,
-  borderTopColor: GRAY.MEDIUM,
-} as const;
-
-const CURATION_TAB_BAR_STYLE = {
-  paddingTop: 6,
-  paddingBottom: 6,
-  height: 80,
-  backgroundColor: BLACK,
-  borderTopWidth: 0,
-} as const;
-
 function tabToIndex(tab: MainHomeTab): number {
   const idx = MAIN_HOME_TABS.indexOf(tab);
   return idx >= 0 ? idx : 0;
@@ -56,7 +40,7 @@ function tabToIndex(tab: MainHomeTab): number {
 
 const MainHomeScreen = () => {
   const navigation = useNavigation();
-  const { top } = useSafeAreaInsets();
+  const { top, bottom } = useSafeAreaInsets();
   const [index, setIndex] = useState(0);
   const [curationTheme, setCurationTheme] = useState<CurationThemeState | null>(
     null,
@@ -127,7 +111,12 @@ const MainHomeScreen = () => {
     useCallback(() => {
       const applyTabBarStyle = (curation: boolean) => {
         navigation.setOptions({
-          tabBarStyle: curation ? CURATION_TAB_BAR_STYLE : DEFAULT_TAB_BAR_STYLE,
+          tabBarStyle: {
+            ...getTabBarDimensions(bottom),
+            backgroundColor: curation ? BLACK : WHITE,
+            borderTopWidth: curation ? 0 : 1,
+            borderTopColor: GRAY.MEDIUM,
+          },
           tabBarActiveTintColor: curation ? WHITE : MAIN.DEFAULT,
           tabBarInactiveTintColor: curation
             ? "rgba(255,255,255,0.45)"
@@ -136,7 +125,7 @@ const MainHomeScreen = () => {
       };
 
       applyTabBarStyle(isCuration);
-    }, [isCuration, navigation]),
+    }, [isCuration, navigation, bottom]),
   );
 
   return (

@@ -1,6 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import type { EventArg } from "@react-navigation/native";
 import * as Haptics from "expo-haptics";
+import { Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ContentRoutes } from "./routes";
 import { fireTabRetap } from "../lib/navigation/tabRetap";
@@ -25,7 +26,23 @@ import { GRAY, MAIN, WHITE } from "../color";
 
 const Tab = createBottomTabNavigator();
 
-const TAB_BAR_CONTENT_HEIGHT = 68;
+export const TAB_BAR_CONTENT_HEIGHT = 68;
+// iOS's home indicator was never actually clipped by the old fixed layout —
+// only Android's gesture/button nav bar overlapped the tab bar. Inflating
+// height by the full inset on iOS too just adds unwanted bottom whitespace,
+// so iOS keeps the original fixed dimensions and only Android grows with insets.
+export const TAB_BAR_FALLBACK_HEIGHT = 80;
+
+export function getTabBarDimensions(insetsBottom: number) {
+  if (Platform.OS === "ios") {
+    return { paddingTop: 6, paddingBottom: 6, height: TAB_BAR_FALLBACK_HEIGHT };
+  }
+  return {
+    paddingTop: 6,
+    paddingBottom: Math.max(insetsBottom, 6),
+    height: TAB_BAR_CONTENT_HEIGHT + insetsBottom,
+  };
+}
 
 const ContentTab = () => {
   const { isLoggedIn, requireLogin } = useAuth();
@@ -33,9 +50,7 @@ const ContentTab = () => {
   const insets = useSafeAreaInsets();
 
   const tabBarStyle = {
-    paddingTop: 6,
-    paddingBottom: Math.max(insets.bottom, 6),
-    height: TAB_BAR_CONTENT_HEIGHT + insets.bottom,
+    ...getTabBarDimensions(insets.bottom),
     backgroundColor: WHITE,
     borderTopWidth: 1,
     borderTopColor: GRAY.MEDIUM,
