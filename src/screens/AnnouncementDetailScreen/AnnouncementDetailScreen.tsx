@@ -240,6 +240,7 @@ const AnnouncementDetailScreen = () => {
     { name: string; majorId: string }[]
   >([]);
   const [heroImageIndex, setHeroImageIndex] = useState(0);
+  const [performersPanelHeight, setPerformersPanelHeight] = useState(0);
   const imageViewer = useImageViewerOptional();
   const authorDisplayLabel = useAnnouncementAuthorLabel(author, {
     isViewerAuthor: isMine,
@@ -986,7 +987,11 @@ const AnnouncementDetailScreen = () => {
 
   const showBottomBar =
     !detailLoaded || showOwnerBar || visitorBottomBar;
-  const scrollBottomPad = showBottomBar ? 88 + floatingBottomPad : 32;
+  const bottomBarOffset = 66 + floatingBottomPad;
+  const showPerformersPanel = detailLoaded && isMine && Boolean(params.postId);
+  const scrollBottomPad =
+    (showBottomBar ? 88 + floatingBottomPad : 32) +
+    (showPerformersPanel ? performersPanelHeight + 12 : 0);
 
   const navigateToAuthorPortfolio = () => {
     if (!author) return;
@@ -1255,29 +1260,6 @@ const AnnouncementDetailScreen = () => {
               <Text style={styles.title}>{displayTitle}</Text>
             </View>
 
-            {isMine && params.postId ? (
-              <View style={styles.performersSection}>
-                <AcceptedPerformersSection
-                  postId={params.postId}
-                  announcementTitle={displayTitle}
-                  typeTag={displayType}
-                  statusTag={displayStatus}
-                  dDay={dDayLabel}
-                  displayCompleted={displayCompleted}
-                  showReviewEntry={displayCompleted && !myReviewExists}
-                  onWriteReview={(p) => {
-                    navigation.navigate(RootRoutes.ACTIVITY_REVIEW, {
-                      postId: params.postId,
-                      revieweeUserId: p.userId,
-                      revieweeActivityName: p.activityName,
-                      announcementTitle: displayTitle,
-                      revieweeHandle: p.handle,
-                    });
-                  }}
-                />
-              </View>
-            ) : null}
-
             <View style={styles.badgeRow}>
               {author ? (
                 <Pressable onPress={navigateToAuthorPortfolio}>
@@ -1313,30 +1295,32 @@ const AnnouncementDetailScreen = () => {
               </>
             ) : null}
 
-            <View style={styles.sectionInlineRow}>
-              <Text style={styles.sectionHeadingInline}>마감일</Text>
-              <Text style={styles.deadlineText}>
-                {deadlineLabel || "-"}
-              </Text>
-            </View>
-
-            {recruitmentMajorNames.length > 0 ? (
-              <View style={styles.sectionInlineRowTop}>
-                <Text style={styles.sectionHeadingInline}>모집 전공</Text>
-                <View style={styles.recruitmentMajorsChips}>
-                  {recruitmentMajorNames.map((name, i) => (
-                    <RecruitmentMajorChip key={`${name}-${i}`} label={name} />
-                  ))}
-                </View>
-              </View>
-            ) : null}
-
-            {priceLabel ? (
+            <View style={styles.detailInfoCard}>
               <View style={styles.sectionInlineRow}>
-                <Text style={styles.sectionHeadingInline}>비용</Text>
-                <Text style={styles.priceText}>{priceLabel}</Text>
+                <Text style={styles.sectionHeadingInline}>마감일</Text>
+                <Text style={styles.deadlineText}>
+                  {deadlineLabel || "-"}
+                </Text>
               </View>
-            ) : null}
+
+              {recruitmentMajorNames.length > 0 ? (
+                <View style={styles.sectionInlineRowTop}>
+                  <Text style={styles.sectionHeadingInline}>모집 전공</Text>
+                  <View style={styles.recruitmentMajorsChips}>
+                    {recruitmentMajorNames.map((name, i) => (
+                      <RecruitmentMajorChip key={`${name}-${i}`} label={name} />
+                    ))}
+                  </View>
+                </View>
+              ) : null}
+
+              {priceLabel ? (
+                <View style={styles.sectionInlineRow}>
+                  <Text style={styles.sectionHeadingInline}>비용</Text>
+                  <Text style={styles.priceText}>{priceLabel}</Text>
+                </View>
+              ) : null}
+            </View>
 
             <View style={styles.bodySectionBlock}>
               <Text style={styles.sectionHeading}>내용</Text>
@@ -1389,6 +1373,33 @@ const AnnouncementDetailScreen = () => {
           )}
         </ScrollView>
       </View>
+      {showPerformersPanel ? (
+        <View
+          style={[styles.performersFixedPanel, { bottom: bottomBarOffset }]}
+          onLayout={(e) =>
+            setPerformersPanelHeight(e.nativeEvent.layout.height)
+          }
+        >
+          <AcceptedPerformersSection
+            postId={params.postId!}
+            announcementTitle={displayTitle}
+            typeTag={displayType}
+            statusTag={displayStatus}
+            dDay={dDayLabel}
+            displayCompleted={displayCompleted}
+            showReviewEntry={displayCompleted && !myReviewExists}
+            onWriteReview={(p) => {
+              navigation.navigate(RootRoutes.ACTIVITY_REVIEW, {
+                postId: params.postId,
+                revieweeUserId: p.userId,
+                revieweeActivityName: p.activityName,
+                announcementTitle: displayTitle,
+                revieweeHandle: p.handle,
+              });
+            }}
+          />
+        </View>
+      ) : null}
       {renderBottomBar()}
       <ReportCategoryModal
         visible={reportModalVisible}

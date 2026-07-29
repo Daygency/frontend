@@ -114,18 +114,23 @@ const styles = StyleSheet.create({
   sectionBlock: {
     marginBottom: 14,
   },
+  detailInfoCard: {
+    backgroundColor: GRAY.DEFAULT_1,
+    borderRadius: 14,
+    padding: 16,
+    gap: 12,
+    marginBottom: 14,
+  },
   sectionInlineRow: {
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
     gap: 8,
-    marginBottom: 14,
   },
   sectionInlineRowTop: {
     flexDirection: "row",
     alignItems: "flex-start",
     gap: 8,
-    marginBottom: 14,
   },
   sectionHeading: {
     fontSize: 13,
@@ -144,9 +149,6 @@ const styles = StyleSheet.create({
   },
   bodySectionBlock: {
     marginBottom: 14,
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
   },
   description: {
     fontSize: 14,
@@ -198,8 +200,23 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: GRAY.DARK_2,
   },
-  performersSection: {
-    marginBottom: 20,
+  performersFixedPanel: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    backgroundColor: WHITE,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    borderTopWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    elevation: 6,
   },
   floatingBottomBar: {
     position: "absolute",

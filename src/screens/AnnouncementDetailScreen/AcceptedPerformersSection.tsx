@@ -7,6 +7,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
@@ -63,6 +64,7 @@ export default function AcceptedPerformersSection({
   const navigation = useNavigation<any>();
   const [rows, setRows] = useState<ApplicationEntity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expanded, setExpanded] = useState(true);
 
   const load = useCallback(async () => {
     if (!postId) {
@@ -120,7 +122,18 @@ export default function AcceptedPerformersSection({
   return (
     <View style={styles.wrap}>
       <View style={styles.headerRow}>
-        <Text style={styles.sectionTitle}>수락 연주자</Text>
+        <Pressable
+          style={styles.titleToggle}
+          onPress={() => setExpanded((prev) => !prev)}
+          hitSlop={6}
+        >
+          <Text style={styles.sectionTitle}>내가 수락한 연주자</Text>
+          <Ionicons
+            name={expanded ? "chevron-down" : "chevron-up"}
+            size={18}
+            color={GRAY.DARK}
+          />
+        </Pressable>
         <Pressable
           onPress={openApplicants}
           style={({ pressed }) => [
@@ -133,14 +146,16 @@ export default function AcceptedPerformersSection({
         </Pressable>
       </View>
 
-      {loading ? (
+      {!expanded ? null : loading ? (
         <View style={styles.loadingBox}>
           <ActivityIndicator size="small" color={MAIN.DEFAULT} />
         </View>
       ) : rows.length === 0 ? (
-        <Text style={styles.emptyText}>
-          아직 수락 처리된 연주자가 없습니다.
-        </Text>
+        <View style={styles.emptyBox}>
+          <Text style={styles.emptyText}>
+            아직 수락 처리된 연주자가 없습니다.
+          </Text>
+        </View>
       ) : (
         <ScrollView
           horizontal
@@ -196,21 +211,24 @@ export default function AcceptedPerformersSection({
 }
 
 const AVATAR = 56;
+/** loading·empty 상태가 서로 다른 높이라 카드가 출렁이지 않도록 맞추는 최소 높이 */
+const CONTENT_MIN_HEIGHT = 40;
 
 const styles = StyleSheet.create({
   wrap: {
     width: "100%",
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    borderRadius: 16,
-    backgroundColor: WHITE,
-    padding: 16,
   },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     marginBottom: 12,
+  },
+  titleToggle: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    flexShrink: 1,
   },
   sectionTitle: {
     fontSize: 16,
@@ -237,8 +255,12 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   loadingBox: {
-    paddingVertical: 20,
+    minHeight: CONTENT_MIN_HEIGHT,
     alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyBox: {
+    minHeight: CONTENT_MIN_HEIGHT,
     justifyContent: "center",
   },
   emptyText: {
