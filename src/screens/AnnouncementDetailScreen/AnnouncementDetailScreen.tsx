@@ -212,6 +212,7 @@ const AnnouncementDetailScreen = () => {
     useState(false);
   const [scraped, setScraped] = useState(false);
   const [chatInquiryLoading, setChatInquiryLoading] = useState(false);
+  const [ownerChatOpening, setOwnerChatOpening] = useState(false);
   const [majorsCatalog, setMajorsCatalog] = useState<
     { name: string; majorId: string }[]
   >([]);
@@ -249,6 +250,26 @@ const AnnouncementDetailScreen = () => {
       setChatInquiryLoading(false);
     }
   }, [ensureLoggedIn, params.postId, chatInquiryLoading, user?.socialId, navigation]);
+
+  /** 작성자 — 공고당 그룹채팅방 1개를 열고(없으면 생성) 바로 이동 */
+  const openOwnerGroupChat = useCallback(async () => {
+    if (!params.postId || ownerChatOpening) return;
+    setOwnerChatOpening(true);
+    try {
+      const myUserId = user?.socialId?.trim();
+      const room = await createAnnouncementRoom(
+        { postId: params.postId },
+        myUserId ? { myUserId } : undefined,
+      );
+      if (room?.id) {
+        navigation.navigate(RootRoutes.CHAT_ROOM, chatRoomItemToParams(room));
+      } else {
+        Alert.alert("채팅", "채팅방을 열지 못했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    } finally {
+      setOwnerChatOpening(false);
+    }
+  }, [params.postId, ownerChatOpening, user?.socialId, navigation]);
 
   const handleOpenReport = useCallback(() => {
     if (!ensureLoggedIn()) return;
@@ -654,9 +675,8 @@ const AnnouncementDetailScreen = () => {
       showApplicantAlreadyAppliedBar ||
       showApplicantClosedBar);
 
-  /** 작성자 + 공연 완료 후 — 종료 안내 */
-  const showOwnerCompletedBar =
-    isMine && Boolean(params.postId) && displayCompleted;
+  /** 작성자 — 상태와 무관하게 항상 책갈피 + 채팅 바로가기 노출 */
+  const showOwnerBar = isMine && Boolean(params.postId);
 
   const handleChangeStatus = useCallback(
     (next: AnnouncementStatusValue) => {
@@ -865,7 +885,7 @@ const AnnouncementDetailScreen = () => {
   }, [detailData]);
 
   const showBottomBar =
-    !detailLoaded || showOwnerCompletedBar || visitorBottomBar;
+    !detailLoaded || showOwnerBar || visitorBottomBar;
   const scrollBottomPad = showBottomBar ? 88 + floatingBottomPad : 32;
 
   const navigateToAuthorPortfolio = () => {
@@ -901,23 +921,6 @@ const AnnouncementDetailScreen = () => {
   };
 
   const renderVisitorBottomWithScrap = (message: string) => (
-    <View
-      style={[styles.floatingBottomBar, { paddingBottom: floatingBottomPad }]}
-    >
-      <Pressable style={styles.btnBookmark} onPress={handleToggleScrap}>
-        <Ionicons
-          name={scraped ? "bookmark" : "bookmark-outline"}
-          size={22}
-          color={WHITE}
-        />
-      </Pressable>
-      <View style={[styles.btnApply, styles.visitorInfoBar]}>
-        <Text style={styles.visitorInfoText}>{message}</Text>
-      </View>
-    </View>
-  );
-
-  const renderOwnerInfoBar = (message: string) => (
     <View
       style={[styles.floatingBottomBar, { paddingBottom: floatingBottomPad }]}
     >
@@ -1039,8 +1042,30 @@ const AnnouncementDetailScreen = () => {
       );
     }
 
-    if (showOwnerCompletedBar) {
-      return renderOwnerInfoBar("종료된 공연입니다.");
+    if (showOwnerBar) {
+      return (
+        <View
+          style={[
+            styles.floatingBottomBar,
+            { paddingBottom: floatingBottomPad },
+          ]}
+        >
+          <Pressable style={styles.btnBookmark} onPress={handleToggleScrap}>
+            <Ionicons
+              name={scraped ? "bookmark" : "bookmark-outline"}
+              size={22}
+              color={WHITE}
+            />
+          </Pressable>
+          <Pressable
+            style={[styles.btnApply, ownerChatOpening && { opacity: 0.6 }]}
+            onPress={openOwnerGroupChat}
+            disabled={ownerChatOpening}
+          >
+            <Text style={styles.btnApplyText}>채팅 바로가기</Text>
+          </Pressable>
+        </View>
+      );
     }
 
     return null;
