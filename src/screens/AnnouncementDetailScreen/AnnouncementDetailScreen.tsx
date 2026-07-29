@@ -1,5 +1,4 @@
 import {
-  ActivityIndicator,
   Alert,
   Pressable,
   RefreshControl,
@@ -59,7 +58,6 @@ import {
   effectiveAnnouncementDaysLeft,
   formatAnnouncementDDayLabel,
   isAnnouncementRecruitingOpen,
-  isRecruitmentDeadlineDatePassed,
   resolveAnnouncementRecruitmentStatus,
 } from "../../lib/announcement/announcementDeadline";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
@@ -197,8 +195,6 @@ const AnnouncementDetailScreen = () => {
     createdAt?: string;
   } | null>(null);
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
-  const [closingEarly, setClosingEarly] = useState(false);
-  const [completing, setCompleting] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
@@ -616,8 +612,6 @@ const AnnouncementDetailScreen = () => {
       ? "모집중"
       : "모집마감";
 
-  const deadlineAtForUi = detailData?.deadlineAt;
-
   const isRecruitingOpen =
     isAnnouncementRecruitingOpen(
       displayStatus === "모집중",
@@ -660,97 +654,6 @@ const AnnouncementDetailScreen = () => {
   /** 작성자 + 공연 완료 후 — 종료 안내 */
   const showOwnerCompletedBar =
     isMine && Boolean(params.postId) && displayCompleted;
-  /** 작성자 + 모집 중·마감 후 미완료 — 조기 마감 / 공연 완료 */
-  const showOwnerActionBar =
-    isMine &&
-    Boolean(params.postId) &&
-    !displayCompleted &&
-    (isRecruitingOpen || displayStatus === "모집마감");
-
-  const showEarlyCloseButton =
-    showOwnerActionBar &&
-    displayStatus === "모집중" &&
-    !isRecruitmentDeadlineDatePassed(deadlineAtForUi);
-
-  const onEarlyClose = useCallback(() => {
-    if (!params.postId) return;
-    Alert.alert(
-      "조기 마감",
-      "지금 모집을 마감하면 더 이상 새 지원을 받을 수 없습니다. 진행할까요?",
-      [
-        { text: "취소", style: "cancel" },
-        {
-          text: "마감하기",
-          style: "destructive",
-          onPress: async () => {
-            setClosingEarly(true);
-            try {
-              const res = await updateAnnouncement(params.postId!, {
-                status: "CLOSED",
-              });
-              if (res.ok) {
-                setDetailData((prev) =>
-                  prev
-                    ? { ...prev, status: "모집마감" }
-                    : prev,
-                );
-                // 조기 마감 직후에는 로컬 상태를 우선 반영해 버튼이 즉시 "공연 완료"로 전환되게 함.
-                // (일부 응답에서 isRecruiting이 지연 갱신되어 바로 재조회하면 UI가 되돌아갈 수 있음)
-                Alert.alert("알림", "모집이 마감되었습니다.");
-              } else {
-                Alert.alert(
-                  "알림",
-                  res.message?.trim() || "조기 마감에 실패했습니다.",
-                );
-              }
-            } catch {
-              Alert.alert("알림", "조기 마감에 실패했습니다.");
-            } finally {
-              setClosingEarly(false);
-            }
-          },
-        },
-      ],
-    );
-  }, [params.postId, fetchDetail]);
-
-  const onMarkComplete = useCallback(() => {
-    if (!params.postId) return;
-    Alert.alert(
-      "공연 완료",
-      "공연·일정을 마친 것으로 표시합니다. 진행할까요?",
-      [
-        { text: "취소", style: "cancel" },
-        {
-          text: "완료하기",
-          onPress: async () => {
-            setCompleting(true);
-            try {
-              const res = await updateAnnouncement(params.postId!, {
-                completed: true,
-              });
-              if (res.ok) {
-                setDetailData((prev) =>
-                  prev ? { ...prev, completed: true } : prev,
-                );
-                await fetchDetail();
-                Alert.alert("알림", "완료 처리되었습니다.");
-              } else {
-                Alert.alert(
-                  "알림",
-                  res.message?.trim() || "완료 처리에 실패했습니다.",
-                );
-              }
-            } catch {
-              Alert.alert("알림", "완료 처리에 실패했습니다.");
-            } finally {
-              setCompleting(false);
-            }
-          },
-        },
-      ],
-    );
-  }, [params.postId, fetchDetail]);
 
   const handleChangeStatus = useCallback(
     (next: AnnouncementStatusValue) => {
@@ -960,10 +863,7 @@ const AnnouncementDetailScreen = () => {
   }, [detailData]);
 
   const showBottomBar =
-    !detailLoaded ||
-    showOwnerActionBar ||
-    showOwnerCompletedBar ||
-    visitorBottomBar;
+    !detailLoaded || showOwnerCompletedBar || visitorBottomBar;
   const scrollBottomPad = showBottomBar ? 88 + floatingBottomPad : 32;
 
   const navigateToAuthorPortfolio = () => {
@@ -1139,35 +1039,6 @@ const AnnouncementDetailScreen = () => {
 
     if (showOwnerCompletedBar) {
       return renderOwnerInfoBar("종료된 공연입니다.");
-    }
-
-    if (showOwnerActionBar) {
-      return (
-        <View
-          style={[
-            styles.floatingBottomBar,
-            { paddingBottom: floatingBottomPad },
-          ]}
-        >
-          <Pressable
-            style={[styles.btnApply, styles.btnApplyFull]}
-            disabled={showEarlyCloseButton ? closingEarly : completing}
-            onPress={showEarlyCloseButton ? onEarlyClose : onMarkComplete}
-          >
-            {showEarlyCloseButton ? (
-              closingEarly ? (
-                <ActivityIndicator color={WHITE} />
-              ) : (
-                <Text style={styles.btnApplyText}>조기 마감</Text>
-              )
-            ) : completing ? (
-              <ActivityIndicator color={WHITE} />
-            ) : (
-              <Text style={styles.btnApplyText}>공연 완료</Text>
-            )}
-          </Pressable>
-        </View>
-      );
     }
 
     return null;
