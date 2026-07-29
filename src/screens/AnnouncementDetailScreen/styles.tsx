@@ -174,13 +174,6 @@ const styles = StyleSheet.create({
     gap: 6,
     minWidth: 0,
   },
-  locationCard: {
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    borderRadius: 12,
-    overflow: "hidden",
-    backgroundColor: WHITE,
-  },
   attachmentsCard: {
     marginBottom: 14,
     gap: 8,

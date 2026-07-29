@@ -242,7 +242,7 @@ const AnnouncementDetailScreen = () => {
   >([]);
   const [heroImageIndex, setHeroImageIndex] = useState(0);
   const [performersPanelHeight, setPerformersPanelHeight] = useState(0);
-  const [performersExpanded, setPerformersExpanded] = useState(true);
+  const [performersExpanded, setPerformersExpanded] = useState(false);
   const imageViewer = useImageViewerOptional();
   const authorDisplayLabel = useAnnouncementAuthorLabel(author, {
     isViewerAuthor: isMine,
@@ -1339,9 +1339,7 @@ const AnnouncementDetailScreen = () => {
             {addressLabel ? (
               <View style={styles.sectionBlock}>
                 <Text style={styles.sectionHeading}>지역</Text>
-                <View style={styles.locationCard}>
-                  <KakaoMapView place={addressLabel} />
-                </View>
+                <KakaoMapView place={addressLabel} variant="plain" />
               </View>
             ) : null}
 

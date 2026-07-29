@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -31,6 +31,18 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
     backgroundColor: MAIN.DEFAULT,
+  },
+  plainText: {
+    fontSize: 14,
+    lineHeight: 21,
+    color: BLACK,
+  },
+  plainLink: {
+    color: BLACK,
+    textDecorationLine: "underline",
+  },
+  plainChevron: {
+    color: GRAY.DARK,
   },
 });
 

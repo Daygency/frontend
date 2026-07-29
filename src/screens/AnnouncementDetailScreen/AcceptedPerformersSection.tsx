@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  Dimensions,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -172,9 +173,9 @@ export default function AcceptedPerformersSection({
             </View>
           ) : (
             <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.carouselContent}
+              style={styles.gridScroll}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.gridContent}
             >
               {rows.map((application) => {
                 const id = application.id;
@@ -229,6 +230,18 @@ export default function AcceptedPerformersSection({
 const AVATAR = 56;
 /** loading·empty 상태가 서로 다른 높이라 카드가 출렁이지 않도록 맞추는 최소 높이 */
 const CONTENT_MIN_HEIGHT = 40;
+
+const GRID_COLUMNS = 3;
+const GRID_GAP = 16;
+/** 고정 패널 좌우 여백(16) + 내부 padding(20) 합 — 그리드 폭 계산용 */
+const PANEL_SIDE_INSET = 36;
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
+const GRID_CARD_WIDTH = Math.floor(
+  (SCREEN_WIDTH - PANEL_SIDE_INSET * 2 - GRID_GAP * (GRID_COLUMNS - 1)) /
+    GRID_COLUMNS,
+);
+/** 사람이 많아지면 이 높이를 넘는 순간부터 카드 내부만 스크롤 */
+const GRID_MAX_HEIGHT = Math.round((SCREEN_HEIGHT * 2) / 3);
 
 const styles = StyleSheet.create({
   wrap: {
@@ -286,14 +299,16 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     color: GRAY.DARK_100,
   },
-  carouselContent: {
+  gridScroll: {
+    maxHeight: GRID_MAX_HEIGHT,
+  },
+  gridContent: {
     flexDirection: "row",
-    alignItems: "flex-start",
-    gap: 16,
-    paddingRight: 4,
+    flexWrap: "wrap",
+    gap: GRID_GAP,
   },
   card: {
-    width: 88,
+    width: GRID_CARD_WIDTH,
     alignItems: "center",
   },
   cardPress: {
