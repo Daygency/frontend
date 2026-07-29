@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     color: BLACK,
   },
   plainLink: {
-    color: BLACK,
+    color: GRAY.DARK,
     textDecorationLine: "underline",
   },
   plainChevron: {

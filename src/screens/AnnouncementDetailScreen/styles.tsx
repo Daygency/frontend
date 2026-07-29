@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 16,
     gap: 12,
-    marginBottom: 14,
+    marginBottom: 24,
   },
   sectionInlineRow: {
     flexDirection: "row",
@@ -133,11 +133,11 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   sectionHeading: {
-    fontSize: 13,
+    fontSize: 17,
     fontWeight: "800",
     color: BLACK,
-    lineHeight: 18,
-    marginBottom: 8,
+    lineHeight: 23,
+    marginBottom: 12,
   },
   sectionHeadingInline: {
     width: 72,
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   bodySectionBlock: {
-    marginBottom: 14,
+    marginBottom: 30,
   },
   description: {
     fontSize: 14,
