@@ -198,9 +198,13 @@ export default function AcceptedPerformersSection({
 const AVATAR = 56;
 
 const styles = StyleSheet.create({
-  /** 상세 화면 스크롤 시트가 패딩을 담당 */
   wrap: {
     width: "100%",
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    borderRadius: 16,
+    backgroundColor: WHITE,
+    padding: 16,
   },
   headerRow: {
     flexDirection: "row",

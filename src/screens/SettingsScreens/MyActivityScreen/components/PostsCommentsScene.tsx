@@ -33,6 +33,7 @@ type RootStackParamList = {
     type: string;
     status: string;
     daysLeft: number;
+    postedDate?: string;
     viewCount?: number;
   };
 };
@@ -259,6 +260,7 @@ const PostsCommentsScene = () => {
                 type: item.category ?? "기타",
                 status: normalizeStatus(item.status, item.deadlineAt),
                 daysLeft: getDaysLeft(item.deadlineAt),
+                postedDate: item.createdAt,
                 viewCount: item.viewCount,
               })
             }

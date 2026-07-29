@@ -16,6 +16,7 @@ type RootStackParamList = {
     type: string;
     status: string;
     daysLeft: number;
+    postedDate?: string;
     viewCount?: number;
   };
 };
@@ -69,6 +70,7 @@ const MyActivityAnnouncementListScreen = () => {
           daysLeft,
           deadlineAt: item.deadlineAt,
           postId: item.postId,
+          createdAt: item.createdAt,
           viewCount: item.viewCount,
         };
       }),
@@ -108,6 +110,7 @@ const MyActivityAnnouncementListScreen = () => {
                   type: item.type,
                   status: item.status,
                   daysLeft: item.daysLeft,
+                  postedDate: item.createdAt,
                   viewCount: item.viewCount,
                 })
               }

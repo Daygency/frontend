@@ -332,6 +332,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
                       status: announcementListRecruitmentStatus(item),
                       daysLeft: parseAnnouncementDaysLeft(item.dDay),
                       postId: item.postId,
+                      postedDate: item.createdAt,
                       viewCount: item.viewCount,
                     });
                   }}

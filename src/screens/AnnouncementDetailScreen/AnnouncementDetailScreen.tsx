@@ -1,5 +1,9 @@
 import {
   Alert,
+  Dimensions,
+  Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   Pressable,
   RefreshControl,
   ScrollView,
@@ -30,9 +34,8 @@ import {
   mapAttachmentsToImageUrls,
   pickUrlFromFileLike,
 } from "../../lib/media/attachmentImageUrl";
-import ImageCarousel from "../../components/media/ImageCarousel/ImageCarousel";
-import PhotoGrid from "../../components/media/PhotoGrid";
 import KakaoMapView from "../../components/kakao/KakaoMapView/KakaoMapView";
+import { useImageViewerOptional } from "../../contexts/ImageViewerContext";
 import { formatAnnouncementDistrictLabel } from "../../lib/announcement/announcementAddress";
 import { extractAnnouncementAuthorFromDetail } from "../../lib/announcement/extractAnnouncementAuthor";
 import type { AnnouncementAuthor } from "../../lib/announcement/extractAnnouncementAuthor";
@@ -72,6 +75,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { useRequireLogin } from "../../hooks/useRequireLogin";
 import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
+import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
 import { createReport } from "../../lib/apis/report/reportApi";
 import type { ReportCategory } from "../../lib/apis/report/types";
 import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";
@@ -116,6 +120,14 @@ type AnnouncementDetailRouteProp = RouteProp<
   typeof RootRoutes.ANNOUNCEMENT_DETAIL
 >;
 
+/** 마감일 연장 선택값을 등록 폼과 동일하게 그 날짜의 23:59(UTC 표기)로 변환 */
+function deadlineDateToISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}T23:59:00.000Z`;
+}
+
 function formatDateKorean(iso?: string): string {
   if (!iso?.trim()) return "";
   const raw = iso.trim();
@@ -155,6 +167,8 @@ function parseAnnouncementAttachments(
   }
   return out;
 }
+
+const screenWidth = Dimensions.get("window").width;
 
 const AnnouncementDetailScreen = () => {
   const route = useRoute<AnnouncementDetailRouteProp>();
@@ -202,6 +216,12 @@ const AnnouncementDetailScreen = () => {
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [statusSheetVisible, setStatusSheetVisible] = useState(false);
+  /** 마감일이 지난 공고를 "모집중"으로 되돌릴 때 새 마감일을 먼저 받기 위한 피커 */
+  const [deadlineExtendPickerVisible, setDeadlineExtendPickerVisible] =
+    useState(false);
+  const [pendingReopenDeadline, setPendingReopenDeadline] = useState<Date>(
+    () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  );
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -219,6 +239,8 @@ const AnnouncementDetailScreen = () => {
   const [majorsCatalog, setMajorsCatalog] = useState<
     { name: string; majorId: string }[]
   >([]);
+  const [heroImageIndex, setHeroImageIndex] = useState(0);
+  const imageViewer = useImageViewerOptional();
   const authorDisplayLabel = useAnnouncementAuthorLabel(author, {
     isViewerAuthor: isMine,
   });
@@ -546,6 +568,7 @@ const AnnouncementDetailScreen = () => {
     setMyApplication(null);
     setApplicationStatusLoaded(false);
     setScraped(false);
+    setHeroImageIndex(0);
   }, [params.postId]);
 
   useNavFocusEffect(
@@ -706,6 +729,53 @@ const AnnouncementDetailScreen = () => {
   /** 작성자 — 상태와 무관하게 항상 책갈피 + 채팅 바로가기 노출 */
   const showOwnerBar = isMine && Boolean(params.postId);
 
+  const performStatusChange = useCallback(
+    async (next: AnnouncementStatusValue, newDeadline?: Date) => {
+      if (!params.postId || statusUpdating) return;
+      setStatusUpdating(true);
+      try {
+        const newDeadlineIso = newDeadline
+          ? deadlineDateToISO(newDeadline)
+          : undefined;
+        const dto =
+          next === "종료"
+            ? { completed: true }
+            : {
+                status: (next === "모집중" ? "OPEN" : "CLOSED") as
+                  | "OPEN"
+                  | "CLOSED",
+                completed: false,
+                ...(newDeadlineIso ? { deadlineAt: newDeadlineIso } : {}),
+              };
+        const res = await updateAnnouncement(params.postId!, dto);
+        if (res.ok) {
+          setDetailData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  status: next === "모집중" ? "모집중" : "모집마감",
+                  completed: next === "종료",
+                  ...(newDeadlineIso ? { deadlineAt: newDeadlineIso } : {}),
+                }
+              : prev,
+          );
+          await fetchDetail();
+          Alert.alert("알림", "상태가 변경되었습니다.");
+        } else {
+          Alert.alert(
+            "알림",
+            res.message?.trim() || "상태 변경에 실패했습니다.",
+          );
+        }
+      } catch {
+        Alert.alert("알림", "상태 변경에 실패했습니다.");
+      } finally {
+        setStatusUpdating(false);
+      }
+    },
+    [params.postId, statusUpdating, fetchDetail],
+  );
+
   const handleChangeStatus = useCallback(
     (next: AnnouncementStatusValue) => {
       if (!params.postId || statusUpdating) return;
@@ -735,47 +805,49 @@ const AnnouncementDetailScreen = () => {
         {
           text: confirmText,
           style: next === "종료" ? "destructive" : "default",
-          onPress: async () => {
-            setStatusUpdating(true);
-            try {
-              const dto =
-                next === "종료"
-                  ? { completed: true }
-                  : {
-                      status: (next === "모집중" ? "OPEN" : "CLOSED") as
-                        | "OPEN"
-                        | "CLOSED",
-                      completed: false,
-                    };
-              const res = await updateAnnouncement(params.postId!, dto);
-              if (res.ok) {
-                setDetailData((prev) =>
-                  prev
-                    ? {
-                        ...prev,
-                        status: next === "모집중" ? "모집중" : "모집마감",
-                        completed: next === "종료",
-                      }
-                    : prev,
-                );
-                await fetchDetail();
-                Alert.alert("알림", "상태가 변경되었습니다.");
-              } else {
-                Alert.alert(
-                  "알림",
-                  res.message?.trim() || "상태 변경에 실패했습니다.",
-                );
-              }
-            } catch {
-              Alert.alert("알림", "상태 변경에 실패했습니다.");
-            } finally {
-              setStatusUpdating(false);
-            }
-          },
+          onPress: () => performStatusChange(next),
         },
       ]);
     },
-    [params.postId, statusUpdating, fetchDetail],
+    [params.postId, statusUpdating, performStatusChange],
+  );
+
+  /** 모집중 선택 시 진입점 — 서버가 지난 마감일을 기준으로 다시 마감 처리할 수 있으므로,
+   * 곧바로 상태만 바꾸지 않고 마감일을 어떻게 할지 먼저 물어본다. */
+  const handleSelectAnnouncementStatus = useCallback(
+    (next: AnnouncementStatusValue) => {
+      setStatusSheetVisible(false);
+      if (next === "모집중") {
+        Alert.alert(
+          "모집중으로 변경",
+          "다시 지원을 받으려면 새 마감일이 필요해요. 어떻게 할까요?",
+          [
+            { text: "취소", style: "cancel" },
+            {
+              text: "7일 연장",
+              onPress: () => {
+                void performStatusChange(
+                  "모집중",
+                  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                );
+              },
+            },
+            {
+              text: "모집마감일 선택",
+              onPress: () => {
+                setPendingReopenDeadline(
+                  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                );
+                setDeadlineExtendPickerVisible(true);
+              },
+            },
+          ],
+        );
+        return;
+      }
+      handleChangeStatus(next);
+    },
+    [handleChangeStatus, performStatusChange],
   );
 
   useEffect(() => {
@@ -1130,10 +1202,81 @@ const AnnouncementDetailScreen = () => {
           {!detailLoaded ? (
             <AnnouncementDetailBodySkeleton />
           ) : (
+          <>
+            {imageList.length > 0 ? (
+              <View style={styles.heroImageWrap}>
+                <ScrollView
+                  horizontal
+                  pagingEnabled
+                  showsHorizontalScrollIndicator={false}
+                  onMomentumScrollEnd={(
+                    e: NativeSyntheticEvent<NativeScrollEvent>,
+                  ) => {
+                    const idx = Math.round(
+                      e.nativeEvent.contentOffset.x / screenWidth,
+                    );
+                    setHeroImageIndex(idx);
+                  }}
+                >
+                  {imageList.map((uri, index) => (
+                    <Pressable
+                      key={`${uri}-${index}`}
+                      style={styles.heroImageSlide}
+                      onPress={() =>
+                        imageViewer?.openImageViewer(imageList, index)
+                      }
+                    >
+                      <Image
+                        source={{ uri }}
+                        style={styles.heroImage}
+                        resizeMode="cover"
+                      />
+                    </Pressable>
+                  ))}
+                </ScrollView>
+                {imageList.length > 1 ? (
+                  <View style={styles.heroImageDots}>
+                    {imageList.map((_, index) => (
+                      <View
+                        key={index}
+                        style={[
+                          styles.heroImageDot,
+                          index === heroImageIndex &&
+                            styles.heroImageDotActive,
+                        ]}
+                      />
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            ) : null}
           <View style={styles.body}>
             <View style={styles.titleRow}>
               <Text style={styles.title}>{displayTitle}</Text>
             </View>
+
+            {isMine && params.postId ? (
+              <View style={styles.performersSection}>
+                <AcceptedPerformersSection
+                  postId={params.postId}
+                  announcementTitle={displayTitle}
+                  typeTag={displayType}
+                  statusTag={displayStatus}
+                  dDay={dDayLabel}
+                  displayCompleted={displayCompleted}
+                  showReviewEntry={displayCompleted && !myReviewExists}
+                  onWriteReview={(p) => {
+                    navigation.navigate(RootRoutes.ACTIVITY_REVIEW, {
+                      postId: params.postId,
+                      revieweeUserId: p.userId,
+                      revieweeActivityName: p.activityName,
+                      announcementTitle: displayTitle,
+                      revieweeHandle: p.handle,
+                    });
+                  }}
+                />
+              </View>
+            ) : null}
 
             <View style={styles.badgeRow}>
               {author ? (
@@ -1206,26 +1349,6 @@ const AnnouncementDetailScreen = () => {
               )}
             </View>
 
-            {imageList.length > 1 ? (
-              <View
-                style={[
-                  styles.bodyImageBanner,
-                  addressLabel ? styles.bodyImageBannerWithDivider : null,
-                ]}
-              >
-                <PhotoGrid images={imageList} />
-              </View>
-            ) : imageList.length === 1 ? (
-              <View
-                style={[
-                  styles.bodyImageBanner,
-                  addressLabel ? styles.bodyImageBannerWithDivider : null,
-                ]}
-              >
-                <ImageCarousel gap={0} images={imageList} fitImageHeight />
-              </View>
-            ) : null}
-
             {addressLabel ? (
               <View style={styles.sectionBlock}>
                 <Text style={styles.sectionHeading}>지역</Text>
@@ -1261,29 +1384,8 @@ const AnnouncementDetailScreen = () => {
               </View>
             ) : null}
 
-            {isMine && params.postId ? (
-              <View style={styles.performersSection}>
-                <AcceptedPerformersSection
-                  postId={params.postId}
-                  announcementTitle={displayTitle}
-                  typeTag={displayType}
-                  statusTag={displayStatus}
-                  dDay={dDayLabel}
-                  displayCompleted={displayCompleted}
-                  showReviewEntry={displayCompleted && !myReviewExists}
-                  onWriteReview={(p) => {
-                    navigation.navigate(RootRoutes.ACTIVITY_REVIEW, {
-                      postId: params.postId,
-                      revieweeUserId: p.userId,
-                      revieweeActivityName: p.activityName,
-                      announcementTitle: displayTitle,
-                      revieweeHandle: p.handle,
-                    });
-                  }}
-                />
-              </View>
-            ) : null}
           </View>
+          </>
           )}
         </ScrollView>
       </View>
@@ -1298,10 +1400,20 @@ const AnnouncementDetailScreen = () => {
         visible={statusSheetVisible}
         value={currentAnnouncementStatus}
         onClose={() => setStatusSheetVisible(false)}
-        onSelect={(next) => {
-          setStatusSheetVisible(false);
-          handleChangeStatus(next);
+        onSelect={handleSelectAnnouncementStatus}
+      />
+      <WheelDateTimePickerModal
+        visible={deadlineExtendPickerVisible}
+        value={pendingReopenDeadline}
+        pickerMode="date"
+        title="모집 마감일 연장"
+        description="마감일이 지나 모집중으로 되돌리려면 새 마감일을 선택하세요."
+        minimumDate={new Date()}
+        onConfirm={(selected) => {
+          setDeadlineExtendPickerVisible(false);
+          void performStatusChange("모집중", selected);
         }}
+        onCancel={() => setDeadlineExtendPickerVisible(false)}
       />
     </View>
   );

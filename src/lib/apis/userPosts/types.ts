@@ -29,6 +29,7 @@ export type MyAnnouncementPostItem = {
   scheduledAt?: string;
   deadlineAt?: string;
   status?: string;
+  createdAt?: string;
   likeCount?: number;
   viewCount?: number;
   commentCount?: number;

@@ -1,5 +1,8 @@
-import { StyleSheet } from "react-native";
+import { Dimensions, StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+
+const HERO_IMAGE_WIDTH = Dimensions.get("window").width;
+const HERO_IMAGE_HEIGHT = HERO_IMAGE_WIDTH * 0.8;
 
 const styles = StyleSheet.create({
   container: {
@@ -15,29 +18,35 @@ const styles = StyleSheet.create({
   scrollContent: {
     paddingBottom: 24,
   },
-  bodyImageBanner: {
+  heroImageWrap: {
+    width: "100%",
     position: "relative",
-    marginTop: 14,
   },
-  bodyImageBannerWithDivider: {
-    borderBottomWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    paddingBottom: 14,
-    marginBottom: 14,
+  heroImageSlide: {
+    width: HERO_IMAGE_WIDTH,
+    height: HERO_IMAGE_HEIGHT,
   },
-  imageCounter: {
+  heroImage: {
+    width: HERO_IMAGE_WIDTH,
+    height: HERO_IMAGE_HEIGHT,
+  },
+  heroImageDots: {
     position: "absolute",
-    right: 12,
-    bottom: 8,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    borderRadius: 14,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    bottom: 12,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "center",
+    gap: 6,
   },
-  imageCounterText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: WHITE,
+  heroImageDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.6)",
+  },
+  heroImageDotActive: {
+    backgroundColor: WHITE,
   },
   body: {
     paddingHorizontal: 20,
@@ -190,7 +199,7 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
   },
   performersSection: {
-    marginBottom: 14,
+    marginBottom: 20,
   },
   floatingBottomBar: {
     position: "absolute",

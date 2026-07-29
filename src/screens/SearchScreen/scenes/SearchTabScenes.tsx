@@ -195,6 +195,7 @@ export function SearchAnnouncementScene({ query }: SceneProps) {
                 status: announcementListRecruitmentStatus(item),
                 daysLeft: parseAnnouncementDaysLeft(item.dDay),
                 postId: item.postId,
+                postedDate: item.createdAt,
                 viewCount: item.viewCount,
               })
             }
@@ -651,6 +652,7 @@ export function SearchAllScene({ query }: SceneProps) {
                     status: announcementListRecruitmentStatus(item),
                     daysLeft: parseAnnouncementDaysLeft(item.dDay),
                     postId: item.postId,
+                    postedDate: item.createdAt,
                     viewCount: item.viewCount,
                   })
                 }
