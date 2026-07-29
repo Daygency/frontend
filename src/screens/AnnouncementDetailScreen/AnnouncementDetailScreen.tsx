@@ -747,7 +747,7 @@ const AnnouncementDetailScreen = () => {
     navigation.setOptions({
       headerRight: () => (
         <View style={styles.headerRightWrap}>
-          {!isMine ? (
+          {detailLoaded && !isMine ? (
             <Pressable
               style={[
                 styles.chatInquiryButton,
@@ -822,6 +822,7 @@ const AnnouncementDetailScreen = () => {
   }, [
     navigation,
     isMine,
+    detailLoaded,
     params.postId,
     hasApplicants,
     displayCompleted,

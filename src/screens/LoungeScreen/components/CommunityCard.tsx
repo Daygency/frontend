@@ -220,7 +220,7 @@ const CommunityCard = ({
                   following && styles.followBtnTextActive,
                 ]}
               >
-                {following ? "팔로우 중" : "팔로우"}
+                {following ? "팔로잉" : "팔로우"}
               </Text>
             </Pressable>
           ) : null}
