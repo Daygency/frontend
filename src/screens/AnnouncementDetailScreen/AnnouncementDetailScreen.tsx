@@ -20,6 +20,9 @@ import type { ApplicationEntity } from "../../lib/apis/application/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
+import AnnouncementStatusMenu, {
+  AnnouncementStatusValue,
+} from "./AnnouncementStatusMenu";
 import AcceptedPerformersSection from "./AcceptedPerformersSection";
 import { GRAY, MAIN, WHITE } from "../../color";
 import {
@@ -196,6 +199,7 @@ const AnnouncementDetailScreen = () => {
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [closingEarly, setClosingEarly] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -606,6 +610,11 @@ const AnnouncementDetailScreen = () => {
   const displayViewCount =
     detailData?.viewCount ?? params.viewCount;
   const displayCompleted = detailData?.completed ?? false;
+  const currentAnnouncementStatus: AnnouncementStatusValue = displayCompleted
+    ? "종료"
+    : displayStatus === "모집중"
+      ? "모집중"
+      : "모집마감";
 
   const deadlineAtForUi = detailData?.deadlineAt;
 
@@ -743,10 +752,89 @@ const AnnouncementDetailScreen = () => {
     );
   }, [params.postId, fetchDetail]);
 
+  const handleChangeStatus = useCallback(
+    (next: AnnouncementStatusValue) => {
+      if (!params.postId || statusUpdating) return;
+      const CONFIRM: Record<
+        AnnouncementStatusValue,
+        { title: string; message: string; confirmText: string }
+      > = {
+        모집중: {
+          title: "모집중으로 변경",
+          message: "다시 지원을 받을 수 있도록 모집 상태로 되돌릴까요?",
+          confirmText: "변경",
+        },
+        모집마감: {
+          title: "모집마감으로 변경",
+          message: "더 이상 새 지원을 받지 않도록 모집을 마감할까요?",
+          confirmText: "변경",
+        },
+        종료: {
+          title: "공고 종료",
+          message: "공고를 종료 처리합니다. 진행할까요?",
+          confirmText: "종료하기",
+        },
+      };
+      const { title, message, confirmText } = CONFIRM[next];
+      Alert.alert(title, message, [
+        { text: "취소", style: "cancel" },
+        {
+          text: confirmText,
+          style: next === "종료" ? "destructive" : "default",
+          onPress: async () => {
+            setStatusUpdating(true);
+            try {
+              const dto =
+                next === "종료"
+                  ? { completed: true }
+                  : {
+                      status: (next === "모집중" ? "OPEN" : "CLOSED") as
+                        | "OPEN"
+                        | "CLOSED",
+                      completed: false,
+                    };
+              const res = await updateAnnouncement(params.postId!, dto);
+              if (res.ok) {
+                setDetailData((prev) =>
+                  prev
+                    ? {
+                        ...prev,
+                        status: next === "모집중" ? "모집중" : "모집마감",
+                        completed: next === "종료",
+                      }
+                    : prev,
+                );
+                await fetchDetail();
+                Alert.alert("알림", "상태가 변경되었습니다.");
+              } else {
+                Alert.alert(
+                  "알림",
+                  res.message?.trim() || "상태 변경에 실패했습니다.",
+                );
+              }
+            } catch {
+              Alert.alert("알림", "상태 변경에 실패했습니다.");
+            } finally {
+              setStatusUpdating(false);
+            }
+          },
+        },
+      ]);
+    },
+    [params.postId, statusUpdating, fetchDetail],
+  );
+
   useEffect(() => {
     navigation.setOptions({
       headerRight: () => (
         <View style={styles.headerRightWrap}>
+          {detailLoaded && isMine && params.postId ? (
+            <AnnouncementStatusMenu
+              value={currentAnnouncementStatus}
+              onSelect={handleChangeStatus}
+              disabled={statusUpdating}
+            />
+          ) : null}
           {detailLoaded && !isMine ? (
             <Pressable
               style={[
@@ -829,6 +917,9 @@ const AnnouncementDetailScreen = () => {
     handleOpenReport,
     handleOpenChatInquiry,
     chatInquiryLoading,
+    currentAnnouncementStatus,
+    handleChangeStatus,
+    statusUpdating,
   ]);
 
   const imageList = detailData?.imageUrls ?? [];
