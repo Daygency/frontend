@@ -21,6 +21,7 @@ import { getMyActivityReview } from "../../lib/apis/announcement/activityReviewA
 import { getMyApplicationForPost } from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Animated, { LinearTransition } from "react-native-reanimated";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 import AnnouncementDetailOptionsMenu from "./AnnouncementDetailOptionsMenu";
 import {
@@ -241,6 +242,7 @@ const AnnouncementDetailScreen = () => {
   >([]);
   const [heroImageIndex, setHeroImageIndex] = useState(0);
   const [performersPanelHeight, setPerformersPanelHeight] = useState(0);
+  const [performersExpanded, setPerformersExpanded] = useState(true);
   const imageViewer = useImageViewerOptional();
   const authorDisplayLabel = useAnnouncementAuthorLabel(author, {
     isViewerAuthor: isMine,
@@ -987,11 +989,12 @@ const AnnouncementDetailScreen = () => {
 
   const showBottomBar =
     !detailLoaded || showOwnerBar || visitorBottomBar;
-  const bottomBarOffset = 66 + floatingBottomPad;
+  const performersPanelGap = 12;
+  const bottomBarOffset = 66 + floatingBottomPad + performersPanelGap;
   const showPerformersPanel = detailLoaded && isMine && Boolean(params.postId);
   const scrollBottomPad =
     (showBottomBar ? 88 + floatingBottomPad : 32) +
-    (showPerformersPanel ? performersPanelHeight + 12 : 0);
+    (showPerformersPanel ? performersPanelHeight + performersPanelGap * 2 : 0);
 
   const navigateToAuthorPortfolio = () => {
     if (!author) return;
@@ -1374,8 +1377,13 @@ const AnnouncementDetailScreen = () => {
         </ScrollView>
       </View>
       {showPerformersPanel ? (
-        <View
-          style={[styles.performersFixedPanel, { bottom: bottomBarOffset }]}
+        <Animated.View
+          layout={LinearTransition.duration(220)}
+          style={[
+            styles.performersFixedPanel,
+            { bottom: bottomBarOffset },
+            !performersExpanded && styles.performersFixedPanelCollapsed,
+          ]}
           onLayout={(e) =>
             setPerformersPanelHeight(e.nativeEvent.layout.height)
           }
@@ -1388,6 +1396,8 @@ const AnnouncementDetailScreen = () => {
             dDay={dDayLabel}
             displayCompleted={displayCompleted}
             showReviewEntry={displayCompleted && !myReviewExists}
+            expanded={performersExpanded}
+            onToggleExpanded={() => setPerformersExpanded((prev) => !prev)}
             onWriteReview={(p) => {
               navigation.navigate(RootRoutes.ACTIVITY_REVIEW, {
                 postId: params.postId,
@@ -1398,7 +1408,7 @@ const AnnouncementDetailScreen = () => {
               });
             }}
           />
-        </View>
+        </Animated.View>
       ) : null}
       {renderBottomBar()}
       <ReportCategoryModal

@@ -8,6 +8,11 @@ import {
   View,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import Animated, {
+  FadeIn,
+  FadeOut,
+  LinearTransition,
+} from "react-native-reanimated";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { getApplicationsForPost } from "../../lib/apis/application/applicationApi";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
@@ -31,6 +36,8 @@ type Props = {
     activityName: string;
     handle?: string;
   }) => void;
+  expanded: boolean;
+  onToggleExpanded: () => void;
 };
 
 function displayName(application: ApplicationEntity): string {
@@ -60,11 +67,12 @@ export default function AcceptedPerformersSection({
   displayCompleted = false,
   showReviewEntry = false,
   onWriteReview,
+  expanded,
+  onToggleExpanded,
 }: Props) {
   const navigation = useNavigation<any>();
   const [rows, setRows] = useState<ApplicationEntity[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(true);
 
   const load = useCallback(async () => {
     if (!postId) {
@@ -120,11 +128,11 @@ export default function AcceptedPerformersSection({
   };
 
   return (
-    <View style={styles.wrap}>
-      <View style={styles.headerRow}>
+    <Animated.View style={styles.wrap} layout={LinearTransition.duration(220)}>
+      <View style={[styles.headerRow, expanded && styles.headerRowExpanded]}>
         <Pressable
           style={styles.titleToggle}
-          onPress={() => setExpanded((prev) => !prev)}
+          onPress={onToggleExpanded}
           hitSlop={6}
         >
           <Text style={styles.sectionTitle}>내가 수락한 연주자</Text>
@@ -146,67 +154,75 @@ export default function AcceptedPerformersSection({
         </Pressable>
       </View>
 
-      {!expanded ? null : loading ? (
-        <View style={styles.loadingBox}>
-          <ActivityIndicator size="small" color={MAIN.DEFAULT} />
-        </View>
-      ) : rows.length === 0 ? (
-        <View style={styles.emptyBox}>
-          <Text style={styles.emptyText}>
-            아직 수락 처리된 연주자가 없습니다.
-          </Text>
-        </View>
-      ) : (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.carouselContent}
+      {expanded ? (
+        <Animated.View
+          entering={FadeIn.duration(200)}
+          exiting={FadeOut.duration(120)}
+          layout={LinearTransition.duration(220)}
         >
-          {rows.map((application) => {
-            const id = application.id;
-            const uid = (
-              application.userId ??
-              application.applicant?.userId ??
-              ""
-            ).trim();
-            return (
-              <View key={id} style={styles.card}>
-                <Pressable
-                  style={styles.cardPress}
-                  onPress={() => openApplication(id)}
-                >
-                  <ApplicantAvatar
-                    peerUserId={application.userId ?? application.applicant?.userId}
-                    peer={toPeerSummary(application)}
-                    size={AVATAR}
-                  />
-                  <Text style={styles.name} numberOfLines={2}>
-                    {displayName(application)}
-                  </Text>
-                </Pressable>
-                {displayCompleted && showReviewEntry && onWriteReview && uid ? (
-                  <Pressable
-                    style={styles.reviewLink}
-                    onPress={() =>
-                      onWriteReview({
-                        userId: uid,
-                        activityName:
-                          application.applicant?.activityName?.trim() ||
-                          application.applicant?.name?.trim() ||
-                          displayName(application),
-                        handle: application.applicant?.name?.trim(),
-                      })
-                    }
-                  >
-                    <Text style={styles.reviewLinkText}>후기 작성</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            );
-          })}
-        </ScrollView>
-      )}
-    </View>
+          {loading ? (
+            <View style={styles.loadingBox}>
+              <ActivityIndicator size="small" color={MAIN.DEFAULT} />
+            </View>
+          ) : rows.length === 0 ? (
+            <View style={styles.emptyBox}>
+              <Text style={styles.emptyText}>
+                아직 수락 처리된 연주자가 없습니다.
+              </Text>
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.carouselContent}
+            >
+              {rows.map((application) => {
+                const id = application.id;
+                const uid = (
+                  application.userId ??
+                  application.applicant?.userId ??
+                  ""
+                ).trim();
+                return (
+                  <View key={id} style={styles.card}>
+                    <Pressable
+                      style={styles.cardPress}
+                      onPress={() => openApplication(id)}
+                    >
+                      <ApplicantAvatar
+                        peerUserId={application.userId ?? application.applicant?.userId}
+                        peer={toPeerSummary(application)}
+                        size={AVATAR}
+                      />
+                      <Text style={styles.name} numberOfLines={2}>
+                        {displayName(application)}
+                      </Text>
+                    </Pressable>
+                    {displayCompleted && showReviewEntry && onWriteReview && uid ? (
+                      <Pressable
+                        style={styles.reviewLink}
+                        onPress={() =>
+                          onWriteReview({
+                            userId: uid,
+                            activityName:
+                              application.applicant?.activityName?.trim() ||
+                              application.applicant?.name?.trim() ||
+                              displayName(application),
+                            handle: application.applicant?.name?.trim(),
+                          })
+                        }
+                      >
+                        <Text style={styles.reviewLinkText}>후기 작성</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
+                );
+              })}
+            </ScrollView>
+          )}
+        </Animated.View>
+      ) : null}
+    </Animated.View>
   );
 }
 
@@ -222,6 +238,8 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  headerRowExpanded: {
     marginBottom: 12,
   },
   titleToggle: {
