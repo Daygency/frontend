@@ -12,7 +12,7 @@ import { announcementListRecruitmentStatus } from "../../lib/announcement/announ
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
 import styles from "./styles";
 
-export const MY_ANNOUNCEMENT_STATUS_TABS = ["모집중", "모집완료", "공연완료"] as const;
+export const MY_ANNOUNCEMENT_STATUS_TABS = ["모집중", "모집마감", "종료"] as const;
 export type MyAnnouncementStatusTab = (typeof MY_ANNOUNCEMENT_STATUS_TABS)[number];
 
 export type MyAnnouncementStatusListParams = {

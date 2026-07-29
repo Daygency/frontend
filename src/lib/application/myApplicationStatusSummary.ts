@@ -3,13 +3,14 @@ import { getMyApplicationForPost } from "../apis/application/applicationApi";
 import type { AnnouncementListItem } from "../apis/announcement/types";
 
 export type MyApplicationStatusSummary = {
-  submitted: number;
+  underReview: number;
   accepted: number;
   rejected: number;
 };
 
 export type MyApplicationStatusGroups = {
-  SUBMITTED: AnnouncementListItem[];
+  /** 심사 대기(`SUBMITTED`) + 서류 검토 중(`DOCUMENT_REVIEW`) — "검토중" 탭 */
+  UNDER_REVIEW: AnnouncementListItem[];
   ACCEPTED: AnnouncementListItem[];
   REJECTED: AnnouncementListItem[];
 };
@@ -52,7 +53,7 @@ export async function getMyApplicationsByStatus(): Promise<MyApplicationStatusRe
   );
 
   const groups: MyApplicationStatusGroups = {
-    SUBMITTED: [],
+    UNDER_REVIEW: [],
     ACCEPTED: [],
     REJECTED: [],
   };
@@ -61,7 +62,9 @@ export async function getMyApplicationsByStatus(): Promise<MyApplicationStatusRe
     const result = statusResults[index];
     if (!result.ok) return;
     const status = result.data.status;
-    if (status === "SUBMITTED" || status === "ACCEPTED" || status === "REJECTED") {
+    if (status === "SUBMITTED" || status === "DOCUMENT_REVIEW") {
+      groups.UNDER_REVIEW.push(item);
+    } else if (status === "ACCEPTED" || status === "REJECTED") {
       groups[status].push(item);
     }
   });
@@ -69,7 +72,7 @@ export async function getMyApplicationsByStatus(): Promise<MyApplicationStatusRe
   return {
     groups,
     summary: {
-      submitted: groups.SUBMITTED.length,
+      underReview: groups.UNDER_REVIEW.length,
       accepted: groups.ACCEPTED.length,
       rejected: groups.REJECTED.length,
     },

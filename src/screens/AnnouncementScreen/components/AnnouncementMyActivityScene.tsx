@@ -41,8 +41,8 @@ type RootStackParamList = {
 };
 
 function myPostStatusTab(item: AnnouncementListItem): MyAnnouncementStatusTab {
-  if (item.completed) return "공연완료";
-  return announcementListRecruitmentStatus(item) === "모집중" ? "모집중" : "모집완료";
+  if (item.completed) return "종료";
+  return announcementListRecruitmentStatus(item) === "모집중" ? "모집중" : "모집마감";
 }
 
 const AnnouncementMyActivityScene = () => {
@@ -111,9 +111,9 @@ const AnnouncementMyActivityScene = () => {
 
   const applicationStatusGroups = useMemo<Record<ApplicationStatusTab, AnnouncementListItem[]>>(
     () => ({
-      지원완료: result?.groups.SUBMITTED ?? [],
-      수락: result?.groups.ACCEPTED ?? [],
-      거절: result?.groups.REJECTED ?? [],
+      검토중: result?.groups.UNDER_REVIEW ?? [],
+      수락됨: result?.groups.ACCEPTED ?? [],
+      거절됨: result?.groups.REJECTED ?? [],
     }),
     [result],
   );
@@ -121,8 +121,8 @@ const AnnouncementMyActivityScene = () => {
   const myPostGroups = useMemo<Record<MyAnnouncementStatusTab, AnnouncementListItem[]>>(() => {
     const groups: Record<MyAnnouncementStatusTab, AnnouncementListItem[]> = {
       모집중: [],
-      모집완료: [],
-      공연완료: [],
+      모집마감: [],
+      종료: [],
     };
     myAnnouncements.forEach((item) => {
       groups[myPostStatusTab(item)].push(item);

@@ -12,7 +12,7 @@ import { announcementListRecruitmentStatus } from "../../lib/announcement/announ
 import { resolveAnnouncementAuthorLabel } from "../../lib/announcement/announcementAuthor";
 import styles from "./styles";
 
-export const APPLICATION_STATUS_TABS = ["지원완료", "수락", "거절"] as const;
+export const APPLICATION_STATUS_TABS = ["검토중", "수락됨", "거절됨"] as const;
 export type ApplicationStatusTab = (typeof APPLICATION_STATUS_TABS)[number];
 
 export type ApplicationStatusListParams = {
@@ -44,7 +44,7 @@ const ApplicationStatusListScreen = () => {
   const route = useRoute<ApplicationStatusListRouteProp>();
   const groups = route.params?.groups;
   const [activeTab, setActiveTab] = useState<ApplicationStatusTab>(
-    route.params?.initialTab ?? "지원완료",
+    route.params?.initialTab ?? "검토중",
   );
   const items = groups?.[activeTab] ?? [];
 
