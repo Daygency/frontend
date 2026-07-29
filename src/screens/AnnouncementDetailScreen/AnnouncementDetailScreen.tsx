@@ -176,6 +176,9 @@ const AnnouncementDetailScreen = () => {
    * 하단 바에 방문자/작성자 여부를 잘못 추측해 보여주지 않도록 막는다. */
   const [detailLoaded, setDetailLoaded] = useState(false);
   const [hasApplicants, setHasApplicants] = useState(false);
+  /** 수락된 지원자 수 — 공고 그룹채팅방 멤버 수와 동일(수락 시 방에 합류). 0명이면 방이 없어
+   * "채팅 바로가기"를 눌러도 열 수 없으므로 버튼 활성화 여부 판단에 사용. */
+  const [acceptedApplicantCount, setAcceptedApplicantCount] = useState(0);
   const [detailData, setDetailData] = useState<{
     title: string;
     type: string;
@@ -253,7 +256,8 @@ const AnnouncementDetailScreen = () => {
 
   /** 작성자 — 공고당 그룹채팅방 1개를 열고(없으면 생성) 바로 이동 */
   const openOwnerGroupChat = useCallback(async () => {
-    if (!params.postId || ownerChatOpening) return;
+    if (!params.postId || ownerChatOpening || acceptedApplicantCount === 0)
+      return;
     setOwnerChatOpening(true);
     try {
       const myUserId = user?.socialId?.trim();
@@ -269,7 +273,13 @@ const AnnouncementDetailScreen = () => {
     } finally {
       setOwnerChatOpening(false);
     }
-  }, [params.postId, ownerChatOpening, user?.socialId, navigation]);
+  }, [
+    params.postId,
+    ownerChatOpening,
+    acceptedApplicantCount,
+    user?.socialId,
+    navigation,
+  ]);
 
   const handleOpenReport = useCallback(() => {
     if (!ensureLoggedIn()) return;
@@ -560,24 +570,32 @@ const AnnouncementDetailScreen = () => {
     }, [params.postId, isLoggedIn, isMine]),
   );
 
-  useEffect(() => {
-    if (!params.postId || !isMine) {
-      setHasApplicants(false);
-      return;
-    }
-    let cancelled = false;
-    void getApplicationsForPost(params.postId).then((res) => {
-      if (cancelled) return;
-      if (res?.ok) {
-        setHasApplicants(res.data.length > 0);
-      } else {
+  useNavFocusEffect(
+    useCallback(() => {
+      if (!params.postId || !isMine) {
         setHasApplicants(false);
+        setAcceptedApplicantCount(0);
+        return;
       }
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [params.postId, isMine]);
+      let cancelled = false;
+      void getApplicationsForPost(params.postId).then((res) => {
+        if (cancelled) return;
+        if (res?.ok) {
+          setHasApplicants(res.data.length > 0);
+          const accepted = res.data.filter(
+            (a) => !a.deletedAt && a.status === "ACCEPTED" && Boolean(a.id),
+          );
+          setAcceptedApplicantCount(accepted.length);
+        } else {
+          setHasApplicants(false);
+          setAcceptedApplicantCount(0);
+        }
+      });
+      return () => {
+        cancelled = true;
+      };
+    }, [params.postId, isMine]),
+  );
 
   const targetPostId = params.postId;
 
@@ -1058,11 +1076,19 @@ const AnnouncementDetailScreen = () => {
             />
           </Pressable>
           <Pressable
-            style={[styles.btnApply, ownerChatOpening && { opacity: 0.6 }]}
+            style={[
+              styles.btnApply,
+              (ownerChatOpening || acceptedApplicantCount === 0) &&
+                styles.btnApplyDisabled,
+            ]}
             onPress={openOwnerGroupChat}
-            disabled={ownerChatOpening}
+            disabled={ownerChatOpening || acceptedApplicantCount === 0}
           >
-            <Text style={styles.btnApplyText}>채팅 바로가기</Text>
+            <View style={styles.btnApplyContentRow}>
+              <Text style={styles.btnApplyText}>채팅 바로가기</Text>
+              <Ionicons name="person" size={15} color={WHITE} />
+              <Text style={styles.btnApplyText}>{acceptedApplicantCount}</Text>
+            </View>
           </Pressable>
         </View>
       );

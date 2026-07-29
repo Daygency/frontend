@@ -225,11 +225,19 @@ const styles = StyleSheet.create({
   btnApplyFull: {
     flex: 1,
   },
+  btnApplyDisabled: {
+    backgroundColor: GRAY.MEDIUM_100,
+  },
   btnApplyText: {
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "700",
     color: WHITE,
+  },
+  btnApplyContentRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
   },
   visitorInfoBar: {
     backgroundColor: GRAY.DEFAULT,
