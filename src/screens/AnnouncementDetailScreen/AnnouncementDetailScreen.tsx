@@ -60,6 +60,7 @@ import {
   effectiveAnnouncementDaysLeft,
   formatAnnouncementDDayLabel,
   isAnnouncementRecruitingOpen,
+  isRecruitmentDeadlineDatePassed,
   resolveAnnouncementRecruitmentStatus,
 } from "../../lib/announcement/announcementDeadline";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
@@ -72,6 +73,7 @@ import {
 import { useAuth } from "../../contexts/AuthContext";
 import { useRequireLogin } from "../../hooks/useRequireLogin";
 import ReportCategoryModal from "../../components/modals/ReportCategoryModal";
+import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
 import { createReport } from "../../lib/apis/report/reportApi";
 import type { ReportCategory } from "../../lib/apis/report/types";
 import { messageForReportHttpStatus } from "../../lib/report/reportErrorMessage";
@@ -115,6 +117,14 @@ type AnnouncementDetailRouteProp = RouteProp<
   RootStackParamList,
   typeof RootRoutes.ANNOUNCEMENT_DETAIL
 >;
+
+/** 마감일 연장 선택값을 등록 폼과 동일하게 그 날짜의 23:59(UTC 표기)로 변환 */
+function deadlineDateToISO(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}T23:59:00.000Z`;
+}
 
 function formatDateKorean(iso?: string): string {
   if (!iso?.trim()) return "";
@@ -202,6 +212,12 @@ const AnnouncementDetailScreen = () => {
   const [author, setAuthor] = useState<AnnouncementAuthor | null>(null);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [statusSheetVisible, setStatusSheetVisible] = useState(false);
+  /** 마감일이 지난 공고를 "모집중"으로 되돌릴 때 새 마감일을 먼저 받기 위한 피커 */
+  const [deadlineExtendPickerVisible, setDeadlineExtendPickerVisible] =
+    useState(false);
+  const [pendingReopenDeadline, setPendingReopenDeadline] = useState<Date>(
+    () => new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+  );
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -696,6 +712,53 @@ const AnnouncementDetailScreen = () => {
   /** 작성자 — 상태와 무관하게 항상 책갈피 + 채팅 바로가기 노출 */
   const showOwnerBar = isMine && Boolean(params.postId);
 
+  const performStatusChange = useCallback(
+    async (next: AnnouncementStatusValue, newDeadline?: Date) => {
+      if (!params.postId || statusUpdating) return;
+      setStatusUpdating(true);
+      try {
+        const newDeadlineIso = newDeadline
+          ? deadlineDateToISO(newDeadline)
+          : undefined;
+        const dto =
+          next === "종료"
+            ? { completed: true }
+            : {
+                status: (next === "모집중" ? "OPEN" : "CLOSED") as
+                  | "OPEN"
+                  | "CLOSED",
+                completed: false,
+                ...(newDeadlineIso ? { deadlineAt: newDeadlineIso } : {}),
+              };
+        const res = await updateAnnouncement(params.postId!, dto);
+        if (res.ok) {
+          setDetailData((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  status: next === "모집중" ? "모집중" : "모집마감",
+                  completed: next === "종료",
+                  ...(newDeadlineIso ? { deadlineAt: newDeadlineIso } : {}),
+                }
+              : prev,
+          );
+          await fetchDetail();
+          Alert.alert("알림", "상태가 변경되었습니다.");
+        } else {
+          Alert.alert(
+            "알림",
+            res.message?.trim() || "상태 변경에 실패했습니다.",
+          );
+        }
+      } catch {
+        Alert.alert("알림", "상태 변경에 실패했습니다.");
+      } finally {
+        setStatusUpdating(false);
+      }
+    },
+    [params.postId, statusUpdating, fetchDetail],
+  );
+
   const handleChangeStatus = useCallback(
     (next: AnnouncementStatusValue) => {
       if (!params.postId || statusUpdating) return;
@@ -725,47 +788,31 @@ const AnnouncementDetailScreen = () => {
         {
           text: confirmText,
           style: next === "종료" ? "destructive" : "default",
-          onPress: async () => {
-            setStatusUpdating(true);
-            try {
-              const dto =
-                next === "종료"
-                  ? { completed: true }
-                  : {
-                      status: (next === "모집중" ? "OPEN" : "CLOSED") as
-                        | "OPEN"
-                        | "CLOSED",
-                      completed: false,
-                    };
-              const res = await updateAnnouncement(params.postId!, dto);
-              if (res.ok) {
-                setDetailData((prev) =>
-                  prev
-                    ? {
-                        ...prev,
-                        status: next === "모집중" ? "모집중" : "모집마감",
-                        completed: next === "종료",
-                      }
-                    : prev,
-                );
-                await fetchDetail();
-                Alert.alert("알림", "상태가 변경되었습니다.");
-              } else {
-                Alert.alert(
-                  "알림",
-                  res.message?.trim() || "상태 변경에 실패했습니다.",
-                );
-              }
-            } catch {
-              Alert.alert("알림", "상태 변경에 실패했습니다.");
-            } finally {
-              setStatusUpdating(false);
-            }
-          },
+          onPress: () => performStatusChange(next),
         },
       ]);
     },
-    [params.postId, statusUpdating, fetchDetail],
+    [params.postId, statusUpdating, performStatusChange],
+  );
+
+  /** 모집중 선택 시 진입점 — 마감일이 이미 지났다면 상태만 바꿔선 서버에서 다시 마감
+   * 처리될 수 있으므로, 먼저 새 마감일을 받은 뒤 상태 변경을 진행한다. */
+  const handleSelectAnnouncementStatus = useCallback(
+    (next: AnnouncementStatusValue) => {
+      setStatusSheetVisible(false);
+      if (
+        next === "모집중" &&
+        isRecruitmentDeadlineDatePassed(detailData?.deadlineAt)
+      ) {
+        setPendingReopenDeadline(
+          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+        );
+        setDeadlineExtendPickerVisible(true);
+        return;
+      }
+      handleChangeStatus(next);
+    },
+    [detailData?.deadlineAt, handleChangeStatus],
   );
 
   useEffect(() => {
@@ -1288,10 +1335,20 @@ const AnnouncementDetailScreen = () => {
         visible={statusSheetVisible}
         value={currentAnnouncementStatus}
         onClose={() => setStatusSheetVisible(false)}
-        onSelect={(next) => {
-          setStatusSheetVisible(false);
-          handleChangeStatus(next);
+        onSelect={handleSelectAnnouncementStatus}
+      />
+      <WheelDateTimePickerModal
+        visible={deadlineExtendPickerVisible}
+        value={pendingReopenDeadline}
+        pickerMode="date"
+        title="모집 마감일 연장"
+        description="마감일이 지나 모집중으로 되돌리려면 새 마감일을 선택하세요."
+        minimumDate={new Date()}
+        onConfirm={(selected) => {
+          setDeadlineExtendPickerVisible(false);
+          void performStatusChange("모집중", selected);
         }}
+        onCancel={() => setDeadlineExtendPickerVisible(false)}
       />
     </View>
   );
