@@ -31,6 +31,11 @@ export function effectiveAnnouncementDaysLeft(
   return cal !== null ? cal : parsedDaysLeft;
 }
 
+/**
+ * 서버의 isRecruiting/completed 값을 그대로 신뢰한다. 마감일이 지났다고 클라이언트에서
+ * 임의로 "모집마감"으로 덮어쓰지 않음 — 그렇게 하면 작성자가 상태 변경 버튼으로 마감일이
+ * 지난 공고를 "모집중"으로 수동 전환해도 재조회 시 다시 "모집마감"으로 되돌아가 버림.
+ */
 export function resolveAnnouncementRecruitmentStatus(
   isRecruiting: boolean,
   options?: {
@@ -39,11 +44,7 @@ export function resolveAnnouncementRecruitmentStatus(
   },
 ): "모집중" | "모집마감" {
   if (options?.completed) return "모집마감";
-  if (!isRecruiting) return "모집마감";
-  if (isRecruitmentDeadlineDatePassed(options?.deadlineAt ?? null)) {
-    return "모집마감";
-  }
-  return "모집중";
+  return isRecruiting ? "모집중" : "모집마감";
 }
 
 export function isAnnouncementRecruitingOpen(
