@@ -60,7 +60,6 @@ import {
   effectiveAnnouncementDaysLeft,
   formatAnnouncementDDayLabel,
   isAnnouncementRecruitingOpen,
-  isRecruitmentDeadlineDatePassed,
   resolveAnnouncementRecruitmentStatus,
 } from "../../lib/announcement/announcementDeadline";
 import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncementDaysLeft";
@@ -795,24 +794,42 @@ const AnnouncementDetailScreen = () => {
     [params.postId, statusUpdating, performStatusChange],
   );
 
-  /** 모집중 선택 시 진입점 — 마감일이 이미 지났다면 상태만 바꿔선 서버에서 다시 마감
-   * 처리될 수 있으므로, 먼저 새 마감일을 받은 뒤 상태 변경을 진행한다. */
+  /** 모집중 선택 시 진입점 — 서버가 지난 마감일을 기준으로 다시 마감 처리할 수 있으므로,
+   * 곧바로 상태만 바꾸지 않고 마감일을 어떻게 할지 먼저 물어본다. */
   const handleSelectAnnouncementStatus = useCallback(
     (next: AnnouncementStatusValue) => {
       setStatusSheetVisible(false);
-      if (
-        next === "모집중" &&
-        isRecruitmentDeadlineDatePassed(detailData?.deadlineAt)
-      ) {
-        setPendingReopenDeadline(
-          new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      if (next === "모집중") {
+        Alert.alert(
+          "모집중으로 변경",
+          "다시 지원을 받으려면 새 마감일이 필요해요. 어떻게 할까요?",
+          [
+            { text: "취소", style: "cancel" },
+            {
+              text: "7일 연장",
+              onPress: () => {
+                void performStatusChange(
+                  "모집중",
+                  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                );
+              },
+            },
+            {
+              text: "모집마감일 선택",
+              onPress: () => {
+                setPendingReopenDeadline(
+                  new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+                );
+                setDeadlineExtendPickerVisible(true);
+              },
+            },
+          ],
         );
-        setDeadlineExtendPickerVisible(true);
         return;
       }
       handleChangeStatus(next);
     },
-    [detailData?.deadlineAt, handleChangeStatus],
+    [handleChangeStatus, performStatusChange],
   );
 
   useEffect(() => {
