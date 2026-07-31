@@ -26,7 +26,11 @@ import {
   hideActivityReviewFromProfile,
   unhideActivityReviewFromProfile,
 } from "../../../lib/apis/announcement/activityReviewApi";
-import type { ActivityReviewListItem } from "../../../lib/apis/announcement/activityReviewTypes";
+import {
+  POSITIVE_REASON_LABELS,
+  type ActivityReviewListItem,
+  type PositiveReasonCode,
+} from "../../../lib/apis/announcement/activityReviewTypes";
 import { createReport } from "../../../lib/apis/report/reportApi";
 import type { ReportCategory } from "../../../lib/apis/report/types";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -60,6 +64,15 @@ function reactionLabel(rating: ActivityReviewListItem["rating"]) {
   if (rating === "DISAPPOINTING") return "아쉬웠어요";
   if (rating === "GOOD") return "좋았어요";
   return "감동했어요";
+}
+
+function positiveReasonTags(item: ActivityReviewListItem) {
+  if (item.rating === "DISAPPOINTING") return undefined;
+  const codes = item.positiveReasonCodes;
+  if (!codes || codes.length === 0) return undefined;
+  return codes.map((code: PositiveReasonCode) => ({
+    text: POSITIVE_REASON_LABELS[code],
+  }));
 }
 
 const ReceivedReviewsList = ({
@@ -263,8 +276,9 @@ const ReceivedReviewsList = ({
         author={item.reviewer?.activityName || item.reviewer?.name || "작성자"}
         date={formatDate(item.createdAt)}
         title={item.announcement?.title || item.postId}
-        content={item.publicNote ?? undefined}
+        content={item.comment ?? undefined}
         reactionTag={reactionLabel(item.rating)}
+        tags={positiveReasonTags(item)}
         profileImgUrl={item.reviewer?.profileImgUrl}
         onPress={() => navigateToAnnouncement(item)}
         optionsMenu={

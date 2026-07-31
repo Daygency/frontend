@@ -17,8 +17,11 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import {
   DISAPPOINTMENT_REASON_CODES,
   DISAPPOINTMENT_REASON_LABELS,
+  POSITIVE_REASON_CODES,
+  POSITIVE_REASON_LABELS,
   type ActivityReviewRating,
   type DisappointmentReasonCode,
+  type PositiveReasonCode,
 } from "../../lib/apis/announcement/activityReviewTypes";
 import {
   getMyActivityReview,
@@ -66,7 +69,8 @@ const ActivityReviewScreen = () => {
   const [submitting, setSubmitting] = useState(false);
   const [rating, setRating] = useState<ActivityReviewRating | null>(null);
   const [reasons, setReasons] = useState<DisappointmentReasonCode[]>([]);
-  const [privateNote, setPrivateNote] = useState("");
+  const [positiveReasons, setPositiveReasons] = useState<PositiveReasonCode[]>([]);
+  const [comment, setComment] = useState("");
   const [completeNotePreview, setCompleteNotePreview] = useState<string | null>(
     null,
   );
@@ -118,7 +122,20 @@ const ActivityReviewScreen = () => {
     );
   };
 
-  const submit = async (r: ActivityReviewRating, opts?: { note?: string; codes?: DisappointmentReasonCode[] }) => {
+  const togglePositiveReason = (code: PositiveReasonCode) => {
+    setPositiveReasons((prev) =>
+      prev.includes(code) ? prev.filter((c) => c !== code) : [...prev, code],
+    );
+  };
+
+  const submit = async (
+    r: ActivityReviewRating,
+    opts?: {
+      comment?: string;
+      codes?: DisappointmentReasonCode[];
+      positiveCodes?: PositiveReasonCode[];
+    },
+  ) => {
     setSubmitting(true);
     const body: Parameters<typeof submitActivityReview>[1] = {
       revieweeUserId: params.revieweeUserId,
@@ -127,9 +144,13 @@ const ActivityReviewScreen = () => {
     if (r === "DISAPPOINTING") {
       const pickedCodes = opts?.codes ?? reasons;
       body.disappointmentReasonCodes = pickedCodes.length > 0 ? pickedCodes : null;
-      const note = (opts?.note ?? privateNote).trim();
-      body.privateNoteToOps = note ? note.slice(0, MAX_NOTE) : null;
+    } else {
+      const pickedPositiveCodes = opts?.positiveCodes ?? positiveReasons;
+      body.positiveReasonCodes =
+        pickedPositiveCodes.length > 0 ? pickedPositiveCodes : null;
     }
+    const trimmedComment = (opts?.comment ?? comment).trim();
+    body.comment = trimmedComment ? trimmedComment.slice(0, MAX_NOTE) : null;
     const res = await submitActivityReview(params.postId, body);
     setSubmitting(false);
     if (!res.ok) {
@@ -140,33 +161,27 @@ const ActivityReviewScreen = () => {
       Alert.alert("알림", msg);
       return;
     }
-    if (r === "DISAPPOINTING") {
-      setCompleteNotePreview((opts?.note ?? privateNote).trim() || null);
-    } else {
-      setCompleteNotePreview(null);
-    }
+    setCompleteNotePreview(trimmedComment || null);
     setStep("complete");
   };
 
   const onPressNextFromRating = () => {
     if (!rating) return;
-    if (rating === "DISAPPOINTING") {
-      setStep("reasons");
-      return;
-    }
-    void submit(rating);
+    setStep("reasons");
   };
 
   const onPressNextFromReasons = () => {
+    if (!rating) return;
     setStep("note");
   };
 
   const onPressSubmitNote = () => {
-    if (!rating || rating !== "DISAPPOINTING") return;
-    void submit("DISAPPOINTING", {
-      codes: reasons,
-      note: privateNote,
-    });
+    if (!rating) return;
+    if (rating === "DISAPPOINTING") {
+      void submit("DISAPPOINTING", { codes: reasons, comment });
+      return;
+    }
+    void submit(rating, { positiveCodes: positiveReasons, comment });
   };
 
   const partnerLine = params.revieweeHandle?.trim()
@@ -267,15 +282,27 @@ const ActivityReviewScreen = () => {
                 {params.announcementTitle}
               </Text>
             </View>
-            <Text style={styles.question}>어떤 점이 아쉬웠나요?</Text>
+            <Text style={styles.question}>
+              {rating === "DISAPPOINTING" ? "어떤 점이 아쉬웠나요?" : "어떤 점이 좋았나요?"}
+            </Text>
             <View style={{ marginTop: 16 }}>
-              {DISAPPOINTMENT_REASON_CODES.map((code) => {
-                const on = reasons.includes(code);
+              {(rating === "DISAPPOINTING"
+                ? DISAPPOINTMENT_REASON_CODES
+                : POSITIVE_REASON_CODES
+              ).map((code) => {
+                const on =
+                  rating === "DISAPPOINTING"
+                    ? reasons.includes(code as DisappointmentReasonCode)
+                    : positiveReasons.includes(code as PositiveReasonCode);
                 return (
                   <Pressable
                     key={code}
                     style={styles.reasonRow}
-                    onPress={() => toggleReason(code)}
+                    onPress={() =>
+                      rating === "DISAPPOINTING"
+                        ? toggleReason(code as DisappointmentReasonCode)
+                        : togglePositiveReason(code as PositiveReasonCode)
+                    }
                   >
                     <View
                       style={[
@@ -295,7 +322,9 @@ const ActivityReviewScreen = () => {
                       ) : null}
                     </View>
                     <Text style={styles.reasonText}>
-                      {DISAPPOINTMENT_REASON_LABELS[code]}
+                      {rating === "DISAPPOINTING"
+                        ? DISAPPOINTMENT_REASON_LABELS[code as DisappointmentReasonCode]
+                        : POSITIVE_REASON_LABELS[code as PositiveReasonCode]}
                     </Text>
                   </Pressable>
                 );
@@ -304,22 +333,28 @@ const ActivityReviewScreen = () => {
           </>
         ) : null}
 
-        {step === "note" && rating === "DISAPPOINTING" ? (
+        {step === "note" && rating ? (
           <>
             <Text style={styles.question}>
-              아쉬운 부분을 운영팀에 알려주세요.
+              {rating === "DISAPPOINTING"
+                ? "아쉬운 부분을 남겨주세요."
+                : "상대방에게 남기고 싶은 말이 있나요?"}
             </Text>
             <TextInput
               style={styles.noteInput}
-              placeholder="다음에 더 나아질 수 있도록 아쉬웠던 점을 남겨주세요 (선택)"
+              placeholder={
+                rating === "DISAPPOINTING"
+                  ? "다음에 더 나아질 수 있도록 아쉬웠던 점을 남겨주세요 (선택)"
+                  : "함께해서 좋았던 점을 자유롭게 남겨주세요 (선택)"
+              }
               placeholderTextColor="#9CA3AF"
               multiline
               maxLength={MAX_NOTE}
-              value={privateNote}
-              onChangeText={setPrivateNote}
+              value={comment}
+              onChangeText={setComment}
             />
             <Text style={styles.noteHint}>
-              *상대방에게 전달되지 않으며, 플랫폼 품질 개선을 위해서 활용됩니다.*
+              *작성한 내용은 상대방 프로필의 후기에 공개됩니다.*
             </Text>
           </>
         ) : null}
@@ -359,6 +394,17 @@ const ActivityReviewScreen = () => {
                 ))}
               </View>
             ) : null}
+            {rating !== "DISAPPOINTING" && positiveReasons.length > 0 ? (
+              <View style={{ marginTop: 16 }}>
+                {positiveReasons.map((code) => (
+                  <View key={code} style={styles.reasonChip}>
+                    <Text style={styles.reasonChipText}>
+                      {POSITIVE_REASON_LABELS[code]}
+                    </Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
             <Pressable
               style={[
                 styles.nextBtn,
@@ -390,11 +436,7 @@ const ActivityReviewScreen = () => {
               disabled={!rating || submitting}
               onPress={onPressNextFromRating}
             >
-              {submitting && rating && rating !== "DISAPPOINTING" ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.nextBtnText}>다음</Text>
-              )}
+              <Text style={styles.nextBtnText}>다음</Text>
             </Pressable>
           ) : null}
           {step === "reasons" ? (

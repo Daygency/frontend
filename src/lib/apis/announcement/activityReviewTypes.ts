@@ -27,6 +27,31 @@ export const DISAPPOINTMENT_REASON_LABELS: Record<
   PROBLEM_RESPONSE_WEAK: "문제 상황에 대한 대응이 아쉬웠어요",
 };
 
+/** `GOOD`/`IMPRESSED` 공통 체크리스트 (긍정 사유) */
+export const POSITIVE_REASON_CODES = [
+  "TIME_WELL_KEPT",
+  "FLEXIBLE_ON_SCHEDULE_CHANGE",
+  "SMOOTH_COMMUNICATION",
+  "FAST_AND_CLEAR_RESPONSE",
+  "WELL_PREPARED",
+  "COMFORTABLE_COLLABORATION",
+  "POLITE_AND_CONSIDERATE",
+  "CALM_PROBLEM_SOLVING",
+] as const;
+
+export type PositiveReasonCode = (typeof POSITIVE_REASON_CODES)[number];
+
+export const POSITIVE_REASON_LABELS: Record<PositiveReasonCode, string> = {
+  TIME_WELL_KEPT: "시간 약속을 잘 지켜주셨어요",
+  FLEXIBLE_ON_SCHEDULE_CHANGE: "일정 변경에도 유연하게 대응해주셨어요",
+  SMOOTH_COMMUNICATION: "소통이 원활했어요",
+  FAST_AND_CLEAR_RESPONSE: "응답이 빠르고 명확했어요",
+  WELL_PREPARED: "준비가 충분히 되어 있었어요",
+  COMFORTABLE_COLLABORATION: "함께 일하는 과정이 편안했어요",
+  POLITE_AND_CONSIDERATE: "정중하고 배려심이 느껴졌어요",
+  CALM_PROBLEM_SOLVING: "문제 상황에 침착하게 대응해주셨어요",
+};
+
 export type ActivityReviewEntity = {
   id: string;
   postId: string;
@@ -34,9 +59,8 @@ export type ActivityReviewEntity = {
   revieweeUserId: string;
   rating: ActivityReviewRating;
   disappointmentReasonCodes: DisappointmentReasonCode[] | null;
-  positiveReasonCodes?: string[] | null;
-  publicNote?: string | null;
-  privateNoteToOps: string | null;
+  positiveReasonCodes?: PositiveReasonCode[] | null;
+  comment: string | null;
   createdAt: string;
 };
 
@@ -64,4 +88,10 @@ export type ActivityReviewCursorListResponse = {
   items: ActivityReviewListItem[];
   nextCursor: string | null;
   hasMore: boolean;
+};
+
+/** `GET /reviews/received/tag-summary` 응답 항목 (개수 내림차순) */
+export type ActivityReviewTagSummaryItem = {
+  code: PositiveReasonCode;
+  count: number;
 };

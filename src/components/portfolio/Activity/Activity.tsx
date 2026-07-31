@@ -8,6 +8,7 @@ import Section from "../../ui/Section";
 import ReceivedReviewsList, {
   RECEIVED_REVIEW_PREVIEW_LIMIT,
 } from "../ReceivedReviewsList";
+import ReviewTagSummary from "../ReviewTagSummary";
 import { RootRoutes } from "../../../navigations/routes";
 
 import { usePortfolioProfile } from "../../../hooks/usePortfolioProfile";
@@ -53,6 +54,9 @@ const Activity = ({ embedded = false, userId }: ActivityProps) => {
         }
         styles={embedded ? portfolioSectionStyles : undefined}
       >
+        <View style={{ marginBottom: 12 }}>
+          <ReviewTagSummary userId={userId} />
+        </View>
         <ReceivedReviewsList
           userId={userId}
           previewLimit={RECEIVED_REVIEW_PREVIEW_LIMIT}

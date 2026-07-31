@@ -1,12 +1,15 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_BASE, AUTH_TOKEN_KEY } from "../api";
 import { fetchWithAuth } from "../fetchWithAuth";
-import type {
-  ActivityReviewCursorListResponse,
-  ActivityReviewEntity,
-  ActivityReviewListItem,
-  ActivityReviewRating,
-  ActivityReviewUserSummary,
+import {
+  POSITIVE_REASON_CODES,
+  type ActivityReviewCursorListResponse,
+  type ActivityReviewEntity,
+  type ActivityReviewListItem,
+  type ActivityReviewRating,
+  type ActivityReviewTagSummaryItem,
+  type ActivityReviewUserSummary,
+  type PositiveReasonCode,
 } from "./activityReviewTypes";
 
 async function getAuthHeadersRequired(): Promise<Record<string, string>> {
@@ -83,14 +86,16 @@ function parseReview(raw: Record<string, unknown>): ActivityReviewEntity | null 
         typeof c === "string",
     );
   }
-  const note = raw.privateNoteToOps ?? raw.private_note_to_ops;
-  const privateNoteToOps =
-    note === null || typeof note === "string" ? note : null;
-  const publicNoteRaw = raw.publicNote ?? raw.public_note;
-  const publicNote =
-    publicNoteRaw === null || typeof publicNoteRaw === "string"
-      ? publicNoteRaw
-      : null;
+  const positiveCodesRaw = raw.positiveReasonCodes ?? raw.positive_reason_codes;
+  let positiveReasonCodes: ActivityReviewEntity["positiveReasonCodes"] = null;
+  if (Array.isArray(positiveCodesRaw)) {
+    positiveReasonCodes = positiveCodesRaw.filter(
+      (c): c is NonNullable<ActivityReviewEntity["positiveReasonCodes"]>[number] =>
+        typeof c === "string",
+    );
+  }
+  const commentRaw = raw.comment;
+  const comment = commentRaw === null || typeof commentRaw === "string" ? commentRaw : null;
   return {
     id,
     postId,
@@ -98,8 +103,8 @@ function parseReview(raw: Record<string, unknown>): ActivityReviewEntity | null 
     revieweeUserId,
     rating,
     disappointmentReasonCodes,
-    privateNoteToOps,
-    publicNote,
+    positiveReasonCodes,
+    comment,
     createdAt,
   };
 }
@@ -185,7 +190,8 @@ export type SubmitActivityReviewBody = {
   revieweeUserId: string;
   rating: ActivityReviewRating;
   disappointmentReasonCodes?: string[] | null;
-  privateNoteToOps?: string | null;
+  positiveReasonCodes?: string[] | null;
+  comment?: string | null;
 };
 
 export async function submitActivityReview(
@@ -294,6 +300,58 @@ export async function getReceivedActivityReviewList(params?: {
   }
 }
 
+function parseTagSummary(raw: unknown): ActivityReviewTagSummaryItem[] {
+  if (!Array.isArray(raw)) return [];
+  const allowed = new Set<string>(POSITIVE_REASON_CODES);
+  const out: ActivityReviewTagSummaryItem[] = [];
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object") continue;
+    const o = entry as Record<string, unknown>;
+    const code = o.code;
+    const count = o.count;
+    if (typeof code === "string" && allowed.has(code) && typeof count === "number") {
+      out.push({ code: code as PositiveReasonCode, count });
+    }
+  }
+  return out;
+}
+
+/** 내가 받은 후기의 긍정 사유 태그 집계 — GET /reviews/received/tag-summary */
+export async function getReceivedActivityReviewTagSummary(): Promise<
+  ActivityReviewTagSummaryItem[] | null
+> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const res = await fetchReviewPath(`/reviews/received/tag-summary`, {
+      method: "GET",
+      headers,
+    });
+    if (!res.ok) return null;
+    const raw = (await res.json()) as unknown;
+    return parseTagSummary(raw);
+  } catch {
+    return null;
+  }
+}
+
+/** 특정 유저가 받은 후기의 긍정 사유 태그 집계 — GET /users/:userId/reviews/received/tag-summary */
+export async function getUserReceivedActivityReviewTagSummary(
+  userId: string,
+): Promise<ActivityReviewTagSummaryItem[] | null> {
+  if (!userId?.trim()) return null;
+  try {
+    const res = await fetchReviewPath(
+      `/users/${encodeURIComponent(userId)}/reviews/received/tag-summary`,
+      { method: "GET", headers: { "Content-Type": "application/json" } },
+    );
+    if (!res.ok) return null;
+    const raw = (await res.json()) as unknown;
+    return parseTagSummary(raw);
+  } catch {
+    return null;
+  }
+}
+
 export async function hasHiddenReceivedActivityReviews(): Promise<boolean> {
   const res = await getReceivedActivityReviewList({ limit: 1, hiddenOnly: true });
   return (res?.items.length ?? 0) > 0;
@@ -325,7 +383,8 @@ export async function getUserReceivedActivityReviewList(
 export type UpdateActivityReviewBody = {
   rating?: ActivityReviewRating;
   disappointmentReasonCodes?: string[] | null;
-  privateNoteToOps?: string | null;
+  positiveReasonCodes?: string[] | null;
+  comment?: string | null;
 };
 
 export async function updateMyActivityReview(

@@ -103,7 +103,7 @@ const MyReviewsScene = () => {
             author={item.reviewee?.activityName || item.reviewee?.name || "상대"}
             date={formatDate(item.createdAt)}
             title={item.announcement?.title || item.postId}
-            content={item.publicNote ?? item.privateNoteToOps ?? undefined}
+            content={item.comment ?? undefined}
             reactionTag={reactionLabel(item.rating)}
             profileImgUrl={item.reviewee?.profileImgUrl}
             onOptionsPress={() => {}}
