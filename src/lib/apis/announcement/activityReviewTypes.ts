@@ -77,10 +77,14 @@ export type ActivityReviewAnnouncementSummary = {
   scheduledAt: string | null;
 };
 
+/** 공고 작성자(owner)인지, 수락된 지원자(accepted)인지 */
+export type ActivityReviewerRole = "owner" | "accepted";
+
 export type ActivityReviewListItem = ActivityReviewEntity & {
   announcement: ActivityReviewAnnouncementSummary | null;
   reviewer: ActivityReviewUserSummary | null;
   reviewee: ActivityReviewUserSummary | null;
+  reviewerRole?: ActivityReviewerRole;
   hiddenFromProfileAt?: string | null;
 };
 

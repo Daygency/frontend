@@ -3,6 +3,7 @@ import { Pressable, Text, View } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ReceivedReviewsList from "../../components/portfolio/ReceivedReviewsList";
+import ReviewTagSummary from "../../components/portfolio/ReviewTagSummary";
 import { RootRoutes } from "../../navigations/routes";
 import styles from "./styles";
 
@@ -44,6 +45,11 @@ const ReceivedReviewsScreen = () => {
 
   return (
     <View style={styles.container}>
+      {!hiddenOnly ? (
+        <View style={styles.tagSummaryWrapper}>
+          <ReviewTagSummary userId={userId} />
+        </View>
+      ) : null}
       <ReceivedReviewsList
         userId={userId || undefined}
         hiddenOnly={hiddenOnly}

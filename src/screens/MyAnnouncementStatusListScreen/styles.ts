@@ -14,6 +14,14 @@ const styles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 8,
   },
+  centerFill: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footerLoader: {
+    paddingVertical: 16,
+  },
 });
 
 export default styles;

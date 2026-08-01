@@ -41,6 +41,7 @@ import ProfileEditScreen from "../screens/ProfileEditScreen/ProfileEditScreen";
 import ArtistPortfolioScreen from "../screens/ArtistPortfolioScreen/ArtistPortfolioScreen";
 import PortfolioPhotoGalleryScreen from "../screens/PortfolioPhotoGalleryScreen/PortfolioPhotoGalleryScreen";
 import ReceivedReviewsScreen from "../screens/ReceivedReviewsScreen/ReceivedReviewsScreen";
+import ReviewTagSummaryListScreen from "../screens/ReviewTagSummaryListScreen/ReviewTagSummaryListScreen";
 import SearchScreen from "../screens/SearchScreen/SearchScreen";
 import MusicNewsDetailScreen from "../screens/MusicNewsDetailScreen/MusicNewsDetailScreen";
 import MusicNewsRegistrationScreen from "../screens/MusicNewsRegistrationScreen";
@@ -313,6 +314,33 @@ const Navigation = () => {
           component={ReceivedReviewsScreen}
           options={({ navigation }) => ({
             headerTitle: "받은 후기",
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.REVIEW_TAG_SUMMARY_LIST}
+          component={ReviewTagSummaryListScreen}
+          options={({ navigation }) => ({
+            headerTitle: "받은 후기 태그",
             headerShadowVisible: false,
             headerShown: true,
             headerTitleAlign: "left",

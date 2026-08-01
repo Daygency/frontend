@@ -26,11 +26,7 @@ import {
   hideActivityReviewFromProfile,
   unhideActivityReviewFromProfile,
 } from "../../../lib/apis/announcement/activityReviewApi";
-import {
-  POSITIVE_REASON_LABELS,
-  type ActivityReviewListItem,
-  type PositiveReasonCode,
-} from "../../../lib/apis/announcement/activityReviewTypes";
+import type { ActivityReviewListItem } from "../../../lib/apis/announcement/activityReviewTypes";
 import { createReport } from "../../../lib/apis/report/reportApi";
 import type { ReportCategory } from "../../../lib/apis/report/types";
 import { useAuth } from "../../../contexts/AuthContext";
@@ -66,13 +62,8 @@ function reactionLabel(rating: ActivityReviewListItem["rating"]) {
   return "감동했어요";
 }
 
-function positiveReasonTags(item: ActivityReviewListItem) {
-  if (item.rating === "DISAPPOINTING") return undefined;
-  const codes = item.positiveReasonCodes;
-  if (!codes || codes.length === 0) return undefined;
-  return codes.map((code: PositiveReasonCode) => ({
-    text: POSITIVE_REASON_LABELS[code],
-  }));
+function reviewerRoleLabel(role: ActivityReviewListItem["reviewerRole"]) {
+  return role === "owner" ? "기획자" : "연주자";
 }
 
 const ReceivedReviewsList = ({
@@ -273,12 +264,13 @@ const ReceivedReviewsList = ({
   const renderItem = (item: ActivityReviewListItem) => (
     <View style={cardWrapperStyle}>
       <ReviewCard
-        author={item.reviewer?.activityName || item.reviewer?.name || "작성자"}
+        author={`${reviewerRoleLabel(item.reviewerRole)} · ${
+          item.reviewer?.activityName || item.reviewer?.name || "작성자"
+        }`}
         date={formatDate(item.createdAt)}
         title={item.announcement?.title || item.postId}
         content={item.comment ?? undefined}
         reactionTag={reactionLabel(item.rating)}
-        tags={positiveReasonTags(item)}
         profileImgUrl={item.reviewer?.profileImgUrl}
         onPress={() => navigateToAnnouncement(item)}
         optionsMenu={

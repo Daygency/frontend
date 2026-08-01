@@ -694,9 +694,11 @@ const AnnouncementDetailScreen = () => {
       displayStatus === "모집중",
       displayCompleted,
     );
+  /** 모집 마감 또는 완료 상태면 활동 후기 작성 가능 */
+  const isReviewable = displayCompleted || displayStatus === "모집마감";
   const showApplicantReviewBar =
     !isMine &&
-    displayCompleted &&
+    isReviewable &&
     isLoggedIn &&
     !myReviewExists &&
     myApplication?.status === "ACCEPTED";
@@ -743,13 +745,13 @@ const AnnouncementDetailScreen = () => {
         const dto =
           next === "종료"
             ? { completed: true }
-            : {
-                status: (next === "모집중" ? "OPEN" : "CLOSED") as
-                  | "OPEN"
-                  | "CLOSED",
-                completed: false,
-                ...(newDeadlineIso ? { deadlineAt: newDeadlineIso } : {}),
-              };
+            : next === "모집마감"
+              ? { status: "CLOSED" as const }
+              : {
+                  status: "OPEN" as const,
+                  completed: false,
+                  ...(newDeadlineIso ? { deadlineAt: newDeadlineIso } : {}),
+                };
         const res = await updateAnnouncement(params.postId!, dto);
         if (res.ok) {
           setDetailData((prev) =>
@@ -1096,7 +1098,7 @@ const AnnouncementDetailScreen = () => {
               });
             }}
           >
-            <Text style={styles.btnApplyText}>활동 후기 작성</Text>
+            <Text style={styles.btnApplyText}>후기 작성하기</Text>
           </Pressable>
         </View>
       );
@@ -1392,8 +1394,7 @@ const AnnouncementDetailScreen = () => {
             typeTag={displayType}
             statusTag={displayStatus}
             dDay={dDayLabel}
-            displayCompleted={displayCompleted}
-            showReviewEntry={displayCompleted && !myReviewExists}
+            showReviewEntry={isReviewable && !myReviewExists}
             expanded={performersExpanded}
             onToggleExpanded={() => setPerformersExpanded((prev) => !prev)}
             onWriteReview={(p) => {

@@ -6,6 +6,10 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  tagSummaryWrapper: {
+    paddingHorizontal: 12,
+    paddingTop: 12,
+  },
   listContent: {
     paddingHorizontal: 12,
     paddingTop: 8,

@@ -156,6 +156,8 @@ async function fetchAuthAnnouncementList(
     if (params?.majorIds) q.set("majorIds", params.majorIds);
     if (params?.priceType) q.set("priceType", params.priceType);
     if (params?.sort) q.set("sort", params.sort);
+    if (params?.completed !== undefined) q.set("completed", String(params.completed));
+    if (params?.applicationStatus) q.set("applicationStatus", params.applicationStatus);
 
     const query = q.toString();
     const url = `${API_BASE}/announcement/${path}${query ? `?${query}` : ""}`;

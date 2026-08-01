@@ -28,8 +28,6 @@ type Props = {
   typeTag: string;
   statusTag: string;
   dDay: string;
-  /** 공연 완료 후 후기 작성 가능 */
-  displayCompleted?: boolean;
   /** 합격자 카드에 후기 작성 진입 표시 (본인이 아직 후기 없을 때) */
   showReviewEntry?: boolean;
   onWriteReview?: (p: {
@@ -65,7 +63,6 @@ export default function AcceptedPerformersSection({
   typeTag,
   statusTag,
   dDay,
-  displayCompleted = false,
   showReviewEntry = false,
   onWriteReview,
   expanded,
@@ -199,7 +196,7 @@ export default function AcceptedPerformersSection({
                         {displayName(application)}
                       </Text>
                     </Pressable>
-                    {displayCompleted && showReviewEntry && onWriteReview && uid ? (
+                    {showReviewEntry && onWriteReview && uid ? (
                       <Pressable
                         style={styles.reviewLink}
                         onPress={() =>

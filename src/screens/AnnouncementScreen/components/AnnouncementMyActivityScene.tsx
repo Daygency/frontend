@@ -25,10 +25,6 @@ import {
 import { getMyAnnouncementList } from "../../../lib/apis/announcement/announcementApi";
 import type { AnnouncementListItem } from "../../../lib/apis/announcement/types";
 import { announcementListRecruitmentStatus } from "../../../lib/announcement/announcementListStatus";
-import {
-  getAnnouncementApplicantSummary,
-  type AnnouncementApplicantSummary,
-} from "../../../lib/application/announcementApplicantSummary";
 import { useAnnouncementScroll } from "../AnnouncementScrollContext";
 import { PORTFOLIO_BODY_BG } from "../../../constants/portfolio";
 import styles from "./announcementMyActivitySceneStyles";
@@ -56,9 +52,6 @@ const AnnouncementMyActivityScene = () => {
   const [loading, setLoading] = useState(true);
   const [myAnnouncements, setMyAnnouncements] = useState<AnnouncementListItem[]>([]);
   const [myAnnouncementsLoading, setMyAnnouncementsLoading] = useState(true);
-  const [applicantSummaries, setApplicantSummaries] = useState<
-    Record<string, AnnouncementApplicantSummary | null>
-  >({});
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(
@@ -66,7 +59,6 @@ const AnnouncementMyActivityScene = () => {
       if (!isLoggedIn) {
         setResult(null);
         setMyAnnouncements([]);
-        setApplicantSummaries({});
         setLoading(false);
         setMyAnnouncementsLoading(false);
         return;
@@ -81,17 +73,7 @@ const AnnouncementMyActivityScene = () => {
           getMyAnnouncementList({ limit: 20 }),
         ]);
         setResult(statusRes);
-        const items = myListRes?.items ?? [];
-        setMyAnnouncements(items);
-
-        const summaries = await Promise.all(
-          items.map((item) => getAnnouncementApplicantSummary(item.postId)),
-        );
-        const summaryMap: Record<string, AnnouncementApplicantSummary | null> = {};
-        items.forEach((item, index) => {
-          summaryMap[item.postId] = summaries[index];
-        });
-        setApplicantSummaries(summaryMap);
+        setMyAnnouncements(myListRes?.items ?? []);
       } finally {
         setLoading(false);
         setMyAnnouncementsLoading(false);
@@ -113,6 +95,7 @@ const AnnouncementMyActivityScene = () => {
     () => ({
       검토중: result?.groups.UNDER_REVIEW ?? [],
       수락됨: result?.groups.ACCEPTED ?? [],
+      활동종료: result?.groups.ACTIVITY_ENDED ?? [],
       거절됨: result?.groups.REJECTED ?? [],
     }),
     [result],
@@ -187,7 +170,12 @@ const AnnouncementMyActivityScene = () => {
                     onPress={() =>
                       navigation.navigate(RootRoutes.APPLICATION_STATUS_LIST, {
                         initialTab: tab,
-                        groups: applicationStatusGroups,
+                        counts: {
+                          검토중: applicationStatusGroups.검토중.length,
+                          수락됨: applicationStatusGroups.수락됨.length,
+                          활동종료: applicationStatusGroups.활동종료.length,
+                          거절됨: applicationStatusGroups.거절됨.length,
+                        },
                       })
                     }
                   >
@@ -218,8 +206,11 @@ const AnnouncementMyActivityScene = () => {
                     onPress={() =>
                       navigation.navigate(RootRoutes.MY_ANNOUNCEMENT_STATUS_LIST, {
                         initialTab: tab,
-                        groups: myPostGroups,
-                        applicantSummaries,
+                        counts: {
+                          모집중: myPostGroups.모집중.length,
+                          모집마감: myPostGroups.모집마감.length,
+                          종료: myPostGroups.종료.length,
+                        },
                       })
                     }
                   >

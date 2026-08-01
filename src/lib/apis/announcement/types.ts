@@ -89,6 +89,10 @@ export type AnnouncementListParams = {
   q?: string;
   /** created: 등록순, imminent: 임박순 */
   sort?: "created" | "imminent";
+  /** 완료(활동종료) 여부 필터 — `/announcement/my`, `/announcement/applied` 전용 */
+  completed?: boolean;
+  /** 지원 심사 상태 필터 — `/announcement/applied` 전용 */
+  applicationStatus?: "UNDER_REVIEW" | "ACCEPTED" | "REJECTED";
 };
 
 export type AnnouncementAttachmentItem = {

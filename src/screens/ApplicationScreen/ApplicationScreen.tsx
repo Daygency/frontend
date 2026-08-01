@@ -482,7 +482,6 @@ const ApplicationScreen = () => {
       } else {
         const res = await createApplication({ postId, ...body });
         if (res.ok) {
-          setApplicationId(res.data.id);
           emitChatAppliedRoomsRefresh();
           Alert.alert(
             "지원 완료",
