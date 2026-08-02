@@ -1004,9 +1004,7 @@ const MusicNewsDetailScreen = () => {
               {hasPlace ? (
                 <View ref={mapSectionRef} style={styles.sectionBlock}>
                   <Text style={styles.sectionHeading}>지역</Text>
-                  <View style={styles.locationCard}>
-                    <KakaoMapView place={news.place} />
-                  </View>
+                  <KakaoMapView place={news.place} variant="plain" />
                 </View>
               ) : null}
 

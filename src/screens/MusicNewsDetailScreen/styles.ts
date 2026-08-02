@@ -128,11 +128,11 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   sectionHeading: {
-    fontSize: 13,
+    fontSize: 17,
     fontWeight: "800",
     color: BLACK,
-    lineHeight: 18,
-    marginBottom: 8,
+    lineHeight: 23,
+    marginBottom: 12,
   },
   description: {
     fontSize: 14,
@@ -141,13 +141,6 @@ const styles = StyleSheet.create({
   },
   descriptionEmpty: {
     color: GRAY.DARK_100,
-  },
-  locationCard: {
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    borderRadius: 12,
-    overflow: "hidden",
-    backgroundColor: WHITE,
   },
   attachmentsCard: {
     marginBottom: 14,
