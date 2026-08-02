@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
@@ -47,6 +47,11 @@ const styles = StyleSheet.create({
   },
   scheduleField: {
     gap: 8,
+  },
+  scheduleErrorText: {
+    fontSize: 12,
+    lineHeight: 16,
+    color: RED.DEFAULT,
   },
   deadlineHeaderRow: {
     flexDirection: "row",

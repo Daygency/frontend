@@ -754,12 +754,6 @@ const AnnouncementRegistrationScreen = () => {
     setFormFields((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const isFormValid =
-    !!title.trim() &&
-    categoryOptions.some((o) => o.value === announcementType) &&
-    !!content.trim() &&
-    formConfigConfirmed;
-
   const err = {
     title: submitAttempted && !title.trim(),
     scheduledDate:
@@ -903,6 +897,11 @@ const AnnouncementRegistrationScreen = () => {
                         </Pressable>
                       </Form>
                     </View>
+                    {err.scheduledDate ? (
+                      <Text style={styles.scheduleErrorText}>
+                        예정일은 과거로 설정할 수 없습니다.
+                      </Text>
+                    ) : null}
                     <View style={styles.scheduleField}>
                       <View style={styles.deadlineHeaderRow}>
                         <Form
@@ -1304,7 +1303,7 @@ const AnnouncementRegistrationScreen = () => {
         <Pressable
           style={[
             styles.registerButton,
-            (!isFormValid || isSubmitting) && styles.registerButtonDisabled,
+            isSubmitting && styles.registerButtonDisabled,
           ]}
           onPress={handleRegister}
           disabled={isSubmitting}
