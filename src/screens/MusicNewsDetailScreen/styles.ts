@@ -23,12 +23,6 @@ const styles = StyleSheet.create({
     position: "relative",
     marginTop: 14,
   },
-  bodyImageBannerWithDivider: {
-    borderBottomWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
-    paddingBottom: 14,
-    marginBottom: 14,
-  },
   imageCounter: {
     position: "absolute",
     right: 12,
@@ -80,11 +74,29 @@ const styles = StyleSheet.create({
     minWidth: 14,
     fontVariant: ["tabular-nums"],
   },
+  authorName: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: BLACK,
+    fontWeight: "500",
+    marginBottom: 16,
+  },
+  authorDivider: {
+    height: 1,
+    backgroundColor: GRAY.MEDIUM_2,
+    marginBottom: 16,
+  },
   sectionInlineRow: {
     flexDirection: "row",
     alignItems: "flex-start",
-    marginBottom: 10,
     gap: 12,
+  },
+  detailInfoCard: {
+    backgroundColor: GRAY.DEFAULT_1,
+    borderRadius: 14,
+    padding: 16,
+    gap: 12,
+    marginBottom: 24,
   },
   sectionLabel: {
     width: 72,
@@ -118,11 +130,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
   },
   bodySectionBlock: {
-    marginTop: 10,
     marginBottom: 14,
-    paddingVertical: 14,
-    borderTopWidth: 1,
-    borderColor: GRAY.MEDIUM_2,
   },
   sectionBlock: {
     marginBottom: 14,

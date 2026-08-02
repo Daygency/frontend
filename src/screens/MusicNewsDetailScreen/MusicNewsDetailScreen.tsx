@@ -853,6 +853,11 @@ const MusicNewsDetailScreen = () => {
   const ticketPriceLabel = formatNewsTicketPrice(news.ticketPrice);
   const periodLabel = [news.date, news.time?.trim()].filter(Boolean).join(" ");
   const hasPlace = Boolean(news.place?.trim());
+  const hasDetailInfo =
+    hasPlace ||
+    Boolean(periodLabel) ||
+    Boolean(ticketPriceLabel) ||
+    Boolean(news.contact?.trim());
 
   const scrollToMap = () => {
     if (!mapSectionRef.current || !scrollContentRef.current) return;
@@ -915,53 +920,56 @@ const MusicNewsDetailScreen = () => {
                 </View>
               </View>
 
-              {hasPlace ? (
-                <View style={styles.sectionInlineRow}>
-                  <Text style={styles.sectionLabel}>장소</Text>
-                  <Pressable
-                    style={styles.sectionValuePressable}
-                    onPress={scrollToMap}
-                    accessibilityRole="button"
-                  >
-                    <Text style={styles.sectionValue} numberOfLines={2}>
-                      {news.place}
-                    </Text>
-                    <MaterialIcons
-                      name="chevron-right"
-                      size={20}
-                      color={GRAY.DARK_1}
-                    />
-                  </Pressable>
-                </View>
-              ) : null}
-
-              {periodLabel ? (
-                <View style={styles.sectionInlineRow}>
-                  <Text style={styles.sectionLabel}>기간</Text>
-                  <Text style={styles.sectionValue}>{periodLabel}</Text>
-                </View>
-              ) : null}
-
-              {ticketPriceLabel ? (
-                <View style={styles.sectionInlineRow}>
-                  <Text style={styles.sectionLabel}>티켓 가격</Text>
-                  <Text style={styles.sectionValueAccent}>
-                    {ticketPriceLabel}
-                  </Text>
-                </View>
-              ) : null}
-
               {news.authorName ? (
-                <View style={styles.sectionInlineRow}>
-                  <Text style={styles.sectionLabel}>작성자</Text>
-                  <Text style={styles.sectionValue}>{news.authorName}</Text>
-                </View>
+                <Text style={styles.authorName}>{news.authorName}</Text>
               ) : null}
 
-              {news.contact?.trim() ? (
-                <View style={styles.sectionInlineRow}>
-                  <Text style={styles.sectionLabel}>문의</Text>
-                  <Text style={styles.sectionValue}>{news.contact}</Text>
+              <View style={styles.authorDivider} />
+
+              {hasDetailInfo ? (
+                <View style={styles.detailInfoCard}>
+                  {hasPlace ? (
+                    <View style={styles.sectionInlineRow}>
+                      <Text style={styles.sectionLabel}>장소</Text>
+                      <Pressable
+                        style={styles.sectionValuePressable}
+                        onPress={scrollToMap}
+                        accessibilityRole="button"
+                      >
+                        <Text style={styles.sectionValue} numberOfLines={2}>
+                          {news.place}
+                        </Text>
+                        <MaterialIcons
+                          name="chevron-right"
+                          size={20}
+                          color={GRAY.DARK_1}
+                        />
+                      </Pressable>
+                    </View>
+                  ) : null}
+
+                  {periodLabel ? (
+                    <View style={styles.sectionInlineRow}>
+                      <Text style={styles.sectionLabel}>기간</Text>
+                      <Text style={styles.sectionValue}>{periodLabel}</Text>
+                    </View>
+                  ) : null}
+
+                  {ticketPriceLabel ? (
+                    <View style={styles.sectionInlineRow}>
+                      <Text style={styles.sectionLabel}>티켓 가격</Text>
+                      <Text style={styles.sectionValueAccent}>
+                        {ticketPriceLabel}
+                      </Text>
+                    </View>
+                  ) : null}
+
+                  {news.contact?.trim() ? (
+                    <View style={styles.sectionInlineRow}>
+                      <Text style={styles.sectionLabel}>문의</Text>
+                      <Text style={styles.sectionValue}>{news.contact}</Text>
+                    </View>
+                  ) : null}
                 </View>
               ) : null}
 
@@ -977,21 +985,11 @@ const MusicNewsDetailScreen = () => {
               </View>
 
               {news.imageUrls && news.imageUrls.length > 1 ? (
-                <View
-                  style={[
-                    styles.bodyImageBanner,
-                    hasPlace ? styles.bodyImageBannerWithDivider : null,
-                  ]}
-                >
+                <View style={styles.bodyImageBanner}>
                   <PhotoGrid images={news.imageUrls} />
                 </View>
               ) : news.imageUrls && news.imageUrls.length === 1 ? (
-                <View
-                  style={[
-                    styles.bodyImageBanner,
-                    hasPlace ? styles.bodyImageBannerWithDivider : null,
-                  ]}
-                >
+                <View style={styles.bodyImageBanner}>
                   <ImageCarousel
                     gap={0}
                     images={news.imageUrls}
