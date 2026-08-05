@@ -34,6 +34,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  iconButtonPressed: {
+    opacity: 0.5,
+  },
   headerSearchWrap: {
     flex: 1,
     flexDirection: "row",

@@ -10,6 +10,9 @@ const styles = StyleSheet.create({
     // borderBottomWidth: 1,
     // borderBottomColor: GRAY.DEFAULT,
   },
+  containerPressed: {
+    backgroundColor: GRAY.MEDIUM_2,
+  },
   avatarContainer: {
     position: "relative",
     marginRight: 16,
@@ -59,9 +62,11 @@ const styles = StyleSheet.create({
   nameRow: {
     flexDirection: "row",
     alignItems: "center",
+    flexShrink: 1,
     gap: 6,
   },
   name: {
+    flexShrink: 1,
     fontSize: 15,
     fontWeight: "600",
     color: "#1A202C",
@@ -76,6 +81,8 @@ const styles = StyleSheet.create({
     marginLeft: 0,
   },
   timestamp: {
+    flexShrink: 0,
+    marginLeft: 8,
     fontSize: 12,
     color: "#A0AEC0",
     fontWeight: "400",

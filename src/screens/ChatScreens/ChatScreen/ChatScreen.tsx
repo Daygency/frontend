@@ -104,13 +104,19 @@ const ChatScreen = () => {
         )}
         <View style={styles.iconContainer}>
           <Pressable
-            style={styles.iconButton}
+            style={({ pressed }) => [
+              styles.iconButton,
+              pressed && styles.iconButtonPressed,
+            ]}
             onPress={() => navigation.navigate(RootRoutes.CHAT_FILE_ARCHIVE)}
           >
             <Feather name="archive" size={23} color={MAIN.DEFAULT} />
           </Pressable>
           <Pressable
-            style={styles.iconButton}
+            style={({ pressed }) => [
+              styles.iconButton,
+              pressed && styles.iconButtonPressed,
+            ]}
             onPress={() => {
               if (isSearchOpen) {
                 closeSearch();

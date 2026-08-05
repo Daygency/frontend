@@ -25,6 +25,8 @@ interface ChatItemProps {
   isGroup?: boolean;
   /** 단체 채팅방이 속한 공고 ID */
   postId?: string;
+  /** 눌린 상태(Pressable pressed) — 회색 배경 표시용 */
+  pressed?: boolean;
 }
 
 const ChatItem = ({
@@ -39,6 +41,7 @@ const ChatItem = ({
   initialAvatarUrl,
   isGroup = false,
   postId,
+  pressed = false,
 }: ChatItemProps) => {
   const [announcementImageUrl, setAnnouncementImageUrl] = useState<
     string | null
@@ -60,7 +63,7 @@ const ChatItem = ({
   }, [isGroup, postId]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, pressed && styles.containerPressed]}>
       <View style={styles.avatarContainer}>
         <SquircleView style={styles.avatar} cornerSmoothing={0.7}>
           {isGroup ? (
@@ -88,7 +91,9 @@ const ChatItem = ({
       <View style={styles.contentContainer}>
         <View style={styles.headerRow}>
           <View style={styles.nameRow}>
-            <Text style={styles.name}>{name}</Text>
+            <Text style={styles.name} numberOfLines={1} ellipsizeMode="tail">
+              {name}
+            </Text>
             {isMusic ? (
               <View style={styles.badge}>
                 <FontAwesome name="music" size={10} color="#FFFFFF" />

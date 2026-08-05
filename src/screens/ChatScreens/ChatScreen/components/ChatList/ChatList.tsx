@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -36,6 +36,7 @@ import EmptyState, {
 } from "../../../../../components/ui/EmptyState";
 import { MAIN } from "../../../../../color";
 import ChatRoomListSkeleton from "./ChatRoomListSkeleton";
+import ChatRoomActionsModal from "../ChatRoomActionsModal/ChatRoomActionsModal";
 
 type ChatTopTab = "전체" | "1:1" | "내 공고" | "지원 공고";
 
@@ -51,6 +52,76 @@ const ROOM_LIST_FETCHERS = {
   applied: getAppliedRooms,
   myAnnouncements: getMyAnnouncementGroupRooms,
 };
+
+/** 눌림 회색 배경은 0.5초 뒤 자동으로 원상복구(롱프레스로 모달이 뜬 뒤에도 계속 눌린 상태로 남지 않도록) */
+const PRESS_VISUAL_MS = 500;
+
+function ChatListRow({
+  item,
+  displayName,
+  lastMessage,
+  timestamp,
+  onPress,
+  onLongPressAt,
+}: {
+  item: ChatRoomListItem;
+  displayName: string;
+  lastMessage: string;
+  timestamp: string;
+  onPress: () => void;
+  onLongPressAt: (x: number, y: number) => void;
+}) {
+  const peer = item.peer;
+  const [pressedVisual, setPressedVisual] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearPressTimer = () => {
+    if (timerRef.current) {
+      clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  };
+
+  useEffect(() => clearPressTimer, []);
+
+  return (
+    <Pressable
+      onPress={onPress}
+      onLongPress={(e) => {
+        const { pageX, pageY } = e.nativeEvent;
+        onLongPressAt(pageX, pageY);
+      }}
+      delayLongPress={PRESS_VISUAL_MS}
+      onPressIn={() => {
+        setPressedVisual(true);
+        clearPressTimer();
+        timerRef.current = setTimeout(() => {
+          setPressedVisual(false);
+        }, PRESS_VISUAL_MS);
+      }}
+      onPressOut={() => {
+        clearPressTimer();
+        setPressedVisual(false);
+      }}
+    >
+      <ChatItem
+        name={displayName}
+        lastMessage={lastMessage}
+        timestamp={timestamp}
+        unreadCount={item.unreadCount ?? 0}
+        isOnline={false}
+        isMusic={false}
+        isVerified={false}
+        variant="default"
+        peerUserId={peer?.userId}
+        initialAvatarUrl={peer?.profileImageUrl}
+        isGroup={item.kind === "GROUP"}
+        postId={item.post?.postId}
+        pressed={pressedVisual}
+      />
+    </Pressable>
+  );
+}
 
 function ChatRoomsFlatList({
   mode,
@@ -69,6 +140,12 @@ function ChatRoomsFlatList({
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [actionsTarget, setActionsTarget] = useState<{
+    chatRoomId: string;
+    peerUserId?: string;
+    name: string;
+    anchor: { x: number; y: number };
+  } | null>(null);
 
   const fetchFirst = useCallback(async (opts?: { refresh?: boolean }) => {
     if (!isLoggedIn) {
@@ -199,6 +276,7 @@ function ChatRoomsFlatList({
   const isEmpty = filteredItems.length === 0 && !(loading && !refreshing);
 
   return (
+    <>
     <FlatList
       style={{ flex: 1 }}
       data={filteredItems}
@@ -245,22 +323,21 @@ function ChatRoomsFlatList({
         const last = item.lastMessage?.content ?? "";
         const ts = formatChatListTime(item.lastMessage?.createdAt);
         return (
-          <Pressable onPress={() => openRoom(item)}>
-            <ChatItem
-              name={displayName}
-              lastMessage={last}
-              timestamp={ts}
-              unreadCount={item.unreadCount ?? 0}
-              isOnline={false}
-              isMusic={false}
-              isVerified={false}
-              variant="default"
-              peerUserId={peer?.userId}
-              initialAvatarUrl={peer?.profileImageUrl}
-              isGroup={item.kind === "GROUP"}
-              postId={item.post?.postId}
-            />
-          </Pressable>
+          <ChatListRow
+            item={item}
+            displayName={displayName}
+            lastMessage={last}
+            timestamp={ts}
+            onPress={() => openRoom(item)}
+            onLongPressAt={(x, y) =>
+              setActionsTarget({
+                chatRoomId: item.id,
+                peerUserId: peer?.userId,
+                name: displayName,
+                anchor: { x, y },
+              })
+            }
+          />
         );
       }}
       ItemSeparatorComponent={() => (
@@ -270,6 +347,19 @@ function ChatRoomsFlatList({
         paddingBottom: 20,
       })}
     />
+    <ChatRoomActionsModal
+      visible={!!actionsTarget}
+      chatRoomId={actionsTarget?.chatRoomId ?? ""}
+      peerUserId={actionsTarget?.peerUserId}
+      name={actionsTarget?.name}
+      anchor={actionsTarget?.anchor}
+      onClose={() => setActionsTarget(null)}
+      onLeft={() => {
+        setActionsTarget(null);
+        void fetchFirst();
+      }}
+    />
+    </>
   );
 }
 

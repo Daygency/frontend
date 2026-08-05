@@ -143,7 +143,7 @@ const ChatFileArchiveScreen = () => {
               color={GRAY.DARK_2}
             />
             <Text style={styles.emptyText}>
-              아직 로컬에 저장된 채팅 파일이 없습니다.
+              아직 저장된 채팅 파일이 없습니다.
             </Text>
           </View>
         }
