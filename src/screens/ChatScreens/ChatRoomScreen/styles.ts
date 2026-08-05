@@ -54,6 +54,8 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 15,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
   },
   avatarText: {
     fontSize: 18,
@@ -256,10 +258,15 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "600",
     marginBottom: 2,
+    color: GRAY.DARK_2,
   },
   messageTimeAfterBubble: {
     marginLeft: 8,
     alignSelf: "flex-end",
+  },
+  messageTimeWrapOther: {
+    alignItems: "flex-start",
+    marginLeft: 8,
   },
   messageGroupOther: {
     marginBottom: 5,
@@ -293,6 +300,8 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 15,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
   },
   otherAvatarText: {
     fontSize: 14,

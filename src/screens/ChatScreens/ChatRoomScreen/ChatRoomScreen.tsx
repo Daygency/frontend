@@ -53,6 +53,9 @@ import {
 } from "../../../lib/chat/chatFileCache";
 import ChatImageMessage from "./ChatImageMessage";
 import AnimatedMessageRow from "./AnimatedMessageRow";
+import { getAnnouncementFirstImageUrl } from "../../../lib/announcement/getAnnouncementFirstImageUrl";
+
+const MAIN_LOGO_IMAGE = require("../../../../assets/logo.png");
 
 export type ChatRoomMemberParam = {
   userId: string;
@@ -90,8 +93,10 @@ type MessageItem = {
   fileName?: string | null;
   fileMime?: string | null;
   fileItems?: ChatFileItem[] | null;
-  /** 상대방이 이 메시지를 읽었는지 (1:1에서 내가 보낸 메시지에만 의미 있음, 그룹방은 항상 무시) */
+  /** 상대방이 이 메시지를 읽었는지 (1:1에서 내가 보낸 메시지에만 의미 있음) */
   isReadByPeer: boolean;
+  /** 그룹방에서만 채워짐 — 이 메시지를 아직 안 읽은 멤버(발신자 제외) userId 목록 */
+  unreadMemberIds: string[] | null;
   /** 소켓으로 방금 도착한 메시지인지 (등장 애니메이션 여부 판단용) */
   justArrived?: boolean;
 };
@@ -117,6 +122,8 @@ type WsMessagePayload = {
   created_at?: string;
   readByPeer?: boolean;
   read_by_peer?: boolean;
+  unreadMemberIds?: string[];
+  unread_member_ids?: string[];
 };
 
 type ReadUpdatedPayload = {
@@ -280,6 +287,7 @@ const mapToMessageItem = (
     fileMime,
     fileItems,
     isReadByPeer: Boolean(m.readByPeer ?? m.read_by_peer),
+    unreadMemberIds: m.unreadMemberIds ?? m.unread_member_ids ?? null,
   };
 };
 
@@ -387,6 +395,24 @@ const ChatRoomScreen = () => {
   }, [chatRoomId, peerUserId]);
 
   const peerAvatarUrl = peerAvatarUrlParam;
+
+  const [announcementImageUrl, setAnnouncementImageUrl] = useState<
+    string | null
+  >(null);
+  useEffect(() => {
+    if (!isGroup || !postId) {
+      setAnnouncementImageUrl(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const url = await getAnnouncementFirstImageUrl(postId);
+      if (!cancelled) setAnnouncementImageUrl(url);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isGroup, postId]);
 
   const [message, setMessage] = useState("");
   const [messages, setMessages] = useState<MessageItem[]>([]);
@@ -511,9 +537,10 @@ const ChatRoomScreen = () => {
       const byId = new Map(prev.map((m) => [m.id, m]));
       for (const m of items) {
         const isReadByPeer = Boolean(m.readByPeer);
+        const unreadMemberIds = m.unreadMemberIds ?? null;
         const existing = byId.get(m.id);
         if (existing) {
-          byId.set(m.id, { ...existing, isReadByPeer });
+          byId.set(m.id, { ...existing, isReadByPeer, unreadMemberIds });
           continue;
         }
         byId.set(m.id, {
@@ -530,6 +557,7 @@ const ChatRoomScreen = () => {
           fileMime: m.fileMime ?? null,
           fileItems: m.fileItems ?? null,
           isReadByPeer,
+          unreadMemberIds,
         });
       }
       return Array.from(byId.values()).sort(
@@ -608,6 +636,7 @@ const ChatRoomScreen = () => {
           fileMime: m.fileMime ?? null,
           fileItems: m.fileItems ?? null,
           isReadByPeer: Boolean(m.readByPeer),
+          unreadMemberIds: m.unreadMemberIds ?? null,
         })),
       );
       setLoading(false);
@@ -671,18 +700,36 @@ const ChatRoomScreen = () => {
       });
 
       /**
-       * 상대가 방을 읽음 처리하면, 내가 보낸 메시지 중 그 시점 이전 것들의 안읽음 표시를 지움.
-       * 그룹방은 메시지별 읽음 표시를 아예 그리지 않으므로 처리하지 않는다.
+       * 누군가 방을 읽음 처리하면, 그 시점 이전 메시지들의 안읽음 표시를 갱신.
+       * 1:1은 내가 보낸 메시지의 읽음 여부(boolean)를, 그룹방은 메시지별
+       * 안읽은 멤버 목록에서 이번에 읽은 사람의 id만 제거한다.
        */
       socket.on("readUpdated", (payload: ReadUpdatedPayload) => {
-        if (isGroup) return;
         const roomId = payload.chatRoomId ?? payload.chat_room_id;
         const readerId = payload.userId ?? payload.user_id;
         const lastReadAt = payload.lastReadAt ?? payload.last_read_at;
         if (String(roomId) !== String(chatRoomId)) return;
-        if (!readerId || String(readerId) !== String(peerUserId)) return;
-        if (!lastReadAt) return;
+        if (!readerId || !lastReadAt) return;
         const cursor = new Date(lastReadAt).getTime();
+
+        if (isGroup) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.unreadMemberIds?.includes(readerId) &&
+              new Date(m.createdAt).getTime() <= cursor
+                ? {
+                    ...m,
+                    unreadMemberIds: m.unreadMemberIds.filter(
+                      (id) => id !== readerId,
+                    ),
+                  }
+                : m,
+            ),
+          );
+          return;
+        }
+
+        if (String(readerId) !== String(peerUserId)) return;
         setMessages((prev) =>
           prev.map((m) =>
             m.isFromMe &&
@@ -964,12 +1011,24 @@ const ChatRoomScreen = () => {
               disabled={isGroup ? !postId : !peerUserId}
             >
               <View style={styles.avatarContainer}>
-                <UserProfileAvatar
-                  peerUserId={isGroup ? undefined : peerUserId || undefined}
-                  profileImgUrl={isGroup ? undefined : peerAvatarUrl}
-                  size={44}
-                  style={styles.avatarImage}
-                />
+                {isGroup ? (
+                  <Image
+                    source={
+                      announcementImageUrl
+                        ? { uri: announcementImageUrl }
+                        : MAIN_LOGO_IMAGE
+                    }
+                    style={styles.avatarImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <UserProfileAvatar
+                    peerUserId={peerUserId || undefined}
+                    profileImgUrl={peerAvatarUrl}
+                    size={44}
+                    style={styles.avatarImage}
+                  />
+                )}
                 {isOnline && <View style={styles.onlineIndicator} />}
               </View>
               <View style={styles.nameContainer}>
@@ -1087,6 +1146,12 @@ const ChatRoomScreen = () => {
               const senderAvatarUrl = isGroup ? sender?.profileImageUrl : peerAvatarUrl;
               const senderUserIdForAvatar = isGroup ? msg.senderId : peerUserId;
               const isActiveMatch = activeMatchMessageId === msg.id;
+              const groupUnreadCount = isGroup
+                ? (msg.unreadMemberIds?.length ?? 0)
+                : 0;
+              const showUnreadCount = isGroup
+                ? groupUnreadCount > 0
+                : !msg.isReadByPeer;
               const rowRef = (node: View | null) => {
                 messageRowRefs.current[msg.id] = node;
               };
@@ -1220,16 +1285,16 @@ const ChatRoomScreen = () => {
                           isActiveMatch && styles.messageRowActiveMatch,
                         ]}
                       >
-                        {showTimestamp || (!isGroup && !msg.isReadByPeer) ? (
+                        {showTimestamp || showUnreadCount ? (
                           <View style={styles.messageTimeWrapMe}>
-                            {!isGroup && !msg.isReadByPeer ? (
+                            {showUnreadCount ? (
                               <Text
                                 style={[
                                   styles.messageUnreadCount,
                                   { color: MESSAGE_BUBBLE_ME_COLOR },
                                 ]}
                               >
-                                1
+                                {isGroup ? groupUnreadCount : 1}
                               </Text>
                             ) : null}
                             {showTimestamp ? (
@@ -1269,10 +1334,19 @@ const ChatRoomScreen = () => {
                           ) : null}
                           <View style={styles.otherBubbleRow}>
                             <View style={bubbleStyle}>{bubbleContent}</View>
-                            {showTimestamp ? (
-                              <Text style={[styles.messageTime, styles.messageTimeAfterBubble]}>
-                                {msg.timestamp}
-                              </Text>
+                            {showTimestamp || (isGroup && showUnreadCount) ? (
+                              <View style={styles.messageTimeWrapOther}>
+                                {isGroup && showUnreadCount ? (
+                                  <Text style={styles.messageUnreadCount}>
+                                    {groupUnreadCount}
+                                  </Text>
+                                ) : null}
+                                {showTimestamp ? (
+                                  <Text style={styles.messageTime}>
+                                    {msg.timestamp}
+                                  </Text>
+                                ) : null}
+                              </View>
                             ) : null}
                           </View>
                         </View>

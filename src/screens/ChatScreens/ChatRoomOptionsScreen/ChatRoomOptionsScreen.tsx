@@ -200,14 +200,12 @@ const ChatRoomOptionsScreen = () => {
             />
           )}
         </Pressable>
-        <View style={styles.optionDivider} />
         <Pressable style={styles.optionItem} onPress={handleReportPress}>
           <Text style={styles.optionText}>신고</Text>
           <MaterialCommunityIcons name="flag-outline" size={22} color="#000" />
         </Pressable>
-        <View style={styles.optionDivider} />
         <Pressable
-          style={styles.optionItem}
+          style={[styles.optionItem, styles.optionItemLast]}
           onPress={handleLeaveChat}
           disabled={leaving}
         >

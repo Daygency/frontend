@@ -27,6 +27,8 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 15,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
   },
   avatarText: {
     fontSize: 18,

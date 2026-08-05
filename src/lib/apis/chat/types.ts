@@ -56,6 +56,8 @@ export type ChatMessageDto = {
   createdAt: string;
   /** 상대방이 이 메시지를 읽었는지 (1:1 기준) */
   readByPeer?: boolean;
+  /** GROUP 방에서만 채워짐 — 이 메시지를 아직 안 읽은 멤버(발신자 제외) userId 목록 */
+  unreadMemberIds?: string[];
 };
 
 export type ChatMessagesPage = {

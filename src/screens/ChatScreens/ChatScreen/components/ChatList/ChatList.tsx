@@ -257,6 +257,8 @@ function ChatRoomsFlatList({
               variant="default"
               peerUserId={peer?.userId}
               initialAvatarUrl={peer?.profileImageUrl}
+              isGroup={item.kind === "GROUP"}
+              postId={item.post?.postId}
             />
           </Pressable>
         );

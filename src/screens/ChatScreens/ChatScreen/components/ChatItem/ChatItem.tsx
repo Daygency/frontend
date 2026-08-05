@@ -1,8 +1,12 @@
-import { Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Image, Text, View } from "react-native";
 import { FontAwesome, MaterialIcons } from "@expo/vector-icons";
 import SquircleView from "react-native-fast-squircle";
 import UserProfileAvatar from "../../../../../components/ui/UserProfileAvatar";
+import { getAnnouncementFirstImageUrl } from "../../../../../lib/announcement/getAnnouncementFirstImageUrl";
 import styles from "./styles";
+
+const MAIN_LOGO_IMAGE = require("../../../../../../assets/logo.png");
 
 interface ChatItemProps {
   name: string;
@@ -17,6 +21,10 @@ interface ChatItemProps {
   peerUserId?: string;
   /** API에서 온 원본 프로필 이미지 URL(상대경로 가능) */
   initialAvatarUrl?: string;
+  /** 공고 단체 채팅방 여부 — true면 공고 사진(없으면 메인 로고)을 아바타로 사용 */
+  isGroup?: boolean;
+  /** 단체 채팅방이 속한 공고 ID */
+  postId?: string;
 }
 
 const ChatItem = ({
@@ -29,17 +37,50 @@ const ChatItem = ({
   isVerified = false,
   peerUserId,
   initialAvatarUrl,
+  isGroup = false,
+  postId,
 }: ChatItemProps) => {
+  const [announcementImageUrl, setAnnouncementImageUrl] = useState<
+    string | null
+  >(null);
+
+  useEffect(() => {
+    if (!isGroup || !postId) {
+      setAnnouncementImageUrl(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const url = await getAnnouncementFirstImageUrl(postId);
+      if (!cancelled) setAnnouncementImageUrl(url);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [isGroup, postId]);
+
   return (
     <View style={styles.container}>
       <View style={styles.avatarContainer}>
         <SquircleView style={styles.avatar} cornerSmoothing={0.7}>
-          <UserProfileAvatar
-            peerUserId={peerUserId}
-            profileImgUrl={initialAvatarUrl}
-            size={44}
-            style={styles.avatarImage}
-          />
+          {isGroup ? (
+            <Image
+              source={
+                announcementImageUrl
+                  ? { uri: announcementImageUrl }
+                  : MAIN_LOGO_IMAGE
+              }
+              style={styles.avatarImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <UserProfileAvatar
+              peerUserId={peerUserId}
+              profileImgUrl={initialAvatarUrl}
+              size={44}
+              style={styles.avatarImage}
+            />
+          )}
         </SquircleView>
         {isOnline && <View style={styles.onlineIndicator} />}
       </View>

@@ -114,6 +114,14 @@ function pickFileItems(raw: Record<string, unknown>): ChatFileItem[] | null {
   return items.length > 0 ? items : null;
 }
 
+function pickUnreadMemberIds(
+  raw: Record<string, unknown>,
+): string[] | undefined {
+  const value = raw.unreadMemberIds ?? raw.unread_member_ids;
+  if (!Array.isArray(value)) return undefined;
+  return value.map(String);
+}
+
 function normalizePost(raw: unknown): ChatRoomListItem["post"] {
   const p = asRecord(raw);
   if (!Object.keys(p).length) return null;
@@ -408,6 +416,7 @@ export async function getChatMessages(
           m.readByPeer != null || m.read_by_peer != null
             ? Boolean(m.readByPeer ?? m.read_by_peer)
             : undefined,
+        unreadMemberIds: pickUnreadMemberIds(m),
       };
     });
     const peerUserId =
