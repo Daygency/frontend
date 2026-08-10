@@ -1,4 +1,5 @@
 import { Pressable, Text, View } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import CommentAuthorAvatar from "../../comments/CommentAuthorAvatar/CommentAuthorAvatar";
 import type { AnnouncementPriceType } from "../../../lib/apis/announcement/types";
 import {
@@ -131,7 +132,10 @@ const AnnouncementCard = ({
           {typeof viewCount === "number" || relativeTimeText ? (
             <View style={styles.footerMetaRow}>
               {typeof viewCount === "number" ? (
-                <Text style={styles.viewCountText}>조회 {viewCount}</Text>
+                <View style={styles.viewCountRow}>
+                  <Ionicons name="eye-outline" size={13} color="#A0A0A0" />
+                  <Text style={styles.viewCountText}>{viewCount}</Text>
+                </View>
               ) : null}
               {typeof viewCount === "number" && relativeTimeText ? (
                 <Text style={styles.footerMetaSeparator}>·</Text>

@@ -270,6 +270,7 @@ const AnnouncementRegistrationScreen = () => {
   const [scheduledTime, setScheduledTime] = useState<Date>(defaultScheduled);
   const [deadline, setDeadline] = useState<Date>(defaultDeadline);
   const [isOngoingRecruitment, setIsOngoingRecruitment] = useState(false);
+  const [isScheduleUndecided, setIsScheduleUndecided] = useState(false);
   const [showScheduledDatePicker, setShowScheduledDatePicker] = useState(false);
   const [showScheduledTimePicker, setShowScheduledTimePicker] = useState(false);
   const [showDeadlinePicker, setShowDeadlinePicker] = useState(false);
@@ -430,7 +431,10 @@ const AnnouncementRegistrationScreen = () => {
           if (!isNaN(dt.getTime())) {
             setScheduledDate(dt);
             setScheduledTime(dt);
+            setIsScheduleUndecided(false);
           }
+        } else {
+          setIsScheduleUndecided(true);
         }
         const dl = get("deadlineAt");
         if (dl) {
@@ -589,7 +593,8 @@ const AnnouncementRegistrationScreen = () => {
     hasTypeError: boolean,
   ): ValidationField | null => {
     if (!title.trim()) return "title";
-    if (isPastSchedule(scheduledDate, scheduledTime)) return "scheduledDate";
+    if (!isScheduleUndecided && isPastSchedule(scheduledDate, scheduledTime))
+      return "scheduledDate";
     if (hasTypeError) return "announcementType";
     if (isPriceInvalid()) return "price";
     if (!content.trim()) return "content";
@@ -629,10 +634,9 @@ const AnnouncementRegistrationScreen = () => {
   const handleRegister = async () => {
     setSubmitAttempted(true);
 
-    const resolvedSched = dateToISO(
-      scheduledDate,
-      formatTimeDisplay(scheduledTime),
-    );
+    const resolvedSched = isScheduleUndecided
+      ? null
+      : dateToISO(scheduledDate, formatTimeDisplay(scheduledTime));
     const resolvedDeadline = dateToISO(deadline, "23:59");
     const hasTypeError = !categoryOptions.some(
       (o) => o.value === announcementType,
@@ -757,7 +761,9 @@ const AnnouncementRegistrationScreen = () => {
   const err = {
     title: submitAttempted && !title.trim(),
     scheduledDate:
-      submitAttempted && isPastSchedule(scheduledDate, scheduledTime),
+      submitAttempted &&
+      !isScheduleUndecided &&
+      isPastSchedule(scheduledDate, scheduledTime),
     deadline: false,
     announcementType:
       submitAttempted &&
@@ -848,30 +854,62 @@ const AnnouncementRegistrationScreen = () => {
                 >
                   <View style={styles.scheduleLocationBox}>
                     <View style={styles.scheduleField}>
-                      <Form
-                        title="예정일"
-                        isRequired
-                        hasError={err.scheduledDate}
+                      <View style={styles.deadlineHeaderRow}>
+                        <Form
+                          title="예정일"
+                          isRequired={!isScheduleUndecided}
+                          hasError={err.scheduledDate}
+                        />
+                        <Pressable
+                          style={styles.toggleButton}
+                          onPress={() =>
+                            setIsScheduleUndecided((prev) => !prev)
+                          }
+                        >
+                          <Text style={styles.toggleText}>미정</Text>
+                          <MaterialCommunityIcons
+                            name={
+                              isScheduleUndecided
+                                ? "checkbox-marked"
+                                : "checkbox-blank-outline"
+                            }
+                            size={20}
+                            color={MAIN.DEFAULT}
+                          />
+                        </Pressable>
+                      </View>
+                      <Pressable
+                        style={[
+                          styles.datePickerField,
+                          isScheduleUndecided && styles.datePickerFieldDisabled,
+                          err.scheduledDate && styles.inputErrorBorder,
+                        ]}
+                        onPress={() => {
+                          if (!isScheduleUndecided) {
+                            setShowScheduledDatePicker(true);
+                          }
+                        }}
+                        disabled={isScheduleUndecided}
                       >
-                        <View>
-                          <Pressable
-                            style={[
-                              styles.datePickerField,
-                              err.scheduledDate && styles.inputErrorBorder,
-                            ]}
-                            onPress={() => setShowScheduledDatePicker(true)}
-                          >
-                            <Text style={styles.datePickerText}>
-                              {formatDateDisplay(scheduledDate)}
-                            </Text>
-                            <MaterialCommunityIcons
-                              name="calendar"
-                              size={20}
-                              color={GRAY.DARK_1}
-                            />
-                          </Pressable>
-                        </View>
-                      </Form>
+                        <Text
+                          style={[
+                            styles.datePickerText,
+                            isScheduleUndecided &&
+                              styles.datePickerTextDisabled,
+                          ]}
+                        >
+                          {isScheduleUndecided
+                            ? "미정"
+                            : formatDateDisplay(scheduledDate)}
+                        </Text>
+                        <MaterialCommunityIcons
+                          name="calendar"
+                          size={20}
+                          color={
+                            isScheduleUndecided ? GRAY.DARK_2 : GRAY.DARK_1
+                          }
+                        />
+                      </Pressable>
                     </View>
                     <View style={styles.scheduleField}>
                       <Form
@@ -882,17 +920,34 @@ const AnnouncementRegistrationScreen = () => {
                         <Pressable
                           style={[
                             styles.datePickerField,
+                            isScheduleUndecided &&
+                              styles.datePickerFieldDisabled,
                             err.scheduledDate && styles.inputErrorBorder,
                           ]}
-                          onPress={() => setShowScheduledTimePicker(true)}
+                          onPress={() => {
+                            if (!isScheduleUndecided) {
+                              setShowScheduledTimePicker(true);
+                            }
+                          }}
+                          disabled={isScheduleUndecided}
                         >
-                          <Text style={styles.datePickerText}>
-                            {formatTimeDisplay(scheduledTime)}
+                          <Text
+                            style={[
+                              styles.datePickerText,
+                              isScheduleUndecided &&
+                                styles.datePickerTextDisabled,
+                            ]}
+                          >
+                            {isScheduleUndecided
+                              ? "미정"
+                              : formatTimeDisplay(scheduledTime)}
                           </Text>
                           <MaterialCommunityIcons
                             name="clock-outline"
                             size={20}
-                            color={GRAY.DARK_1}
+                            color={
+                              isScheduleUndecided ? GRAY.DARK_2 : GRAY.DARK_1
+                            }
                           />
                         </Pressable>
                       </Form>

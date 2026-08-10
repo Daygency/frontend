@@ -29,6 +29,10 @@ import {
   getProfileCache,
   saveProfileCache,
 } from "../../../lib/profileCache";
+import {
+  setCachedPortfolioProfile,
+  MY_PROFILE_CACHE_KEY,
+} from "../../../lib/profile/portfolioProfileCache";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useToast } from "../../../contexts/ToastContext";
 import { useRequireLogin } from "../../../hooks/useRequireLogin";
@@ -322,6 +326,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       if (fresh) {
         setProfile(fresh);
         await saveProfileCache(fresh);
+        setCachedPortfolioProfile(MY_PROFILE_CACHE_KEY, fresh);
       }
       setCoverImageError(false);
     } catch (e) {
@@ -347,6 +352,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       if (fresh) {
         setProfile(fresh);
         await saveProfileCache(fresh);
+        setCachedPortfolioProfile(MY_PROFILE_CACHE_KEY, fresh);
       }
       setCoverImageError(false);
     } catch (e) {
@@ -405,6 +411,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       if (fresh) {
         setProfile(fresh);
         await saveProfileCache(fresh);
+        setCachedPortfolioProfile(MY_PROFILE_CACHE_KEY, fresh);
       }
       setImageError(false);
     } catch (e) {
@@ -430,6 +437,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
       if (fresh) {
         setProfile(fresh);
         await saveProfileCache(fresh);
+        setCachedPortfolioProfile(MY_PROFILE_CACHE_KEY, fresh);
       }
       setImageError(false);
     } catch (e) {

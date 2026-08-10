@@ -25,7 +25,6 @@ type CommunityCardProps = {
   contentPreview: string;
   contentPreviewLines?: number;
   author?: string;
-  activityName?: string;
   date: string;
   likes: number;
   comments: number;
@@ -52,7 +51,6 @@ const CommunityCard = ({
   contentPreview,
   contentPreviewLines = 0,
   author = "알수없음",
-  activityName,
   date,
   likes,
   comments,
@@ -176,8 +174,6 @@ const CommunityCard = ({
   };
 
   if (isFeedCard) {
-    const metaText = activityName ? `${date} · ${activityName}` : date;
-
     return (
       <Pressable style={styles.container} onPress={onPress}>
         <View style={styles.feedHeaderRow}>
@@ -189,16 +185,16 @@ const CommunityCard = ({
           >
             <CommentAuthorAvatar
               profileImgUrl={profileImageUrl}
-              size={40}
-              style={styles.avatar}
+              size={32}
+              style={styles.feedAvatar}
             />
             <View style={styles.feedAuthorTextCol}>
               <Text style={styles.feedAuthorName} numberOfLines={1}>
                 {author}
               </Text>
-              {!!metaText && (
+              {!!date && (
                 <Text style={styles.feedAuthorMeta} numberOfLines={1}>
-                  {metaText}
+                  {date}
                 </Text>
               )}
             </View>
@@ -505,7 +501,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 10,
+    marginBottom: 8,
   },
   feedAuthorLeft: {
     flexDirection: "row",
@@ -513,8 +509,13 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     minWidth: 0,
   },
+  feedAvatar: {
+    marginRight: 8,
+    flexShrink: 0,
+    borderRadius: 12,
+  },
   feedAuthorTextCol: {
-    marginLeft: 6,
+    marginLeft: 0,
     flexShrink: 1,
     minWidth: 0,
   },

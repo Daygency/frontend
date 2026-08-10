@@ -18,7 +18,6 @@ import type { CommunityCategory, CommunityListItem } from "../../../lib/apis/com
 import { pickCommunityListImageUrls } from "../../../lib/media/listThumbnailUrl";
 import {
   pickCommunityAuthor,
-  pickCommunityAuthorActivityName,
   pickCommunityAuthorUserId,
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
@@ -199,7 +198,6 @@ const CommunityScene = ({ selectedTag }: CommunitySceneProps) => {
         title={item.title}
         contentPreview={item.content ?? ""}
         author={author}
-        activityName={pickCommunityAuthorActivityName(item)}
         profileImageUrl={pickCommunityProfileImgUrl(item)}
         showAvatar
         date={relativeDate}

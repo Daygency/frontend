@@ -62,14 +62,29 @@ const ChatRoomActionsModal = ({
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportSubmitting, setReportSubmitting] = useState(false);
 
+  /**
+   * 같은 채팅방을 다시 롱프레스할 때마다 스피너가 깜빡이는 것을 막기 위해,
+   * 한 번 받아온 값은 캐시해두고 재조회 중에는 캐시된 값을 그대로 보여준다.
+   */
+  const settingsCacheRef = useRef<Map<string, boolean>>(new Map());
+
   useEffect(() => {
     if (!visible || !chatRoomId) return;
     let cancelled = false;
-    (async () => {
+    const cached = settingsCacheRef.current.get(chatRoomId);
+    if (cached !== undefined) {
+      setNotificationsMuted(cached);
+      setLoadingSettings(false);
+    } else {
       setLoadingSettings(true);
+    }
+    (async () => {
       const settings = await getChatRoomMemberSettings(chatRoomId);
       if (cancelled) return;
-      if (settings) setNotificationsMuted(settings.notificationsMuted);
+      if (settings) {
+        setNotificationsMuted(settings.notificationsMuted);
+        settingsCacheRef.current.set(chatRoomId, settings.notificationsMuted);
+      }
       setLoadingSettings(false);
     })();
     return () => {
@@ -125,6 +140,7 @@ const ChatRoomActionsModal = ({
       return;
     }
     setNotificationsMuted(result.notificationsMuted);
+    settingsCacheRef.current.set(chatRoomId, result.notificationsMuted);
   };
 
   const performLeave = async () => {

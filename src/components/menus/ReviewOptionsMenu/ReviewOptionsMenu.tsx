@@ -90,7 +90,7 @@ const ReviewOptionsMenu = ({
       return;
     }
     dotsRef.current?.measureInWindow((x, y, width) => {
-      setDropdownPosition({ x: x + width - 120, y: y + 28 });
+      setDropdownPosition({ x: x + width - 120, y: y + 22 });
       setMenuVisible(true);
     });
   };
@@ -100,7 +100,7 @@ const ReviewOptionsMenu = ({
   return (
     <View ref={dotsRef} collapsable={false}>
       <Pressable hitSlop={10} onPress={toggleMenu} style={styles.dotsButton}>
-        <Entypo name="dots-three-vertical" size={24} color="black" />
+        <Entypo name="dots-three-vertical" size={16} color="black" />
       </Pressable>
       <Modal
         visible={menuVisible}

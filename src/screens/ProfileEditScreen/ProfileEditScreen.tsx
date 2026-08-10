@@ -28,6 +28,10 @@ import type {
   CertificateEntry,
 } from "../../lib/apis/portfolio/types";
 import { getProfileCache, saveProfileCache } from "../../lib/profileCache";
+import {
+  setCachedPortfolioProfile,
+  MY_PROFILE_CACHE_KEY,
+} from "../../lib/profile/portfolioProfileCache";
 import { useAuth } from "../../contexts/AuthContext";
 import { updateProfile } from "../../lib/apis/portfolio/profileUpdate";
 import {
@@ -418,7 +422,7 @@ const ProfileEditScreen = () => {
 
   const persistToCache = async () => {
     if (!profile) return;
-    await saveProfileCache({
+    const next = {
       ...profile,
       name,
       activityName,
@@ -430,7 +434,9 @@ const ProfileEditScreen = () => {
       careerEntries: careerList,
       awardEntries: awardList,
       certificateEntries: certificateList,
-    });
+    };
+    await saveProfileCache(next);
+    setCachedPortfolioProfile(MY_PROFILE_CACHE_KEY, next);
   };
 
   const newTempId = () =>
@@ -640,6 +646,7 @@ const ProfileEditScreen = () => {
       const fresh = await getMyProfile().catch(() => null);
       if (fresh) {
         await saveProfileCache(fresh as any);
+        setCachedPortfolioProfile(MY_PROFILE_CACHE_KEY, fresh);
       } else {
         const patchCounts = pickFollowCountsFromApiJson(
           updated as Record<string, unknown>,
@@ -661,6 +668,7 @@ const ProfileEditScreen = () => {
           certificateEntries: certificateList,
         };
         await saveProfileCache(updatedProfileForCache);
+        setCachedPortfolioProfile(MY_PROFILE_CACHE_KEY, updatedProfileForCache);
       }
     } finally {
       setSubmitting(false);

@@ -23,7 +23,7 @@ export type CreateAnnouncementDto = {
   title: string;
   content: string;
   deadlineAt?: string | null; // ISO 8601, null = 상시 모집
-  scheduledAt: string; // ISO 8601
+  scheduledAt?: string | null; // ISO 8601, null = 미정
   address: string;
   fileId?: string; // UUID (선택)
   categoryId: string; // UUID

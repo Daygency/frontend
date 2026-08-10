@@ -1,32 +1,29 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
 import {
   getMyProfile,
   getUserPublicProfile,
   PortfolioPrivateError,
 } from "../lib/apis/portfolio/profileApi";
-import type {
-  ProfileResponseDto,
-  PublicProfileResponseDto,
-} from "../lib/apis/portfolio/types";
 import { getProfileCache, saveProfileCache } from "../lib/profileCache";
+import {
+  getCachedPortfolioProfile,
+  setCachedPortfolioProfile,
+  MY_PROFILE_CACHE_KEY,
+  type PortfolioProfile,
+} from "../lib/profile/portfolioProfileCache";
 import { RootRoutes } from "../navigations/routes";
 
-export type PortfolioProfile =
-  | ProfileResponseDto
-  | PublicProfileResponseDto
-  | null;
-
-type Options = {
-  /** 포커스 시 캐시 없이 API 재조회 */
-  refreshOnFocus?: boolean;
-};
+export type { PortfolioProfile };
 
 /**
  * 내 프로필 / 타인 공개 프로필 로드 (Profile, ProfileDetail 공통)
+ *
+ * 학력·경력·수상경력·수료증 등은 프로필을 직접 수정해야만 바뀌므로,
+ * 최초 1회 조회 후에는 세션 내 메모리 캐시를 사용하고 포커스마다 재조회하지 않는다.
+ * ProfileEditScreen에서 저장에 성공하면 캐시가 갱신되어 다음 포커스 때 반영된다.
  */
-export function usePortfolioProfile(options: Options = {}) {
-  const { refreshOnFocus = false } = options;
+export function usePortfolioProfile() {
   const route = useRoute();
   const routeParams = (route.params ?? {}) as { userId?: string };
   const viewingUserId = routeParams.userId?.trim() ?? "";
@@ -39,11 +36,12 @@ export function usePortfolioProfile(options: Options = {}) {
   const [isPortfolioPrivateBlocked, setIsPortfolioPrivateBlocked] =
     useState(false);
 
+  const cacheKey = isOtherProfile ? viewingUserId : MY_PROFILE_CACHE_KEY;
+
   const loadProfile = useCallback(
     (skipCache = false) => {
       let cancelled = false;
       const apiResponded = { current: false };
-      setIsLoading(true);
 
       if (isInvalidOtherRoute) {
         setProfile(null);
@@ -53,11 +51,28 @@ export function usePortfolioProfile(options: Options = {}) {
         };
       }
 
+      // 학력·경력·수상경력·수료증 등은 직접 프로필을 수정해야만 바뀌므로,
+      // 세션 메모리 캐시가 있으면 네트워크 재조회 없이 그대로 사용
+      if (!skipCache) {
+        const memoryCached = getCachedPortfolioProfile(cacheKey);
+        if (memoryCached !== undefined) {
+          setIsPortfolioPrivateBlocked(false);
+          setProfile(memoryCached);
+          setIsLoading(false);
+          return () => {
+            cancelled = true;
+          };
+        }
+      }
+
+      setIsLoading(true);
+
       if (isOtherProfile && viewingUserId) {
         setIsPortfolioPrivateBlocked(false);
         getUserPublicProfile(viewingUserId)
           .then((data) => {
             if (!cancelled) {
+              setCachedPortfolioProfile(cacheKey, data);
               setProfile(data);
               setIsLoading(false);
             }
@@ -74,20 +89,21 @@ export function usePortfolioProfile(options: Options = {}) {
         };
       }
 
-      if (!skipCache) {
-        getProfileCache().then((cached) => {
-          if (!cancelled && cached && !apiResponded.current) {
-            setProfile(cached);
-            setIsLoading(false);
-          }
-        });
-      }
+      getProfileCache().then((cached) => {
+        if (!cancelled && cached && !apiResponded.current) {
+          setProfile(cached);
+          setIsLoading(false);
+        }
+      });
 
       getMyProfile()
         .then((data) => {
           if (!cancelled) {
             apiResponded.current = true;
-            if (data) void saveProfileCache(data);
+            if (data) {
+              void saveProfileCache(data);
+              setCachedPortfolioProfile(cacheKey, data);
+            }
             setProfile(data);
             setIsLoading(false);
           }
@@ -103,20 +119,16 @@ export function usePortfolioProfile(options: Options = {}) {
         cancelled = true;
       };
     },
-    [isOtherProfile, viewingUserId, isInvalidOtherRoute],
+    [isOtherProfile, viewingUserId, isInvalidOtherRoute, cacheKey],
   );
 
-  useEffect(() => {
-    const cleanup = loadProfile(false);
-    return cleanup;
-  }, [loadProfile]);
-
+  // 포커스마다 실행되지만, 캐시가 있으면 loadProfile 내부에서 네트워크 조회 없이 반환한다
+  // (ProfileEditScreen 저장 성공 시 캐시가 갱신/무효화되므로 최신 상태가 반영됨)
   useFocusEffect(
     useCallback(() => {
-      if (!refreshOnFocus) return () => {};
-      const cleanup = loadProfile(true);
+      const cleanup = loadProfile(false);
       return cleanup;
-    }, [loadProfile, refreshOnFocus]),
+    }, [loadProfile]),
   );
 
   return {

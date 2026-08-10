@@ -13,6 +13,7 @@ import {
   REFRESH_TOKEN_KEY,
 } from "../lib/apis/api";
 import { clearProfileCache, saveProfileCache } from "../lib/profileCache";
+import { invalidateCachedPortfolioProfile } from "../lib/profile/portfolioProfileCache";
 import { getMyProfile } from "../lib/apis/portfolio/profileApi";
 import { onAuthExpired } from "../lib/authEvents";
 import { completeKakaoSignup } from "../lib/apis/auth/completeKakaoSignup";
@@ -262,6 +263,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       AsyncStorage.removeItem(PENDING_SIGNUP_OAUTH_TOKEN_KEY),
       clearProfileCache(),
     ]);
+    invalidateCachedPortfolioProfile();
     setUser(null);
     setIsLoggedIn(false);
     setIsBrowsing(true);

@@ -74,7 +74,7 @@ const ProfileDetail = ({ embedded = false }: ProfileDetailProps) => {
     isInvalidOtherRoute,
     isOtherProfile,
     isPortfolioPrivateBlocked,
-  } = usePortfolioProfile({ refreshOnFocus: true });
+  } = usePortfolioProfile();
 
   if (isLoading) {
     return (

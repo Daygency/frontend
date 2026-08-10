@@ -98,6 +98,12 @@ export default StyleSheet.create({
     color: BLACK,
     fontWeight: "500",
   },
+  viewCountRow: {
+    flexShrink: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+  },
   viewCountText: {
     fontSize: 12,
     lineHeight: 18,
