@@ -108,6 +108,64 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: "#717182",
   },
+  fileButtonRow: {
+    flexDirection: "row",
+    gap: 8,
+  },
+  fileButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: MAIN.DEFAULT,
+  },
+  fileButtonText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
+  },
+  fileEmptyHint: {
+    marginTop: 8,
+    fontSize: 13,
+    lineHeight: 18,
+    color: "#717182",
+  },
+  fileList: {
+    marginTop: 12,
+    gap: 8,
+  },
+  fileRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E6E6E6",
+    backgroundColor: "#FAFAFA",
+  },
+  fileRowContent: {
+    flex: 1,
+    marginRight: 8,
+  },
+  fileName: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#111113",
+    fontWeight: "500",
+  },
+  fileRemoveButton: {
+    padding: 4,
+  },
+  fileErrorText: {
+    marginTop: 6,
+    fontSize: 12,
+    color: "#EC1313",
+  },
 });
 
 export default styles;

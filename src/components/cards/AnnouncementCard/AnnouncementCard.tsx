@@ -154,7 +154,10 @@ const AnnouncementCard = ({
 
   if (onPress) {
     return (
-      <Pressable style={styles.card} onPress={onPress}>
+      <Pressable
+        style={({ pressed }) => [styles.card, pressed && { opacity: 0.5 }]}
+        onPress={onPress}
+      >
         {content}
       </Pressable>
     );

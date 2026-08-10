@@ -3,11 +3,12 @@ import {
   Alert,
   Pressable,
   ScrollView,
-  Switch,
   Text,
   View,
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
+import * as ImagePicker from "expo-image-picker";
 import {
   RouteProp,
   useNavigation,
@@ -30,9 +31,12 @@ import {
   getMyApplicationForPost,
   updateApplication,
 } from "../../lib/apis/application/applicationApi";
+import { uploadFile, type LocalImageAsset } from "../../lib/apis/fileApi";
+import { MAX_MULTIPART_FILES } from "../../lib/apis/multipartPost";
 import { emitChatAppliedRoomsRefresh } from "../../lib/chat/chatRoomsEvents";
 import type { ApplicationEntity } from "../../lib/apis/application/types";
 import type { ApplicationGender } from "../../lib/apis/application/types";
+import type { ApplicationSnapshotFile } from "../../lib/apis/application/snapshot.types";
 import type { ApplicationConfig } from "../../lib/apis/announcement/types";
 import {
   applicationCareersFromSnapshots,
@@ -119,7 +123,8 @@ type ApplicationFieldKey =
   | "participatingSong"
   | "link"
   | "selfIntroduction"
-  | "career";
+  | "career"
+  | "file";
 
 type ApplicationFieldErrors = Partial<Record<ApplicationFieldKey, boolean>>;
 
@@ -138,6 +143,7 @@ function collectFieldErrors(
     link: string;
     selfIntroduction: string;
     careerCount: number;
+    fileCount: number;
   },
 ): ApplicationFieldErrors {
   const errors: ApplicationFieldErrors = {};
@@ -166,6 +172,9 @@ function collectFieldErrors(
   }
   if (config.includeCareer && values.careerCount === 0) {
     errors.career = true;
+  }
+  if (config.includeFile && values.fileCount === 0) {
+    errors.file = true;
   }
   return errors;
 }
@@ -218,7 +227,10 @@ const ApplicationScreen = () => {
   const [participatingSong, setParticipatingSong] = useState("");
   const [link, setLink] = useState("");
   const [selfIntroduction, setSelfIntroduction] = useState("");
-  const [includeFile, setIncludeFile] = useState(false);
+  /** 이미 제출된(수정 진입 시 불러온) 파일 — fileId/url 보유 */
+  const [existingFiles, setExistingFiles] = useState<ApplicationSnapshotFile[]>([]);
+  /** 새로 선택했지만 아직 업로드 전인 로컬 파일 — 제출 시 업로드 */
+  const [pickedFiles, setPickedFiles] = useState<LocalImageAsset[]>([]);
   const [careerItems, setCareerItems] = useState<ApplicationCareerListItem[]>([]);
   const [loadingCareers, setLoadingCareers] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<ApplicationFieldErrors>({});
@@ -250,7 +262,7 @@ const ApplicationScreen = () => {
       if (e.music) setParticipatingSong(e.music);
       if (e.link) setLink(e.link);
       if (e.introduce) setSelfIntroduction(e.introduce);
-      if (Array.isArray(e.file)) setIncludeFile(e.file.length > 0);
+      if (Array.isArray(e.file)) setExistingFiles(e.file);
       if (Array.isArray(e.career) && e.career.length > 0) {
         setCareerItems(applicationCareersFromSnapshots(e.career));
       }
@@ -374,7 +386,78 @@ const ApplicationScreen = () => {
     }
   };
 
-  const buildDtoBody = () => {
+  const totalFileCount = existingFiles.length + pickedFiles.length;
+
+  const pickApplicationFileFromDocument = async () => {
+    if (totalFileCount >= MAX_MULTIPART_FILES) {
+      Alert.alert("알림", `파일은 최대 ${MAX_MULTIPART_FILES}개까지 첨부할 수 있습니다.`);
+      return;
+    }
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: ["image/*", "video/*", "application/pdf"],
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled) return;
+      const asset = result.assets[0];
+      if (!asset) return;
+      setPickedFiles((prev) => [
+        ...prev,
+        {
+          uri: asset.uri,
+          name: asset.name ?? "file",
+          type: asset.mimeType ?? "application/octet-stream",
+        },
+      ]);
+      clearFieldError("file");
+    } catch (e) {
+      console.warn("[pickApplicationFileFromDocument]", e);
+      Alert.alert("알림", "파일 선택에 실패했습니다.");
+    }
+  };
+
+  const pickApplicationImageFromAlbum = async () => {
+    const remaining = MAX_MULTIPART_FILES - totalFileCount;
+    if (remaining <= 0) {
+      Alert.alert("알림", `파일은 최대 ${MAX_MULTIPART_FILES}개까지 첨부할 수 있습니다.`);
+      return;
+    }
+    try {
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("알림", "앨범 접근 권한이 필요합니다.");
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ["images"],
+        allowsMultipleSelection: true,
+        selectionLimit: remaining,
+      });
+      if (result.canceled) return;
+      const toAdd = result.assets.slice(0, remaining).map((asset) => ({
+        uri: asset.uri,
+        name: asset.fileName ?? "image.jpg",
+        type: asset.mimeType ?? "image/jpeg",
+      }));
+      if (toAdd.length === 0) return;
+      setPickedFiles((prev) => [...prev, ...toAdd]);
+      clearFieldError("file");
+    } catch (e) {
+      console.warn("[pickApplicationImageFromAlbum]", e);
+      Alert.alert("알림", "이미지 선택에 실패했습니다.");
+    }
+  };
+
+  const removeExistingFile = (fileId: string | undefined) => {
+    if (!fileId) return;
+    setExistingFiles((prev) => prev.filter((f) => f.fileId !== fileId));
+  };
+
+  const removePickedFile = (index: number) => {
+    setPickedFiles((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const buildDtoBody = (uploadedFiles: ApplicationSnapshotFile[]) => {
     if (!config || !postId) return null;
     const educationLine = formatEducation(schoolName, selectedGrade);
     const base: Omit<Parameters<typeof createApplication>[0], "postId"> = {};
@@ -394,7 +477,10 @@ const ApplicationScreen = () => {
     }
     if (config.includeCategory) base.category = participationSection.trim();
     if (config.includeMusic) base.music = participatingSong.trim();
-    if (config.includeFile && includeFile) base.file = [];
+    if (config.includeFile) {
+      const combined = [...existingFiles, ...uploadedFiles];
+      if (combined.length > 0) base.file = combined;
+    }
     if (config.includeLink) base.link = link.trim();
     if (config.includeCareer && careerItems.length > 0) {
       base.career = toApplicationCareerSnapshots(careerItems);
@@ -456,17 +542,38 @@ const ApplicationScreen = () => {
       link,
       selfIntroduction,
       careerCount: careerItems.length,
+      fileCount: totalFileCount,
     });
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
       return;
     }
     setFieldErrors({});
-    const body = buildDtoBody();
-    if (!body) return;
 
     setSubmitting(true);
     try {
+      const uploadedFiles: ApplicationSnapshotFile[] = [];
+      if (config.includeFile && pickedFiles.length > 0) {
+        for (const asset of pickedFiles) {
+          const uploaded = await uploadFile(asset.uri, {
+            name: asset.name,
+            type: asset.type,
+          });
+          if (!uploaded) {
+            Alert.alert("오류", "파일 업로드에 실패했습니다. 다시 시도해 주세요.");
+            return;
+          }
+          uploadedFiles.push({
+            fileId: uploaded.fileId,
+            url: uploaded.imgUrl,
+            originalName: uploaded.originalName,
+          });
+        }
+      }
+
+      const body = buildDtoBody(uploadedFiles);
+      if (!body) return;
+
       if (applicationId) {
         const res = await updateApplication(applicationId, body);
         if (res.ok) {
@@ -682,24 +789,91 @@ const ApplicationScreen = () => {
           )}
           {config.includeFile && (
             <View style={fieldGap}>
-              <Form title="사진/영상/파일 제출" isRequired={true}>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    paddingVertical: 8,
-                  }}
-                >
-                  <Text style={{ flex: 1, marginRight: 12 }}>
-                    파일을 제출합니다 (제출 여부)
-                  </Text>
-                  <Switch
-                    value={includeFile}
-                    onValueChange={setIncludeFile}
-                    trackColor={{ true: MAIN.DEFAULT, false: "#ccc" }}
-                  />
+              <Form
+                title="사진/영상/파일 제출"
+                isRequired={true}
+                hasError={!!fieldErrors.file}
+              >
+                <View style={styles.fileButtonRow}>
+                  <Pressable
+                    style={styles.fileButton}
+                    onPress={pickApplicationFileFromDocument}
+                  >
+                    <MaterialCommunityIcons
+                      name="file-document-outline"
+                      size={18}
+                      color={MAIN.DEFAULT}
+                    />
+                    <Text style={styles.fileButtonText}>파일에서 선택</Text>
+                  </Pressable>
+                  <Pressable
+                    style={styles.fileButton}
+                    onPress={pickApplicationImageFromAlbum}
+                  >
+                    <MaterialCommunityIcons
+                      name="image-multiple-outline"
+                      size={18}
+                      color={MAIN.DEFAULT}
+                    />
+                    <Text style={styles.fileButtonText}>앨범에서 선택</Text>
+                  </Pressable>
                 </View>
+                {totalFileCount === 0 ? (
+                  <Text style={styles.fileEmptyHint}>
+                    최대 {MAX_MULTIPART_FILES}개까지 첨부할 수 있습니다.
+                  </Text>
+                ) : (
+                  <View style={styles.fileList}>
+                    {existingFiles.map((f, index) => (
+                      <View
+                        key={f.fileId ?? `existing-${index}`}
+                        style={styles.fileRow}
+                      >
+                        <View style={styles.fileRowContent}>
+                          <Text style={styles.fileName} numberOfLines={1}>
+                            {f.originalName || `첨부파일 ${index + 1}`}
+                          </Text>
+                        </View>
+                        <Pressable
+                          style={styles.fileRemoveButton}
+                          onPress={() => removeExistingFile(f.fileId)}
+                          accessibilityLabel="파일 삭제"
+                        >
+                          <MaterialCommunityIcons
+                            name="close"
+                            size={20}
+                            color="#717182"
+                          />
+                        </Pressable>
+                      </View>
+                    ))}
+                    {pickedFiles.map((asset, index) => (
+                      <View key={`${asset.uri}-${index}`} style={styles.fileRow}>
+                        <View style={styles.fileRowContent}>
+                          <Text style={styles.fileName} numberOfLines={1}>
+                            {asset.name || `첨부파일 ${index + 1}`}
+                          </Text>
+                        </View>
+                        <Pressable
+                          style={styles.fileRemoveButton}
+                          onPress={() => removePickedFile(index)}
+                          accessibilityLabel="파일 삭제"
+                        >
+                          <MaterialCommunityIcons
+                            name="close"
+                            size={20}
+                            color="#717182"
+                          />
+                        </Pressable>
+                      </View>
+                    ))}
+                  </View>
+                )}
+                {fieldErrors.file ? (
+                  <Text style={styles.fileErrorText}>
+                    파일을 1개 이상 첨부해 주세요.
+                  </Text>
+                ) : null}
               </Form>
             </View>
           )}

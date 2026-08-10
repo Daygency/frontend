@@ -44,7 +44,7 @@ export function deriveApplicationPrefillFromProfile(
 ): ApplicationPrefill {
   const raw = p as ProfileResponseDto & Record<string, unknown>;
 
-  const name = (p.activityName?.trim() || p.name?.trim() || "").trim();
+  const name = (p.name?.trim() || p.activityName?.trim() || "").trim();
 
   let birthYear = "";
   const by = raw.birthYear ?? raw.birth_year;
