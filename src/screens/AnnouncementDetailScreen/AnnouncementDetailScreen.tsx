@@ -45,6 +45,7 @@ import { useAnnouncementAuthorLabel } from "../../lib/announcement/useAnnounceme
 import { getMyProfile } from "../../lib/apis/portfolio/profileApi";
 import { getProfileCache } from "../../lib/profileCache";
 import { ContentRoutes, RootRoutes } from "../../navigations/routes";
+import { localDateTimeToISO } from "../../lib/date/localDateTimeToISO";
 import {
   deleteAnnouncement,
   getAnnouncementDetail,
@@ -121,12 +122,9 @@ type AnnouncementDetailRouteProp = RouteProp<
   typeof RootRoutes.ANNOUNCEMENT_DETAIL
 >;
 
-/** 마감일 연장 선택값을 등록 폼과 동일하게 그 날짜의 23:59(UTC 표기)로 변환 */
+/** 마감일 연장 선택값을 등록 폼과 동일하게 그 날짜의 23:59(현지 시각)로 변환 */
 function deadlineDateToISO(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}-${m}-${day}T23:59:00.000Z`;
+  return localDateTimeToISO(d, "23:59");
 }
 
 function formatDateKorean(iso?: string): string {

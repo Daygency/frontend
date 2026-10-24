@@ -68,6 +68,7 @@ import {
 import { API_BASE } from "../../lib/apis/api";
 import { attachFilesToPost, type LocalImageAsset } from "../../lib/apis/fileApi";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
+import { localDateTimeToISO } from "../../lib/date/localDateTimeToISO";
 
 const FALLBACK_CATEGORY_OPTIONS = [
   { label: "오디션(연주자모집)", value: "" },
@@ -185,13 +186,6 @@ function isPastSchedule(date: Date, time: Date): boolean {
   return combined.getTime() < Date.now();
 }
 
-function dateToISO(d: Date, timeOverride?: string): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const [hh = "00", mm = "00"] = (timeOverride ?? formatTimeDisplay(d)).split(":");
-  return `${y}-${m}-${day}T${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00.000Z`;
-}
 
 const APPLICATION_FORM_FIELDS = [
   { id: "name", label: "이름" },
@@ -640,8 +634,8 @@ const AnnouncementRegistrationScreen = () => {
 
     const resolvedSched = isScheduleUndecided
       ? null
-      : dateToISO(scheduledDate, formatTimeDisplay(scheduledTime));
-    const resolvedDeadline = dateToISO(deadline, "23:59");
+      : localDateTimeToISO(scheduledDate, formatTimeDisplay(scheduledTime));
+    const resolvedDeadline = localDateTimeToISO(deadline, "23:59");
     const hasTypeError = !categoryOptions.some(
       (o) => o.value === announcementType,
     );

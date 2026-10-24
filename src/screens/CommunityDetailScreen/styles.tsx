@@ -1,6 +1,10 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, WHITE } from "../../color";
 
+const POST_BODY_LINE_HEIGHT = 24;
+/** 본문이 아무리 짧아도 최소 이 줄 수만큼의 높이를 차지한다 */
+const POST_BODY_MIN_LINES = 3;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -61,7 +65,8 @@ const styles = StyleSheet.create({
   },
   postBody: {
     fontSize: 15,
-    lineHeight: 24,
+    lineHeight: POST_BODY_LINE_HEIGHT,
+    minHeight: POST_BODY_LINE_HEIGHT * POST_BODY_MIN_LINES,
     color: BLACK,
   },
   carouselWrap: {

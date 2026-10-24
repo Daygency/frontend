@@ -41,20 +41,7 @@ import type { NewsAttachmentItem } from "../../lib/apis/news/types";
 import { attachFilesToPost, type LocalImageAsset } from "../../lib/apis/fileApi";
 import { pickUrlFromFileLike } from "../../lib/media/attachmentImageUrl";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
-
-function formatTimeDisplay(d: Date): string {
-  const h = String(d.getHours()).padStart(2, "0");
-  const m = String(d.getMinutes()).padStart(2, "0");
-  return `${h}:${m}`;
-}
-
-function dateToISO(d: Date, timeOverride?: string): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  const [hh = "00", mm = "00"] = (timeOverride ?? formatTimeDisplay(d)).split(":");
-  return `${y}-${m}-${day}T${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00.000Z`;
-}
+import { localDateTimeToISO } from "../../lib/date/localDateTimeToISO";
 
 type ValidationField = "title" | "content" | "place" | "images";
 
@@ -237,7 +224,7 @@ const MusicNewsRegistrationScreen = () => {
       title: title.trim(),
       content: content.trim().slice(0, 255),
       place: placeValue.address.trim().slice(0, 100),
-      startedAt: dateToISO(startedAt),
+      startedAt: localDateTimeToISO(startedAt),
       ...(contact.trim()
         ? { contact: contact.trim().slice(0, 30) }
         : isEditMode
@@ -250,7 +237,7 @@ const MusicNewsRegistrationScreen = () => {
           : isEditMode
             ? { ticketPrice: null }
             : {}),
-      ...(useEndDate && endedAt ? { endedAt: dateToISO(endedAt) } : {}),
+      ...(useEndDate && endedAt ? { endedAt: localDateTimeToISO(endedAt) } : {}),
     };
 
     try {
