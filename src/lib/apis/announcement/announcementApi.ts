@@ -191,6 +191,45 @@ export async function getMyAppliedAnnouncementList(
   return fetchAuthAnnouncementList("applied", params);
 }
 
+export type MyScheduleKind =
+  | "ACCEPTED_SCHEDULED"
+  | "MY_SCHEDULED"
+  | "MY_DEADLINE"
+  | "SAVED_DEADLINE";
+
+export type MyScheduleItem = {
+  kind: MyScheduleKind;
+  /** ISO 8601 */
+  date: string;
+  postId: string;
+  title: string;
+  address: string;
+  type: string;
+};
+
+/**
+ * 내 일정 (`GET /announcement/my-schedule`) — 합격한 공고 진행일, 내 공고 진행일·마감일,
+ * 저장한 공고 마감일. 서버가 날짜순으로 정렬해 준다. `from` 생략 시 오늘 0시 이후.
+ */
+export async function getMySchedule(from?: Date): Promise<MyScheduleItem[] | null> {
+  try {
+    const headers = await getAuthHeadersRequired();
+    const query = from ? `?from=${encodeURIComponent(from.toISOString())}` : "";
+    const url = `${API_BASE}/announcement/my-schedule${query}`;
+    const res = await fetchWithAuth(url, { method: "GET", headers });
+    if (!res.ok) {
+      const errText = await res.text().catch(() => "");
+      console.warn("[announcement/my-schedule] 실패:", res.status, errText);
+      return null;
+    }
+    const data = (await res.json()) as { items?: MyScheduleItem[] };
+    return Array.isArray(data?.items) ? data.items : [];
+  } catch (e) {
+    console.warn("[announcement/my-schedule] 네트워크 에러:", e);
+    return null;
+  }
+}
+
 /** 공고 목록 일괄 조회 — `GET /announcement` (cursor·limit·필터, 메인 홈 미리보기 등) */
 export async function getAnnouncementList(
   params?: AnnouncementListParams

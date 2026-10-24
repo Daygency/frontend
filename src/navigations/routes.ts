@@ -20,6 +20,8 @@ export const RootRoutes = {
   APPLICATION: "Application",
   APPLICATION_STATUS_LIST: "ApplicationStatusList",
   MY_ANNOUNCEMENT_STATUS_LIST: "MyAnnouncementStatusList",
+  /** 내 일정 — 합격·내 공고 진행일, 마감일, 저장한 공고 마감일 */
+  MY_SCHEDULE: "MySchedule",
   FOLLOW_LIST: "FollowList",
   COMMUNITY_DETAIL: "CommunityDetail",
   COMMUNITY_REGISTRATION: "CommunityRegistration",

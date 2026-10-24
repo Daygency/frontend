@@ -10,6 +10,7 @@ import AnnouncementDetailScreen from "../screens/AnnouncementDetailScreen/Announ
 import ApplicationScreen from "../screens/ApplicationScreen/ApplicationScreen";
 import ApplicationStatusListScreen from "../screens/ApplicationStatusListScreen/ApplicationStatusListScreen";
 import MyAnnouncementStatusListScreen from "../screens/MyAnnouncementStatusListScreen/MyAnnouncementStatusListScreen";
+import MyScheduleScreen from "../screens/MyScheduleScreen/MyScheduleScreen";
 import FollowListScreen from "../screens/FollowListScreen/FollowListScreen";
 import type { FollowListParams } from "../screens/FollowListScreen/types";
 import CommunityDetailScreen from "../screens/CommunityDetailScreen";
@@ -223,6 +224,39 @@ const Navigation = () => {
               <View style={styles.titleWrap}>
                 <Text style={styles.title} numberOfLines={1}>
                   내가 만든 공고
+                </Text>
+              </View>
+            ),
+            headerShadowVisible: false,
+            headerShown: true,
+            headerTitleAlign: "left",
+            headerLeft: () => (
+              <Pressable
+                onPress={() => {
+                  if (navigation.canGoBack()) {
+                    navigation.goBack();
+                  }
+                }}
+                hitSlop={10}
+                style={styles.leftIcon}
+              >
+                <MaterialCommunityIcons
+                  name="chevron-left"
+                  size={30}
+                  color="#000"
+                />
+              </Pressable>
+            ),
+          })}
+        />
+        <Stack.Screen
+          name={RootRoutes.MY_SCHEDULE}
+          component={withAuthGate(MyScheduleScreen)}
+          options={({ navigation }) => ({
+            headerTitle: () => (
+              <View style={styles.titleWrap}>
+                <Text style={styles.title} numberOfLines={1}>
+                  내 일정
                 </Text>
               </View>
             ),

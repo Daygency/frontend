@@ -44,6 +44,47 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     marginBottom: 8,
   },
+  sectionTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  sectionMore: {
+    fontSize: 13,
+    color: GRAY.DARK,
+    paddingTop: 16,
+    marginBottom: 8,
+  },
+  scheduleEmpty: {
+    fontSize: 13,
+    color: GRAY.DARK,
+    paddingVertical: 12,
+  },
+  scheduleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingVertical: 10,
+  },
+  scheduleDay: {
+    width: 88,
+    fontSize: 13,
+    fontWeight: "600",
+    color: BLACK,
+  },
+  scheduleBody: {
+    flex: 1,
+    gap: 2,
+  },
+  scheduleKind: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: MAIN.DEFAULT,
+  },
+  scheduleTitle: {
+    fontSize: 14,
+    color: BLACK,
+  },
   statCard: {
     flexDirection: "row",
     minHeight: 88,

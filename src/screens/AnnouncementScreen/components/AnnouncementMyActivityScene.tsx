@@ -22,7 +22,16 @@ import {
   getMyApplicationsByStatus,
   type MyApplicationStatusResult,
 } from "../../../lib/application/myApplicationStatusSummary";
-import { getMyAnnouncementList } from "../../../lib/apis/announcement/announcementApi";
+import {
+  getMyAnnouncementList,
+  getMySchedule,
+  type MyScheduleItem,
+} from "../../../lib/apis/announcement/announcementApi";
+import {
+  MY_SCHEDULE_KIND_LABEL,
+  formatScheduleDay,
+  scheduleRelativeDay,
+} from "../../../lib/announcement/mySchedule";
 import type { AnnouncementListItem } from "../../../lib/apis/announcement/types";
 import { announcementListRecruitmentStatus } from "../../../lib/announcement/announcementListStatus";
 import { useAnnouncementScroll } from "../AnnouncementScrollContext";
@@ -34,7 +43,11 @@ const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 type RootStackParamList = {
   ApplicationStatusList: ApplicationStatusListParams;
   MyAnnouncementStatusList: MyAnnouncementStatusListParams;
+  MySchedule: undefined;
 };
+
+/** 내 활동 탭에 미리 보여줄 다가오는 일정 개수 */
+const SCHEDULE_PREVIEW_COUNT = 3;
 
 function myPostStatusTab(item: AnnouncementListItem): MyAnnouncementStatusTab {
   if (item.completed) return "종료";
@@ -52,6 +65,7 @@ const AnnouncementMyActivityScene = () => {
   const [loading, setLoading] = useState(true);
   const [myAnnouncements, setMyAnnouncements] = useState<AnnouncementListItem[]>([]);
   const [myAnnouncementsLoading, setMyAnnouncementsLoading] = useState(true);
+  const [schedule, setSchedule] = useState<MyScheduleItem[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(
@@ -59,6 +73,7 @@ const AnnouncementMyActivityScene = () => {
       if (!isLoggedIn) {
         setResult(null);
         setMyAnnouncements([]);
+        setSchedule(null);
         setLoading(false);
         setMyAnnouncementsLoading(false);
         return;
@@ -68,12 +83,14 @@ const AnnouncementMyActivityScene = () => {
         setMyAnnouncementsLoading(true);
       }
       try {
-        const [statusRes, myListRes] = await Promise.all([
+        const [statusRes, myListRes, scheduleRes] = await Promise.all([
           getMyApplicationsByStatus(),
           getMyAnnouncementList({ limit: 20 }),
+          getMySchedule(),
         ]);
         setResult(statusRes);
         setMyAnnouncements(myListRes?.items ?? []);
+        setSchedule(scheduleRes);
       } finally {
         setLoading(false);
         setMyAnnouncementsLoading(false);
@@ -153,8 +170,48 @@ const AnnouncementMyActivityScene = () => {
         />
       }
     >
-      {applicationStatsReady ? (
+      {schedule ? (
         <View style={[styles.contentSheet, styles.firstContentSheet]}>
+          <View style={styles.sectionTitleRow}>
+            <Text style={styles.sectionTitle}>내 일정</Text>
+            <Pressable
+              hitSlop={10}
+              onPress={() => navigation.navigate(RootRoutes.MY_SCHEDULE)}
+            >
+              <Text style={styles.sectionMore}>전체 보기</Text>
+            </Pressable>
+          </View>
+          {schedule.length === 0 ? (
+            <Text style={styles.scheduleEmpty}>다가오는 일정이 없어요.</Text>
+          ) : (
+            schedule.slice(0, SCHEDULE_PREVIEW_COUNT).map((item) => (
+              <Pressable
+                key={`${item.kind}:${item.postId}`}
+                style={styles.scheduleRow}
+                onPress={() => navigation.navigate(RootRoutes.MY_SCHEDULE)}
+              >
+                <Text style={styles.scheduleDay}>
+                  {formatScheduleDay(item.date)}
+                </Text>
+                <View style={styles.scheduleBody}>
+                  <Text style={styles.scheduleKind}>
+                    {MY_SCHEDULE_KIND_LABEL[item.kind]} ·{" "}
+                    {scheduleRelativeDay(item.date)}
+                  </Text>
+                  <Text style={styles.scheduleTitle} numberOfLines={1}>
+                    {item.title}
+                  </Text>
+                </View>
+              </Pressable>
+            ))
+          )}
+        </View>
+      ) : null}
+
+      {applicationStatsReady ? (
+        <View
+          style={[styles.contentSheet, !schedule && styles.firstContentSheet]}
+        >
           <Text style={styles.sectionTitle}>지원 현황</Text>
           <View style={styles.statCard}>
             {APPLICATION_STATUS_TABS.map((tab, index) => {
