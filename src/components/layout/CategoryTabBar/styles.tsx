@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   tabBar: {
     backgroundColor: WHITE,
     height: 42,
@@ -41,6 +41,6 @@ const styles = StyleSheet.create({
   tabLabelSelected: {
     color: MAIN.DEFAULT,
   },
-});
+}));
 
 export default styles;

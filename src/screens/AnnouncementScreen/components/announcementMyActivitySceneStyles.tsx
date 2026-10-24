@@ -1,10 +1,10 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 /** 흰 바탕 위 섹션 카드 사이 간격 */
 const CARD_GAP = 12;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   scrollContent: {
     flexGrow: 1,
     backgroundColor: WHITE,
@@ -21,14 +21,14 @@ const styles = StyleSheet.create({
     height: 40,
     paddingHorizontal: 20,
     borderRadius: 10,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     justifyContent: "center",
     alignItems: "center",
   },
   loginBtnText: {
     fontSize: 14,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   contentSheet: {
     backgroundColor: GRAY.DEFAULT,
@@ -116,6 +116,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: BLACK,
   },
-});
+}));
 
 export default styles;

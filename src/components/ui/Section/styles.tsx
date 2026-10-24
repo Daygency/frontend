@@ -1,6 +1,7 @@
-import { StyleSheet } from "react-native";
+import { BLACK } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     marginBottom: 20,
     width: "100%",
@@ -24,14 +25,14 @@ const styles = StyleSheet.create({
     lineHeight: 27,
     letterSpacing: -0.32,
     fontWeight: "600",
-    color: "#000",
+    color: BLACK,
   },
   content: {
     marginTop: 5,
     gap: 5,
     paddingHorizontal: 20,
   },
-});
+}));
 
 export default styles;
 

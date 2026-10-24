@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { BLACK, GRAY } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flexDirection: "row",
     alignItems: "center",
@@ -18,6 +18,6 @@ const styles = StyleSheet.create({
     color: BLACK,
     fontWeight: "600",
   },
-});
+}));
 
 export default styles;

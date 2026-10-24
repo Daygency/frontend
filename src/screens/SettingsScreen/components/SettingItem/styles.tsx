@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
 import { GRAY } from "../../../../color";
+import { themedStyles } from "../../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   itemContainer: {
     paddingVertical: 16,
     paddingHorizontal: 20,
@@ -25,6 +26,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "400",
   },
-});
+  rightContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  value: {
+    fontSize: 14,
+    color: GRAY.DARK_2,
+  },
+}));
 
 export default styles;

@@ -1,8 +1,8 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, RED, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, RED, WHITE, lightDark } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
-export const sharedAnnouncementStyles = StyleSheet.create({
+export const sharedAnnouncementStyles = themedStyles(() => ({
   title: {
     fontSize: 14,
     lineHeight: 26,
@@ -56,7 +56,7 @@ export const sharedAnnouncementStyles = StyleSheet.create({
   typeTag: {
     ...SMOOTH_CORNERS,
     // backgroundColor: GRAY.DEFAULT,
-    backgroundColor: "#EDF2F7", // 하늘색
+    backgroundColor: lightDark("#EDF2F7", "#262C3A"), // 하늘색
     borderRadius: 4,
     paddingHorizontal: 7,
     paddingVertical: 3,
@@ -84,4 +84,4 @@ export const sharedAnnouncementStyles = StyleSheet.create({
     color: BLACK,
     fontWeight: "400",
   },
-});
+}));

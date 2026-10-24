@@ -20,7 +20,7 @@ import {
 import type { InboxRecipientItem } from "../../lib/apis/notifications/inboxTypes";
 import { navigateFromInboxItem } from "../../lib/notifications/navigateFromInboxItem";
 import UserProfileAvatar from "../../components/ui/UserProfileAvatar";
-import { GRAY } from "../../color";
+import { GRAY, lightDark } from "../../color";
 import styles from "./styles";
 
 const PAGE_SIZE = 8;
@@ -155,7 +155,7 @@ const NotificationsScreen = () => {
                 hitSlop={12}
                 style={{ marginRight: 4 }}
               >
-                <Text style={{ fontSize: 15, color: "#2563EB" }}>모두 읽음</Text>
+                <Text style={{ fontSize: 15, color: lightDark("#2563EB", "#5B9BFF") }}>모두 읽음</Text>
               </Pressable>
             )
           : undefined,
@@ -215,7 +215,7 @@ const NotificationsScreen = () => {
           }}
           style={{ marginTop: 16, paddingVertical: 10, paddingHorizontal: 20 }}
         >
-          <Text style={{ fontSize: 15, color: "#2563EB" }}>다시 시도</Text>
+          <Text style={{ fontSize: 15, color: lightDark("#2563EB", "#5B9BFF") }}>다시 시도</Text>
         </Pressable>
       </View>
     );

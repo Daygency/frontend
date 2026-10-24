@@ -1,7 +1,8 @@
-import { Platform, StyleSheet } from "react-native";
+import { Platform } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     width: "100%",
     backgroundColor: WHITE,
@@ -96,6 +97,6 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
     lineHeight: 20,
   },
-});
+}));
 
 export default styles;

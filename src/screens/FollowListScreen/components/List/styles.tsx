@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../../color";
+import { themedStyles } from "../../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -44,13 +44,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 10,
     borderRadius: 8,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   retryText: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontSize: 15,
     fontWeight: "600",
   },
-});
+}));
 
 export default styles;

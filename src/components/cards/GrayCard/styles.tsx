@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { BLACK, GRAY } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     backgroundColor: "transparent",
   },
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   itemPressed: {
     opacity: 0.7,
   },
-});
+}));
 
 export default styles;
 

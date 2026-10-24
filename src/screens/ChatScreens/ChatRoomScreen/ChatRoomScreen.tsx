@@ -30,7 +30,7 @@ import {
   useKeyboardHeight,
 } from "../../../hooks/useKeyboardHeight";
 import { MaterialCommunityIcons, Feather } from "@expo/vector-icons";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE, lightDark, BLACK, FIXED_WHITE } from "../../../color";
 import styles, { MESSAGE_BUBBLE_ME_COLOR } from "./styles";
 import {
   getChatMessages,
@@ -965,7 +965,7 @@ const ChatRoomScreen = () => {
           채팅방 정보가 없습니다. 목록에서 다시 들어와 주세요.
         </Text>
         <Pressable onPress={() => navigation.goBack()} style={{ marginTop: 16 }}>
-          <Text style={{ color: "#2563EB", fontWeight: "600" }}>돌아가기</Text>
+          <Text style={{ color: lightDark("#2563EB", "#5B9BFF"), fontWeight: "600" }}>돌아가기</Text>
         </Pressable>
       </View>
     );
@@ -980,7 +980,7 @@ const ChatRoomScreen = () => {
           hitSlop={10}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color="#000" />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={BLACK} />
         </Pressable>
 
         <View style={styles.userInfo}>
@@ -1055,7 +1055,7 @@ const ChatRoomScreen = () => {
               }
             }}
           >
-            <Feather name={isSearchOpen ? "x" : "search"} size={22} color="#000" />
+            <Feather name={isSearchOpen ? "x" : "search"} size={22} color={BLACK} />
           </Pressable>
           <Pressable
             hitSlop={10}
@@ -1068,7 +1068,7 @@ const ChatRoomScreen = () => {
               })
             }
           >
-            <MaterialCommunityIcons name="menu" size={22} color="#000" />
+            <MaterialCommunityIcons name="menu" size={22} color={BLACK} />
           </Pressable>
         </View>
       </View>
@@ -1239,7 +1239,7 @@ const ChatRoomScreen = () => {
                       <MaterialCommunityIcons
                         name="file-outline"
                         size={22}
-                        color={msg.isFromMe ? WHITE : GRAY.DARK_100}
+                        color={msg.isFromMe ? FIXED_WHITE : GRAY.DARK_100}
                       />
                       <Text
                         style={[
@@ -1410,9 +1410,9 @@ const ChatRoomScreen = () => {
         ) : null}
         <Pressable style={styles.addButton} onPress={toggleAttachmentMenu}>
           {isAttachmentMenuOpen ? (
-            <MaterialCommunityIcons name="close" size={22} color="#666" />
+            <MaterialCommunityIcons name="close" size={22} color={lightDark("#666", "#A0A3AB")} />
           ) : (
-            <Feather name="plus" size={22} color="#666" />
+            <Feather name="plus" size={22} color={lightDark("#666", "#A0A3AB")} />
           )}
         </Pressable>
         <TextInput
@@ -1447,7 +1447,7 @@ const ChatRoomScreen = () => {
           <MaterialCommunityIcons
             name="send"
             size={22}
-            color={message.trim() && sendReady ? "#000" : GRAY.DARK_2}
+            color={message.trim() && sendReady ? BLACK : GRAY.DARK_2}
           />
         </Pressable>
       </View>

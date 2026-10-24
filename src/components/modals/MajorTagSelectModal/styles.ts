@@ -1,8 +1,8 @@
-import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     borderColor: MAIN.DEFAULT,
   },
   tagSelected: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderColor: MAIN.DEFAULT,
   },
   tagText: {
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     color: MAIN.DEFAULT,
   },
   tagTextSelected: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontWeight: "500",
   },
   footer: {
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     borderTopColor: GRAY.DEFAULT,
   },
   completeButton: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
   completeButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));
 
 export default styles;

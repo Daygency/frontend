@@ -21,6 +21,8 @@ import Animated, {
   type SharedValue,
 } from "react-native-reanimated";
 import { TAB_RESCROLL_THRESHOLD } from "../../lib/navigation/tabRetap";
+import { WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
 const DEFAULT_TOP_BAR_HEIGHT = 50;
 const DEFAULT_FILTER_BAR_HEIGHT = 45;
@@ -339,7 +341,7 @@ function LoungeCollapsibleChrome({
   );
 }
 
-const chromeStyles = {
+const chromeStyles = themedStyles(() => ({
   root: {
     position: "absolute" as const,
     top: 0,
@@ -355,13 +357,13 @@ const chromeStyles = {
     top: 0,
     left: 0,
     right: 0,
-    backgroundColor: "#ffffff",
+    backgroundColor: WHITE,
   },
   filterBar: {
     position: "absolute" as const,
     left: 0,
     right: 0,
-    backgroundColor: "#ffffff",
+    backgroundColor: WHITE,
     zIndex: 21,
   },
-};
+}));

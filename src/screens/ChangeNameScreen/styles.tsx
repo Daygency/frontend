@@ -1,7 +1,8 @@
-import { Platform, StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { Platform } from "react-native";
+import { GRAY, MAIN, WHITE, FIXED_WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -40,7 +41,7 @@ const styles = StyleSheet.create({
     }),
   },
   button: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
@@ -53,11 +54,11 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   buttonTextDisabled: {
     color: GRAY.MEDIUM_100,
   },
-});
+}));
 
 export default styles;

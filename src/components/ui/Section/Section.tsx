@@ -9,6 +9,7 @@ import {
 import { ReactNode } from "react";
 import { MaterialIcons } from "@expo/vector-icons";
 import defaultStyles from "./styles";
+import { BLACK } from "../../../color";
 
 interface Styles {
   container?: StyleProp<ViewStyle>;
@@ -41,7 +42,7 @@ export default function Section({
       </View>
       {onPressMore ? (
         <Pressable onPress={onPressMore} hitSlop={8}>
-          <MaterialIcons name="chevron-right" size={28} color="#000" />
+          <MaterialIcons name="chevron-right" size={28} color={BLACK} />
         </Pressable>
       ) : null}
     </>

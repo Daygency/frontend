@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -55,6 +56,6 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
     fontWeight: "600",
   },
-});
+}));
 
 export default styles;

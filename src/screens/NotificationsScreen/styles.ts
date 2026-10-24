@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { GRAY, MAIN, WHITE, lightDark } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -38,7 +39,7 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
   },
   rowUnread: {
-    backgroundColor: "#EEF2F8",
+    backgroundColor: lightDark("#EEF2F8", "#1C2130"),
   },
   rowRead: {
     backgroundColor: WHITE,
@@ -80,13 +81,13 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     marginTop: 6,
   },
   footerLoading: {
     paddingVertical: 16,
     alignItems: "center",
   },
-});
+}));
 
 export default styles;

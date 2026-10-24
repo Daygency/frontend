@@ -12,6 +12,7 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Ionicons } from "@expo/vector-icons";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 type Variant = "header" | "comment" | "reply";
 
@@ -74,7 +75,7 @@ const ReportDotsDropdownMenu = ({
 
   const icon =
     variant === "header" ? (
-      <MaterialCommunityIcons name="dots-vertical" size={21} color="#000" />
+      <MaterialCommunityIcons name="dots-vertical" size={21} color={BLACK} />
     ) : (
       <Ionicons
         name="ellipsis-vertical"
@@ -131,7 +132,7 @@ const ReportDotsDropdownMenu = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   modalRoot: {
     flex: 1,
   },
@@ -169,6 +170,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: BLACK,
   },
-});
+}));
 
 export default ReportDotsDropdownMenu;

@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
   },
   topTabSelected: {
     borderColor: MAIN.DEFAULT,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   topTabPressed: {
     opacity: 0.5,
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     includeFontPadding: false,
   },
   topTabTextSelected: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontWeight: "400",
   },
   unreadBadge: {
@@ -106,12 +106,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
   },
   unreadBadgeText: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontSize: 11,
     fontWeight: "700",
     includeFontPadding: false,
     textAlignVertical: "center",
   },
-});
+}));
 
 export default styles;

@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View, type StyleProp, type ViewStyle } from "react-native";
+import { Text, View, type StyleProp, type ViewStyle } from "react-native";
 import { BLACK, GRAY, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 type RecruitmentMajorChipProps = {
   label: string;
@@ -17,7 +18,7 @@ const RecruitmentMajorChip = ({ label, style }: RecruitmentMajorChipProps) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   chip: {
     backgroundColor: WHITE,
     borderRadius: 4,
@@ -32,6 +33,6 @@ const styles = StyleSheet.create({
     color: BLACK,
     fontWeight: "500",
   },
-});
+}));
 
 export default RecruitmentMajorChip;

@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { GRAY, SKELETON, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const skeletonStyles = StyleSheet.create({
+const skeletonStyles = themedStyles(() => ({
   body: {
     paddingHorizontal: 20,
     paddingTop: 20,
@@ -86,6 +86,6 @@ const skeletonStyles = StyleSheet.create({
     flex: 1,
     height: 56,
   },
-});
+}));
 
 export default skeletonStyles;

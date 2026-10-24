@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { BLACK } from "../color";
+import { themedStyles } from "../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   titleWrap: {
     flex: 1,
     flexDirection: "row",
@@ -21,6 +21,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 15,
   }
-});
+}));
 
 export default styles;

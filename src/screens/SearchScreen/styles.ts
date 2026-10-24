@@ -1,8 +1,8 @@
-import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE, BLACK } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 import { SMOOTH_CORNERS } from "../../cornerSmoothing";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 8,
     fontSize: 15,
-    color: "#000",
+    color: BLACK,
     paddingVertical: 0,
   },
   searchInputWithTag: {
@@ -52,7 +52,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexShrink: 0,
     paddingHorizontal: 8,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     marginRight: 4,
     paddingVertical: 6,
     borderRadius: 8,
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   },
   searchTagChipText: {
     fontSize: 13,
-    color: WHITE,
+    color: FIXED_WHITE,
     fontWeight: "500",
   },
   suggestedSection: {
@@ -83,7 +83,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
   },
   suggestedTagActive: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderColor: MAIN.DEFAULT,
   },
   suggestedTagText: {
@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   suggestedTagTextActive: {
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   content: {
     flex: 1,
@@ -108,7 +108,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#000",
+    color: BLACK,
   },
   clearAllText: {
     fontSize: 14,
@@ -139,7 +139,7 @@ const styles = StyleSheet.create({
   },
   recentTagText: {
     fontSize: 14,
-    color: "#000",
+    color: BLACK,
   },
   recentTagRemove: {
     padding: 4,
@@ -150,6 +150,6 @@ const styles = StyleSheet.create({
   resultsContent: {
     flex: 1,
   },
-});
+}));
 
 export default styles;

@@ -1,13 +1,5 @@
 import { useCallback, useState } from "react";
-import {
-  ActivityIndicator,
-  Dimensions,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, Dimensions, Pressable, ScrollView, Text, View } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
   FadeIn,
@@ -20,7 +12,8 @@ import type { ApplicationEntity } from "../../lib/apis/application/types";
 import type { ChatPeerSummary } from "../../lib/apis/chat/types";
 import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
 import { RootRoutes } from "../../navigations/routes";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
 type Props = {
   postId: string;
@@ -240,7 +233,7 @@ const GRID_CARD_WIDTH = Math.floor(
 /** 사람이 많아지면 이 높이를 넘는 순간부터 카드 내부만 스크롤 */
 const GRID_MAX_HEIGHT = Math.round((SCREEN_HEIGHT * 2) / 3);
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   wrap: {
     width: "100%",
   },
@@ -268,7 +261,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 10,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -279,7 +272,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
     letterSpacing: 0.2,
   },
   loadingBox: {
@@ -331,4 +324,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
     width: "100%",
   },
-});
+}));

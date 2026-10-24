@@ -1,9 +1,9 @@
-import { StyleSheet } from "react-native";
-import { GRAY, WHITE } from "../../color";
+import { GRAY, WHITE, FIXED_WHITE, BLACK } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
 const CARD_GAP = 12;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   centered: {
     flex: 1,
     justifyContent: "center",
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     fontWeight: "500",
-    color: "#111",
+    color: BLACK,
     backgroundColor: WHITE,
   },
   newBadge: {
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   pastBadgeText: {
     fontSize: 11,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   emptyText: {
     fontSize: 14,
@@ -64,6 +64,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     paddingVertical: 48,
   },
-});
+}));
 
 export default styles;

@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { BLACK, GRAY } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flexGrow: 0,
     marginTop: 5,
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.3,
     color: GRAY.DARK_2,
   },
-});
+}));
 
 export default styles;
 

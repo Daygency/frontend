@@ -1,14 +1,14 @@
-import { StyleSheet } from "react-native";
-import { MAIN, GRAY } from "../../../color";
+import { MAIN, GRAY, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-export const styles = StyleSheet.create({
+export const styles = themedStyles(() => ({
   container: {
     paddingHorizontal: 24,
     paddingTop: 12,
     paddingBottom: 16,
     minHeight: 44,
     justifyContent: "center",
-    backgroundColor: "#fff",
+    backgroundColor: WHITE,
   },
   dotsRow: {
     flexDirection: "row",
@@ -20,9 +20,9 @@ export const styles = StyleSheet.create({
     borderRadius: 4,
   },
   dotActive: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   dotInactive: {
     backgroundColor: GRAY.MEDIUM_2,
   },
-});
+}));

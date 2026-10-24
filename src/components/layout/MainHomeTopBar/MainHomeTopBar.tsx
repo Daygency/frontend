@@ -12,7 +12,7 @@ import {
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Octicons from "@expo/vector-icons/Octicons";
 import Logo from "../../ui/Logo";
-import { MAIN, WHITE } from "../../../color";
+import { FIXED_WHITE, MAIN, WHITE } from "../../../color";
 import styles, {
   MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
   MAIN_HOME_TOP_BAR_TITLE_SIZE,
@@ -58,8 +58,8 @@ const MainHomeTopBar = ({
   const navigation = useNavigation<MainHomeTopBarNavigationProp>();
   const { isLoggedIn } = useAuth();
   const { ensureLoggedIn } = useRequireLogin();
-  const iconColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
-  const titleColor = variant === "dark" ? WHITE : MAIN.DEFAULT;
+  const iconColor = variant === "dark" ? FIXED_WHITE : MAIN.DEFAULT;
+  const titleColor = variant === "dark" ? FIXED_WHITE : MAIN.DEFAULT;
   const { unreadCount: unreadNotificationCount, refresh: refreshUnreadNotifications } =
     useNotificationUnread();
   const [titleMenuVisible, setTitleMenuVisible] = useState(false);

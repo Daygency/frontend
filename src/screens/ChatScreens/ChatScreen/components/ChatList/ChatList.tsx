@@ -34,7 +34,7 @@ import EmptyState, {
   contentContainerWhenEmpty,
   emptyScreenStyle,
 } from "../../../../../components/ui/EmptyState";
-import { MAIN } from "../../../../../color";
+import { MAIN, lightDark } from "../../../../../color";
 import ChatRoomListSkeleton from "./ChatRoomListSkeleton";
 import ChatRoomActionsModal from "../ChatRoomActionsModal/ChatRoomActionsModal";
 
@@ -294,7 +294,7 @@ function ChatRoomsFlatList({
       ListFooterComponent={
         loadingMore ? (
           <View style={{ padding: 16 }}>
-            <ActivityIndicator color="#1F2A44" />
+            <ActivityIndicator color={MAIN.DEFAULT} />
           </View>
         ) : null
       }
@@ -341,7 +341,7 @@ function ChatRoomsFlatList({
         );
       }}
       ItemSeparatorComponent={() => (
-        <View style={{ height: 1, backgroundColor: "#F0F0F0" }} />
+        <View style={{ height: 1, backgroundColor: lightDark("#F0F0F0", "#1F2025") }} />
       )}
       contentContainerStyle={contentContainerWhenEmpty(isEmpty, {
         paddingBottom: 20,

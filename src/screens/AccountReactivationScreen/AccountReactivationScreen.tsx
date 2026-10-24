@@ -16,7 +16,7 @@ import {
   type SocialAuthProvider,
 } from "../../lib/apis/auth/socialAuthExchange";
 import { RootRoutes } from "../../navigations/routes";
-import { WHITE } from "../../color";
+import { WHITE, FIXED_WHITE } from "../../color";
 import styles from "./styles";
 
 export type AccountReactivationParams = {
@@ -261,7 +261,7 @@ const AccountReactivationScreen = () => {
           disabled={submitting}
         >
           {submitting ? (
-            <ActivityIndicator color={WHITE} />
+            <ActivityIndicator color={FIXED_WHITE} />
           ) : (
             <Text style={styles.primaryButtonText}>계정 복구하기</Text>
           )}

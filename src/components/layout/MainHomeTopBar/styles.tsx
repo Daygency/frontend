@@ -1,10 +1,11 @@
-import { Platform, StyleSheet } from "react-native";
+import { Platform } from "react-native";
 import { BLACK, GRAY, RED, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 export const MAIN_HOME_TOP_BAR_TITLE_SIZE = 21;
 export const MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT = 28;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     width: "100%",
     flexDirection: "row",
@@ -98,6 +99,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: BLACK,
   },
-});
+}));
 
 export default styles;

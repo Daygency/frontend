@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE, lightDark } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     display: "flex",
     flex: 1,
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   },
   filterChipActive: {
     borderColor: MAIN.DEFAULT,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   filterChipPressed: {
     opacity: 0.5,
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
   filterChipTextActive: {
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   sortTabRow: {
     flexDirection: "row",
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
   },
   sortTabActive: {
     borderColor: MAIN.DEFAULT,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   sortTabText: {
     color: MAIN.DEFAULT,
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
   sortTabTextActive: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontWeight: "400",
   },
   scrollContentWrapper: {
@@ -96,8 +96,8 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 15,
-    color: "#999",
+    color: lightDark("#999", "#8B8E97"),
   },
-});
+}));
 
 export default styles;

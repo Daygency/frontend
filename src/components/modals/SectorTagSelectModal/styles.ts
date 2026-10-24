@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE, lightDark } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#333",
+    color: lightDark("#333", "#C4C6CC"),
     marginBottom: 12,
   },
   tagContainer: {
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
     borderTopColor: GRAY.DEFAULT,
   },
   completeButton: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
@@ -55,8 +55,8 @@ const styles = StyleSheet.create({
   completeButtonText: {
     fontSize: 16,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));
 
 export default styles;

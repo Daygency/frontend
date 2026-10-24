@@ -16,7 +16,7 @@ import * as ImagePicker from "expo-image-picker";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { DEFAULT_USER_PROFILE_IMAGE } from "../../lib/media/defaultUserProfileImage";
 import { showPhotoActionSheet } from "../../lib/ui/showPhotoActionSheet";
-import { MAIN, WHITE } from "../../color";
+import { MAIN, WHITE, FIXED_WHITE } from "../../color";
 import {
   getMyProfile,
   pickFollowCountsFromApiJson,
@@ -737,7 +737,7 @@ const ProfileEditScreen = () => {
               <MaterialCommunityIcons
                 name="camera-outline"
                 size={14}
-                color={WHITE}
+                color={FIXED_WHITE}
               />
             </View>
           </View>

@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, RED, WHITE } from "../../../../../color";
+import { BLACK, GRAY, RED, WHITE, FIXED_WHITE, lightDark, MAIN } from "../../../../../color";
+import { themedStyles } from "../../../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flexDirection: "row",
     paddingHorizontal: 16,
@@ -21,7 +21,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 15,
-    backgroundColor: "#F2F3F5",
+    backgroundColor: lightDark("#F2F3F5", "#1F2025"),
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
   avatarText: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#4A5568",
+    color: lightDark("#4A5568", "#C4C6CC"),
   },
   onlineIndicator: {
     position: "absolute",
@@ -69,13 +69,13 @@ const styles = StyleSheet.create({
     flexShrink: 1,
     fontSize: 15,
     fontWeight: "600",
-    color: "#1A202C",
+    color: BLACK,
   },
   badge: {
     width: 15,
     height: 15,
     borderRadius: 9,
-    backgroundColor: "#1F2A44",
+    backgroundColor: MAIN.FILL,
     alignItems: "center",
     justifyContent: "center",
     marginLeft: 0,
@@ -84,7 +84,7 @@ const styles = StyleSheet.create({
     flexShrink: 0,
     marginLeft: 8,
     fontSize: 12,
-    color: "#A0AEC0",
+    color: lightDark("#A0AEC0", "#8B8E97"),
     fontWeight: "400",
   },
   messageRow: {
@@ -105,14 +105,14 @@ const styles = StyleSheet.create({
   unreadText: {
     fontSize: 10,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   message: {
     flex: 1,
     fontSize: 13,
-    color: "#718096",
+    color: lightDark("#718096", "#A0A3AB"),
     fontWeight: "500",
   },
-});
+}));
 
 export default styles;

@@ -1,10 +1,11 @@
-import { Dimensions, StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { Dimensions } from "react-native";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
 const HERO_IMAGE_WIDTH = Dimensions.get("window").width;
 const HERO_IMAGE_HEIGHT = HERO_IMAGE_WIDTH * 0.8;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -254,7 +255,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "700",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   btnApplyContentRow: {
     flexDirection: "row",
@@ -289,6 +290,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: BLACK,
   },
-});
+}));
 
 export default styles;

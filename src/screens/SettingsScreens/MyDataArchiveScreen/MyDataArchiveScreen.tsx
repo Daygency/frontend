@@ -14,7 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as LegacyFileSystem from "expo-file-system/legacy";
-import { GRAY } from "../../../color";
+import { GRAY, BLACK, MAIN } from "../../../color";
 import ShadowCardButton from "../../../components/cards/ShadowCardButton";
 import FabButton from "../../../components/ui/FabButton";
 import EmptyState, { contentContainerWhenEmpty } from "../../../components/ui/EmptyState";
@@ -190,7 +190,7 @@ const MyDataArchiveScreen = () => {
     navigation.setOptions({
       headerRight: () => (
         <Pressable hitSlop={10} onPress={() => toggleRef.current()}>
-          <Text style={{ fontSize: 16, color: "#000" }}>
+          <Text style={{ fontSize: 16, color: BLACK }}>
             {isManageMode ? "취소" : "관리"}
           </Text>
         </Pressable>
@@ -358,7 +358,7 @@ const MyDataArchiveScreen = () => {
     <View style={styles.container}>
       {loading ? (
         <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator size="small" color="#1F2A44" />
+          <ActivityIndicator size="small" color={MAIN.DEFAULT} />
         </View>
       ) : (
         <FlatList
@@ -406,7 +406,7 @@ const MyDataArchiveScreen = () => {
               width: 56,
               height: 56,
               borderRadius: 28,
-              backgroundColor: "#1F2A44",
+              backgroundColor: MAIN.FILL,
               alignItems: "center",
               justifyContent: "center",
             }}

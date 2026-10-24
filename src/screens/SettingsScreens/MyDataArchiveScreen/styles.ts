@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY, WHITE } from "../../../color";
+import { GRAY, WHITE, BLACK } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000",
+    color: BLACK,
   },
   cardMeta: {
     fontSize: 14,
@@ -88,6 +88,6 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_100,
     marginTop: 8,
   },
-});
+}));
 
 export default styles;

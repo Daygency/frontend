@@ -1,11 +1,12 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../color";
+import { BLACK, GRAY, WHITE, FIXED_WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
 const POST_BODY_LINE_HEIGHT = 24;
 /** 본문이 아무리 짧아도 최소 이 줄 수만큼의 높이를 차지한다 */
 const POST_BODY_MIN_LINES = 3;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
   pageBadgeText: {
     fontSize: 12,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   actionRow: {
     flexDirection: "row",
@@ -142,6 +143,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: BLACK,
   },
-});
+}));
 
 export default styles;

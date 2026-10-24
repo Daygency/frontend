@@ -12,8 +12,9 @@ import MainHomeTopBar from "../../components/layout/MainHomeTopBar";
 import AllContentScene, {
   type AllContentSceneHandle,
 } from "../../components/layout/AllContentScene";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { colorScheme, FIXED_WHITE, GRAY, MAIN, WHITE } from "../../color";
 import {
+  CURATION_TAB_BAR_COLOR,
   type CurationThemeState,
 } from "./curationTheme";
 import { useCurationBackgroundTransition } from "./useCurationBackgroundTransition";
@@ -113,11 +114,11 @@ const MainHomeScreen = () => {
         navigation.setOptions({
           tabBarStyle: {
             ...getTabBarDimensions(bottom),
-            backgroundColor: curation ? BLACK : WHITE,
+            backgroundColor: curation ? CURATION_TAB_BAR_COLOR : WHITE,
             borderTopWidth: curation ? 0 : 1,
             borderTopColor: GRAY.MEDIUM,
           },
-          tabBarActiveTintColor: curation ? WHITE : MAIN.DEFAULT,
+          tabBarActiveTintColor: curation ? FIXED_WHITE : MAIN.DEFAULT,
           tabBarInactiveTintColor: curation
             ? "rgba(255,255,255,0.45)"
             : GRAY.MEDIUM_100,
@@ -134,8 +135,12 @@ const MainHomeScreen = () => {
     >
       {isCuration ? <StatusBar style="light" /> : null}
       <MainHomeTopBar
-        logoImage={isCuration ? WHITE_LOGO : MAIN_LOGO}
-        logoAspectRatio={isCuration ? WHITE_LOGO_ASPECT_RATIO : 1396 / 179}
+        logoImage={isCuration || colorScheme === "dark" ? WHITE_LOGO : MAIN_LOGO}
+        logoAspectRatio={
+          isCuration || colorScheme === "dark"
+            ? WHITE_LOGO_ASPECT_RATIO
+            : 1396 / 179
+        }
         variant={isCuration ? "dark" : "light"}
         initialTag={null}
       />

@@ -1,8 +1,9 @@
-import { Platform, StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { Platform } from "react-native";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE, RED } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { FORM_FIELD_HEIGHT } from "../../forms/FormField/constants";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   wrap: {
     width: "100%",
     gap: 10,
@@ -25,7 +26,7 @@ const styles = StyleSheet.create({
   },
   fieldError: {
     borderWidth: 2,
-    borderColor: "#EC1313",
+    borderColor: RED.DEFAULT,
   },
   input: {
     flex: 1,
@@ -45,13 +46,13 @@ const styles = StyleSheet.create({
     minWidth: 56,
     height: 36,
     borderRadius: 8,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 12,
   },
   searchButtonText: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontSize: 14,
     fontWeight: "600",
   },
@@ -76,6 +77,6 @@ const styles = StyleSheet.create({
     color: BLACK,
     lineHeight: 19,
   },
-});
+}));
 
 export default styles;

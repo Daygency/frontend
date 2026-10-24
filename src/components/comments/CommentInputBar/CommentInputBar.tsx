@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Keyboard, Pressable, Text, TextInput, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { GRAY, MAIN } from "../../../color";
+import { GRAY, MAIN, BLACK } from "../../../color";
 import styles from "./styles";
 
 interface CommentInputBarProps {
@@ -81,7 +81,7 @@ const CommentInputBar = ({
           <MaterialCommunityIcons
             name="send"
             size={22}
-            color={hasText && !isSubmitting ? "#000" : GRAY.DARK_2}
+            color={hasText && !isSubmitting ? BLACK : GRAY.DARK_2}
           />
         </Pressable>
       </View>

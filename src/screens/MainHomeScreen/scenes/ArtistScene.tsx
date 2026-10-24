@@ -17,6 +17,7 @@ import { getMajors, type Major } from "../../../lib/apis/announcement/majorApi";
 import { getUsers } from "../../../lib/apis/users/usersApi";
 import type { UserListItem } from "../../../lib/apis/users/types";
 import { resolveProfileImageUrlForDisplay } from "../../../lib/chat/resolveProfileImageUrl";
+import { MAIN } from "../../../color";
 
 const MAJOR_OPTIONS = [
   "건반악기",
@@ -151,14 +152,14 @@ const ArtistScene = () => {
           ListFooterComponent={
             loadingMore ? (
               <View style={{ paddingVertical: 16 }}>
-                <ActivityIndicator color="#1F2A44" />
+                <ActivityIndicator color={MAIN.DEFAULT} />
               </View>
             ) : null
           }
           ListEmptyComponent={
             loading && !refreshing ? (
               <View style={{ paddingVertical: 48, alignItems: "center" }}>
-                <ActivityIndicator size="small" color="#1F2A44" />
+                <ActivityIndicator size="small" color={MAIN.DEFAULT} />
               </View>
             ) : (
               <EmptyState message="유저가 없습니다." />

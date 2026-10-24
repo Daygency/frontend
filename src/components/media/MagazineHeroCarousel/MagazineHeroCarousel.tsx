@@ -12,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { BLACK } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import MagazineCardOverlay from "../MagazineCardOverlay";
 
 export type MagazineHeroCarouselItem = {
@@ -113,7 +114,7 @@ const MagazineHeroCarousel = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     height: CONTAINER_HEIGHT,
     marginTop: 0,
@@ -137,7 +138,7 @@ const styles = StyleSheet.create({
     marginTop: 0,
     borderRadius: 16,
     overflow: "hidden",
-    backgroundColor: BLACK,
+    backgroundColor: "#111113",
     shadowColor: "#000",
     shadowOpacity: 0.18,
     shadowRadius: 20,
@@ -157,6 +158,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-});
+}));
 
 export default MagazineHeroCarousel;

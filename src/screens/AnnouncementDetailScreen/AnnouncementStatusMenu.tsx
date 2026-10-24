@@ -1,5 +1,5 @@
 import { useCallback } from "react";
-import { Modal, Pressable, StyleSheet, Text } from "react-native";
+import { Modal, Pressable, Text } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -8,6 +8,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import { Ionicons } from "@expo/vector-icons";
 import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
 export type AnnouncementStatusValue = "모집중" | "모집마감" | "종료";
 
@@ -126,7 +127,7 @@ export const AnnouncementStatusSheet = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   trigger: {
     flexDirection: "row",
     alignItems: "center",
@@ -192,4 +193,4 @@ const styles = StyleSheet.create({
   optionTextDanger: {
     color: RED.DEFAULT,
   },
-});
+}));

@@ -1,5 +1,6 @@
-import { StyleSheet, View, Image } from "react-native";
+import { View, Image } from "react-native";
 import { WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 const SplashScreenView = () => {
   return (
@@ -13,7 +14,7 @@ const SplashScreenView = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -24,6 +25,6 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
   },
-});
+}));
 
 export default SplashScreenView;

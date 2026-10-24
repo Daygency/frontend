@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { GRAY, WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -22,6 +22,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     lineHeight: 22,
   },
-});
+}));
 
 export default styles;

@@ -1,11 +1,12 @@
-import { Platform, StyleSheet } from "react-native";
-import { BLACK, BLUE, GRAY, MAIN, WHITE } from "../../color";
+import { Platform } from "react-native";
+import { BLACK, BLUE, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 import {
-  PORTFOLIO_BODY_BG,
+  portfolioBodyBg,
   PORTFOLIO_SECTION_GAP,
 } from "../../constants/portfolio";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -57,7 +58,7 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -87,7 +88,7 @@ const styles = StyleSheet.create({
     marginLeft: 6,
   },
   tabButtonActive: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   tabButtonInactive: {
     backgroundColor: GRAY.DEFAULT,
@@ -97,18 +98,18 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   tabButtonTextActive: {
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   tabButtonTextInactive: {
     color: GRAY.DARK,
   },
   tabView: {
     flex: 1,
-    backgroundColor: PORTFOLIO_BODY_BG,
+    backgroundColor: portfolioBodyBg(),
   },
   scrollContentContainer: {
     paddingBottom: 140,
-    backgroundColor: PORTFOLIO_BODY_BG,
+    backgroundColor: portfolioBodyBg(),
   },
   tabContent: {
     flex: 1,
@@ -116,7 +117,7 @@ const styles = StyleSheet.create({
   tabContentContainer: {
     paddingTop: PORTFOLIO_SECTION_GAP,
     paddingBottom: 120,
-    backgroundColor: PORTFOLIO_BODY_BG,
+    backgroundColor: portfolioBodyBg(),
   },
   contentSheet: {
     backgroundColor: WHITE,
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
   },
   button: {
     width: "100%",
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
@@ -227,7 +228,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
 
   // ── 섹션 & 헤더 ──
@@ -280,7 +281,7 @@ const styles = StyleSheet.create({
   addButtonText: {
     fontSize: 12,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   emptyHint: {
     fontSize: 13,
@@ -473,7 +474,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -485,7 +486,7 @@ const styles = StyleSheet.create({
   entryCompleteButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
 
   // ── 항목 접힌(요약) 뷰 ──
@@ -521,6 +522,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-});
+}));
 
 export default styles;

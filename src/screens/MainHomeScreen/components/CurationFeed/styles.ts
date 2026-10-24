@@ -1,9 +1,9 @@
-import { StyleSheet } from "react-native";
-import { WHITE } from "../../../../color";
+import { WHITE, FIXED_WHITE } from "../../../../color";
+import { themedStyles } from "../../../../theme/themedStyles";
 
 const HORIZONTAL_GAP = 12;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   list: {
     flex: 1,
     backgroundColor: "transparent",
@@ -63,8 +63,8 @@ const styles = StyleSheet.create({
   pastBadgeText: {
     fontSize: 11,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));
 
 export default styles;

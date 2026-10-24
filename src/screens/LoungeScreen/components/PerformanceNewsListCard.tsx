@@ -1,15 +1,8 @@
 import { memo, useCallback } from "react";
-import {
-  Image,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-  type StyleProp,
-  type ViewStyle,
-} from "react-native";
+import { Image, Pressable, Text, View, type StyleProp, type ViewStyle } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { BLUE, GRAY, MAIN, RED, WHITE } from "../../../color";
+import { BLUE, GRAY, MAIN, RED, WHITE, lightDark } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { formatPerformanceListDateLabel } from "../../../lib/news/formatPerformanceOpenLabel";
 import { buildPerformanceNewsDisplay } from "../../../lib/news/buildPerformanceNewsDisplay";
 import type { NewsListItem } from "../../../lib/apis/news/types";
@@ -97,7 +90,7 @@ const PerformanceNewsListCard = ({
 const POSTER_WIDTH = 96;
 const POSTER_HEIGHT = 128;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   card: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -176,7 +169,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
   },
   hotBadge: {
-    backgroundColor: "#FDE8E8",
+    backgroundColor: lightDark("#FDE8E8", "#3A1F22"),
   },
   hotBadgeText: {
     color: RED.DEFAULT,
@@ -187,6 +180,6 @@ const styles = StyleSheet.create({
   exclusiveBadgeText: {
     color: BLUE.DEFAULT,
   },
-});
+}));
 
 export default memo(PerformanceNewsListCard);

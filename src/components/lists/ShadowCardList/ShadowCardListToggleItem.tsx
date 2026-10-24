@@ -33,7 +33,7 @@ const ShadowCardListToggleItem = ({
         value={value}
         onValueChange={onValueChange}
         disabled={disabled}
-        trackColor={{ true: MAIN.DEFAULT, false: GRAY.MEDIUM }}
+        trackColor={{ true: MAIN.FILL, false: GRAY.MEDIUM }}
         thumbColor="#fff"
       />
     </View>

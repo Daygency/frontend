@@ -64,7 +64,7 @@ import { parseAnnouncementDaysLeft } from "../../lib/announcement/parseAnnouncem
 import { announcementListRecruitmentStatus } from "../../lib/announcement/announcementListStatus";
 import { resolveAnnouncementAuthorLabel } from "../../lib/announcement/announcementAuthor";
 import { isContentNew } from "../../lib/content/newBadge";
-import { MAIN, WHITE } from "../../color";
+import { MAIN, WHITE, BLACK, FIXED_WHITE } from "../../color";
 import {
   AnnouncementScrollProvider,
   useAnnouncementScroll,
@@ -748,7 +748,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
                 ]}
                 onPress={() => setFilterSheet(chip.type)}
               >
-                <MaterialIcons name="sort" size={24} color="black" />
+                <MaterialIcons name="sort" size={24} color={BLACK} />
               </Pressable>
             );
           }
@@ -775,7 +775,7 @@ const AnnouncementScreen = ({ hideTopBar = false }: AnnouncementScreenProps) => 
               <MaterialCommunityIcons
                 name="chevron-down"
                 size={16}
-                color={isActive ? WHITE : MAIN.DEFAULT}
+                color={isActive ? FIXED_WHITE : MAIN.DEFAULT}
               />
             </Pressable>
           );

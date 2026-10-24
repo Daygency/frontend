@@ -1,17 +1,18 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import {
-  PORTFOLIO_BODY_BG,
-  PORTFOLIO_IMMERSIVE_BG,
+  portfolioBodyBg,
+  portfolioImmersiveBg,
   PORTFOLIO_SECTION_GAP,
 } from "../../../constants/portfolio";
 
 export const PROFILE_AVATAR_SIZE = 100;
 export const PROFILE_BANNER_RATIO = 0.24;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
-    backgroundColor: PORTFOLIO_BODY_BG,
+    backgroundColor: portfolioBodyBg(),
     marginBottom: PORTFOLIO_SECTION_GAP,
   },
   profileCard: {
@@ -20,7 +21,7 @@ const styles = StyleSheet.create({
   },
   banner: {
     width: "100%",
-    backgroundColor: PORTFOLIO_IMMERSIVE_BG,
+    backgroundColor: portfolioImmersiveBg(),
     position: "relative",
   },
   bannerImage: {
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
   bannerActionText: {
     fontSize: 12,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   profileBody: {
     paddingHorizontal: 16,
@@ -131,8 +132,8 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 0.2,
     fontWeight: "600",
-    color: WHITE,
-    backgroundColor: MAIN.DEFAULT,
+    color: FIXED_WHITE,
+    backgroundColor: MAIN.FILL,
     borderRadius: 4,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -183,7 +184,7 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: 16,
     borderRadius: 10,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -195,7 +196,7 @@ const styles = StyleSheet.create({
   otherFollowBtnText: {
     fontSize: 14,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   otherFollowBtnTextOutline: {
     color: MAIN.DEFAULT,
@@ -215,6 +216,6 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: GRAY.DARK_100,
   },
-});
+}));
 
 export default styles;

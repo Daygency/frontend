@@ -1,13 +1,14 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY } from "../../../../color";
+import { BLACK, GRAY, lightDark } from "../../../../color";
+import { themedStyles } from "../../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 12,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#F0F0F0",
+    borderBottomColor: lightDark("#F0F0F0", "#2C2D33"),
   },
   pressed: {
     opacity: 0.7,
@@ -41,6 +42,6 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
     marginTop: 4,
   },
-});
+}));
 
 export default styles;

@@ -1,10 +1,10 @@
-import { StyleSheet } from "react-native";
 import { GRAY, SKELETON, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 const POSTER_WIDTH = 112;
 const POSTER_HEIGHT = 150;
 
-const skeletonStyles = StyleSheet.create({
+const skeletonStyles = themedStyles(() => ({
   box: {
     borderRadius: 5,
   },
@@ -60,6 +60,6 @@ const skeletonStyles = StyleSheet.create({
     backgroundColor: GRAY.MEDIUM,
     marginLeft: 16 + POSTER_WIDTH + 14,
   },
-});
+}));
 
 export default skeletonStyles;

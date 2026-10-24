@@ -10,7 +10,7 @@ import {
 import { LinearGradient } from "expo-linear-gradient";
 import styles, { PROFILE_BANNER_RATIO } from "./styles";
 import { Ionicons, Octicons, FontAwesome } from "@expo/vector-icons";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE, BLACK } from "../../../color";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigation, useFocusEffect, useRoute } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -694,7 +694,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
           disabled={chatLoading}
         >
           {chatLoading ? (
-            <ActivityIndicator size="small" color="#111" />
+            <ActivityIndicator size="small" color={BLACK} />
           ) : (
             <Text style={styles.otherChatBtnText}>채팅</Text>
           )}
@@ -732,7 +732,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
                 onPress={() => navigation.navigate(RootRoutes.MY_ACTIVITY)}
                 hitSlop={6}
               >
-                <Octicons name="graph" size={16} color={WHITE} />
+                <Octicons name="graph" size={16} color={FIXED_WHITE} />
                 <Text style={styles.bannerActionText}>내활동</Text>
               </Pressable>
               <Pressable
@@ -745,10 +745,10 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
                 hitSlop={6}
               >
                 {coverUploading ? (
-                  <ActivityIndicator size="small" color={WHITE} />
+                  <ActivityIndicator size="small" color={FIXED_WHITE} />
                 ) : (
                   <>
-                    <FontAwesome name="photo" size={16} color={WHITE} />
+                    <FontAwesome name="photo" size={16} color={FIXED_WHITE} />
                     <Text style={styles.bannerActionText}>배경사진</Text>
                   </>
                 )}
@@ -782,7 +782,7 @@ const Profile = ({ coverExtendTop = 0 }: { coverExtendTop?: number }) => {
             </View>
             {!isOtherProfile ? (
               <View style={styles.avatarEditBadge}>
-                <Ionicons name="camera-outline" size={14} color={WHITE} />
+                <Ionicons name="camera-outline" size={14} color={FIXED_WHITE} />
               </View>
             ) : null}
           </Pressable>

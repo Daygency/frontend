@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#575757",
+    color: GRAY.DARK_100,
     marginBottom: 12,
     marginTop: 24,
   },
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
   },
   inquiryButton: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
@@ -46,12 +46,12 @@ const styles = StyleSheet.create({
   inquiryButtonText: {
     fontSize: 17,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   historyCount: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#575757",
+    color: GRAY.DARK_100,
     marginBottom: 12,
   },
   filterTags: {
@@ -85,8 +85,8 @@ const styles = StyleSheet.create({
   loadMoreButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#575757",
+    color: GRAY.DARK_100,
   },
-});
+}));
 
 export default styles;

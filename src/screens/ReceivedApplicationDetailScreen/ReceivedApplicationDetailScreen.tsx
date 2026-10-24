@@ -24,7 +24,7 @@ import { useAnnouncementAuthorLabel } from "../../lib/announcement/useAnnounceme
 import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
 import { sharedAnnouncementStyles } from "../../components/shared/AnnouncementShared/sharedAnnouncementStyles";
 import { RootRoutes } from "../../navigations/routes";
-import { MAIN, RED, WHITE } from "../../color";
+import { MAIN, RED, WHITE, FIXED_WHITE } from "../../color";
 import styles from "./styles";
 
 type Params = {
@@ -381,7 +381,7 @@ export default function ReceivedApplicationDetailScreen() {
           onPress={() => onSetStatus("ACCEPTED")}
         >
           {pendingKind === "ACCEPT" ? (
-            <ActivityIndicator color={WHITE} size="small" />
+            <ActivityIndicator color={FIXED_WHITE} size="small" />
           ) : (
             <Text style={styles.acceptBtnText}>수락</Text>
           )}

@@ -1,7 +1,8 @@
-import { Platform, StyleSheet } from "react-native";
+import { Platform } from "react-native";
 import { GRAY, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   input: {
     borderWidth: 1,
     borderColor: GRAY.MEDIUM,
@@ -14,7 +15,7 @@ const styles = StyleSheet.create({
     backgroundColor: WHITE,
     minHeight: 48,
   },
-});
+}));
 
 export default styles;
 

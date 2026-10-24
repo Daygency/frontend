@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, RED, WHITE, FIXED_WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-export default StyleSheet.create({
+export default themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -135,7 +135,7 @@ export default StyleSheet.create({
     flex: 1,
     paddingVertical: 16,
     borderRadius: 10,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -143,9 +143,9 @@ export default StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "700",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   actionBtnDisabled: {
     opacity: 0.45,
   },
-});
+}));

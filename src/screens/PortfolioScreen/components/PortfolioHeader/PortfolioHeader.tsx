@@ -5,7 +5,8 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import Feather from "@expo/vector-icons/Feather";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { MAIN, WHITE } from "../../../../color";
+import { MAIN, WHITE, FIXED_WHITE } from "../../../../color";
+import { themedStyles } from "../../../../theme/themedStyles";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { getMyProfile } from "../../../../lib/apis/portfolio/profileApi";
 import { getProfileCache, saveProfileCache } from "../../../../lib/profileCache";
@@ -111,7 +112,7 @@ const PortfolioHeader = ({
                   style={[
                     portfolioHeaderStyles.handleText,
                     portfolioHeaderStyles.handleTextOverlay,
-                    { color: WHITE },
+                    { color: FIXED_WHITE },
                   ]}
                   numberOfLines={1}
                 >
@@ -148,7 +149,7 @@ const PortfolioHeader = ({
                 <MaterialCommunityIcons
                   name="pencil-outline"
                   size={23}
-                  color={WHITE}
+                  color={FIXED_WHITE}
                   style={portfolioHeaderStyles.iconOverlay}
                 />
               }
@@ -176,7 +177,7 @@ const PortfolioHeader = ({
                 <Feather
                   name="settings"
                   size={23}
-                  color={WHITE}
+                  color={FIXED_WHITE}
                   style={portfolioHeaderStyles.iconOverlay}
                 />
               }
@@ -189,7 +190,7 @@ const PortfolioHeader = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   rightActions: {
     flexDirection: "row",
     alignItems: "center",
@@ -201,6 +202,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-});
+}));
 
 export default PortfolioHeader;

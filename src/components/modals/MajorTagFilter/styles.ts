@@ -1,8 +1,8 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
-export const styles = StyleSheet.create({
+export const styles = themedStyles(() => ({
   container: {
     marginBottom: 8,
   },
@@ -50,7 +50,7 @@ export const styles = StyleSheet.create({
     borderColor: GRAY.MEDIUM_2,
   },
   tagSelected: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderColor: MAIN.DEFAULT,
   },
   tagText: {
@@ -59,7 +59,7 @@ export const styles = StyleSheet.create({
     fontWeight: "400",
   },
   tagTextSelected: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontWeight: "500",
   },
-});
+}));

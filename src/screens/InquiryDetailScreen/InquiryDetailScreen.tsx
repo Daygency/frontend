@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, Text, View, StyleSheet, ActivityIndicator } from "react-native";
+import { ScrollView, Text, View, ActivityIndicator } from "react-native";
 import ViewerPressableImage from "../../components/media/ViewerPressableImage";
 import { RouteProp, useRoute } from "@react-navigation/native";
 import ShadowCardList from "../../components/lists/ShadowCardList";
-import { GRAY, MAIN } from "../../color";
+import { GRAY, MAIN, WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 import type { InquiryItem } from "../SettingsScreens/CustomerServiceScreen/components/InquiryHistoryItem";
 import { getMyInquiry, mapInquiryToItem } from "../../lib/apis/inquiry/inquiryApi";
 import { resolveProfileImageUrlForDisplay } from "../../lib/chat/resolveProfileImageUrl";
@@ -89,10 +90,10 @@ const InquiryDetailScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: WHITE,
   },
   contentContainer: {
     padding: 20,
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#575757",
+    color: GRAY.DARK_100,
     marginBottom: 12,
   },
   sectionTitleMargin: {
@@ -117,7 +118,7 @@ const styles = StyleSheet.create({
   },
   content: {
     fontSize: 14,
-    color: "#575757",
+    color: GRAY.DARK_100,
     lineHeight: 22,
   },
   imageList: {
@@ -133,13 +134,13 @@ const styles = StyleSheet.create({
   },
   answer: {
     fontSize: 14,
-    color: "#575757",
+    color: GRAY.DARK_100,
     lineHeight: 22,
   },
   waiting: {
     fontSize: 14,
     color: GRAY.DARK_2,
   },
-});
+}));
 
 export default InquiryDetailScreen;

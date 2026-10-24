@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     width: "100%",
     borderRadius: 12,
@@ -11,7 +11,7 @@ const styles = StyleSheet.create({
     backgroundColor: GRAY.DEFAULT,
   },
   openBadgeText: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontSize: 12,
     fontWeight: "600",
   },
@@ -30,7 +30,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 8,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   plainText: {
     fontSize: 14,
@@ -44,6 +44,6 @@ const styles = StyleSheet.create({
   plainChevron: {
     color: GRAY.DARK,
   },
-});
+}));
 
 export default styles;

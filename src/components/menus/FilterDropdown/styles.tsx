@@ -1,8 +1,8 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     position: "relative",
     // flexShrink: 0,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
     borderColor: MAIN.DEFAULT,
   },
   tagSelected: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderColor: MAIN.DEFAULT,
   },
   tagText: {
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
     color: MAIN.DEFAULT,
   },
   tagTextSelected: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontWeight: "500",
   },
   footer: {
@@ -105,18 +105,18 @@ const styles = StyleSheet.create({
     borderTopColor: GRAY.DEFAULT,
   },
   confirmButton: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 12,
     paddingVertical: 14,
     alignItems: "center",
     justifyContent: "center",
   },
   confirmButtonText: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontSize: 16,
     fontWeight: "600",
   },
-});
+}));
 
 export default styles;
 

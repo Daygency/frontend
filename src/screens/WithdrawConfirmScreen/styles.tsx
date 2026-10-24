@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { RED, WHITE } from "../../color";
+import { RED, WHITE, FIXED_WHITE, BLACK, GRAY } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -25,7 +25,7 @@ const styles = StyleSheet.create({
   },
   bulletItem: {
     fontSize: 14,
-    color: "#000",
+    color: BLACK,
     lineHeight: 22,
     marginBottom: 8,
   },
@@ -45,7 +45,7 @@ const styles = StyleSheet.create({
   },
   checkboxLabel: {
     fontSize: 14,
-    color: "#000",
+    color: BLACK,
     marginLeft: 8,
   },
   deleteButton: {
@@ -56,18 +56,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   deleteButtonDisabled: {
-    backgroundColor: "#EDEBEB",
+    backgroundColor: GRAY.MEDIUM,
   },
   deleteButtonText: {
     fontSize: 16,
     lineHeight: 24,
     letterSpacing: 0.3,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   deleteButtonTextDisabled: {
-    color: "#888",
+    color: GRAY.DARK_2,
   },
-});
+}));
 
 export default styles;

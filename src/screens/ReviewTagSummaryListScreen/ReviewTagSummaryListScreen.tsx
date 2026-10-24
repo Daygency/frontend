@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import { useFocusEffect, useRoute } from "@react-navigation/native";
-import { GRAY } from "../../color";
+import { GRAY, WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 import EmptyState from "../../components/ui/EmptyState";
 import {
   getReceivedActivityReviewTagSummary,
@@ -69,10 +70,10 @@ const ReviewTagSummaryListScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: WHITE,
     padding: 12,
     gap: 8,
   },
@@ -100,6 +101,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: GRAY.DARK_100,
   },
-});
+}));
 
 export default ReviewTagSummaryListScreen;

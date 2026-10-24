@@ -21,6 +21,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ChatUnreadProvider } from "./contexts/ChatUnreadContext";
 import { NotificationUnreadProvider } from "./contexts/NotificationUnreadContext";
 import { ImageViewerProvider } from "./contexts/ImageViewerContext";
+import { ThemeProvider, useAppTheme } from "./contexts/ThemeContext";
 import { ToastProvider } from "./contexts/ToastContext";
 import Navigation from "./navigations/Navigation";
 import SplashScreenView from "./screens/OnboardingScreens/SplashScreen/SplashScreen";
@@ -107,6 +108,23 @@ const requestUserPermission = async () => {
   }
 };
 
+/**
+ * 스타일이 색상 토큰을 모듈 단위로 참조하므로, 컬러 스킴이 바뀌면 화면 트리를 다시 마운트해
+ * 새 팔레트로 그린다. 네비게이션 상태는 Navigation에서 보존한다.
+ */
+const ThemedTree = () => {
+  const { scheme } = useAppTheme();
+  return (
+    <ImageViewerProvider key={scheme}>
+      <ToastProvider>
+        <FcmTokenSyncBridge />
+        <StatusBar style={scheme === "dark" ? "light" : "dark"} />
+        <Navigation />
+      </ToastProvider>
+    </ImageViewerProvider>
+  );
+};
+
 const App = () => {
   const [isReady, setIsReady] = useState(false);
 
@@ -136,23 +154,19 @@ const App = () => {
   }
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaProvider initialMetrics={initialWindowMetrics}>
-        <AuthProvider>
-          <ChatUnreadProvider>
-            <NotificationUnreadProvider>
-              <ImageViewerProvider>
-                <ToastProvider>
-                  <FcmTokenSyncBridge />
-                  <StatusBar style="dark" />
-                  <Navigation />
-                </ToastProvider>
-              </ImageViewerProvider>
-            </NotificationUnreadProvider>
-          </ChatUnreadProvider>
-        </AuthProvider>
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <GestureHandlerRootView style={{ flex: 1 }}>
+        <SafeAreaProvider initialMetrics={initialWindowMetrics}>
+          <AuthProvider>
+            <ChatUnreadProvider>
+              <NotificationUnreadProvider>
+                <ThemedTree />
+              </NotificationUnreadProvider>
+            </ChatUnreadProvider>
+          </AuthProvider>
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </ThemeProvider>
   );
 };
 

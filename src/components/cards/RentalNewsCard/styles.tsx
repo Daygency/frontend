@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { GRAY, MAIN } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     gap: 3,
   },
@@ -28,7 +28,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: GRAY.DARK,
   },
-});
+}));
 
 export default styles;
 

@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     height: 50,
     borderRadius: 12,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -58,8 +58,8 @@ const styles = StyleSheet.create({
   confirmText: {
     fontSize: 16,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));
 
 export default styles;

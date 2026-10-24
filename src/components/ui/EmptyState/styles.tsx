@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { GRAY } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   text: {
     fontSize: 14,
     color: GRAY.DARK_100,
@@ -9,6 +9,6 @@ const styles = StyleSheet.create({
     lineHeight: 21,
     paddingHorizontal: 32,
   },
-});
+}));
 
 export default styles;

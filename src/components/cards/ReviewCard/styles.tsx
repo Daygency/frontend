@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY } from "../../../color";
+import { GRAY, BLACK } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   authorText: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#000",
+    color: BLACK,
   },
   dateText: {
     fontSize: 12,
@@ -35,12 +35,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#000",
+    color: BLACK,
   },
   content: {
     fontSize: 14,
     fontWeight: "400",
-    color: "#000",
+    color: BLACK,
     lineHeight: 20,
     marginTop: 8,
   },
@@ -50,6 +50,6 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 12,
   },
-});
+}));
 
 export default styles;

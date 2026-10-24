@@ -22,7 +22,7 @@ import {
 import CommunityCategorySelectModal from "../../components/modals/CommunityCategorySelectModal";
 import CommunityGuidelinesModal from "../../components/modals/CommunityGuidelinesModal";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { MAIN, WHITE } from "../../color";
+import { MAIN, WHITE, FIXED_WHITE } from "../../color";
 import styles from "./styles";
 import {
   getCommunityCategories,
@@ -371,7 +371,7 @@ const CommunityRegistrationScreen = () => {
           disabled={!(title && content && categoryId) || submitting}
         >
           {submitting ? (
-            <ActivityIndicator size="small" color={WHITE} />
+            <ActivityIndicator size="small" color={FIXED_WHITE} />
           ) : (
             <Text style={styles.registerButtonText}>
               {isEditMode ? "수정 완료" : "등록하기"}

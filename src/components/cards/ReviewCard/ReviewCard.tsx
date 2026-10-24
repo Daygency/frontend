@@ -5,6 +5,7 @@ import { Entypo } from "@expo/vector-icons";
 import styles from "./styles";
 import Tag from "../../ui/Tag";
 import UserProfileAvatar from "../../ui/UserProfileAvatar";
+import { BLACK } from "../../../color";
 
 export interface ReviewCardProps {
   author?: string;
@@ -51,7 +52,7 @@ const ReviewCard = ({
             hitSlop={10}
             style={styles.dotsContainer}
           >
-            <Entypo name="dots-three-vertical" size={24} color="black" />
+            <Entypo name="dots-three-vertical" size={24} color={BLACK} />
           </Pressable>
         ) : null}
       </View>

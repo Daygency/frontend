@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { GRAY, WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   heroWrap: {
     position: "relative",
     overflow: "hidden",
@@ -16,6 +16,6 @@ const styles = StyleSheet.create({
   image: {
     backgroundColor: WHITE,
   },
-});
+}));
 
 export default styles;

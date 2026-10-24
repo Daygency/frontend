@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
 import { WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -28,7 +29,7 @@ const styles = StyleSheet.create({
     zIndex: 50,
     elevation: 50,
   },
-});
+}));
 
 export default styles;
 

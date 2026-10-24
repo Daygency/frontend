@@ -15,7 +15,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { MAIN } from "../../../color";
+import { MAIN, lightDark } from "../../../color";
 import Section from "../../ui/Section";
 import AnnouncementCard from "../../cards/AnnouncementCard";
 import EventNewsCard from "../../cards/EventNewsCard";
@@ -263,7 +263,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
             styles={{ container: { marginTop: 28 }, content: { paddingHorizontal: 0 } }}
           >
             {newsItems.length === 0 ? (
-              <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24, paddingHorizontal: 20 }}>공연소식이 없습니다</Text>
+              <Text style={{ fontSize: 14, color: lightDark("#999", "#8B8E97"), paddingVertical: 24, paddingHorizontal: 20 }}>공연소식이 없습니다</Text>
             ) : (
               <ScrollView
                 horizontal
@@ -307,7 +307,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
             styles={{ container: { marginTop: -8 } }}
           >
             {announcements.length === 0 ? (
-              <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24 }}>모집공고가 없습니다</Text>
+              <Text style={{ fontSize: 14, color: lightDark("#999", "#8B8E97"), paddingVertical: 24 }}>모집공고가 없습니다</Text>
             ) : (
               announcements.slice(0, HOME_ANNOUNCEMENT_PREVIEW_LIMIT).map((item) => (
                 <AnnouncementCard
@@ -351,7 +351,7 @@ const AllContentScene = forwardRef<AllContentSceneHandle, AllContentSceneProps>(
             }}
           >
             {communityBoards.length === 0 ? (
-              <Text style={{ fontSize: 14, color: "#999", paddingVertical: 24 }}>커뮤니티 글이 없습니다</Text>
+              <Text style={{ fontSize: 14, color: lightDark("#999", "#8B8E97"), paddingVertical: 24 }}>커뮤니티 글이 없습니다</Text>
             ) : (
               <GrayCard
                 items={communityBoards}

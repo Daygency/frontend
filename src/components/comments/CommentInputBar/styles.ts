@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     paddingHorizontal: 16,
     paddingTop: 6,
@@ -50,6 +50,6 @@ const styles = StyleSheet.create({
   sendButtonDisabled: {
     opacity: 0.6,
   },
-});
+}));
 
 export default styles;

@@ -1,11 +1,11 @@
-import { StyleSheet } from "react-native";
-import { GRAY, WHITE } from "../../../color";
+import { GRAY, WHITE, RED } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import {
   FORM_FIELD_FONT_SIZE,
   FORM_FIELD_HEIGHT,
 } from "../../forms/FormField/constants";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   field: {
     width: "100%",
     height: FORM_FIELD_HEIGHT,
@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   },
   fieldError: {
     borderWidth: 2,
-    borderColor: "#EC1313",
+    borderColor: RED.DEFAULT,
   },
   dropdown: {
     width: "100%",
@@ -60,6 +60,6 @@ const styles = StyleSheet.create({
   itemContainerStyle: {
     borderBottomWidth: 0,
   },
-});
+}));
 
 export default styles;

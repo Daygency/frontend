@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE, lightDark } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-export default StyleSheet.create({
+export default themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -52,16 +52,16 @@ export default StyleSheet.create({
     fontWeight: "600",
   },
   statusPillAccepted: {
-    backgroundColor: "#DCFCE7",
+    backgroundColor: lightDark("#DCFCE7", "#16301F"),
   },
   statusPillTextAccepted: {
-    color: "#15803D",
+    color: lightDark("#15803D", "#4ADE80"),
   },
   statusPillRejected: {
-    backgroundColor: "#FEE2E2",
+    backgroundColor: lightDark("#FEE2E2", "#3A1F22"),
   },
   statusPillTextRejected: {
-    color: "#B91C1C",
+    color: lightDark("#B91C1C", "#F87171"),
   },
   outlineBtn: {
     borderWidth: 1,
@@ -78,7 +78,7 @@ export default StyleSheet.create({
     color: MAIN.DEFAULT,
   },
   primaryBtn: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 8,
     paddingHorizontal: 8,
     height: 30,
@@ -88,6 +88,6 @@ export default StyleSheet.create({
   primaryBtnText: {
     fontSize: 11,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));

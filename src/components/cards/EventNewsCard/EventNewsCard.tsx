@@ -1,18 +1,9 @@
 import React from "react";
-import {
-  Image,
-  Pressable,
-  StyleProp,
-  StyleSheet,
-  View,
-  ViewStyle,
-  Text,
-  TextStyle,
-  type DimensionValue,
-} from "react-native";
+import { Image, Pressable, StyleProp, View, ViewStyle, Text, TextStyle, type DimensionValue } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import styles from "../../media/ImageScrollView/styles";
 import { GRAY } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import NewBadge from "../../ui/NewBadge";
 
 interface EventNewsCardProps {
@@ -137,7 +128,7 @@ const EventNewsCard = ({
   );
 };
 
-const localStyles = StyleSheet.create({
+const localStyles = themedStyles(() => ({
   imageWrap: {
     position: "relative",
     overflow: "hidden",
@@ -179,7 +170,7 @@ const localStyles = StyleSheet.create({
     fontSize: 12,
     color: GRAY.DARK_100,
   },
-});
+}));
 
 export default EventNewsCard;
 

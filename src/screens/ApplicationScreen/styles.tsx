@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE, RED, lightDark, BLACK } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
   },
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     letterSpacing: 0.3,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   btnApplyDisabled: {
     opacity: 0.45,
@@ -36,7 +36,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     fontSize: 13,
     lineHeight: 19,
-    color: "#717182",
+    color: GRAY.DARK,
     textAlign: "center",
   },
   btnCancel: {
@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     letterSpacing: 0.3,
     fontWeight: "600",
-    color: "#EC1313",
+    color: RED.DEFAULT,
   },
   loadCareerButton: {
     marginTop: 8,
@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E6E6E6",
-    backgroundColor: "#FAFAFA",
+    borderColor: GRAY.MEDIUM_2,
+    backgroundColor: lightDark("#FAFAFA", "#1B1C21"),
   },
   careerRowContent: {
     flex: 1,
@@ -90,14 +90,14 @@ const styles = StyleSheet.create({
   careerDescription: {
     fontSize: 15,
     lineHeight: 22,
-    color: "#111113",
+    color: BLACK,
     fontWeight: "500",
   },
   careerPeriod: {
     marginTop: 4,
     fontSize: 13,
     lineHeight: 18,
-    color: "#717182",
+    color: GRAY.DARK,
   },
   careerRemoveButton: {
     padding: 4,
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 13,
     lineHeight: 18,
-    color: "#717182",
+    color: GRAY.DARK,
   },
   fileButtonRow: {
     flexDirection: "row",
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 13,
     lineHeight: 18,
-    color: "#717182",
+    color: GRAY.DARK,
   },
   fileList: {
     marginTop: 12,
@@ -145,8 +145,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#E6E6E6",
-    backgroundColor: "#FAFAFA",
+    borderColor: GRAY.MEDIUM_2,
+    backgroundColor: lightDark("#FAFAFA", "#1B1C21"),
   },
   fileRowContent: {
     flex: 1,
@@ -155,7 +155,7 @@ const styles = StyleSheet.create({
   fileName: {
     fontSize: 14,
     lineHeight: 20,
-    color: "#111113",
+    color: BLACK,
     fontWeight: "500",
   },
   fileRemoveButton: {
@@ -164,9 +164,9 @@ const styles = StyleSheet.create({
   fileErrorText: {
     marginTop: 6,
     fontSize: 12,
-    color: "#EC1313",
+    color: RED.DEFAULT,
   },
-});
+}));
 
 export default styles;
 

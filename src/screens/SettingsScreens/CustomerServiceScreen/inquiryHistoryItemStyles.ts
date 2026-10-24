@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY } from "../../../color";
+import { GRAY, lightDark } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   item: {
     paddingVertical: 16,
     paddingHorizontal: 20,
@@ -31,7 +31,7 @@ const styles = StyleSheet.create({
     backgroundColor: GRAY.DEFAULT_1,
   },
   statusUnanswered: {
-    backgroundColor: "#FFF3E0",
+    backgroundColor: lightDark("#FFF3E0", "#33261A"),
   },
   statusText: {
     fontSize: 12,
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_2,
   },
   statusTextUnanswered: {
-    color: "#E65100",
+    color: lightDark("#E65100", "#FFA559"),
   },
   date: {
     fontSize: 12,
@@ -49,9 +49,9 @@ const styles = StyleSheet.create({
   },
   content: {
     fontSize: 14,
-    color: "#575757",
+    color: GRAY.DARK_100,
     lineHeight: 20,
   },
-});
+}));
 
 export default styles;

@@ -1,10 +1,10 @@
-import { StyleSheet } from "react-native";
-import { GRAY } from "../../color";
+import { GRAY, WHITE, BLACK } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: WHITE,
   },
   tagSummaryWrapper: {
     paddingHorizontal: 12,
@@ -34,13 +34,13 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 17,
     fontWeight: "600",
-    color: "#000",
+    color: BLACK,
   },
   headerInlineButton: {
     fontSize: 14,
     fontWeight: "500",
     color: GRAY.DARK_2,
   },
-});
+}));
 
 export default styles;

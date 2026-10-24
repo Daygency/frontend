@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { GRAY, MAIN, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -51,6 +51,6 @@ const styles = StyleSheet.create({
     color: MAIN.DEFAULT,
     textDecorationLine: "underline",
   },
-});
+}));
 
 export default styles;

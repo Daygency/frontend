@@ -1,11 +1,12 @@
 import { StyleSheet } from "react-native";
 import { MAIN, WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 import {
   MAIN_HOME_TOP_BAR_TITLE_LINE_HEIGHT,
   MAIN_HOME_TOP_BAR_TITLE_SIZE,
 } from "../layout/MainHomeTopBar/styles";
 
-export const portfolioHeaderStyles = StyleSheet.create({
+export const portfolioHeaderStyles = themedStyles(() => ({
   headerContainer: {
     width: "100%",
     overflow: "hidden",
@@ -65,4 +66,4 @@ export const portfolioHeaderStyles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-});
+}));

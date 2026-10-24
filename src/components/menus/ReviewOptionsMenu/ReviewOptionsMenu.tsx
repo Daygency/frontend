@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Entypo } from "@expo/vector-icons";
 import { BLACK, GRAY, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 type ReviewOptionsMenuProps = {
   isOwnProfile: boolean;
@@ -100,7 +101,7 @@ const ReviewOptionsMenu = ({
   return (
     <View ref={dotsRef} collapsable={false}>
       <Pressable hitSlop={10} onPress={toggleMenu} style={styles.dotsButton}>
-        <Entypo name="dots-three-vertical" size={16} color="black" />
+        <Entypo name="dots-three-vertical" size={16} color={BLACK} />
       </Pressable>
       <Modal
         visible={menuVisible}
@@ -139,7 +140,7 @@ const ReviewOptionsMenu = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   modalRoot: { flex: 1 },
   dotsButton: { padding: 4 },
   dropdown: {
@@ -162,6 +163,6 @@ const styles = StyleSheet.create({
   menuItem: { paddingVertical: 12, paddingHorizontal: 16 },
   menuItemPressed: { backgroundColor: GRAY.DEFAULT },
   menuItemText: { fontSize: 14, fontWeight: "500", color: BLACK },
-});
+}));
 
 export default ReviewOptionsMenu;

@@ -1,7 +1,8 @@
 import { Platform, StyleSheet } from "react-native";
 import { BLACK, GRAY, RED, WHITE } from "../../../../../color";
+import { themedStyles } from "../../../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: "rgba(0,0,0,0.3)",
@@ -57,6 +58,6 @@ const styles = StyleSheet.create({
   optionTextDanger: {
     color: RED.DEFAULT,
   },
-});
+}));
 
 export default styles;

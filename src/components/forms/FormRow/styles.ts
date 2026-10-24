@@ -1,12 +1,13 @@
 import { Platform, StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, RED, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, RED, WHITE, FIXED_WHITE, lightDark } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 const inputReset = Platform.select({
   web: { outlineStyle: "none", borderWidth: 0 } as object,
   default: {},
 });
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   section: {
     paddingVertical: 4,
   },
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
     opacity: 0.35,
   },
   chipError: {
-    backgroundColor: "#FDECEC",
+    backgroundColor: lightDark("#FDECEC", "#3A1F22"),
   },
   chipText: {
     fontSize: 14,
@@ -140,7 +141,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   pillSelected: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderColor: MAIN.DEFAULT,
   },
   pillPressed: {
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_100,
   },
   pillTextSelected: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontWeight: "600",
   },
 
@@ -275,6 +276,6 @@ const styles = StyleSheet.create({
     zIndex: 1,
     elevation: 2,
   },
-});
+}));
 
 export default styles;

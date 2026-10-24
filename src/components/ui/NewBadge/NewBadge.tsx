@@ -1,5 +1,6 @@
-import { StyleProp, StyleSheet, Text, View, ViewStyle } from "react-native";
-import { RED, WHITE } from "../../../color";
+import { StyleProp, Text, View, ViewStyle } from "react-native";
+import { RED, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 type NewBadgeProps = {
   style?: StyleProp<ViewStyle>;
@@ -11,7 +12,7 @@ const NewBadge = ({ style }: NewBadgeProps) => (
   </View>
 );
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   badge: {
     paddingHorizontal: 4,
     paddingVertical: 1,
@@ -23,8 +24,8 @@ const styles = StyleSheet.create({
     fontSize: 9,
     lineHeight: 11,
     fontWeight: "700",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));
 
 export default NewBadge;

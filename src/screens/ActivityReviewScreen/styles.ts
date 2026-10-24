@@ -1,5 +1,7 @@
 import { StyleSheet } from "react-native";
 import { SMOOTH_CORNERS } from "../../cornerSmoothing";
+import { WHITE, lightDark, BLACK } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
 export const REVIEW_COLORS = {
   disappointing: "#FF5A5A",
@@ -13,10 +15,10 @@ export const REVIEW_COLORS = {
   cardGray: "#475569",
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   flex: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: WHITE,
   },
   header: {
     flexDirection: "row",
@@ -24,13 +26,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingBottom: 8,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: lightDark("#E5E7EB", "#2C2D33"),
   },
   headerTitle: {
     flex: 1,
     fontSize: 17,
     fontWeight: "600",
-    color: "#111",
+    color: BLACK,
     textAlign: "center",
     marginRight: 28,
   },
@@ -49,13 +51,13 @@ const styles = StyleSheet.create({
   headline: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#111",
+    color: BLACK,
     lineHeight: 32,
   },
   headlineMuted: {
     fontSize: 22,
     fontWeight: "700",
-    color: "#111",
+    color: BLACK,
     marginTop: 4,
   },
   tagPill: {
@@ -76,7 +78,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 18,
     fontWeight: "600",
-    color: "#111",
+    color: BLACK,
   },
   ratingRow: {
     flexDirection: "row",
@@ -97,11 +99,11 @@ const styles = StyleSheet.create({
   ratingBox: {
     marginTop: 24,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: lightDark("#E5E7EB", "#2C2D33"),
     borderRadius: 16,
     paddingVertical: 20,
     paddingHorizontal: 8,
-    backgroundColor: "#FAFAFA",
+    backgroundColor: lightDark("#FAFAFA", "#1B1C21"),
   },
   footer: {
     position: "absolute",
@@ -111,9 +113,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 12,
     paddingBottom: 28,
-    backgroundColor: "#fff",
+    backgroundColor: WHITE,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: "#E5E7EB",
+    borderTopColor: lightDark("#E5E7EB", "#2C2D33"),
   },
   nextBtn: {
     borderRadius: 14,
@@ -131,7 +133,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#E5E7EB",
+    borderBottomColor: lightDark("#E5E7EB", "#2C2D33"),
   },
   checkbox: {
     width: 22,
@@ -147,30 +149,30 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 15,
     lineHeight: 22,
-    color: "#111",
+    color: BLACK,
   },
   noteInput: {
     marginTop: 16,
     minHeight: 140,
     borderWidth: 1,
-    borderColor: "#D1D5DB",
+    borderColor: lightDark("#D1D5DB", "#3A3B42"),
     borderRadius: 12,
     padding: 14,
     fontSize: 15,
     lineHeight: 22,
-    color: "#111",
+    color: BLACK,
     textAlignVertical: "top",
   },
   noteHint: {
     marginTop: 12,
     fontSize: 12,
     lineHeight: 18,
-    color: "#6B7280",
+    color: lightDark("#6B7280", "#A0A3AB"),
   },
   completeTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#111",
+    color: BLACK,
     textAlign: "center",
     marginBottom: 24,
   },
@@ -184,7 +186,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     fontSize: 15,
     lineHeight: 22,
-    color: "#374151",
+    color: lightDark("#374151", "#C4C6CC"),
   },
   reasonChip: {
     ...SMOOTH_CORNERS,
@@ -202,10 +204,10 @@ const styles = StyleSheet.create({
   },
   subline: {
     fontSize: 15,
-    color: "#4B5563",
+    color: lightDark("#4B5563", "#A0A3AB"),
     marginTop: 8,
     lineHeight: 22,
   },
-});
+}));
 
 export default styles;

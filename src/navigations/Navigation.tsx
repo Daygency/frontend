@@ -1,4 +1,10 @@
-import { NavigationContainer } from "@react-navigation/native";
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+  type NavigationState,
+  type Theme,
+} from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { useAuth } from "../contexts/AuthContext";
 import ContentTab from "./ContentTab";
@@ -55,12 +61,30 @@ import {
   rootNavigationRef,
   usePushOpenNavigation,
 } from "../lib/notifications/pushOpenNavigation";
-import { WHITE } from "../color";
+import { BLACK, colorScheme, GRAY, MAIN, WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import styles from "./styles";
 
 const Stack = createNativeStackNavigator();
+
+/** 다크 모드 전환 시 트리가 다시 마운트되어도 보던 화면을 유지 */
+let savedNavigationState: NavigationState | undefined;
+
+const getNavigationTheme = (): Theme =>
+  colorScheme === "dark"
+    ? {
+        ...DarkTheme,
+        colors: {
+          ...DarkTheme.colors,
+          primary: MAIN.DEFAULT,
+          background: WHITE,
+          card: WHITE,
+          text: BLACK,
+          border: GRAY.MEDIUM,
+        },
+      }
+    : DefaultTheme;
 
 const accountReactivationScreenOptions = ({ navigation }: { navigation: any }) => ({
   headerTitle: () => (
@@ -81,7 +105,7 @@ const accountReactivationScreenOptions = ({ navigation }: { navigation: any }) =
       hitSlop={10}
       style={styles.leftIcon}
     >
-      <MaterialCommunityIcons name="chevron-left" size={30} color="#000" />
+      <MaterialCommunityIcons name="chevron-left" size={30} color={BLACK} />
     </Pressable>
   ),
 });
@@ -97,7 +121,7 @@ const Navigation = () => {
 
   if (needsRoleSelection) {
     return (
-      <NavigationContainer>
+      <NavigationContainer theme={getNavigationTheme()}>
         <SignupFlowScreen />
       </NavigationContainer>
     );
@@ -106,6 +130,11 @@ const Navigation = () => {
   return (
     <NavigationContainer
       ref={rootNavigationRef}
+      theme={getNavigationTheme()}
+      initialState={savedNavigationState}
+      onStateChange={(state) => {
+        savedNavigationState = state;
+      }}
       onReady={flushPendingPushNavigation}
     >
       <View style={{ flex: 1 }}>
@@ -146,7 +175,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -177,7 +206,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -210,7 +239,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -243,7 +272,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -276,7 +305,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -311,7 +340,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -346,7 +375,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -373,7 +402,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -400,7 +429,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -432,7 +461,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -463,7 +492,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -494,7 +523,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -522,7 +551,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -550,7 +579,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -581,7 +610,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -612,7 +641,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -622,14 +651,14 @@ const Navigation = () => {
                   <MaterialCommunityIcons
                     name="heart-outline"
                     size={21}
-                    color="#000"
+                    color={BLACK}
                   />
                 </Pressable>
                 <Pressable hitSlop={10}>
                   <MaterialCommunityIcons
                     name="dots-vertical"
                     size={21}
-                    color="#000"
+                    color={BLACK}
                   />
                 </Pressable>
               </View>
@@ -661,7 +690,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -671,7 +700,7 @@ const Navigation = () => {
                   <MaterialCommunityIcons
                     name="dots-vertical"
                     size={21}
-                    color="#000"
+                    color={BLACK}
                   />
                 </Pressable>
               </View>
@@ -703,7 +732,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -734,7 +763,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -765,7 +794,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -796,7 +825,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -827,7 +856,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -858,7 +887,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -889,7 +918,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -920,13 +949,13 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
             headerRight: () => (
               <Pressable hitSlop={10}>
-                <Text style={{ fontSize: 16, color: "#000" }}>관리</Text>
+                <Text style={{ fontSize: 16, color: BLACK }}>관리</Text>
               </Pressable>
             ),
           })}
@@ -956,7 +985,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -987,7 +1016,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -1018,7 +1047,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -1049,7 +1078,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -1080,7 +1109,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -1111,7 +1140,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -1145,7 +1174,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -1177,7 +1206,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -1211,7 +1240,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -1240,7 +1269,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),
@@ -1278,7 +1307,7 @@ const Navigation = () => {
                 <MaterialCommunityIcons
                   name="chevron-left"
                   size={30}
-                  color="#000"
+                  color={BLACK}
                 />
               </Pressable>
             ),

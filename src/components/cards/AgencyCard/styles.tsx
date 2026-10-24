@@ -1,8 +1,8 @@
-import { StyleSheet } from "react-native";
 import { BLACK, BLUE, GRAY, MAIN } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {},
   header: {
     marginHorizontal: 12,
@@ -71,6 +71,6 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: BLACK,
   },
-});
+}));
 
 export default styles;

@@ -26,7 +26,7 @@ import {
 } from "../../constants/categories";
 import { renderSearchScene } from "./scenes/SearchTabScenes";
 import styles from "./styles";
-import { GRAY } from "../../color";
+import { GRAY, BLACK } from "../../color";
 
 const SearchScreen = () => {
   const { top } = useSafeAreaInsets();
@@ -146,7 +146,7 @@ const SearchScreen = () => {
           <MaterialCommunityIcons
             name="chevron-left"
             size={28}
-            color="#000"
+            color={BLACK}
           />
         </Pressable>
         <View style={styles.searchBar}>

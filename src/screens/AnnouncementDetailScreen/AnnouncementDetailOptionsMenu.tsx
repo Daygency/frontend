@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BLACK, GRAY, WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
 interface AnnouncementDetailOptionsMenuProps {
   isMine: boolean;
@@ -81,7 +82,7 @@ const AnnouncementDetailOptionsMenu = ({
           <MaterialCommunityIcons
             name="dots-vertical"
             size={21}
-            color="#000"
+            color={BLACK}
           />
         </Pressable>
       </View>
@@ -125,7 +126,7 @@ const AnnouncementDetailOptionsMenu = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   modalRoot: {
     flex: 1,
   },
@@ -175,6 +176,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: BLACK,
   },
-});
+}));
 
 export default AnnouncementDetailOptionsMenu;

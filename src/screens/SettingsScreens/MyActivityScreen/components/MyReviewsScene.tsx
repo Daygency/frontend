@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import { FlatList, View, Text, ActivityIndicator } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
 import ReviewCard from "../../../../components/cards/ReviewCard";
 import EmptyState, {
@@ -9,8 +9,10 @@ import EmptyState, {
 import styles from "../styles";
 import { getMyActivityReviewList } from "../../../../lib/apis/announcement/activityReviewApi";
 import type { ActivityReviewListItem } from "../../../../lib/apis/announcement/activityReviewTypes";
+import { lightDark } from "../../../../color";
+import { themedStyles } from "../../../../theme/themedStyles";
 
-const localStyles = StyleSheet.create({
+const localStyles = themedStyles(() => ({
   topSpacer: {
     height: 15,
   },
@@ -21,7 +23,7 @@ const localStyles = StyleSheet.create({
   cardWrapper: {
     marginBottom: 9,
   },
-});
+}));
 
 function formatDate(iso?: string | null): string {
   if (!iso?.trim()) return "";
@@ -85,7 +87,7 @@ const MyReviewsScene = () => {
   if (loading) {
     return (
       <View style={[styles.postsCommentsContainer, emptyScreenStyle]}>
-        <ActivityIndicator size="small" color="#4B5563" />
+        <ActivityIndicator size="small" color={lightDark("#4B5563", "#A0A3AB")} />
       </View>
     );
   }
@@ -122,7 +124,7 @@ const MyReviewsScene = () => {
         ListFooterComponent={
           loadingMore ? (
             <View style={{ paddingVertical: 12 }}>
-              <ActivityIndicator size="small" color="#4B5563" />
+              <ActivityIndicator size="small" color={lightDark("#4B5563", "#A0A3AB")} />
             </View>
           ) : null
         }

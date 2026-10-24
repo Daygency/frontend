@@ -20,6 +20,7 @@ import { getMyNewsPosts } from "../../lib/apis/userPosts/myPostsApi";
 import type { MyNewsPostItem } from "../../lib/apis/userPosts/types";
 import { RootRoutes } from "../../navigations/routes";
 import { normalizeListThumbnailUrl } from "../../lib/media/listThumbnailUrl";
+import { MAIN } from "../../color";
 
 const CARD_GAP = 12;
 const HORIZONTAL_PADDING = 16;
@@ -183,7 +184,7 @@ const MyActivityNewsListScreen = () => {
         )}
         ListEmptyComponent={
           loadingInitial ? (
-            <ActivityIndicator size="small" color="#1F2A44" />
+            <ActivityIndicator size="small" color={MAIN.DEFAULT} />
           ) : (
             <EmptyState message={emptyMessage} />
           )

@@ -7,8 +7,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { Animated, Modal, StyleSheet, Text, View } from "react-native";
-import { WHITE } from "../color";
+import { Animated, Modal, Text, View } from "react-native";
+import { WHITE, FIXED_WHITE } from "../color";
+import { themedStyles } from "../theme/themedStyles";
 
 type ToastContextValue = {
   showToast: (message: string) => void;
@@ -89,7 +90,7 @@ export function useToast(): ToastContextValue {
   return context;
 }
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   overlay: {
     flex: 1,
     justifyContent: "flex-end",
@@ -105,6 +106,6 @@ const styles = StyleSheet.create({
   toastText: {
     fontSize: 14,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));

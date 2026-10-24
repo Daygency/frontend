@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { GRAY, SKELETON } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const skeletonStyles = StyleSheet.create({
+const skeletonStyles = themedStyles(() => ({
   hero: {
     width: "100%",
     height: 168,
@@ -109,6 +109,6 @@ const skeletonStyles = StyleSheet.create({
     width: "90%",
     height: 18,
   },
-});
+}));
 
 export default skeletonStyles;

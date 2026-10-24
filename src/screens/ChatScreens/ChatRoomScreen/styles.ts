@@ -1,10 +1,11 @@
 import { StyleSheet } from "react-native";
-import { WHITE, GRAY } from "../../../color";
+import { WHITE, GRAY, FIXED_WHITE, BLACK } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { MEDIA_MAX_WIDTH } from "./mediaSize";
 
 export const MESSAGE_BUBBLE_ME_COLOR = "#4A5568";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -80,7 +81,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 16,
     fontWeight: "400",
-    color: "#000",
+    color: BLACK,
     marginBottom: 2,
   },
   handle: {
@@ -198,10 +199,10 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: 15,
     lineHeight: 21,
-    color: "#000",
+    color: BLACK,
   },
   messageTextMe: {
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   messageBubbleMedia: {
     paddingHorizontal: 4,
@@ -243,7 +244,7 @@ const styles = StyleSheet.create({
     minWidth: 0,
     fontSize: 14,
     lineHeight: 20,
-    color: "#000",
+    color: BLACK,
   },
   messageTime: {
     fontSize: 12,
@@ -351,7 +352,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     fontSize: 15,
     lineHeight: 20,
-    color: "#000",
+    color: BLACK,
   },
   inputSingleLine: {
     maxHeight: 36,
@@ -393,6 +394,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: GRAY.DARK_2,
   },
-});
+}));
 
 export default styles;

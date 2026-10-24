@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 import BottomSheet, {
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
@@ -7,6 +7,7 @@ import BottomSheet, {
 } from "@gorhom/bottom-sheet";
 import SelectableTag from "../../../components/ui/SelectableTag";
 import { GRAY, MAIN, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import {
   PERFORMANCE_NEWS_GENRE_ALL,
   PERFORMANCE_NEWS_GENRE_OPTIONS,
@@ -149,7 +150,7 @@ const PerformanceNewsFilterSheet = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   backdropZIndex: {
     zIndex: 100,
     ...Platform.select({
@@ -195,6 +196,6 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: 8,
   },
-});
+}));
 
 export default PerformanceNewsFilterSheet;

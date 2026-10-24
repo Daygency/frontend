@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BLACK, GRAY, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 type PostDetailOptionsMenuProps = {
   isMine: boolean;
@@ -61,7 +62,7 @@ const PostDetailOptionsMenu = ({
   return (
     <View ref={dotsRef} collapsable={false}>
       <Pressable hitSlop={10} onPress={toggleMenu} style={styles.dotsButton}>
-        <MaterialCommunityIcons name="dots-vertical" size={21} color="#000" />
+        <MaterialCommunityIcons name="dots-vertical" size={21} color={BLACK} />
       </Pressable>
       <Modal
         visible={menuVisible}
@@ -100,7 +101,7 @@ const PostDetailOptionsMenu = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   modalRoot: { flex: 1 },
   dotsButton: { padding: 4 },
   dropdown: {
@@ -123,6 +124,6 @@ const styles = StyleSheet.create({
   menuItem: { paddingVertical: 12, paddingHorizontal: 16 },
   menuItemPressed: { backgroundColor: GRAY.DEFAULT },
   menuItemText: { fontSize: 14, fontWeight: "500", color: BLACK },
-});
+}));
 
 export default PostDetailOptionsMenu;

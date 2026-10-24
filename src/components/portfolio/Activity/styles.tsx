@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
   },
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   activityTypeBadge: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 6,
     paddingHorizontal: 8,
     paddingVertical: 4,
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
   activityTypeText: {
     fontSize: 11,
     fontWeight: "500",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   activityInfo: {
     gap: 8,
@@ -62,6 +62,6 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: GRAY.DARK_2,
   },
-});
+}));
 
 export default styles;

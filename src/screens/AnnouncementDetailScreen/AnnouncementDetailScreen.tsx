@@ -30,7 +30,7 @@ import {
   AnnouncementStatusValue,
 } from "./AnnouncementStatusMenu";
 import AcceptedPerformersSection from "./AcceptedPerformersSection";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE } from "../../color";
 import {
   mapAttachmentsToImageUrls,
   pickUrlFromFileLike,
@@ -1036,7 +1036,7 @@ const AnnouncementDetailScreen = () => {
         <Ionicons
           name={scraped ? "bookmark" : "bookmark-outline"}
           size={22}
-          color={WHITE}
+          color={FIXED_WHITE}
         />
       </Pressable>
       <View style={[styles.btnApply, styles.visitorInfoBar]}>
@@ -1069,7 +1069,7 @@ const AnnouncementDetailScreen = () => {
             <Ionicons
               name={scraped ? "bookmark" : "bookmark-outline"}
               size={22}
-              color={WHITE}
+              color={FIXED_WHITE}
             />
           </Pressable>
           <Pressable
@@ -1114,7 +1114,7 @@ const AnnouncementDetailScreen = () => {
             <Ionicons
               name={scraped ? "bookmark" : "bookmark-outline"}
               size={22}
-              color={WHITE}
+              color={FIXED_WHITE}
             />
           </Pressable>
           <Pressable style={styles.btnApply} onPress={navigateToApplication}>
@@ -1140,7 +1140,7 @@ const AnnouncementDetailScreen = () => {
             <Ionicons
               name={scraped ? "bookmark" : "bookmark-outline"}
               size={22}
-              color={WHITE}
+              color={FIXED_WHITE}
             />
           </Pressable>
           <Pressable style={styles.btnApply} onPress={navigateToApplication}>
@@ -1162,7 +1162,7 @@ const AnnouncementDetailScreen = () => {
             <Ionicons
               name={scraped ? "bookmark" : "bookmark-outline"}
               size={22}
-              color={WHITE}
+              color={FIXED_WHITE}
             />
           </Pressable>
           <Pressable
@@ -1176,7 +1176,7 @@ const AnnouncementDetailScreen = () => {
           >
             <View style={styles.btnApplyContentRow}>
               <Text style={styles.btnApplyText}>채팅 바로가기</Text>
-              <Ionicons name="person" size={15} color={WHITE} />
+              <Ionicons name="person" size={15} color={FIXED_WHITE} />
               <Text style={styles.btnApplyText}>{acceptedApplicantCount}</Text>
             </View>
           </Pressable>

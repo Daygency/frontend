@@ -17,7 +17,7 @@ import Carousel, {
   Pagination,
 } from "react-native-reanimated-carousel";
 import styles from "./styles";
-import { GRAY } from "../../../color";
+import { GRAY, BLACK } from "../../../color";
 import { useImageViewerOptional } from "../../../contexts/ImageViewerContext";
 
 export type CarouselBannerItem = {
@@ -454,7 +454,7 @@ const ImageCarousel = ({
       {headerTitle && onPressMore ? (
         <Pressable onPress={onPressMore} style={styles.header}>
           <Text style={styles.headerTitle}>{headerTitle}</Text>
-          <MaterialIcons name="chevron-right" size={28} color="#000" />
+          <MaterialIcons name="chevron-right" size={28} color={BLACK} />
         </Pressable>
       ) : null}
       <Carousel

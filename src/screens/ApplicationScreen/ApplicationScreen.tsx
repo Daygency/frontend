@@ -21,7 +21,7 @@ import { RootRoutes } from "../../navigations/routes";
 import Form from "../../components/forms/Form";
 import FormTextInput from "../../components/forms/FormTextInput";
 import FormDropdownInput from "../../components/forms/FormDropdownInput";
-import { MAIN, WHITE } from "../../color";
+import { MAIN, WHITE, GRAY } from "../../color";
 import styles from "./styles";
 import { getMyProfile } from "../../lib/apis/portfolio/profileApi";
 import { getAnnouncementDetail } from "../../lib/apis/announcement/announcementApi";
@@ -842,7 +842,7 @@ const ApplicationScreen = () => {
                           <MaterialCommunityIcons
                             name="close"
                             size={20}
-                            color="#717182"
+                            color={GRAY.DARK}
                           />
                         </Pressable>
                       </View>
@@ -862,7 +862,7 @@ const ApplicationScreen = () => {
                           <MaterialCommunityIcons
                             name="close"
                             size={20}
-                            color="#717182"
+                            color={GRAY.DARK}
                           />
                         </Pressable>
                       </View>
@@ -934,7 +934,7 @@ const ApplicationScreen = () => {
                             <MaterialCommunityIcons
                               name="close"
                               size={20}
-                              color="#717182"
+                              color={GRAY.DARK}
                             />
                           </Pressable>
                         </View>

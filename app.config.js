@@ -48,6 +48,7 @@ export default ({ config }) => ({
     slug: "mfrontend",
     version: "1.0.0",
     icon: "./assets/main_app_logo.png",
+    userInterfaceStyle: "automatic",
     ios: {
       bundleIdentifier: "com.rbdus.mfrontend",
       googleServicesFile: hasPlist ? "./GoogleService-Info.plist" : undefined,

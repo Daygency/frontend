@@ -8,7 +8,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
 import {
   searchJusoAddress,
   type JusoAddressItem,
@@ -108,7 +108,7 @@ export default function JusoAddressField({
           disabled={searching}
         >
           {searching ? (
-            <ActivityIndicator size="small" color={WHITE} />
+            <ActivityIndicator size="small" color={FIXED_WHITE} />
           ) : (
             <Text style={styles.searchButtonText}>검색</Text>
           )}

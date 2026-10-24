@@ -1,8 +1,8 @@
-import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
-import { PORTFOLIO_BODY_BG, PORTFOLIO_SECTION_GAP } from "../../../constants/portfolio";
+import { themedStyles } from "../../../theme/themedStyles";
+import { portfolioBodyBg, PORTFOLIO_SECTION_GAP } from "../../../constants/portfolio";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   embeddedRoot: {
-    backgroundColor: PORTFOLIO_BODY_BG,
+    backgroundColor: portfolioBodyBg(),
   },
   embeddedSheet: {
     backgroundColor: WHITE,
@@ -90,6 +90,6 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     color: GRAY.DARK,
   },
-});
+}));
 
 export default styles;

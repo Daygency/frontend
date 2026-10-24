@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -35,7 +36,7 @@ const styles = StyleSheet.create({
   imageCounterText: {
     fontSize: 12,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   body: {
     paddingHorizontal: 20,
@@ -211,7 +212,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: GRAY.DEFAULT,
   },
-});
+}));
 
 export type MusicNewsDetailScreenStyles = typeof styles;
 

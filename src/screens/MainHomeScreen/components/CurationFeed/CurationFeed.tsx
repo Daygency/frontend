@@ -17,7 +17,7 @@ import {
   useWindowDimensions,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { MAIN, WHITE } from "../../../../color";
+import { MAIN, WHITE, FIXED_WHITE } from "../../../../color";
 import {
   getHomeBannerFeed,
   type HomeBannerListItem,
@@ -283,7 +283,7 @@ const CurationFeed = forwardRef<CurationFeedHandle, CurationFeedProps>(
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={WHITE}
+            tintColor={FIXED_WHITE}
             colors={[MAIN.DEFAULT]}
           />
         }

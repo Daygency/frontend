@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { GRAY, WHITE } from "../../color";
+import { GRAY, WHITE, BLACK } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   list: {
     flex: 1,
     backgroundColor: WHITE,
@@ -60,7 +60,7 @@ const styles = StyleSheet.create({
   allSectionTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#111",
+    color: BLACK,
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 4,
@@ -71,6 +71,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-});
+}));
 
 export default styles;

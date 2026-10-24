@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
 import { GRAY, SKELETON } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const skeletonStyles = StyleSheet.create({
+const skeletonStyles = themedStyles(() => ({
   box: {
     borderRadius: 5,
   },
@@ -66,6 +67,6 @@ const skeletonStyles = StyleSheet.create({
     width: 28,
     height: 14,
   },
-});
+}));
 
 export default skeletonStyles;

@@ -21,7 +21,7 @@ import type { ReportCategory } from "../../../lib/apis/report/types";
 import { confirmReportSubmission } from "../../../lib/report/confirmReportSubmission";
 import { messageForReportHttpStatus } from "../../../lib/report/reportErrorMessage";
 import ReportCategoryModal from "../../../components/modals/ReportCategoryModal";
-import { MAIN } from "../../../color";
+import { MAIN, lightDark, BLACK, RED } from "../../../color";
 import styles from "./styles";
 
 export type ChatRoomOptionsParams = {
@@ -159,7 +159,7 @@ const ChatRoomOptionsScreen = () => {
   if (!chatRoomId) {
     return (
       <View style={[styles.container, { paddingTop: top, justifyContent: "center", alignItems: "center", paddingHorizontal: 24 }]}>
-        <Text style={{ textAlign: "center", color: "#666" }}>
+        <Text style={{ textAlign: "center", color: lightDark("#666", "#A0A3AB") }}>
           채팅방 정보가 없습니다.
         </Text>
         <Pressable onPress={() => navigation.goBack()} style={{ marginTop: 16 }}>
@@ -177,7 +177,7 @@ const ChatRoomOptionsScreen = () => {
           hitSlop={10}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color="#000" />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={BLACK} />
         </Pressable>
       </View>
 
@@ -191,18 +191,18 @@ const ChatRoomOptionsScreen = () => {
             {notificationsMuted ? "알림 켜기" : "알림 해제"}
           </Text>
           {togglingMute || loadingSettings ? (
-            <ActivityIndicator size="small" color="#000" />
+            <ActivityIndicator size="small" color={BLACK} />
           ) : (
             <MaterialCommunityIcons
               name={notificationsMuted ? "bell-outline" : "bell-off-outline"}
               size={22}
-              color="#000"
+              color={BLACK}
             />
           )}
         </Pressable>
         <Pressable style={styles.optionItem} onPress={handleReportPress}>
           <Text style={styles.optionText}>신고</Text>
-          <MaterialCommunityIcons name="flag-outline" size={22} color="#000" />
+          <MaterialCommunityIcons name="flag-outline" size={22} color={BLACK} />
         </Pressable>
         <Pressable
           style={[styles.optionItem, styles.optionItemLast]}
@@ -213,9 +213,9 @@ const ChatRoomOptionsScreen = () => {
             채팅방 나가기
           </Text>
           {leaving ? (
-            <ActivityIndicator size="small" color="#EC1313" />
+            <ActivityIndicator size="small" color={RED.DEFAULT} />
           ) : (
-            <MaterialCommunityIcons name="door-open" size={22} color="#EC1313" />
+            <MaterialCommunityIcons name="door-open" size={22} color={RED.DEFAULT} />
           )}
         </Pressable>
       </View>

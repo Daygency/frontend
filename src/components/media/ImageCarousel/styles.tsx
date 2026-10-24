@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
-import { GRAY, MAIN } from "../../../color";
+import { GRAY, MAIN, BLACK } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     width: "100%",
     marginTop: 6,
@@ -22,7 +23,7 @@ const styles = StyleSheet.create({
     lineHeight: 27,
     letterSpacing: -0.32,
     fontWeight: "600",
-    color: "#000",
+    color: BLACK,
   },
   slide: {
     borderRadius: 10,
@@ -54,8 +55,8 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
-});
+}));
 
 export default styles;

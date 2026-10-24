@@ -28,6 +28,7 @@ import {
   submitActivityReview,
 } from "../../lib/apis/announcement/activityReviewApi";
 import styles, { REVIEW_COLORS } from "./styles";
+import { BLACK, lightDark } from "../../color";
 
 export type ActivityReviewParams = {
   postId: string;
@@ -212,7 +213,7 @@ const ActivityReviewScreen = () => {
           hitSlop={12}
           disabled={submitting}
         >
-          <MaterialCommunityIcons name="chevron-left" size={30} color="#000" />
+          <MaterialCommunityIcons name="chevron-left" size={30} color={BLACK} />
         </Pressable>
         <Text style={styles.headerTitle}>
           {step === "complete" ? "" : "활동 후기 작성"}
@@ -244,7 +245,7 @@ const ActivityReviewScreen = () => {
                   const color = selected
                     ? meta.color
                     : dim
-                      ? "#D1D5DB"
+                      ? lightDark("#D1D5DB", "#3A3B42")
                       : REVIEW_COLORS.disabled;
                   return (
                     <Pressable
@@ -308,7 +309,7 @@ const ActivityReviewScreen = () => {
                       style={[
                         styles.checkbox,
                         {
-                          borderColor: on ? REVIEW_COLORS.good : "#9CA3AF",
+                          borderColor: on ? REVIEW_COLORS.good : lightDark("#9CA3AF", "#73767F"),
                           backgroundColor: on ? REVIEW_COLORS.good : "transparent",
                         },
                       ]}
@@ -347,7 +348,7 @@ const ActivityReviewScreen = () => {
                   ? "다음에 더 나아질 수 있도록 아쉬웠던 점을 남겨주세요 (선택)"
                   : "함께해서 좋았던 점을 자유롭게 남겨주세요 (선택)"
               }
-              placeholderTextColor="#9CA3AF"
+              placeholderTextColor={lightDark("#9CA3AF", "#8B8E97")}
               multiline
               maxLength={MAX_NOTE}
               value={comment}

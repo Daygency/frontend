@@ -1,7 +1,8 @@
 import { StyleSheet } from "react-native";
-import { WHITE, GRAY } from "../../../color";
+import { WHITE, GRAY, BLACK, RED } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -35,11 +36,11 @@ const styles = StyleSheet.create({
   optionText: {
     fontSize: 15,
     fontWeight: "500",
-    color: "#000",
+    color: BLACK,
   },
   optionTextDanger: {
-    color: "#EC1313",
+    color: RED.DEFAULT,
   },
-});
+}));
 
 export default styles;

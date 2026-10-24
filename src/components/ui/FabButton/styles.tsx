@@ -1,10 +1,11 @@
 import { Platform, StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 export const MENU_ICON_SIZE = 20;
 export const MENU_SLIDE_DISTANCE = 36;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   modalRoot: {
     flex: 1,
   },
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     alignItems: "center",
     justifyContent: "center",
     ...Platform.select({
@@ -106,6 +107,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-});
+}));
 
 export default styles;

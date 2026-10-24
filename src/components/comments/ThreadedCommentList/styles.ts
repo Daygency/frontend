@@ -1,10 +1,10 @@
-import { StyleSheet } from "react-native";
 import { BLACK, GRAY } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 export const COMMENT_AVATAR_SIZE = 36;
 export const REPLY_AVATAR_SIZE = 28;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   commentsSection: {
     paddingHorizontal: 16,
     paddingTop: 8,
@@ -111,6 +111,6 @@ const styles = StyleSheet.create({
     width: REPLY_AVATAR_SIZE,
     alignItems: "center",
   },
-});
+}));
 
 export default styles;

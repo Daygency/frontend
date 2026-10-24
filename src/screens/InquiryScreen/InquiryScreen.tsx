@@ -1,22 +1,11 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  Image,
-  TextInput,
-  Pressable,
-  StyleSheet,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, Image, TextInput, Pressable, ScrollView, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useNavigation } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { WHITE } from "../../color";
+import { WHITE, FIXED_WHITE, GRAY, BLACK } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 import { createInquiry } from "../../lib/apis/inquiry/inquiryApi";
 
 const MAX_IMAGES = 3;
@@ -120,7 +109,7 @@ const InquiryScreen = () => {
         <TextInput
           style={styles.textArea}
           placeholder="문의 내용을 입력해 주세요."
-          placeholderTextColor="#A0A0A0"
+          placeholderTextColor={GRAY.MEDIUM_100}
           multiline
           numberOfLines={8}
           textAlignVertical="top"
@@ -141,7 +130,7 @@ const InquiryScreen = () => {
                 <MaterialCommunityIcons
                   name="close-circle"
                   size={24}
-                  color="#575757"
+                  color={GRAY.DARK_100}
                 />
               </Pressable>
             </View>
@@ -151,7 +140,7 @@ const InquiryScreen = () => {
               <MaterialCommunityIcons
                 name="camera-plus-outline"
                 size={32}
-                color="#888"
+                color={GRAY.DARK_2}
               />
               <Text style={styles.photoAddText}>추가</Text>
             </Pressable>
@@ -166,7 +155,7 @@ const InquiryScreen = () => {
           disabled={submitting}
         >
           {submitting ? (
-            <ActivityIndicator color={WHITE} />
+            <ActivityIndicator color={FIXED_WHITE} />
           ) : (
             <Text style={styles.submitButtonText}>제출하기</Text>
           )}
@@ -176,7 +165,7 @@ const InquiryScreen = () => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -206,32 +195,32 @@ const styles = StyleSheet.create({
   serviceTitle: {
     fontSize: 18,
     fontWeight: "600",
-    color: "#000",
+    color: BLACK,
     marginBottom: 6,
   },
   hours: {
     fontSize: 12,
-    color: "#888",
+    color: GRAY.DARK_2,
   },
   divider: {
     height: 5,
-    backgroundColor: "#EDEBEB",
+    backgroundColor: GRAY.MEDIUM,
     marginHorizontal: -20,
     marginBottom: 24,
   },
   textArea: {
     borderWidth: 1,
-    borderColor: "#EDEBEB",
+    borderColor: GRAY.MEDIUM,
     borderRadius: 10,
     padding: 16,
     minHeight: 180,
     fontSize: 14,
-    color: "#000",
+    color: BLACK,
   },
   photoLabel: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#575757",
+    color: GRAY.DARK_100,
     marginTop: 20,
     marginBottom: 8,
   },
@@ -261,14 +250,14 @@ const styles = StyleSheet.create({
     height: 80,
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: "#EDEBEB",
+    borderColor: GRAY.MEDIUM,
     borderStyle: "dashed",
     alignItems: "center",
     justifyContent: "center",
   },
   photoAddText: {
     fontSize: 12,
-    color: "#888",
+    color: GRAY.DARK_2,
     marginTop: 4,
   },
   footer: {
@@ -294,8 +283,8 @@ const styles = StyleSheet.create({
   submitButtonText: {
     fontSize: 17,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));
 
 export default InquiryScreen;

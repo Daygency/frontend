@@ -3,7 +3,8 @@ import { Text, Animated, StyleSheet, View, Pressable, ActivityIndicator, Alert }
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { MAIN, WHITE } from "../../../../color";
+import { MAIN, WHITE, FIXED_WHITE } from "../../../../color";
+import { themedStyles } from "../../../../theme/themedStyles";
 import { useAuth } from "../../../../contexts/AuthContext";
 import { blockUser } from "../../../../lib/apis/block/blockApi";
 import { getUserPublicProfile } from "../../../../lib/apis/portfolio/profileApi";
@@ -142,7 +143,7 @@ const ArtistPortfolioHeader = ({
               overlayOpacity={overlayOpacity}
               solidOpacity={solidOpacity}
               overlay={
-                <MaterialCommunityIcons name="chevron-left" size={28} color={WHITE} />
+                <MaterialCommunityIcons name="chevron-left" size={28} color={FIXED_WHITE} />
               }
               solid={
                 <MaterialCommunityIcons name="chevron-left" size={28} color={MAIN.DEFAULT} />
@@ -159,7 +160,7 @@ const ArtistPortfolioHeader = ({
                   style={[
                     portfolioHeaderStyles.handleText,
                     portfolioHeaderStyles.handleTextOverlay,
-                    { color: WHITE },
+                    { color: FIXED_WHITE },
                   ]}
                   numberOfLines={1}
                 >
@@ -195,7 +196,7 @@ const ArtistPortfolioHeader = ({
                 overlayOpacity={overlayOpacity}
                 solidOpacity={solidOpacity}
                 overlay={
-                  <MaterialCommunityIcons name="dots-vertical" size={26} color={WHITE} />
+                  <MaterialCommunityIcons name="dots-vertical" size={26} color={FIXED_WHITE} />
                 }
                 solid={
                   <MaterialCommunityIcons name="dots-vertical" size={26} color={MAIN.DEFAULT} />
@@ -211,7 +212,7 @@ const ArtistPortfolioHeader = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   leftContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -235,6 +236,6 @@ const styles = StyleSheet.create({
   menuPlaceholder: {
     width: 44,
   },
-});
+}));
 
 export default ArtistPortfolioHeader;

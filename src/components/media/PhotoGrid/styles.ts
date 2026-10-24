@@ -1,10 +1,11 @@
 import { StyleSheet } from "react-native";
-import { GRAY, WHITE } from "../../../color";
+import { GRAY, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 /** 타일 사이 간격 — 각 타일에 padding으로 둘러 균일한 여백을 만든다 */
 const GAP = 3;
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     marginTop: 6,
     marginBottom: 8,
@@ -39,7 +40,7 @@ const styles = StyleSheet.create({
   tileOverlayText: {
     fontSize: 20,
     fontWeight: "700",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   /** 1장: 꽉 찬 정사각형 */
   full: {
@@ -64,6 +65,6 @@ const styles = StyleSheet.create({
   rightTile: {
     flex: 1,
   },
-});
+}));
 
 export default styles;

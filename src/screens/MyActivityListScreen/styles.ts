@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { WHITE } from "../../color";
+import { WHITE, GRAY } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -16,8 +16,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: "#888",
+    color: GRAY.DARK_2,
   },
-});
+}));
 
 export default styles;

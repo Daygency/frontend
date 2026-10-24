@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE, BLACK } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { type PerformanceNewsFilterSheetType } from "./performanceNewsFilterOptions";
 
 type Props = {
@@ -23,7 +24,7 @@ const LoungePerformanceNewsFilterRow = ({
         style={({ pressed }) => [styles.filterChip, pressed && styles.filterChipPressed]}
         onPress={() => onFilterSheetOpen("sort")}
       >
-        <MaterialIcons name="sort" size={24} color="black" />
+        <MaterialIcons name="sort" size={24} color={BLACK} />
       </Pressable>
 
       <Pressable
@@ -45,7 +46,7 @@ const LoungePerformanceNewsFilterRow = ({
         <MaterialCommunityIcons
           name="chevron-down"
           size={16}
-          color={selectedGenre ? WHITE : MAIN.DEFAULT}
+          color={selectedGenre ? FIXED_WHITE : MAIN.DEFAULT}
         />
       </Pressable>
 
@@ -68,14 +69,14 @@ const LoungePerformanceNewsFilterRow = ({
         <MaterialCommunityIcons
           name="chevron-down"
           size={16}
-          color={selectedRegion ? WHITE : MAIN.DEFAULT}
+          color={selectedRegion ? FIXED_WHITE : MAIN.DEFAULT}
         />
       </Pressable>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   filterRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
   },
   filterChipActive: {
     borderColor: MAIN.DEFAULT,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   filterChipPressed: {
     opacity: 0.5,
@@ -108,8 +109,8 @@ const styles = StyleSheet.create({
     fontWeight: "400",
   },
   filterChipTextActive: {
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));
 
 export default LoungePerformanceNewsFilterRow;

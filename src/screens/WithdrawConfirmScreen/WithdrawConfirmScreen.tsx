@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import messaging from "@react-native-firebase/messaging";
-import { RED, WHITE } from "../../color";
+import { GRAY, RED, WHITE, FIXED_WHITE } from "../../color";
 import { useAuth } from "../../contexts/AuthContext";
 import { withdrawAccount } from "../../lib/apis/auth/accountApi";
 import { unregisterPushDevice } from "../../lib/apis/notifications/notificationsApi";
@@ -96,7 +96,7 @@ const WithdrawConfirmScreen = () => {
               precautionsChecked ? "checkbox-marked" : "checkbox-blank-outline"
             }
             size={24}
-            color={precautionsChecked ? RED.DEFAULT : "#888"}
+            color={precautionsChecked ? RED.DEFAULT : GRAY.DARK_2}
           />
           <Text style={styles.checkboxLabel}>
             주의사항을 모두 확인하였습니다.
@@ -119,7 +119,7 @@ const WithdrawConfirmScreen = () => {
           disabled={!precautionsChecked || submitting}
         >
           {submitting ? (
-            <ActivityIndicator color={WHITE} />
+            <ActivityIndicator color={FIXED_WHITE} />
           ) : (
             <Text
               style={[

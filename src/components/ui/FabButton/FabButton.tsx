@@ -12,7 +12,7 @@ import {
   View,
   ViewStyle,
 } from "react-native";
-import { MAIN, WHITE } from "../../../color";
+import { MAIN, WHITE, FIXED_WHITE } from "../../../color";
 import styles, { MENU_ICON_SIZE, MENU_SLIDE_DISTANCE } from "./styles";
 
 export type FabMenuItem = {
@@ -240,7 +240,7 @@ const FabButton = ({
           </Animated.View>
         </Animated.View>
       ) : (
-        <MaterialCommunityIcons name={icon} size={size} color={WHITE} />
+        <MaterialCommunityIcons name={icon} size={size} color={FIXED_WHITE} />
       )}
     </Pressable>
   );

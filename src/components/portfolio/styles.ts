@@ -1,12 +1,12 @@
-import { StyleSheet } from "react-native";
 import { WHITE } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 import {
-  PORTFOLIO_BODY_BG,
-  PORTFOLIO_IMMERSIVE_BG,
+  portfolioBodyBg,
+  portfolioImmersiveBg,
   PORTFOLIO_SECTION_GAP,
 } from "../../constants/portfolio";
 
-export { PORTFOLIO_BODY_BG, PORTFOLIO_IMMERSIVE_BG, PORTFOLIO_SECTION_GAP };
+export { portfolioBodyBg, portfolioImmersiveBg, PORTFOLIO_SECTION_GAP };
 
 export const portfolioSectionStyles = {
   container: {
@@ -29,21 +29,21 @@ export const portfolioSectionStyles = {
   },
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
   },
   containerImmersive: {
-    backgroundColor: PORTFOLIO_IMMERSIVE_BG,
+    backgroundColor: portfolioImmersiveBg(),
   },
   scroll: {
     flex: 1,
-    backgroundColor: PORTFOLIO_BODY_BG,
+    backgroundColor: portfolioBodyBg(),
   },
   scrollContent: {
     flexGrow: 1,
-    backgroundColor: PORTFOLIO_BODY_BG,
+    backgroundColor: portfolioBodyBg(),
     paddingBottom: 24,
   },
   contentSheet: {
@@ -52,6 +52,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     marginBottom: PORTFOLIO_SECTION_GAP,
   },
-});
+}));
 
 export default styles;

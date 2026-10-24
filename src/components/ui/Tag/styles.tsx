@@ -1,8 +1,8 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../../color";
+import { BLACK, GRAY, WHITE, lightDark } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   tag: {
     ...SMOOTH_CORNERS,
     borderRadius: 4,
@@ -12,11 +12,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   typeTag: {
-    backgroundColor: "#EDF2F7",
+    backgroundColor: lightDark("#EDF2F7", "#262C3A"),
   },
   typeTagText: {
     fontSize: 11,
-    color: "#4A5568",
+    color: lightDark("#4A5568", "#C4C6CC"),
     fontWeight: "500",
   },
   statusTag: {
@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     color: GRAY.DARK_100,
     fontWeight: "400",
   },
-});
+}));
 
 export default styles;
 

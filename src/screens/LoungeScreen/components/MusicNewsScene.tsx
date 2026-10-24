@@ -1,12 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { ActivityIndicator, FlatList, RefreshControl, Text, View } from "react-native";
 import Animated from "react-native-reanimated";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import styles from "../styles";
@@ -16,6 +9,7 @@ import { RootRoutes } from "../../../navigations/routes";
 import { getNewsList } from "../../../lib/apis/news/newsApi";
 import type { NewsListItem } from "../../../lib/apis/news/types";
 import { GRAY } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import type { PerformanceNewsSortMode } from "./performanceNewsFilterOptions";
 import { useLoungeScroll } from "../LoungeScrollContext";
 
@@ -33,7 +27,7 @@ function applyClientFilters(
   });
 }
 
-const localStyles = StyleSheet.create({
+const localStyles = themedStyles(() => ({
   flatList: {
     flex: 1,
   },
@@ -60,7 +54,7 @@ const localStyles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: "center",
   },
-});
+}));
 
 const renderSeparator = () => <View style={localStyles.separator} />;
 

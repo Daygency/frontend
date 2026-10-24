@@ -12,6 +12,7 @@ import { formatAnnouncementPriceLineList } from "../../../lib/announcement/annou
 import { formatAnnouncementDistrictLabel } from "../../../lib/announcement/announcementAddress";
 import { sharedAnnouncementStyles } from "../../shared/AnnouncementShared/sharedAnnouncementStyles";
 import styles from "./styles";
+import { GRAY } from "../../../color";
 
 interface AnnouncementCardProps {
   title: string;
@@ -133,7 +134,7 @@ const AnnouncementCard = ({
             <View style={styles.footerMetaRow}>
               {typeof viewCount === "number" ? (
                 <View style={styles.viewCountRow}>
-                  <Ionicons name="eye-outline" size={13} color="#A0A0A0" />
+                  <Ionicons name="eye-outline" size={13} color={GRAY.MEDIUM_100} />
                   <Text style={styles.viewCountText}>{viewCount}</Text>
                 </View>
               ) : null}

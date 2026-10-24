@@ -1,14 +1,15 @@
-import { StyleSheet, Platform } from "react-native";
-import { WHITE, GRAY, MAIN } from "../../../color";
+import { Platform } from "react-native";
+import { WHITE, GRAY, MAIN, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 const WHITE_LOGO_ASPECT_RATIO = 660 / 595;
 const LOGO_HEIGHT = 32 + 30;
 const LOGO_WIDTH = Math.min(LOGO_HEIGHT * WHITE_LOGO_ASPECT_RATIO, 88) + 30;
 
-export const styles = StyleSheet.create({
+export const styles = themedStyles(() => ({
   screen: {
     flex: 1,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   closeButton: {
     position: "absolute",
@@ -73,7 +74,7 @@ export const styles = StyleSheet.create({
     color: "#000",
   },
   naverButtonText: {
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   googleButtonText: {
     color: "#000",
@@ -81,7 +82,7 @@ export const styles = StyleSheet.create({
   naverLogo: {
     fontSize: 18,
     fontWeight: "800",
-    color: WHITE,
+    color: FIXED_WHITE,
     width: 24,
     height: 24,
     textAlign: "center",
@@ -92,4 +93,4 @@ export const styles = StyleSheet.create({
     height: 22,
     resizeMode: "contain",
   },
-});
+}));

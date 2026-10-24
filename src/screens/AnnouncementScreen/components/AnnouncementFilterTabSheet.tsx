@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import BottomSheet, {
   BottomSheetBackdrop,
@@ -7,7 +7,8 @@ import BottomSheet, {
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import SelectableTag from "../../../components/ui/SelectableTag";
-import { BLUE, GRAY, MAIN, WHITE } from "../../../color";
+import { BLUE, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { SMOOTH_CORNERS } from "../../../cornerSmoothing";
 import { ANNOUNCEMENT_FILTER_SHEET_TITLES } from "./announcementFilterOptions";
 
@@ -119,7 +120,7 @@ const AnnouncementFilterTabSheet = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   backdropZIndex: {
     zIndex: 100,
     ...Platform.select({
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     bottom: -1,
     height: 2,
     width: "60%",
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   optionsScroll: {
     flex: 1,
@@ -213,10 +214,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   applyButtonText: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontSize: 16,
     fontWeight: "700",
   },
-});
+}));
 
 export default AnnouncementFilterTabSheet;

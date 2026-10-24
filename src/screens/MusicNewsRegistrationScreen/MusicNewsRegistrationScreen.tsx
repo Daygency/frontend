@@ -28,7 +28,7 @@ import {
 } from "../../components/forms/FormRow";
 import JusoAddressField from "../../components/juso/JusoAddressField/JusoAddressField";
 import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
-import { MAIN, WHITE } from "../../color";
+import { MAIN, WHITE, FIXED_WHITE } from "../../color";
 import styles from "./styles";
 import {
   createNewsWithFiles,
@@ -472,7 +472,7 @@ const MusicNewsRegistrationScreen = () => {
           disabled={isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color={WHITE} />
+            <ActivityIndicator size="small" color={FIXED_WHITE} />
           ) : (
             <Text style={styles.registerButtonText}>
               {isEditMode ? "수정 완료" : "등록하기"}

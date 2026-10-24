@@ -21,6 +21,7 @@ import ApplicantAvatar from "../../lib/chat/ApplicantAvatar";
 import { chatRoomItemToParams } from "../../lib/chat/chatRoomNavigation";
 import { useAuth } from "../../contexts/AuthContext";
 import styles from "./styles";
+import { MAIN } from "../../color";
 
 type Params = {
   postId: string;
@@ -185,7 +186,7 @@ export default function AnnouncementApplicantsScreen() {
       <View
         style={[styles.container, { justifyContent: "center", alignItems: "center" }]}
       >
-        <ActivityIndicator size="large" color="#1F2A44" />
+        <ActivityIndicator size="large" color={MAIN.DEFAULT} />
       </View>
     );
   }
@@ -205,7 +206,7 @@ export default function AnnouncementApplicantsScreen() {
         ListFooterComponent={
           loadingMore ? (
             <View style={{ paddingVertical: 16 }}>
-              <ActivityIndicator color="#1F2A44" />
+              <ActivityIndicator color={MAIN.DEFAULT} />
             </View>
           ) : null
         }

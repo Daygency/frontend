@@ -9,6 +9,7 @@ import {
   type ViewStyle,
 } from "react-native";
 import { SKELETON } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 type Props = {
   /** 원격 이미지 URL. 없으면 스켈레톤 없이 fallbackSource를 바로 렌더 */
@@ -53,13 +54,13 @@ const ImageWithSkeleton = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     overflow: "hidden",
   },
   skeleton: {
     backgroundColor: SKELETON.LIGHT,
   },
-});
+}));
 
 export default ImageWithSkeleton;

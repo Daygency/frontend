@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { BLACK, MAIN } from "../../../../../color";
+import { themedStyles } from "../../../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   headerContainer: {
     width: "100%",
     flexDirection: "row",
@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-});
+}));
 
 export default styles;
 

@@ -1,5 +1,6 @@
-import { Dimensions, StyleSheet } from "react-native";
+import { Dimensions } from "react-native";
 import { GRAY, SKELETON, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -9,7 +10,7 @@ const NEWS_CARD_WIDTH = 138;
 const NEWS_CARD_IMAGE_HEIGHT = 193;
 const NEWS_CARD_GAP = 14;
 
-const homeSkeletonStyles = StyleSheet.create({
+const homeSkeletonStyles = themedStyles(() => ({
   box: {
     borderRadius: 5,
   },
@@ -160,6 +161,6 @@ const homeSkeletonStyles = StyleSheet.create({
     flex: 1,
     height: 16,
   },
-});
+}));
 
 export default homeSkeletonStyles;

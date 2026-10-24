@@ -34,7 +34,7 @@ import JusoAddressField from "../../components/juso/JusoAddressField/JusoAddress
 import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
 import AnnouncementTypeSelectModal from "../../components/modals/AnnouncementTypeSelectModal";
 import SelectableTag from "../../components/ui/SelectableTag";
-import { GRAY, MAIN, RED, WHITE } from "../../color";
+import { GRAY, MAIN, RED, WHITE, FIXED_WHITE } from "../../color";
 import styles from "./styles";
 import {
   createAnnouncement,
@@ -774,7 +774,7 @@ const AnnouncementRegistrationScreen = () => {
   if (loadingEdit) {
     return (
       <View style={[styles.container, { justifyContent: "center", alignItems: "center" }]}>
-        <ActivityIndicator size="large" color="#1F2A44" />
+        <ActivityIndicator size="large" color={MAIN.DEFAULT} />
         <Text style={{ marginTop: 12, fontSize: 14, color: GRAY.DARK_2 }}>
           공고 정보를 불러오는 중...
         </Text>
@@ -1092,7 +1092,7 @@ const AnnouncementRegistrationScreen = () => {
           disabled={isSubmitting}
         >
           {isSubmitting ? (
-            <ActivityIndicator size="small" color={WHITE} />
+            <ActivityIndicator size="small" color={FIXED_WHITE} />
           ) : (
             <Text style={styles.registerButtonText}>
               {isEditMode ? "수정확인" : "등록하기"}

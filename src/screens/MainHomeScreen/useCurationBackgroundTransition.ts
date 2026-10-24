@@ -10,6 +10,7 @@ import {
   CURATION_LOADING_BACKGROUND,
   type CurationThemeState,
 } from "./curationTheme";
+import { WHITE } from "../../color";
 
 const TRANSITION_DURATION_MS = 650;
 
@@ -63,7 +64,7 @@ export const useCurationBackgroundTransition = (
 
   const animatedBackgroundStyle = useAnimatedStyle(() => {
     if (!isCuration) {
-      return { backgroundColor: "#ffffff" };
+      return { backgroundColor: WHITE };
     }
 
     return {

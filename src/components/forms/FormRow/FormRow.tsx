@@ -11,14 +11,18 @@ import {
   View,
   type TextInputProps,
 } from "react-native";
-import { GRAY, MAIN, RED, WHITE } from "../../../color";
+import { GRAY, MAIN, RED, WHITE, FIXED_WHITE } from "../../../color";
 import styles from "./styles";
 
 /** 모든 입력란의 커서·선택 하이라이트를 main 색상으로 */
 const inputTintProps = {
-  selectionColor: MAIN.DEFAULT,
-  cursorColor: MAIN.DEFAULT,
-} as const;
+  get selectionColor() {
+    return MAIN.DEFAULT;
+  },
+  get cursorColor() {
+    return MAIN.DEFAULT;
+  },
+};
 
 /* ───────────────────────── Section ───────────────────────── */
 
@@ -158,9 +162,9 @@ export const FormToggleRow = ({
       value={value}
       onValueChange={onValueChange}
       disabled={disabled}
-      trackColor={{ false: GRAY.MEDIUM_2, true: MAIN.DEFAULT }}
+      trackColor={{ false: GRAY.MEDIUM_2, true: MAIN.FILL }}
       ios_backgroundColor={GRAY.MEDIUM_2}
-      thumbColor={Platform.OS === "android" ? WHITE : undefined}
+      thumbColor={Platform.OS === "android" ? FIXED_WHITE : undefined}
     />
   </FormRow>
 );

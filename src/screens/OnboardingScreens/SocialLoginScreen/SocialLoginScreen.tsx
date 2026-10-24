@@ -13,7 +13,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useKakaoLogin } from "./useKakaoLogin";
 import { useNaverLogin } from "./useNaverLogin";
 import { useGoogleLogin } from "./useGoogleLogin";
-import { WHITE } from "../../../color";
+import { WHITE, FIXED_WHITE } from "../../../color";
 import { styles } from "./styles";
 
 const WHITE_LOGO = require("../../../../assets/daygency_logo_white.png");
@@ -43,7 +43,7 @@ const SocialLoginScreen = ({ onClose }: SocialLoginScreenProps) => {
         accessibilityLabel="닫기"
         accessibilityRole="button"
       >
-        <MaterialCommunityIcons name="close" size={28} color={WHITE} />
+        <MaterialCommunityIcons name="close" size={28} color={FIXED_WHITE} />
       </Pressable>
 
       <ScrollView

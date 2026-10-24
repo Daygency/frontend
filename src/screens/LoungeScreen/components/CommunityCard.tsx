@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { BLACK, GRAY, RED, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import CommentAuthorAvatar from "../../../components/comments/CommentAuthorAvatar/CommentAuthorAvatar";
 import PhotoGrid from "../../../components/media/PhotoGrid";
 import { useRequireLogin } from "../../../hooks/useRequireLogin";
@@ -380,7 +381,7 @@ const CommunityCard = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     width: "100%",
     paddingHorizontal: 16,
@@ -576,6 +577,6 @@ const styles = StyleSheet.create({
   feedFooter: {
     marginTop: 8,
   },
-});
+}));
 
 export default CommunityCard;

@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { WHITE } from "../../../color";
+import { WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   overlay: {
     flex: 1,
     backgroundColor: "#2E2E2E",
@@ -46,8 +46,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   actionIcon: {
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));
 
 export default styles;

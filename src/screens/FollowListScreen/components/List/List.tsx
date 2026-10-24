@@ -15,6 +15,7 @@ import type { FollowListItemDto } from "../../../../lib/apis/follow/followListTy
 import PersonItem from "../PersonItem/PersonItem";
 import EmptyState, { contentContainerWhenEmpty } from "../../../../components/ui/EmptyState";
 import styles from "./styles";
+import { MAIN } from "../../../../color";
 
 type ListMode = "following" | "follower";
 
@@ -107,7 +108,7 @@ const List = ({ type, userId }: ListProps) => {
   if (loading && items.length === 0) {
     return (
       <View style={[styles.container, styles.centered]}>
-        <ActivityIndicator size="large" color="#1F2A44" />
+        <ActivityIndicator size="large" color={MAIN.DEFAULT} />
       </View>
     );
   }
@@ -155,7 +156,7 @@ const List = ({ type, userId }: ListProps) => {
       ListFooterComponent={
         loadingMore ? (
           <View style={styles.footer}>
-            <ActivityIndicator color="#1F2A44" />
+            <ActivityIndicator color={MAIN.DEFAULT} />
           </View>
         ) : null
       }

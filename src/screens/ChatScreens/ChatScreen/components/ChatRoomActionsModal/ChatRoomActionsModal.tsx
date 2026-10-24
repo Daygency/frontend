@@ -22,7 +22,7 @@ import type { ReportCategory } from "../../../../../lib/apis/report/types";
 import { confirmReportSubmission } from "../../../../../lib/report/confirmReportSubmission";
 import { messageForReportHttpStatus } from "../../../../../lib/report/reportErrorMessage";
 import ReportCategoryModal from "../../../../../components/modals/ReportCategoryModal";
-import { RED } from "../../../../../color";
+import { RED, BLACK } from "../../../../../color";
 import styles from "./styles";
 
 const CARD_WIDTH = 210;
@@ -245,13 +245,13 @@ const ChatRoomActionsModal = ({
             <MaterialCommunityIcons
               name={notificationsMuted ? "bell-outline" : "bell-off-outline"}
               size={19}
-              color="#000"
+              color={BLACK}
             />
             <Text style={styles.optionText}>
               {notificationsMuted ? "알림 켜기" : "알림 끄기"}
             </Text>
             {(togglingMute || loadingSettings) && (
-              <ActivityIndicator size="small" color="#000" />
+              <ActivityIndicator size="small" color={BLACK} />
             )}
           </Pressable>
 
@@ -262,7 +262,7 @@ const ChatRoomActionsModal = ({
             ]}
             onPress={handleReportPress}
           >
-            <MaterialCommunityIcons name="flag-outline" size={19} color="#000" />
+            <MaterialCommunityIcons name="flag-outline" size={19} color={BLACK} />
             <Text style={styles.optionText}>신고</Text>
           </Pressable>
 

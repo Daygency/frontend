@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { GRAY } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import {
   getReceivedActivityReviewTagSummary,
   getUserReceivedActivityReviewTagSummary,
@@ -75,7 +76,7 @@ const ReviewTagSummary = ({ userId }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   row: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -95,6 +96,6 @@ const styles = StyleSheet.create({
   chipCount: {
     fontWeight: "700",
   },
-});
+}));
 
 export default ReviewTagSummary;

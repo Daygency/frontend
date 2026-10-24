@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { BLACK, BLUE, GRAY, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-export default StyleSheet.create({
+export default themedStyles(() => ({
   card: {
     width: "100%",
     backgroundColor: WHITE,
@@ -123,4 +123,4 @@ export default StyleSheet.create({
     color: GRAY.MEDIUM_100,
     fontWeight: "400",
   },
-});
+}));

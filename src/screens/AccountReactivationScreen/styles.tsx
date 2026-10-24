@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { MAIN, WHITE } from "../../color";
+import { MAIN, WHITE, FIXED_WHITE, BLACK, lightDark } from "../../color";
+import { themedStyles } from "../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -16,18 +16,18 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#111",
+    color: BLACK,
     marginBottom: 16,
   },
   body: {
     fontSize: 15,
-    color: "#333",
+    color: lightDark("#333", "#C4C6CC"),
     lineHeight: 24,
     marginBottom: 12,
   },
   meta: {
     fontSize: 13,
-    color: "#666",
+    color: lightDark("#666", "#A0A3AB"),
     lineHeight: 20,
     marginTop: 8,
   },
@@ -41,7 +41,7 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
   },
   primaryButton: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     fontWeight: "600",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   secondaryButton: {
     paddingVertical: 14,
@@ -63,8 +63,8 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     fontSize: 15,
-    color: "#666",
+    color: lightDark("#666", "#A0A3AB"),
   },
-});
+}));
 
 export default styles;

@@ -1,8 +1,9 @@
-import { Platform, StyleSheet } from "react-native";
-import { BLACK, GRAY, WHITE } from "../../../color";
+import { Platform } from "react-native";
+import { BLACK, GRAY, WHITE, RED } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { FORM_FIELD_HEIGHT } from "../../forms/FormField/constants";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   field: {
     width: "100%",
     height: FORM_FIELD_HEIGHT,
@@ -16,7 +17,7 @@ const styles = StyleSheet.create({
   },
   fieldError: {
     borderWidth: 2,
-    borderColor: "#EC1313",
+    borderColor: RED.DEFAULT,
   },
   input: {
     flex: 1,
@@ -35,6 +36,6 @@ const styles = StyleSheet.create({
       default: {},
     }),
   },
-});
+}));
 
 export default styles;

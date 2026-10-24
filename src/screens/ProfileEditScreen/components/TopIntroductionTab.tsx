@@ -1,7 +1,7 @@
 import React from "react";
 import { Keyboard, View, Text, TextInput, Pressable, findNodeHandle, Switch } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { GRAY, MAIN, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
 import { isDupActivityName } from "../../../lib/apis/portfolio/IsDupActivityName";
 import {
   ACTIVITY_NAME_ALPHANUMERIC_MESSAGE,
@@ -375,8 +375,8 @@ const TopIntroductionTab = ({
           <Switch
             value={isPortfolioPrivate}
             onValueChange={setIsPortfolioPrivate}
-            trackColor={{ true: MAIN.DEFAULT, false: GRAY.MEDIUM }}
-            thumbColor={WHITE}
+            trackColor={{ true: MAIN.FILL, false: GRAY.MEDIUM }}
+            thumbColor={FIXED_WHITE}
           />
         </View>
       </View>

@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
 import { BLACK, GRAY, WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {
     backgroundColor: WHITE,
     borderRadius: 16,
@@ -112,6 +112,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: BLACK,
   },
-});
+}));
 
 export default styles;

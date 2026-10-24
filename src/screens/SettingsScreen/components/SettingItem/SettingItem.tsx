@@ -10,6 +10,8 @@ interface SettingItemProps {
   onPress?: () => void;
   isLast?: boolean;
   color?: string;
+  /** 오른쪽에 표시할 현재 값 (예: 화면 모드) */
+  value?: string;
 }
 
 const SettingItem = ({
@@ -18,6 +20,7 @@ const SettingItem = ({
   onPress,
   isLast,
   color = BLACK,
+  value,
 }: SettingItemProps) => {
   return (
     <Pressable
@@ -29,7 +32,14 @@ const SettingItem = ({
           <MaterialCommunityIcons name={icon} size={21} color={color} />
           <Text style={[styles.label, { color }]}>{label}</Text>
         </View>
-        <MaterialCommunityIcons name="chevron-right" size={21} color={GRAY.DARK_1} />
+        <View style={styles.rightContent}>
+          {value ? <Text style={styles.value}>{value}</Text> : null}
+          <MaterialCommunityIcons
+            name="chevron-right"
+            size={21}
+            color={GRAY.DARK_1}
+          />
+        </View>
       </View>
     </Pressable>
   );

@@ -1,6 +1,7 @@
 import { Image, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
-import { WHITE } from "../../../color";
+import { WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 const WHITE_LOGO = require("../../../../assets/daygency_logo_white.png");
 const LOGO_ASPECT_RATIO = 660 / 595;
@@ -60,7 +61,7 @@ const MagazineCardOverlay = ({
   );
 };
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   overlay: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   title: {
-    color: WHITE,
+    color: FIXED_WHITE,
     fontWeight: "800",
   },
   titleLarge: {
@@ -108,6 +109,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 18,
   },
-});
+}));
 
 export default MagazineCardOverlay;

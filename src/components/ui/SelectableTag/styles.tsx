@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
+import { BLACK, GRAY, MAIN, WHITE, FIXED_WHITE } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   tag: {
     backgroundColor: WHITE,
     borderRadius: 18,
@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   tagSelected: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderColor: MAIN.DEFAULT,
   },
   tagPressed: {
@@ -28,9 +28,9 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
   tagTextSelected: {
-    color: WHITE,
+    color: FIXED_WHITE,
   },
-});
+}));
 
 export default styles;
 

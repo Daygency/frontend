@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { WHITE, MAIN, GRAY, BLUE } from "../../../color";
+import { WHITE, MAIN, GRAY, BLUE, FIXED_WHITE, lightDark } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-export const styles = StyleSheet.create({
+export const styles = themedStyles(() => ({
   container: {
     flex: 1,
     backgroundColor: WHITE,
@@ -111,7 +111,7 @@ export const styles = StyleSheet.create({
   },
   agreementRadioBoxChecked: {
     borderColor: MAIN.DEFAULT,
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
   },
   agreementCheckmark: {
     width: 7,
@@ -154,7 +154,7 @@ export const styles = StyleSheet.create({
     paddingTop: 24,
   },
   completeButton: {
-    backgroundColor: MAIN.DEFAULT,
+    backgroundColor: MAIN.FILL,
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
@@ -166,15 +166,15 @@ export const styles = StyleSheet.create({
   completeButtonText: {
     fontSize: 16,
     fontWeight: "700",
-    color: WHITE,
+    color: FIXED_WHITE,
   },
   completeButtonTextDisabled: {
-    color: WHITE,
+    color: FIXED_WHITE,
     opacity: 0.9,
   },
-});
+}));
 
-export const roleSelectionStyles = StyleSheet.create({
+export const roleSelectionStyles = themedStyles(() => ({
   mainQuestion: {
     fontSize: 22,
     fontWeight: "700",
@@ -184,7 +184,7 @@ export const roleSelectionStyles = StyleSheet.create({
   },
   subText: {
     fontSize: 15,
-    color: "#9E9E9E",
+    color: lightDark("#9E9E9E", "#8B8E97"),
     textAlign: "left",
     marginBottom: 50,
   },
@@ -198,7 +198,7 @@ export const roleSelectionStyles = StyleSheet.create({
     padding: 16,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#E0E0E0",
+    borderColor: lightDark("#E0E0E0", "#2C2D33"),
     gap: 16,
   },
   artistOption: {
@@ -231,4 +231,4 @@ export const roleSelectionStyles = StyleSheet.create({
     marginTop: 40,
     alignSelf: "center",
   },
-});
+}));

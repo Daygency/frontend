@@ -1,15 +1,6 @@
 import React, { isValidElement, cloneElement, useRef, useCallback } from "react";
 import type { ReactElement, ReactNode } from "react";
-import {
-  Animated,
-  Text,
-  View,
-  StyleSheet,
-  useWindowDimensions,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-  type ScrollView,
-} from "react-native";
+import { Animated, Text, View, useWindowDimensions, type NativeScrollEvent, type NativeSyntheticEvent, type ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -20,10 +11,11 @@ import Photo, { PHOTO_PREVIEW_LIMIT, PORTFOLIO_PHOTOS } from "../Photo/Photo";
 import Activity from "../Activity/Activity";
 import Section from "../../ui/Section";
 import portfolioStyles, { portfolioSectionStyles } from "../styles";
-import { PORTFOLIO_IMMERSIVE_BG } from "../../../constants/portfolio";
+import { portfolioImmersiveBg } from "../../../constants/portfolio";
 import { RootRoutes } from "../../../navigations/routes";
 import { usePortfolioProfile } from "../../../hooks/usePortfolioProfile";
 import { GRAY } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
 type Props = {
   header: ReactNode;
@@ -172,15 +164,15 @@ const PortfolioScrollLayout = ({
   );
 };
 
-const layoutStyles = StyleSheet.create({
+const layoutStyles = themedStyles(() => ({
   root: {
     flex: 1,
   },
   rootImmersive: {
-    backgroundColor: PORTFOLIO_IMMERSIVE_BG,
+    backgroundColor: portfolioImmersiveBg(),
   },
   scrollImmersive: {
-    backgroundColor: PORTFOLIO_IMMERSIVE_BG,
+    backgroundColor: portfolioImmersiveBg(),
   },
   headerOverlay: {
     position: "absolute",
@@ -208,6 +200,6 @@ const layoutStyles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
   },
-});
+}));
 
 export default PortfolioScrollLayout;

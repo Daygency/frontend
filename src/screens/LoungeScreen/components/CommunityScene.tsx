@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  FlatList,
-  RefreshControl,
-  StyleSheet,
-  View,
-  Text,
-} from "react-native";
+import { FlatList, RefreshControl, View, Text } from "react-native";
 import Animated from "react-native-reanimated";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import styles from "../styles";
@@ -22,6 +16,7 @@ import {
   pickCommunityProfileImgUrl,
 } from "../../../lib/community/communityAuthor";
 import { GRAY, MAIN } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 import { useLoungeScroll } from "../LoungeScrollContext";
 import { useAuth } from "../../../contexts/AuthContext";
 
@@ -300,7 +295,7 @@ function formatRelativeTime(createdAt?: string): string {
   return `${years}년`;
 }
 
-const localStyles = StyleSheet.create({
+const localStyles = themedStyles(() => ({
   sectionList: {
     flex: 1,
   },
@@ -318,6 +313,6 @@ const localStyles = StyleSheet.create({
     fontSize: 14,
     color: GRAY.DARK,
   },
-});
+}));
 
 export default CommunityScene;

@@ -1,7 +1,7 @@
-import { StyleSheet } from "react-native";
-import { BLACK, GRAY } from "../../../color";
+import { BLACK, GRAY, RED } from "../../../color";
+import { themedStyles } from "../../../theme/themedStyles";
 
-const styles = StyleSheet.create({
+const styles = themedStyles(() => ({
   container: {},
   titleContainer: {
     flexDirection: "row",
@@ -35,7 +35,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.2,
   },
   titleError: {
-    color: "#EC1313",
+    color: RED.DEFAULT,
   },
   example: {
     marginTop: 4,
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     marginTop: 6,
     gap: 4,
   },
-});
+}));
 
 export default styles;
 
