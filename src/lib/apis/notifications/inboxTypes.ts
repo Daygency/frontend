@@ -6,7 +6,9 @@ export type NoticeTargetType =
   | "APPLICATION"
   | "LIKE"
   | "REVIEW"
-  | "INQUIRY";
+  | "INQUIRY"
+  /** 내 전공을 모집하는 새 공고 — targetId = postId */
+  | "ANNOUNCEMENT_MATCH";
 
 export type NoticeLikeKind =
   | "NEWS"

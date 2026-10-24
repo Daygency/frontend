@@ -47,6 +47,16 @@ export const FormSection = ({
   </View>
 );
 
+type FormGroupDividerProps = {
+  /** 화면 좌우 패딩만큼 밖으로 늘려 화면 폭 전체를 채움 */
+  bleed?: number;
+};
+
+/** 행 묶음 사이의 옅은 회색 띠 (iOS 설정 화면 그룹 간격) */
+export const FormGroupDivider = ({ bleed = 20 }: FormGroupDividerProps) => (
+  <View style={[styles.groupDivider, { marginHorizontal: -bleed }]} />
+);
+
 /* ───────────────────────── Base row ───────────────────────── */
 
 type FormRowProps = {
@@ -55,6 +65,8 @@ type FormRowProps = {
   /** true면 라벨만 빨간색, 문자열이면 행 아래 메시지도 표시 */
   error?: boolean | string;
   disabled?: boolean;
+  /** 라벨 글씨만 회색으로 (레이아웃·투명도는 그대로) */
+  muted?: boolean;
   onPress?: () => void;
   /** 오른쪽 값/컨트롤 */
   children?: ReactNode;
@@ -70,6 +82,7 @@ export const FormRow = ({
   isRequired,
   error,
   disabled,
+  muted,
   onPress,
   children,
   below,
@@ -79,7 +92,13 @@ export const FormRow = ({
   const content = (
     <>
       <View style={styles.labelWrap}>
-        <Text style={[styles.label, hasError && styles.labelError]}>
+        <Text
+          style={[
+            styles.label,
+            muted && styles.labelMuted,
+            hasError && styles.labelError,
+          ]}
+        >
           {label}
         </Text>
         {isRequired ? <Text style={styles.required}>*</Text> : null}
@@ -195,16 +214,24 @@ type FormChipProps = {
   label: string;
   onPress?: () => void;
   hasError?: boolean;
+  disabled?: boolean;
 };
 
-export const FormChip = ({ label, onPress, hasError }: FormChipProps) => (
+export const FormChip = ({
+  label,
+  onPress,
+  hasError,
+  disabled,
+}: FormChipProps) => (
   <Pressable
     onPress={onPress}
+    disabled={disabled}
     hitSlop={4}
     style={({ pressed }) => [
       styles.chip,
       pressed && styles.chipPressed,
       hasError && styles.chipError,
+      disabled && styles.chipDisabled,
     ]}
   >
     <Text style={[styles.chipText, hasError && styles.chipTextError]}>
@@ -220,6 +247,10 @@ type FormDateTimeRowProps = Omit<FormRowProps, "children" | "onPress"> & {
   showTime?: boolean;
   onPressDate: () => void;
   onPressTime?: () => void;
+  /** 칩만 흐리게·누를 수 없게 (예: '미정' 버튼이 켜졌을 때) */
+  chipsDisabled?: boolean;
+  /** 칩 오른쪽에 붙는 요소 (예: FormPillButton) */
+  trailing?: ReactNode;
 };
 
 export const FormDateTimeRow = ({
@@ -228,6 +259,8 @@ export const FormDateTimeRow = ({
   showTime = true,
   onPressDate,
   onPressTime,
+  chipsDisabled,
+  trailing,
   ...rowProps
 }: FormDateTimeRowProps) => {
   const hasError = !!rowProps.error;
@@ -237,17 +270,51 @@ export const FormDateTimeRow = ({
         label={formatChipDate(date)}
         onPress={onPressDate}
         hasError={hasError}
+        disabled={chipsDisabled}
       />
       {showTime ? (
         <FormChip
           label={formatChipTime(time ?? date)}
           onPress={onPressTime}
           hasError={hasError}
+          disabled={chipsDisabled}
         />
       ) : null}
+      {trailing}
     </FormRow>
   );
 };
+
+/* ───────────────────────── Pill toggle button ───────────────────────── */
+
+type FormPillButtonProps = {
+  label: string;
+  selected: boolean;
+  onPress: () => void;
+};
+
+/** 눌러서 켜고 끄는 작은 pill 버튼. 켜지면 main 색 */
+export const FormPillButton = ({
+  label,
+  selected,
+  onPress,
+}: FormPillButtonProps) => (
+  <Pressable
+    onPress={onPress}
+    hitSlop={6}
+    accessibilityRole="button"
+    accessibilityState={{ selected }}
+    style={({ pressed }) => [
+      styles.pill,
+      selected && styles.pillSelected,
+      pressed && styles.pillPressed,
+    ]}
+  >
+    <Text style={[styles.pillText, selected && styles.pillTextSelected]}>
+      {label}
+    </Text>
+  </Pressable>
+);
 
 /* ───────────────────────── Inline text input row ───────────────────────── */
 
@@ -266,22 +333,32 @@ export const FormInputRow = ({
   keyboardType,
   maxLength,
   suffix,
+  disabled,
   ...rowProps
 }: FormInputRowProps) => (
-  <FormRow {...rowProps}>
+  // 비활성이어도 행 레이아웃은 그대로, 라벨·입력 글씨만 회색 — 높이가 변하지 않음
+  <FormRow {...rowProps} muted={disabled}>
     <TextInput
-      style={styles.input}
+      style={[styles.input, disabled && styles.inputDisabled]}
       value={value}
       onChangeText={onChangeText}
       placeholder={placeholder}
-      placeholderTextColor={rowProps.error ? RED.DEFAULT : GRAY.MEDIUM_100}
+      placeholderTextColor={
+        rowProps.error && !disabled ? RED.DEFAULT : GRAY.MEDIUM_100
+      }
       keyboardType={keyboardType}
       maxLength={maxLength}
-      editable={!rowProps.disabled}
+      editable={!disabled}
       returnKeyType="done"
       {...inputTintProps}
     />
-    {suffix ? <Text style={styles.inputSuffix}>{suffix}</Text> : null}
+    {suffix ? (
+      <Text
+        style={[styles.inputSuffix, disabled && styles.inputSuffixDisabled]}
+      >
+        {suffix}
+      </Text>
+    ) : null}
   </FormRow>
 );
 

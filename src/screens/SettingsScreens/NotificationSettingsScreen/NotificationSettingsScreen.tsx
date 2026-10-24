@@ -28,6 +28,11 @@ const CATEGORY_ITEMS: {
   description: string;
 }[] = [
   {
+    key: "announcementMatch",
+    label: "맞춤 공고",
+    description: "내 전공을 모집하는 새 공고가 올라오면 알림을 받아요.",
+  },
+  {
     key: "follow",
     label: "팔로우",
     description: "누군가 나를 팔로우하면 알림을 받아요.",
@@ -66,6 +71,7 @@ const DEFAULT_PREFS: PushCategoryPreferences = {
   inquiry: true,
   comment: true,
   like: true,
+  announcementMatch: true,
 };
 
 const NotificationSettingsScreen = () => {

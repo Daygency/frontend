@@ -60,6 +60,8 @@ function displayLine(item: InboxRecipientItem): string {
       return `${name}님이 활동 후기를 남겼습니다.`;
     case "INQUIRY":
       return "고객센터 문의에 답변이 등록되었습니다.";
+    case "ANNOUNCEMENT_MATCH":
+      return "내 전공을 모집하는 새 공고가 올라왔어요.";
     default:
       return "새 알림이 있습니다.";
   }

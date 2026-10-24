@@ -17,6 +17,8 @@ import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import {
   FormDateTimeRow,
+  FormGroupDivider,
+  FormPillButton,
   FormImagePreviewList,
   FormInputRow,
   FormPickerRow,
@@ -837,6 +839,7 @@ const AnnouncementRegistrationScreen = () => {
         <Animated.View style={{ opacity: contentOpacity }}>
           {activeTab === "announcement" ? (
             <>
+              {/* 1번 묶음: 공고명 ~ 장소 */}
               <View ref={setFieldRef("title")} collapsable={false}>
                 <FormTitleInput
                   placeholder="공고명을 입력하세요"
@@ -848,42 +851,44 @@ const AnnouncementRegistrationScreen = () => {
 
               <FormSection>
                 <View ref={setFieldRef("scheduledDate")} collapsable={false}>
-                  <FormToggleRow
-                    label="예정일 미정"
-                    value={isScheduleUndecided}
-                    onValueChange={setIsScheduleUndecided}
-                  />
-                  {!isScheduleUndecided ? (
-                    <FormDateTimeRow
-                      label="예정일"
-                      isRequired
-                      date={scheduledDate}
-                      time={scheduledTime}
-                      onPressDate={() => setShowScheduledDatePicker(true)}
-                      onPressTime={() => setShowScheduledTimePicker(true)}
-                      error={
-                        err.scheduledDate
-                          ? "예정일은 과거로 설정할 수 없습니다."
-                          : false
-                      }
-                    />
-                  ) : null}
-                </View>
-                <FormToggleRow
-                  label="상시 모집"
-                  value={isOngoingRecruitment}
-                  onValueChange={setIsOngoingRecruitment}
-                />
-                {!isOngoingRecruitment ? (
                   <FormDateTimeRow
-                    label="공고 마감일"
-                    isRequired
-                    date={deadline}
-                    showTime={false}
-                    onPressDate={() => setShowDeadlinePicker(true)}
-                    error={err.deadline}
+                    label="예정일"
+                    isRequired={!isScheduleUndecided}
+                    date={scheduledDate}
+                    time={scheduledTime}
+                    onPressDate={() => setShowScheduledDatePicker(true)}
+                    onPressTime={() => setShowScheduledTimePicker(true)}
+                    chipsDisabled={isScheduleUndecided}
+                    trailing={
+                      <FormPillButton
+                        label="미정"
+                        selected={isScheduleUndecided}
+                        onPress={() => setIsScheduleUndecided((prev) => !prev)}
+                      />
+                    }
+                    error={
+                      err.scheduledDate
+                        ? "예정일은 과거로 설정할 수 없습니다."
+                        : false
+                    }
                   />
-                ) : null}
+                </View>
+                <FormDateTimeRow
+                  label="공고 마감일"
+                  isRequired={!isOngoingRecruitment}
+                  date={deadline}
+                  showTime={false}
+                  onPressDate={() => setShowDeadlinePicker(true)}
+                  chipsDisabled={isOngoingRecruitment}
+                  trailing={
+                    <FormPillButton
+                      label="상시 모집"
+                      selected={isOngoingRecruitment}
+                      onPress={() => setIsOngoingRecruitment((prev) => !prev)}
+                    />
+                  }
+                  error={err.deadline}
+                />
                 <FormRow
                   label="장소"
                   below={
@@ -896,7 +901,9 @@ const AnnouncementRegistrationScreen = () => {
                 />
               </FormSection>
 
-              <FormSection>
+              {/* 2번 묶음: 공고 유형 ~ 비용 */}
+              <FormGroupDivider />
+              <FormSection divider={false}>
                 <View ref={setFieldRef("announcementType")} collapsable={false}>
                   <FormPickerRow
                     label="공고 유형"
@@ -957,21 +964,24 @@ const AnnouncementRegistrationScreen = () => {
                       }}
                     />
                   </FormRow>
-                  {compensationMode === "pay" ? (
-                    <FormInputRow
-                      label="금액"
-                      placeholder="금액 입력"
-                      value={priceInput}
-                      onChangeText={setPriceInput}
-                      keyboardType="number-pad"
-                      suffix="원"
-                      error={err.price}
-                    />
-                  ) : null}
+                  <FormInputRow
+                    label="금액"
+                    placeholder={
+                      compensationMode === "pay" ? "금액 입력" : "페이 선택 시 입력"
+                    }
+                    value={priceInput}
+                    onChangeText={setPriceInput}
+                    keyboardType="number-pad"
+                    suffix="원"
+                    disabled={compensationMode !== "pay"}
+                    error={err.price}
+                  />
                 </View>
               </FormSection>
 
-              <FormSection>
+              {/* 3번 묶음: 내용 ~ 파일·앨범 */}
+              <FormGroupDivider />
+              <FormSection divider={false}>
                 <View ref={setFieldRef("content")} collapsable={false}>
                   <FormTextAreaRow
                     label="내용"
@@ -985,7 +995,7 @@ const AnnouncementRegistrationScreen = () => {
                 </View>
               </FormSection>
 
-              <FormSection title="사진/영상/파일">
+              <FormSection divider={false} title="사진/영상/파일">
                 <FormPickerRow
                   label="파일에서 선택"
                   variant="disclosure"

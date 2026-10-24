@@ -251,6 +251,7 @@ export type PushCategoryPreferences = {
   inquiry: boolean;
   comment: boolean;
   like: boolean;
+  announcementMatch: boolean;
 };
 
 function parsePushCategoryPreferences(
@@ -275,6 +276,9 @@ function parsePushCategoryPreferences(
     inquiry: o.inquiry,
     comment: o.comment,
     like: o.like,
+    // 이 필드가 없는 이전 서버에서도 설정 화면이 깨지지 않도록 기본값 true
+    announcementMatch:
+      typeof o.announcementMatch === "boolean" ? o.announcementMatch : true,
   };
 }
 

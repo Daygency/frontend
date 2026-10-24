@@ -14,6 +14,8 @@ import { useToast } from "../../contexts/ToastContext";
 import * as ImagePicker from "expo-image-picker";
 import {
   FormDateTimeRow,
+  FormGroupDivider,
+  FormPillButton,
   FormImagePreviewList,
   FormInputRow,
   FormPickerRow,
@@ -338,6 +340,7 @@ const MusicNewsRegistrationScreen = () => {
             />
           </View>
 
+          {/* 1번 묶음: 제목 ~ 장소 */}
           <FormSection>
             <FormDateTimeRow
               label="시작"
@@ -346,25 +349,25 @@ const MusicNewsRegistrationScreen = () => {
               onPressDate={() => setShowStartDatePicker(true)}
               onPressTime={() => setShowStartTimePicker(true)}
             />
-            <FormToggleRow
-              label="종료일시 사용"
-              value={useEndDate}
-              onValueChange={(next) => {
-                setUseEndDate(next);
-                if (next && !endedAt) setEndedAt(startedAt);
-              }}
+            {/* '미정' 켜짐 = 종료일시 사용 안 함 (useEndDate false) */}
+            <FormDateTimeRow
+              label="종료"
+              date={endedAt ?? startedAt}
+              onPressDate={() => setShowEndDatePicker(true)}
+              onPressTime={() => setShowEndTimePicker(true)}
+              chipsDisabled={!useEndDate}
+              trailing={
+                <FormPillButton
+                  label="미정"
+                  selected={!useEndDate}
+                  onPress={() => {
+                    const next = !useEndDate;
+                    setUseEndDate(next);
+                    if (next && !endedAt) setEndedAt(startedAt);
+                  }}
+                />
+              }
             />
-            {useEndDate && endedAt ? (
-              <FormDateTimeRow
-                label="종료"
-                date={endedAt}
-                onPressDate={() => setShowEndDatePicker(true)}
-                onPressTime={() => setShowEndTimePicker(true)}
-              />
-            ) : null}
-          </FormSection>
-
-          <FormSection>
             <View ref={setFieldRef("place")} collapsable={false}>
               <FormRow
                 label="장소"
@@ -380,6 +383,11 @@ const MusicNewsRegistrationScreen = () => {
                 }
               />
             </View>
+          </FormSection>
+
+          {/* 2번 묶음: 티켓 · 문의처 */}
+          <FormGroupDivider />
+          <FormSection divider={false}>
             <FormToggleRow
               label="무료 공연"
               value={isFreeTicket}
@@ -388,16 +396,15 @@ const MusicNewsRegistrationScreen = () => {
                 if (next) setTicketPrice("");
               }}
             />
-            {!isFreeTicket ? (
-              <FormInputRow
-                label="티켓 가격"
-                placeholder="선택 입력"
-                value={ticketPrice}
-                onChangeText={(text) => setTicketPrice(text.replace(/[^0-9]/g, ""))}
-                keyboardType="number-pad"
-                suffix="원"
-              />
-            ) : null}
+            <FormInputRow
+              label="티켓 가격"
+              placeholder={isFreeTicket ? "무료 공연" : "선택 입력"}
+              value={ticketPrice}
+              onChangeText={(text) => setTicketPrice(text.replace(/[^0-9]/g, ""))}
+              keyboardType="number-pad"
+              suffix="원"
+              disabled={isFreeTicket}
+            />
             <FormInputRow
               label="문의처"
               placeholder="연락처 (최대 30자)"
@@ -408,7 +415,9 @@ const MusicNewsRegistrationScreen = () => {
             />
           </FormSection>
 
-          <FormSection>
+          {/* 3번 묶음: 내용 ~ 이미지 */}
+          <FormGroupDivider />
+          <FormSection divider={false}>
             <View ref={setFieldRef("content")} collapsable={false}>
               <FormTextAreaRow
                 label="내용"
@@ -423,7 +432,7 @@ const MusicNewsRegistrationScreen = () => {
             </View>
           </FormSection>
 
-          <FormSection>
+          <FormSection divider={false}>
             <View ref={setFieldRef("images")} collapsable={false}>
               <FormPickerRow
                 label="이미지"

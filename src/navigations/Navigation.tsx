@@ -49,6 +49,11 @@ import HomeBannerDetailScreen from "../screens/HomeBannerDetailScreen/HomeBanner
 import HomeBannerListScreen from "../screens/HomeBannerListScreen/HomeBannerListScreen";
 import { RootRoutes } from "./routes";
 import { withAuthGate } from "../hooks/useRequireLogin";
+import {
+  flushPendingPushNavigation,
+  rootNavigationRef,
+  usePushOpenNavigation,
+} from "../lib/notifications/pushOpenNavigation";
 import { WHITE } from "../color";
 import { Pressable, Text, View } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -83,6 +88,7 @@ const accountReactivationScreenOptions = ({ navigation }: { navigation: any }) =
 const Navigation = () => {
   const { isLoggedIn, isBrowsing, isLoading, needsRoleSelection, enterBrowse } =
     useAuth();
+  usePushOpenNavigation();
 
   if (isLoading) {
     return <SplashScreenView />;
@@ -97,7 +103,10 @@ const Navigation = () => {
   }
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      ref={rootNavigationRef}
+      onReady={flushPendingPushNavigation}
+    >
       <View style={{ flex: 1 }}>
       <Stack.Navigator
         screenOptions={{

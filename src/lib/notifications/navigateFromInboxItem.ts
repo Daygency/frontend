@@ -7,7 +7,7 @@ import { getMyInquiry, mapInquiryToItem } from "../apis/inquiry/inquiryApi";
 
 type RootNav = NativeStackNavigationProp<Record<string, object | undefined>>;
 
-const placeholderAnnouncement = {
+export const placeholderAnnouncement = {
   title: "",
   type: "",
   status: "모집중" as const,
@@ -74,6 +74,14 @@ export async function navigateFromInboxItem(
     navigation.navigate(RootRoutes.ANNOUNCEMENT_APPLICANTS, {
       postId: targetId,
       title: "",
+    });
+    return;
+  }
+
+  if (targetType === "ANNOUNCEMENT_MATCH") {
+    navigation.navigate(RootRoutes.ANNOUNCEMENT_DETAIL, {
+      postId: targetId,
+      ...placeholderAnnouncement,
     });
     return;
   }

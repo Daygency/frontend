@@ -15,6 +15,11 @@ const styles = StyleSheet.create({
     backgroundColor: GRAY.DARK_1,
     marginBottom: 4,
   },
+  groupDivider: {
+    height: 8,
+    backgroundColor: GRAY.DEFAULT,
+    marginVertical: 14,
+  },
   sectionTitle: {
     fontSize: 12,
     color: GRAY.DARK_2,
@@ -31,8 +36,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "center",
-    minHeight: 46,
-    paddingVertical: 6,
+    minHeight: 48,
+    paddingVertical: 7,
     gap: 12,
   },
   rowPressed: {
@@ -51,6 +56,9 @@ const styles = StyleSheet.create({
     color: BLACK,
     letterSpacing: -0.2,
   },
+  labelMuted: {
+    color: GRAY.MEDIUM_100,
+  },
   labelError: {
     color: RED.DEFAULT,
   },
@@ -65,6 +73,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "flex-end",
+    flexWrap: "wrap",
     gap: 6,
   },
   below: {
@@ -105,6 +114,9 @@ const styles = StyleSheet.create({
   chipPressed: {
     backgroundColor: GRAY.MEDIUM,
   },
+  chipDisabled: {
+    opacity: 0.35,
+  },
   chipError: {
     backgroundColor: "#FDECEC",
   },
@@ -117,6 +129,32 @@ const styles = StyleSheet.create({
     color: RED.DEFAULT,
   },
 
+  pill: {
+    height: 30,
+    paddingHorizontal: 12,
+    borderRadius: 15,
+    borderWidth: 1,
+    borderColor: GRAY.MEDIUM_2,
+    backgroundColor: WHITE,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  pillSelected: {
+    backgroundColor: MAIN.DEFAULT,
+    borderColor: MAIN.DEFAULT,
+  },
+  pillPressed: {
+    opacity: 0.6,
+  },
+  pillText: {
+    fontSize: 13,
+    color: GRAY.DARK_100,
+  },
+  pillTextSelected: {
+    color: WHITE,
+    fontWeight: "600",
+  },
+
   input: {
     flex: 1,
     minWidth: 0,
@@ -127,9 +165,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
     ...inputReset,
   },
+  inputDisabled: {
+    color: GRAY.MEDIUM_100,
+  },
   inputSuffix: {
     fontSize: 14,
     color: GRAY.DARK_100,
+  },
+  inputSuffixDisabled: {
+    color: GRAY.MEDIUM_100,
   },
 
   /** 단일 줄 TextInput은 높이를 명시해야 한글 윗부분이 잘리지 않음 */
