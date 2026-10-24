@@ -6,7 +6,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import EmptyState from "../../../components/ui/EmptyState";
 import { useAuth } from "../../../contexts/AuthContext";
 import { useRequireLogin } from "../../../hooks/useRequireLogin";
-import { MAIN } from "../../../color";
+import { MAIN, WHITE } from "../../../color";
 import { RootRoutes } from "../../../navigations/routes";
 import {
   APPLICATION_STATUS_TABS,
@@ -35,7 +35,6 @@ import {
 import type { AnnouncementListItem } from "../../../lib/apis/announcement/types";
 import { announcementListRecruitmentStatus } from "../../../lib/announcement/announcementListStatus";
 import { useAnnouncementScroll } from "../AnnouncementScrollContext";
-import { PORTFOLIO_BODY_BG } from "../../../constants/portfolio";
 import styles from "./announcementMyActivitySceneStyles";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
@@ -156,7 +155,7 @@ const AnnouncementMyActivityScene = () => {
   return (
     <AnimatedScrollView
       ref={scrollViewRef}
-      style={{ flex: 1, backgroundColor: PORTFOLIO_BODY_BG }}
+      style={{ flex: 1, backgroundColor: WHITE }}
       contentContainerStyle={[styles.scrollContent, { paddingTop: listTopInset }]}
       onScroll={scrollHandler}
       scrollEventThrottle={16}

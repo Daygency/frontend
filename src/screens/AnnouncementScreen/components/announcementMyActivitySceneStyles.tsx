@@ -1,16 +1,18 @@
 import { StyleSheet } from "react-native";
 import { BLACK, GRAY, MAIN, WHITE } from "../../../color";
-import { PORTFOLIO_BODY_BG, PORTFOLIO_SECTION_GAP } from "../../../constants/portfolio";
+
+/** 흰 바탕 위 섹션 카드 사이 간격 */
+const CARD_GAP = 12;
 
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-    backgroundColor: PORTFOLIO_BODY_BG,
+    backgroundColor: WHITE,
     paddingBottom: 24,
   },
   centerFill: {
     flex: 1,
-    backgroundColor: PORTFOLIO_BODY_BG,
+    backgroundColor: WHITE,
     justifyContent: "center",
     alignItems: "center",
     gap: 16,
@@ -29,13 +31,15 @@ const styles = StyleSheet.create({
     color: WHITE,
   },
   contentSheet: {
-    backgroundColor: WHITE,
+    backgroundColor: GRAY.DEFAULT,
+    borderRadius: 16,
+    marginHorizontal: 16,
     paddingHorizontal: 16,
     paddingBottom: 12,
-    marginBottom: PORTFOLIO_SECTION_GAP,
+    marginBottom: CARD_GAP,
   },
   firstContentSheet: {
-    marginTop: PORTFOLIO_SECTION_GAP,
+    marginTop: CARD_GAP,
   },
   sectionTitle: {
     fontSize: 17,
