@@ -3,21 +3,26 @@ import { useEffect, useState } from "react";
 import {
   Alert,
   ActivityIndicator,
-  Image,
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useToast } from "../../contexts/ToastContext";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import Form from "../../components/forms/Form";
-import FormTextInput from "../../components/forms/FormTextInput";
+import {
+  FormImagePreviewList,
+  FormPickerRow,
+  FormRowHelper,
+  FormSection,
+  FormTextAreaRow,
+  FormTitleInput,
+} from "../../components/forms/FormRow";
 import CommunityCategorySelectModal from "../../components/modals/CommunityCategorySelectModal";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import CommunityGuidelinesModal from "../../components/modals/CommunityGuidelinesModal";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import {
   getCommunityCategories,
@@ -75,6 +80,7 @@ const CommunityRegistrationScreen = () => {
   const MAX_IMAGES = MAX_MULTIPART_FILES;
 
   const [categoryModalVisible, setCategoryModalVisible] = useState(false);
+  const [guidelinesVisible, setGuidelinesVisible] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -245,188 +251,107 @@ const CommunityRegistrationScreen = () => {
         nestedScrollEnabled
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.formSection}>
-          <Form title="카테고리" isRequired>
-            <Pressable
-              style={styles.categoryTrigger}
-              onPress={() => {
-                if (categories.length > 0) setCategoryModalVisible(true);
-              }}
-            >
-              <Text
-                style={
-                  selectedCategoryName
-                    ? styles.categoryTriggerText
-                    : styles.categoryTriggerPlaceholder
-                }
-              >
-                {selectedCategoryName ||
-                  (categories.length > 0
-                    ? "카테고리를 선택하세요"
-                    : "카테고리를 불러오는 중...")}
-              </Text>
-              <MaterialCommunityIcons
-                name="chevron-down"
-                size={20}
-                color={GRAY.MEDIUM_100}
-              />
-            </Pressable>
-          </Form>
-          <CommunityCategorySelectModal
-            visible={categoryModalVisible}
-            categories={categories}
-            selectedCategoryId={categoryId}
-            onSelect={(c) => {
-              setCategoryId(c.categoryId);
-              setCategoryModalVisible(false);
-            }}
-            onClose={() => setCategoryModalVisible(false)}
+        <FormPickerRow
+          label="카테고리"
+          isRequired
+          value={selectedCategoryName}
+          placeholder={categories.length > 0 ? "선택" : "불러오는 중..."}
+          onPress={() => {
+            if (categories.length > 0) setCategoryModalVisible(true);
+          }}
+        />
+        <CommunityCategorySelectModal
+          visible={categoryModalVisible}
+          categories={categories}
+          selectedCategoryId={categoryId}
+          onSelect={(c) => {
+            setCategoryId(c.categoryId);
+            setCategoryModalVisible(false);
+          }}
+          onClose={() => setCategoryModalVisible(false)}
+        />
+
+        <FormSection>
+          <FormTitleInput
+            placeholder="제목을 입력하세요"
+            value={title}
+            onChangeText={setTitle}
           />
+        </FormSection>
 
-          <View style={styles.formField}>
-            <Form title="제목" isRequired>
-              <FormTextInput
-                placeholder="제목을 입력하세요"
-                value={title}
-                onChangeText={setTitle}
-              />
-            </Form>
-          </View>
-
-          <View style={styles.formField}>
-            <Form title="내용" isRequired>
-              <View style={styles.contentInputWrapper}>
-                <TextInput
-                  style={styles.contentInput}
-                  placeholder={
-                    PLACEHOLDER_BY_CATEGORY[selectedCategoryName] ??
-                    PLACEHOLDER_BY_CATEGORY["학원/연습실 매매"]
-                  }
-                  placeholderTextColor={GRAY.DARK_2}
-                  multiline
-                  value={content}
-                  onChangeText={setContent}
-                  textAlignVertical="top"
-                />
-                <Pressable
-                  style={styles.imageAttachButton}
-                  hitSlop={10}
-                  onPress={pickImages}
-                >
-                  <MaterialCommunityIcons
-                    name="image-outline"
-                    size={24}
-                    color={GRAY.DARK_2}
-                  />
-                </Pressable>
-              </View>
-              {existingImages.length > 0 || pendingImages.length > 0 ? (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={{ marginTop: 10 }}
-                  contentContainerStyle={{ paddingTop: 8 }}
-                >
-                  {existingImages.map((img) => (
-                    <View
-                      key={img.fileId}
-                      style={{ marginRight: 8, position: "relative" }}
-                    >
-                      <Image
-                        source={{ uri: img.imgUrl }}
-                        style={{
-                          width: 72,
-                          height: 72,
-                          borderRadius: 8,
-                          backgroundColor: GRAY.MEDIUM,
-                        }}
-                        resizeMode="cover"
-                      />
-                      <Pressable
-                        onPress={() => handleRemoveExistingImage(img.fileId)}
-                        style={{
-                          position: "absolute",
-                          top: -6,
-                          right: -6,
-                          backgroundColor: "#fff",
-                          borderRadius: 12,
-                          zIndex: 1,
-                          elevation: 2,
-                        }}
-                        hitSlop={8}
-                      >
-                        <MaterialCommunityIcons
-                          name="close-circle"
-                          size={22}
-                          color={MAIN.DEFAULT}
-                        />
-                      </Pressable>
-                    </View>
-                  ))}
-                  {pendingImages.map((img, idx) => (
-                    <View
-                      key={`${img.uri}-${idx}`}
-                      style={{ marginRight: 8, position: "relative" }}
-                    >
-                      <Image
-                        source={{ uri: img.uri }}
-                        style={{
-                          width: 72,
-                          height: 72,
-                          borderRadius: 8,
-                          backgroundColor: GRAY.MEDIUM,
-                        }}
-                        resizeMode="cover"
-                      />
-                      <Pressable
-                        onPress={() =>
-                          setPendingImages((prev) =>
-                            prev.filter((_, i) => i !== idx),
-                          )
-                        }
-                        style={{
-                          position: "absolute",
-                          top: -6,
-                          right: -6,
-                          backgroundColor: "#fff",
-                          borderRadius: 12,
-                          zIndex: 1,
-                          elevation: 2,
-                        }}
-                        hitSlop={8}
-                      >
-                        <MaterialCommunityIcons
-                          name="close-circle"
-                          size={22}
-                          color={MAIN.DEFAULT}
-                        />
-                      </Pressable>
-                    </View>
-                  ))}
-                </ScrollView>
-              ) : null}
-              <Text
-                style={{
-                  marginTop: 6,
-                  fontSize: 12,
-                  color: GRAY.DARK_2,
-                }}
+        <FormSection>
+          <FormTextAreaRow
+            label="내용"
+            isRequired
+            placeholder={
+              PLACEHOLDER_BY_CATEGORY[selectedCategoryName] ??
+              PLACEHOLDER_BY_CATEGORY["학원/연습실 매매"]
+            }
+            value={content}
+            onChangeText={setContent}
+            labelAccessory={
+              <Pressable
+                onPress={() => setGuidelinesVisible(true)}
+                hitSlop={12}
+                style={({ pressed }) => [
+                  styles.guidelinesButton,
+                  pressed && styles.guidelinesButtonPressed,
+                ]}
+                accessibilityRole="button"
+                accessibilityLabel="작성 시 주의사항 보기"
               >
-                사진은 글 등록 후 업로드됩니다 (최대 {MAX_IMAGES}장).
-              </Text>
-            </Form>
-          </View>
-        </View>
+                <MaterialCommunityIcons
+                  name="alert-circle-outline"
+                  size={17}
+                  color={MAIN.DEFAULT}
+                />
+              </Pressable>
+            }
+          />
+          <FormPickerRow
+            label="사진"
+            variant="disclosure"
+            value={
+              existingImages.length + pendingImages.length > 0
+                ? `${existingImages.length + pendingImages.length}/${MAX_IMAGES}`
+                : undefined
+            }
+            placeholder="추가"
+            onPress={pickImages}
+            below={
+              <>
+                <FormImagePreviewList
+                  items={[
+                    ...existingImages.map((img) => ({
+                      key: img.fileId,
+                      uri: img.imgUrl,
+                      onRemove: () => handleRemoveExistingImage(img.fileId),
+                    })),
+                    ...pendingImages.map((img, idx) => ({
+                      key: `${img.uri}-${idx}`,
+                      uri: img.uri,
+                      onRemove: () =>
+                        setPendingImages((prev) =>
+                          prev.filter((_, i) => i !== idx),
+                        ),
+                    })),
+                  ]}
+                />
+                <FormRowHelper>
+                  사진은 글 등록 후 업로드됩니다 (최대 {MAX_IMAGES}장).
+                </FormRowHelper>
+              </>
+            }
+          />
+        </FormSection>
 
-        <View style={styles.guidelinesSection}>
-          {COMMUNITY_GUIDELINES.map((text, index) => (
-            <View key={index} style={styles.guidelineItem}>
-              <Text style={styles.guidelineBullet}>•</Text>
-              <Text style={styles.guidelineText}>{text}</Text>
-            </View>
-          ))}
-        </View>
       </ScrollView>
+
+      <CommunityGuidelinesModal
+        visible={guidelinesVisible}
+        guidelines={COMMUNITY_GUIDELINES}
+        onClose={() => setGuidelinesVisible(false)}
+      />
 
       <View
         style={[

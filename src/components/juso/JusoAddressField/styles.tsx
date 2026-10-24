@@ -20,6 +20,9 @@ const styles = StyleSheet.create({
     paddingRight: 8,
     gap: 8,
   },
+  fieldFocused: {
+    borderColor: MAIN.DEFAULT,
+  },
   fieldError: {
     borderWidth: 2,
     borderColor: "#EC1313",

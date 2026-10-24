@@ -461,14 +461,11 @@ const Navigation = () => {
           name={RootRoutes.MUSIC_NEWS_REGISTRATION}
           component={withAuthGate(MusicNewsRegistrationScreen)}
           options={({ navigation }) => ({
-            headerTitle: () => (
-              <View style={styles.titleWrap}>
-                <Text style={styles.title}>공연소식 등록</Text>
-              </View>
-            ),
+            // 모집 공고 등록과 같이 문자열 제목 + 가운데 정렬
+            headerTitle: "공연소식 등록",
             headerShadowVisible: false,
             headerShown: true,
-            headerTitleAlign: "left",
+            headerTitleAlign: "center",
             headerLeft: () => (
               <Pressable
                 onPress={() => {
@@ -492,14 +489,11 @@ const Navigation = () => {
           name={RootRoutes.COMMUNITY_REGISTRATION}
           component={withAuthGate(CommunityRegistrationScreen)}
           options={({ navigation }) => ({
-            headerTitle: () => (
-              <View style={styles.titleWrap}>
-                <Text style={styles.title}>커뮤니티 등록</Text>
-              </View>
-            ),
+            // 모집 공고 등록과 같이 문자열 제목 + 가운데 정렬
+            headerTitle: "커뮤니티 등록",
             headerShadowVisible: false,
             headerShown: true,
-            headerTitleAlign: "left",
+            headerTitleAlign: "center",
             headerLeft: () => (
               <Pressable
                 onPress={() => {

@@ -1,284 +1,57 @@
 import { StyleSheet } from "react-native";
-import { BLACK, GRAY, MAIN, RED, WHITE } from "../../color";
+import { BLACK, GRAY, WHITE } from "../../color";
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: WHITE,
   },
+  /** 상단 세그먼트형 탭 */
   tabContainer: {
     flexDirection: "row",
     marginHorizontal: 20,
     marginTop: 12,
-    marginBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: GRAY.MEDIUM,
+    marginBottom: 4,
+    padding: 3,
+    borderRadius: 11,
+    backgroundColor: GRAY.DEFAULT,
   },
   tab: {
     flex: 1,
-    paddingVertical: 12,
+    height: 34,
+    borderRadius: 8,
     alignItems: "center",
     justifyContent: "center",
   },
   tabActive: {
-    borderBottomWidth: 2,
-    borderBottomColor: MAIN.DEFAULT,
+    backgroundColor: WHITE,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 1 },
+    elevation: 1,
   },
   tabText: {
     fontSize: 14,
     fontWeight: "500",
-    color: GRAY.DARK_100,
+    color: GRAY.DARK_2,
   },
   tabTextActive: {
-    color: MAIN.DEFAULT,
+    color: BLACK,
+    fontWeight: "600",
   },
   scrollContent: {
     paddingHorizontal: 20,
-    paddingTop: 16,
-  },
-  formSection: {
-    gap: 16,
-  },
-  formField: {
-    marginTop: 0,
-  },
-  scheduleLocationBox: {
-    gap: 16,
-  },
-  scheduleField: {
-    gap: 8,
-  },
-  scheduleErrorText: {
-    fontSize: 12,
-    lineHeight: 16,
-    color: RED.DEFAULT,
-  },
-  deadlineHeaderRow: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    justifyContent: "space-between",
-    gap: 12,
-  },
-  toggleButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-    paddingTop: 2,
-  },
-  toggleText: {
-    fontSize: 14,
-    color: BLACK,
-  },
-  datePickerFieldDisabled: {
-    backgroundColor: GRAY.DEFAULT,
-    opacity: 0.7,
-  },
-  datePickerTextDisabled: {
-    color: GRAY.DARK_2,
+    paddingTop: 8,
   },
   chipRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
   },
-  quickButtonRow: {
-    flexDirection: "row",
-    gap: 8,
-    marginTop: 8,
-  },
-  quickButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 8,
-    backgroundColor: GRAY.DEFAULT,
-  },
-  quickButtonText: {
-    fontSize: 12,
-    color: GRAY.DARK_100,
-  },
-  quickButtonActive: {
-    backgroundColor: MAIN.DEFAULT,
-  },
-  datePickerField: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
-    backgroundColor: WHITE,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    minHeight: 46,
-  },
-  datePickerTextPlaceholder: {
+  rowValueText: {
     fontSize: 14,
     color: GRAY.DARK_2,
-  },
-  datePickerTouchable: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
-    backgroundColor: WHITE,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-    minHeight: 46,
-    justifyContent: "center",
-  },
-  datePickerText: {
-    fontSize: 14,
-    color: BLACK,
-  },
-  datePickerConfirmButton: {
-    alignSelf: "flex-end",
-    marginTop: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    backgroundColor: MAIN.DEFAULT,
-    borderRadius: 8,
-  },
-  datePickerConfirmText: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: WHITE,
-  },
-  datePickerPlaceholder: {
-    color: GRAY.DARK_2,
-  },
-  contentInputWrapper: {
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: GRAY.MEDIUM,
-    backgroundColor: WHITE,
-    minHeight: 140,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    paddingBottom: 50,
-  },
-  inputErrorBorder: {
-    borderColor: "#EC1313",
-    borderWidth: 2,
-  },
-  contentInput: {
-    fontSize: 14,
-    color: BLACK,
-    minHeight: 80,
-  },
-  contentNote: {
-    position: "absolute",
-    bottom: 12,
-    left: 14,
-    fontSize: 12,
-    color: GRAY.DARK_2,
-  },
-  /** 본문 입력란 외(파일·첨부 안내 등) — absolute 금지, 겹침 방지 */
-  fileHelperNote: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: GRAY.DARK_2,
-    marginTop: 8,
-  },
-  fileOptions: {
-    gap: 8,
-  },
-  fileOptionItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingVertical: 14,
-    paddingHorizontal: 2,
-    borderBottomWidth: 1,
-    borderBottomColor: GRAY.MEDIUM,
-  },
-  fileOptionText: {
-    flex: 1,
-    fontSize: 14,
-    color: BLACK,
-  },
-  applicationFormTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: BLACK,
-  },
-  requiredMark: {
-    color: "#BE0A0A",
-  },
-  applicationFormDescription: {
-    fontSize: 14,
-    color: GRAY.DARK_2,
-    marginTop: 4,
-    marginBottom: 16,
-  },
-  formFieldHeader: {
-    fontSize: 12,
-    color: GRAY.DARK_2,
-    marginBottom: 12,
-    paddingHorizontal: 4,
-  },
-  applicationFormItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: GRAY.MEDIUM,
-    gap: 12,
-  },
-  checkbox: {
-    width: 22,
-    height: 22,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: GRAY.DARK_1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  checkboxChecked: {
-    backgroundColor: MAIN.DEFAULT,
-    borderColor: MAIN.DEFAULT,
-  },
-  applicationFormLabel: {
-    flex: 1,
-    fontSize: 14,
-    color: BLACK,
-  },
-  confirmRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 24,
-    gap: 12,
-  },
-  radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 1,
-    borderColor: GRAY.DARK_1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  radioChecked: {
-    borderColor: MAIN.DEFAULT,
-    borderWidth: 2,
-  },
-  radioError: {
-    borderColor: "#EC1313",
-    borderWidth: 2,
-  },
-  radioInner: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: MAIN.DEFAULT,
-  },
-  confirmText: {
-    flex: 1,
-    fontSize: 14,
-    color: BLACK,
-  },
-  imageAttachButton: {
-    position: "absolute",
-    bottom: 12,
-    left: 14,
   },
   footer: {
     position: "absolute",

@@ -5,11 +5,9 @@ import {
   ActivityIndicator,
   Alert,
   Animated,
-  Image,
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,13 +15,24 @@ import { useToast } from "../../contexts/ToastContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
-import Form from "../../components/forms/Form";
-import FormTextInput from "../../components/forms/FormTextInput";
+import {
+  FormDateTimeRow,
+  FormImagePreviewList,
+  FormInputRow,
+  FormPickerRow,
+  FormRow,
+  FormRowHelper,
+  FormSection,
+  FormSegmentedControl,
+  FormTextAreaRow,
+  FormTitleInput,
+  FormToggleRow,
+} from "../../components/forms/FormRow";
 import JusoAddressField from "../../components/juso/JusoAddressField/JusoAddressField";
 import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
 import AnnouncementTypeSelectModal from "../../components/modals/AnnouncementTypeSelectModal";
 import SelectableTag from "../../components/ui/SelectableTag";
-import { BLACK, GRAY, MAIN, WHITE } from "../../color";
+import { GRAY, MAIN, RED, WHITE } from "../../color";
 import styles from "./styles";
 import {
   createAnnouncement,
@@ -153,13 +162,6 @@ function buildApplicationConfig(
     }
   });
   return config;
-}
-
-function formatDateDisplay(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}.${m}.${day}`;
 }
 
 function formatTimeDisplay(d: Date): string {
@@ -784,6 +786,10 @@ const AnnouncementRegistrationScreen = () => {
     );
   }
 
+  const selectedMajorCount = majorOptions.filter((opt) =>
+    isMajorOptionSelected(recruitmentMajors, opt),
+  ).length;
+
   return (
     <View style={styles.container}>
       <View style={styles.tabContainer}>
@@ -831,236 +837,82 @@ const AnnouncementRegistrationScreen = () => {
         <Animated.View style={{ opacity: contentOpacity }}>
           {activeTab === "announcement" ? (
             <>
-              <View style={styles.formSection}>
-                <View
-                  ref={setFieldRef("title")}
-                  collapsable={false}
-                  style={styles.formField}
-                >
-                  <Form title="공고명" isRequired hasError={err.title}>
-                    <FormTextInput
-                      placeholder="공고명을 입력하세요"
-                      value={title}
-                      onChangeText={setTitle}
-                      hasError={err.title}
+              <View ref={setFieldRef("title")} collapsable={false}>
+                <FormTitleInput
+                  placeholder="공고명을 입력하세요"
+                  value={title}
+                  onChangeText={setTitle}
+                  hasError={err.title}
+                />
+              </View>
+
+              <FormSection>
+                <View ref={setFieldRef("scheduledDate")} collapsable={false}>
+                  <FormToggleRow
+                    label="예정일 미정"
+                    value={isScheduleUndecided}
+                    onValueChange={setIsScheduleUndecided}
+                  />
+                  {!isScheduleUndecided ? (
+                    <FormDateTimeRow
+                      label="예정일"
+                      isRequired
+                      date={scheduledDate}
+                      time={scheduledTime}
+                      onPressDate={() => setShowScheduledDatePicker(true)}
+                      onPressTime={() => setShowScheduledTimePicker(true)}
+                      error={
+                        err.scheduledDate
+                          ? "예정일은 과거로 설정할 수 없습니다."
+                          : false
+                      }
                     />
-                  </Form>
+                  ) : null}
                 </View>
+                <FormToggleRow
+                  label="상시 모집"
+                  value={isOngoingRecruitment}
+                  onValueChange={setIsOngoingRecruitment}
+                />
+                {!isOngoingRecruitment ? (
+                  <FormDateTimeRow
+                    label="공고 마감일"
+                    isRequired
+                    date={deadline}
+                    showTime={false}
+                    onPressDate={() => setShowDeadlinePicker(true)}
+                    error={err.deadline}
+                  />
+                ) : null}
+                <FormRow
+                  label="장소"
+                  below={
+                    <JusoAddressField
+                      placeholder="주소를 입력하세요"
+                      value={locationValue}
+                      onChange={setLocationValue}
+                    />
+                  }
+                />
+              </FormSection>
 
-                <View
-                  ref={setFieldRef("scheduledDate")}
-                  collapsable={false}
-                  style={styles.formField}
-                >
-                  <View style={styles.scheduleLocationBox}>
-                    <View style={styles.scheduleField}>
-                      <View style={styles.deadlineHeaderRow}>
-                        <Form
-                          title="예정일"
-                          isRequired={!isScheduleUndecided}
-                          hasError={err.scheduledDate}
-                        />
-                        <Pressable
-                          style={styles.toggleButton}
-                          onPress={() =>
-                            setIsScheduleUndecided((prev) => !prev)
-                          }
-                        >
-                          <Text style={styles.toggleText}>미정</Text>
-                          <MaterialCommunityIcons
-                            name={
-                              isScheduleUndecided
-                                ? "checkbox-marked"
-                                : "checkbox-blank-outline"
-                            }
-                            size={20}
-                            color={MAIN.DEFAULT}
-                          />
-                        </Pressable>
-                      </View>
-                      <Pressable
-                        style={[
-                          styles.datePickerField,
-                          isScheduleUndecided && styles.datePickerFieldDisabled,
-                          err.scheduledDate && styles.inputErrorBorder,
-                        ]}
-                        onPress={() => {
-                          if (!isScheduleUndecided) {
-                            setShowScheduledDatePicker(true);
-                          }
-                        }}
-                        disabled={isScheduleUndecided}
-                      >
-                        <Text
-                          style={[
-                            styles.datePickerText,
-                            isScheduleUndecided &&
-                              styles.datePickerTextDisabled,
-                          ]}
-                        >
-                          {isScheduleUndecided
-                            ? "미정"
-                            : formatDateDisplay(scheduledDate)}
-                        </Text>
-                        <MaterialCommunityIcons
-                          name="calendar"
-                          size={20}
-                          color={
-                            isScheduleUndecided ? GRAY.DARK_2 : GRAY.DARK_1
-                          }
-                        />
-                      </Pressable>
-                    </View>
-                    <View style={styles.scheduleField}>
-                      <Form
-                        title="예정 시간"
-                        isRequired={false}
-                        hasError={err.scheduledDate}
-                      >
-                        <Pressable
-                          style={[
-                            styles.datePickerField,
-                            isScheduleUndecided &&
-                              styles.datePickerFieldDisabled,
-                            err.scheduledDate && styles.inputErrorBorder,
-                          ]}
-                          onPress={() => {
-                            if (!isScheduleUndecided) {
-                              setShowScheduledTimePicker(true);
-                            }
-                          }}
-                          disabled={isScheduleUndecided}
-                        >
-                          <Text
-                            style={[
-                              styles.datePickerText,
-                              isScheduleUndecided &&
-                                styles.datePickerTextDisabled,
-                            ]}
-                          >
-                            {isScheduleUndecided
-                              ? "미정"
-                              : formatTimeDisplay(scheduledTime)}
-                          </Text>
-                          <MaterialCommunityIcons
-                            name="clock-outline"
-                            size={20}
-                            color={
-                              isScheduleUndecided ? GRAY.DARK_2 : GRAY.DARK_1
-                            }
-                          />
-                        </Pressable>
-                      </Form>
-                    </View>
-                    {err.scheduledDate ? (
-                      <Text style={styles.scheduleErrorText}>
-                        예정일은 과거로 설정할 수 없습니다.
-                      </Text>
-                    ) : null}
-                    <View style={styles.scheduleField}>
-                      <View style={styles.deadlineHeaderRow}>
-                        <Form
-                          title="공고 마감일"
-                          isRequired={!isOngoingRecruitment}
-                          hasError={err.deadline}
-                        />
-                        <Pressable
-                          style={styles.toggleButton}
-                          onPress={() =>
-                            setIsOngoingRecruitment((prev) => !prev)
-                          }
-                        >
-                          <Text style={styles.toggleText}>상시 모집</Text>
-                          <MaterialCommunityIcons
-                            name={
-                              isOngoingRecruitment
-                                ? "checkbox-marked"
-                                : "checkbox-blank-outline"
-                            }
-                            size={20}
-                            color={MAIN.DEFAULT}
-                          />
-                        </Pressable>
-                      </View>
-                      <Pressable
-                        style={[
-                          styles.datePickerField,
-                          isOngoingRecruitment && styles.datePickerFieldDisabled,
-                          err.deadline && styles.inputErrorBorder,
-                        ]}
-                        onPress={() => {
-                          if (!isOngoingRecruitment) {
-                            setShowDeadlinePicker(true);
-                          }
-                        }}
-                        disabled={isOngoingRecruitment}
-                      >
-                        <Text
-                          style={[
-                            styles.datePickerText,
-                            isOngoingRecruitment &&
-                              styles.datePickerTextDisabled,
-                          ]}
-                        >
-                          {isOngoingRecruitment
-                            ? "상시 모집"
-                            : formatDateDisplay(deadline)}
-                        </Text>
-                        <MaterialCommunityIcons
-                          name="calendar"
-                          size={20}
-                          color={
-                            isOngoingRecruitment ? GRAY.DARK_2 : GRAY.DARK_1
-                          }
-                        />
-                      </Pressable>
-                    </View>
-                    <View style={styles.scheduleField}>
-                      <Form title="장소" isRequired={false}>
-                        <JusoAddressField
-                          placeholder="주소를 입력하세요"
-                          value={locationValue}
-                          onChange={setLocationValue}
-                        />
-                      </Form>
-                    </View>
-                  </View>
+              <FormSection>
+                <View ref={setFieldRef("announcementType")} collapsable={false}>
+                  <FormPickerRow
+                    label="공고 유형"
+                    isRequired
+                    error={err.announcementType}
+                    value={
+                      categoryOptions.find((o) => o.value === announcementType)
+                        ?.label
+                    }
+                    placeholder="선택"
+                    onPress={() => setShowAnnouncementTypeSheet(true)}
+                  />
                 </View>
-
-                <View
-                  ref={setFieldRef("announcementType")}
-                  collapsable={false}
-                  style={styles.formField}
-                >
-                  <Form title="공고 유형" isRequired hasError={err.announcementType}>
-                    <Pressable
-                      style={[
-                        styles.datePickerField,
-                        err.announcementType && styles.inputErrorBorder,
-                      ]}
-                      onPress={() => setShowAnnouncementTypeSheet(true)}
-                    >
-                      <Text
-                        style={[
-                          styles.datePickerText,
-                          !announcementType && styles.datePickerTextPlaceholder,
-                        ]}
-                      >
-                        {categoryOptions.find(
-                          (o) => o.value === announcementType,
-                        )?.label ?? "공고 유형을 선택하세요"}
-                      </Text>
-                      <MaterialCommunityIcons
-                        name="chevron-down"
-                        size={20}
-                        color={GRAY.DARK_1}
-                      />
-                    </Pressable>
-                  </Form>
-                </View>
-
-                <View style={styles.formField}>
-                  <Form title="모집 전공" isRequired={false}>
+                <FormRow
+                  label="모집 전공"
+                  below={
                     <View style={styles.chipRow}>
                       {majorOptions.map((opt) => {
                         const optKey = majorOptionKey(opt);
@@ -1082,273 +934,145 @@ const AnnouncementRegistrationScreen = () => {
                         );
                       })}
                     </View>
-                  </Form>
-                </View>
-
-                <View
-                  ref={setFieldRef("price")}
-                  collapsable={false}
-                  style={styles.formField}
+                  }
                 >
-                  <Form title="비용" isRequired={false} hasError={err.price}>
-                    <View style={styles.chipRow}>
-                      <SelectableTag
-                        label="선택안함"
-                        selected={compensationMode === "none"}
-                        onPress={() => {
-                          setCompensationMode("none");
-                          setPriceInput("");
-                        }}
-                      />
-                      <SelectableTag
-                        label="페이"
-                        selected={compensationMode === "pay"}
-                        onPress={() => setCompensationMode("pay")}
-                      />
-                      <SelectableTag
-                        label="비용협의"
-                        selected={compensationMode === "negotiable"}
-                        onPress={() => {
-                          setCompensationMode("negotiable");
-                          setPriceInput("");
-                        }}
-                      />
-                    </View>
-                    {compensationMode === "pay" ? (
-                      <View style={{ marginTop: 12 }}>
-                        <FormTextInput
-                          placeholder="금액(원)을 입력하세요"
-                          value={priceInput}
-                          onChangeText={setPriceInput}
-                          keyboardType="number-pad"
-                          hasError={err.price}
-                        />
-                      </View>
-                    ) : null}
-                  </Form>
+                  <Text style={styles.rowValueText}>
+                    {selectedMajorCount > 0
+                      ? `${selectedMajorCount}개 선택`
+                      : "선택 안 함"}
+                  </Text>
+                </FormRow>
+                <View ref={setFieldRef("price")} collapsable={false}>
+                  <FormRow label="비용">
+                    <FormSegmentedControl
+                      value={compensationMode}
+                      options={[
+                        { label: "선택안함", value: "none" },
+                        { label: "페이", value: "pay" },
+                        { label: "비용협의", value: "negotiable" },
+                      ]}
+                      onChange={(mode) => {
+                        setCompensationMode(mode);
+                        if (mode !== "pay") setPriceInput("");
+                      }}
+                    />
+                  </FormRow>
+                  {compensationMode === "pay" ? (
+                    <FormInputRow
+                      label="금액"
+                      placeholder="금액 입력"
+                      value={priceInput}
+                      onChangeText={setPriceInput}
+                      keyboardType="number-pad"
+                      suffix="원"
+                      error={err.price}
+                    />
+                  ) : null}
                 </View>
+              </FormSection>
 
-                <View
-                  ref={setFieldRef("content")}
-                  collapsable={false}
-                  style={styles.formField}
-                >
-                  <Form title="내용" isRequired hasError={err.content}>
-                    <View style={[styles.contentInputWrapper, err.content && styles.inputErrorBorder]}>
-                      <TextInput
-                        style={styles.contentInput}
-                        placeholder="연주자 모집, 대타 구인, 콩쿨, 입시평가회, 행사, 웨딩 오브리 등 모집 공고를 등록할 수 있어요."
-                        placeholderTextColor={GRAY.DARK_2}
-                        multiline
-                        value={content}
-                        onChangeText={setContent}
-                        textAlignVertical="top"
-                      />
-                      <Text style={styles.contentNote}>
-                        ▲ 공연 소식 및 홍보는 '라운지'를 이용해주세요
-                      </Text>
-                    </View>
-                  </Form>
+              <FormSection>
+                <View ref={setFieldRef("content")} collapsable={false}>
+                  <FormTextAreaRow
+                    label="내용"
+                    isRequired
+                    error={err.content}
+                    placeholder="연주자 모집, 대타 구인, 콩쿨, 입시평가회, 행사, 웨딩 오브리 등 모집 공고를 등록할 수 있어요."
+                    value={content}
+                    onChangeText={setContent}
+                    footer="▲ 공연 소식 및 홍보는 '라운지'를 이용해주세요"
+                  />
                 </View>
+              </FormSection>
 
-                <View style={styles.formField}>
-                  <Form title="사진/영상/파일" isRequired={false}>
-                    <View style={styles.fileOptions}>
-                      <Pressable
-                        style={styles.fileOptionItem}
-                        hitSlop={10}
-                        onPress={pickFileFromDocument}
-                      >
-                        <MaterialCommunityIcons
-                          name="file-document-outline"
-                          size={24}
-                          color={BLACK}
-                        />
-                        <Text style={styles.fileOptionText}>파일에서 선택</Text>
-                        <MaterialCommunityIcons
-                          name="chevron-right"
-                          size={24}
-                          color={GRAY.DARK_1}
-                        />
-                      </Pressable>
-                      <Pressable
-                        style={styles.fileOptionItem}
-                        hitSlop={10}
-                        onPress={pickImageFromAlbum}
-                      >
-                        <MaterialCommunityIcons
-                          name="image-multiple-outline"
-                          size={24}
-                          color={BLACK}
-                        />
-                        <Text style={styles.fileOptionText}>앨범에서 선택</Text>
-                        <MaterialCommunityIcons
-                          name="chevron-right"
-                          size={24}
-                          color={GRAY.DARK_1}
-                        />
-                      </Pressable>
-                    </View>
-                    {fileName ? (
-                      <Text style={styles.fileHelperNote}>{fileName}</Text>
-                    ) : null}
-                    {existingImages.length > 0 || createPostImages.length > 0 ? (
-                      <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        style={{ marginTop: 8 }}
-                        contentContainerStyle={{ paddingTop: 8 }}
-                      >
-                        {existingImages.map((img) => (
-                          <View
-                            key={img.fileId}
-                            style={{ marginRight: 8, position: "relative" }}
-                          >
-                            <Image
-                              source={{ uri: img.imgUrl }}
-                              style={{
-                                width: 72,
-                                height: 72,
-                                borderRadius: 8,
-                                backgroundColor: GRAY.MEDIUM,
-                              }}
-                              resizeMode="cover"
-                            />
-                            <Pressable
-                              onPress={() => handleRemoveExistingImage(img.fileId)}
-                              style={{
-                                position: "absolute",
-                                top: -6,
-                                right: -6,
-                                backgroundColor: "#fff",
-                                borderRadius: 12,
-                                zIndex: 1,
-                                elevation: 2,
-                              }}
-                              hitSlop={8}
-                            >
-                              <MaterialCommunityIcons
-                                name="close-circle"
-                                size={22}
-                                color={MAIN.DEFAULT}
-                              />
-                            </Pressable>
-                          </View>
-                        ))}
-                        {createPostImages.map((img, idx) => (
-                          <View
-                            key={`${img.uri}-${idx}`}
-                            style={{
-                              marginRight: 8,
-                              position: "relative",
-                            }}
-                          >
-                            <Image
-                              source={{ uri: img.uri }}
-                              style={{
-                                width: 72,
-                                height: 72,
-                                borderRadius: 8,
-                                backgroundColor: GRAY.MEDIUM,
-                              }}
-                              resizeMode="cover"
-                            />
-                            <Pressable
-                              onPress={() =>
-                                setCreatePostImages((prev) => {
-                                  const next = prev.filter((_, i) => i !== idx);
-                                  setFileName(
-                                    next.length > 0
-                                      ? `${next.length}개 첨부`
-                                      : "",
-                                  );
-                                  return next;
-                                })
-                              }
-                              style={{
-                                position: "absolute",
-                                top: -6,
-                                right: -6,
-                                backgroundColor: "#fff",
-                                borderRadius: 12,
-                                zIndex: 1,
-                                elevation: 2,
-                              }}
-                              hitSlop={8}
-                            >
-                              <MaterialCommunityIcons
-                                name="close-circle"
-                                size={22}
-                                color={MAIN.DEFAULT}
-                              />
-                            </Pressable>
-                          </View>
-                        ))}
-                      </ScrollView>
-                    ) : null}
-                    <Text style={styles.fileHelperNote}>
-                      {isEditMode
-                        ? `추가한 이미지는 "수정확인" 시 저장됩니다. (최대 ${MAX_POST_FILES}장)`
-                        : `등록 시 게시글이 저장된 뒤 이미지가 순서대로 업로드됩니다. (최대 ${MAX_POST_FILES}장)`}
-                    </Text>
-                  </Form>
-                </View>
-              </View>
+              <FormSection title="사진/영상/파일">
+                <FormPickerRow
+                  label="파일에서 선택"
+                  variant="disclosure"
+                  onPress={pickFileFromDocument}
+                />
+                <FormPickerRow
+                  label="앨범에서 선택"
+                  variant="disclosure"
+                  value={fileName}
+                  onPress={pickImageFromAlbum}
+                  below={
+                    <>
+                      <FormImagePreviewList
+                        items={[
+                          ...existingImages.map((img) => ({
+                            key: img.fileId,
+                            uri: img.imgUrl,
+                            onRemove: () => handleRemoveExistingImage(img.fileId),
+                          })),
+                          ...createPostImages.map((img, idx) => ({
+                            key: `${img.uri}-${idx}`,
+                            uri: img.uri,
+                            onRemove: () =>
+                              setCreatePostImages((prev) => {
+                                const next = prev.filter((_, i) => i !== idx);
+                                setFileName(
+                                  next.length > 0 ? `${next.length}개 첨부` : "",
+                                );
+                                return next;
+                              }),
+                          })),
+                        ]}
+                      />
+                      <FormRowHelper>
+                        {isEditMode
+                          ? `추가한 이미지는 "수정확인" 시 저장됩니다. (최대 ${MAX_POST_FILES}장)`
+                          : `등록 시 게시글이 저장된 뒤 이미지가 순서대로 업로드됩니다. (최대 ${MAX_POST_FILES}장)`}
+                      </FormRowHelper>
+                    </>
+                  }
+                />
+              </FormSection>
             </>
           ) : (
-            <View style={styles.formSection}>
-              <Text style={styles.applicationFormTitle}>
-                지원서 양식 구성
-                <Text style={styles.requiredMark}> *</Text>
-              </Text>
-              <Text style={styles.applicationFormDescription}>
-                지원서에 포함할 항목을 선택해 주세요. 선택한 항목은 모두 필수
-                입력입니다.
-              </Text>
-
-              <Text style={styles.formFieldHeader}>지원서에 포함</Text>
-
-              {APPLICATION_FORM_FIELDS.map(({ id, label }) => (
-                <View key={id} style={styles.applicationFormItem}>
-                  <Pressable
-                    style={[
-                      styles.checkbox,
-                      formFields[id] && styles.checkboxChecked,
-                    ]}
-                    onPress={() => toggleFormFieldIncluded(id)}
-                  >
-                    {formFields[id] && (
-                      <MaterialCommunityIcons
-                        name="check"
-                        size={14}
-                        color={WHITE}
-                      />
-                    )}
-                  </Pressable>
-                  <Text style={styles.applicationFormLabel}>{label}</Text>
-                </View>
-              ))}
-
-              <Pressable
-                ref={setFieldRef("formConfig")}
-                collapsable={false}
-                style={styles.confirmRow}
-                onPress={() => setFormConfigConfirmed(!formConfigConfirmed)}
+            <>
+              <FormSection
+                divider={false}
+                title="지원서에 포함"
+                description="지원서에 포함할 항목을 선택해 주세요. 선택한 항목은 모두 필수 입력입니다."
               >
-                <View
-                  style={[
-                    styles.radio,
-                    formConfigConfirmed && styles.radioChecked,
-                    err.formConfig && styles.radioError,
-                  ]}
-                >
-                  {formConfigConfirmed && <View style={styles.radioInner} />}
+                {APPLICATION_FORM_FIELDS.map(({ id, label }) => (
+                  <FormToggleRow
+                    key={id}
+                    label={label}
+                    value={!!formFields[id]}
+                    onValueChange={() => toggleFormFieldIncluded(id)}
+                  />
+                ))}
+              </FormSection>
+
+              <FormSection>
+                <View ref={setFieldRef("formConfig")} collapsable={false}>
+                  <FormRow
+                    label="지원서 양식을 위와 같이 구성합니다"
+                    isRequired
+                    error={err.formConfig}
+                    onPress={() => setFormConfigConfirmed(!formConfigConfirmed)}
+                  >
+                    <MaterialCommunityIcons
+                      name={
+                        formConfigConfirmed
+                          ? "check-circle"
+                          : "checkbox-blank-circle-outline"
+                      }
+                      size={24}
+                      color={
+                        formConfigConfirmed
+                          ? MAIN.DEFAULT
+                          : err.formConfig
+                            ? RED.DEFAULT
+                            : GRAY.DARK_1
+                      }
+                    />
+                  </FormRow>
                 </View>
-                <Text style={styles.confirmText}>
-                  지원서 양식을 위와 같이 구성합니다. *
-                </Text>
-              </Pressable>
-            </View>
+              </FormSection>
+            </>
           )}
         </Animated.View>
         </View>

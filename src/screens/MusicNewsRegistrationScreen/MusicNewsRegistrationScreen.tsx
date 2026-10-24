@@ -4,22 +4,29 @@ import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
-  Image,
   Pressable,
   ScrollView,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useToast } from "../../contexts/ToastContext";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
-import Form from "../../components/forms/Form";
-import FormTextInput from "../../components/forms/FormTextInput";
+import {
+  FormDateTimeRow,
+  FormImagePreviewList,
+  FormInputRow,
+  FormPickerRow,
+  FormRow,
+  FormRowHelper,
+  FormSection,
+  FormTextAreaRow,
+  FormTitleInput,
+  FormToggleRow,
+} from "../../components/forms/FormRow";
 import JusoAddressField from "../../components/juso/JusoAddressField/JusoAddressField";
 import WheelDateTimePickerModal from "../../components/modals/WheelDateTimePickerModal";
-import { GRAY, MAIN, WHITE } from "../../color";
+import { MAIN, WHITE } from "../../color";
 import styles from "./styles";
 import {
   createNewsWithFiles,
@@ -32,13 +39,6 @@ import type { NewsAttachmentItem } from "../../lib/apis/news/types";
 import { attachFilesToPost, type LocalImageAsset } from "../../lib/apis/fileApi";
 import { pickUrlFromFileLike } from "../../lib/media/attachmentImageUrl";
 import { RootRoutes, ContentRoutes } from "../../navigations/routes";
-
-function formatDateDisplay(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${y}.${m}.${day}`;
-}
 
 function formatTimeDisplay(d: Date): string {
   const h = String(d.getHours()).padStart(2, "0");
@@ -197,8 +197,8 @@ const MusicNewsRegistrationScreen = () => {
 
   const getFirstInvalidField = (): ValidationField | null => {
     if (!title.trim()) return "title";
-    if (!content.trim()) return "content";
     if (!placeValue.address.trim()) return "place";
+    if (!content.trim()) return "content";
     if (!hasRequiredImages) return "images";
     return null;
   };
@@ -328,247 +328,144 @@ const MusicNewsRegistrationScreen = () => {
         keyboardShouldPersistTaps="handled"
       >
         <View ref={scrollContentRef} collapsable={false}>
-        <View style={styles.formSection}>
-          <View
-            ref={setFieldRef("title")}
-            collapsable={false}
-            style={styles.formField}
-          >
-            <Form title="제목" isRequired hasError={err.title}>
-              <FormTextInput
-                placeholder="공연 제목을 입력하세요 (최대 100자)"
-                value={title}
-                onChangeText={setTitle}
-                maxLength={100}
-                hasError={err.title}
+          <View ref={setFieldRef("title")} collapsable={false}>
+            <FormTitleInput
+              placeholder="공연 제목 (최대 100자)"
+              value={title}
+              onChangeText={setTitle}
+              maxLength={100}
+              hasError={err.title}
+            />
+          </View>
+
+          <FormSection>
+            <FormDateTimeRow
+              label="시작"
+              isRequired
+              date={startedAt}
+              onPressDate={() => setShowStartDatePicker(true)}
+              onPressTime={() => setShowStartTimePicker(true)}
+            />
+            <FormToggleRow
+              label="종료일시 사용"
+              value={useEndDate}
+              onValueChange={(next) => {
+                setUseEndDate(next);
+                if (next && !endedAt) setEndedAt(startedAt);
+              }}
+            />
+            {useEndDate && endedAt ? (
+              <FormDateTimeRow
+                label="종료"
+                date={endedAt}
+                onPressDate={() => setShowEndDatePicker(true)}
+                onPressTime={() => setShowEndTimePicker(true)}
               />
-            </Form>
-          </View>
+            ) : null}
+          </FormSection>
 
-          <View
-            ref={setFieldRef("content")}
-            collapsable={false}
-            style={styles.formField}
-          >
-            <Form title="내용" isRequired hasError={err.content}>
-              <View style={[styles.contentInputWrapper, err.content && styles.inputErrorBorder]}>
-                <TextInput
-                  style={styles.contentInput}
-                  placeholder="공연 소개, 일정 안내 등 내용을 입력하세요 (최대 255자)"
-                  placeholderTextColor={GRAY.DARK_2}
-                  multiline
-                  value={content}
-                  onChangeText={setContent}
-                  maxLength={255}
-                  textAlignVertical="top"
-                />
-                <Text style={styles.charCount}>{content.length}/255</Text>
-              </View>
-            </Form>
-          </View>
-
-          <View
-            ref={setFieldRef("place")}
-            collapsable={false}
-            style={styles.formField}
-          >
-            <Form title="장소" isRequired hasError={err.place}>
-              <JusoAddressField
-                placeholder="공연 장소의 주소를 입력하세요"
-                value={placeValue}
-                onChange={setPlaceValue}
-                hasError={err.place}
+          <FormSection>
+            <View ref={setFieldRef("place")} collapsable={false}>
+              <FormRow
+                label="장소"
+                isRequired
+                error={err.place}
+                below={
+                  <JusoAddressField
+                    placeholder="공연 장소의 주소를 입력하세요"
+                    value={placeValue}
+                    onChange={setPlaceValue}
+                    hasError={err.place}
+                  />
+                }
               />
-            </Form>
-          </View>
-
-          <View style={styles.formField}>
-            <View style={styles.endDateToggleRow}>
-              <Form title="티켓 가격" isRequired={false} />
-              <Pressable
-                style={styles.toggleButton}
-                onPress={() => {
-                  setIsFreeTicket((prev) => {
-                    const next = !prev;
-                    if (next) setTicketPrice("");
-                    return next;
-                  });
-                }}
-              >
-                <Text style={styles.toggleText}>무료</Text>
-                <MaterialCommunityIcons
-                  name={isFreeTicket ? "checkbox-marked" : "checkbox-blank-outline"}
-                  size={20}
-                  color={MAIN.DEFAULT}
-                />
-              </Pressable>
             </View>
+            <FormToggleRow
+              label="무료 공연"
+              value={isFreeTicket}
+              onValueChange={(next) => {
+                setIsFreeTicket(next);
+                if (next) setTicketPrice("");
+              }}
+            />
             {!isFreeTicket ? (
-              <FormTextInput
-                placeholder="금액만 입력 (선택, 예: 30000)"
+              <FormInputRow
+                label="티켓 가격"
+                placeholder="선택 입력"
                 value={ticketPrice}
                 onChangeText={(text) => setTicketPrice(text.replace(/[^0-9]/g, ""))}
                 keyboardType="number-pad"
+                suffix="원"
               />
-            ) : (
-              <View style={styles.freeTicketField}>
-                <Text style={styles.freeTicketText}>무료 공연 (0원)</Text>
-              </View>
-            )}
-          </View>
+            ) : null}
+            <FormInputRow
+              label="문의처"
+              placeholder="연락처 (최대 30자)"
+              value={contact}
+              onChangeText={setContact}
+              maxLength={30}
+              keyboardType="phone-pad"
+            />
+          </FormSection>
 
-          <View style={styles.formField}>
-            <Form title="공연 시작일시" isRequired>
-              <View style={styles.datetimeRow}>
-                <Pressable
-                  style={styles.datePickerField}
-                  onPress={() => setShowStartDatePicker(true)}
-                >
-                  <Text style={styles.datePickerText}>{formatDateDisplay(startedAt)}</Text>
-                  <MaterialCommunityIcons name="calendar" size={20} color={GRAY.DARK_1} />
-                </Pressable>
-                <Pressable style={styles.datePickerField} onPress={() => setShowStartTimePicker(true)}>
-                  <Text style={styles.datePickerText}>{formatTimeDisplay(startedAt)}</Text>
-                  <MaterialCommunityIcons name="clock-outline" size={20} color={GRAY.DARK_1} />
-                </Pressable>
-              </View>
-            </Form>
-          </View>
-
-          <View style={styles.formField}>
-            <View style={styles.endDateToggleRow}>
-              <Form title="공연 종료일시" isRequired={false} />
-              <Pressable
-                style={styles.toggleButton}
-                onPress={() => {
-                  if (!useEndDate) return;
-                  setUseEndDate(false);
-                }}
-              >
-                <Text
-                  style={[
-                    styles.toggleText,
-                    !useEndDate && { color: GRAY.DARK_2 },
-                  ]}
-                >
-                  {useEndDate ? "사용함" : "사용 안 함"}
-                </Text>
-                <MaterialCommunityIcons
-                  name={useEndDate ? "checkbox-marked" : "checkbox-blank-outline"}
-                  size={20}
-                  color={useEndDate ? MAIN.DEFAULT : GRAY.DARK_2}
-                />
-              </Pressable>
+          <FormSection>
+            <View ref={setFieldRef("content")} collapsable={false}>
+              <FormTextAreaRow
+                label="내용"
+                isRequired
+                error={err.content}
+                placeholder="공연 소개, 일정 안내 등 내용을 입력하세요"
+                value={content}
+                onChangeText={setContent}
+                maxLength={255}
+                showCounter
+              />
             </View>
-            {useEndDate && endedAt && (
-              <View style={styles.datetimeRow}>
-                <Pressable style={styles.datePickerField} onPress={() => setShowEndDatePicker(true)}>
-                  <Text style={styles.datePickerText}>{formatDateDisplay(endedAt)}</Text>
-                  <MaterialCommunityIcons name="calendar" size={20} color={GRAY.DARK_1} />
-                </Pressable>
-                <Pressable style={styles.datePickerField} onPress={() => setShowEndTimePicker(true)}>
-                  <Text style={styles.datePickerText}>{formatTimeDisplay(endedAt)}</Text>
-                  <MaterialCommunityIcons name="clock-outline" size={20} color={GRAY.DARK_1} />
-                </Pressable>
-              </View>
-            )}
-          </View>
+          </FormSection>
 
-          <View style={styles.formField}>
-            <Form title="문의처">
-              <FormTextInput
-                placeholder="연락처를 입력하세요 (최대 30자)"
-                value={contact}
-                onChangeText={setContact}
-                maxLength={30}
-                keyboardType="phone-pad"
-              />
-            </Form>
-          </View>
-
-          <View
-            ref={setFieldRef("images")}
-            collapsable={false}
-            style={styles.formField}
-          >
-            <Form title="이미지" isRequired hasError={err.images}>
-              <Pressable
-                style={[styles.imageAddRow, err.images && styles.inputErrorBorder]}
+          <FormSection>
+            <View ref={setFieldRef("images")} collapsable={false}>
+              <FormPickerRow
+                label="이미지"
+                isRequired
+                error={err.images}
+                variant="disclosure"
+                value={
+                  existingImages.length + pendingImages.length > 0
+                    ? `${existingImages.length + pendingImages.length}/${MAX_NEWS_IMAGES}`
+                    : undefined
+                }
+                placeholder={`최소 1장 · 최대 ${MAX_NEWS_IMAGES}장`}
                 onPress={pickImage}
-              >
-                <MaterialCommunityIcons
-                  name="image-plus"
-                  size={20}
-                  color={GRAY.DARK_2}
-                />
-                <Text style={styles.imageAddText}>
-                  이미지 추가 (필수, 최소 1장 · 최대 {MAX_NEWS_IMAGES}장)
-                </Text>
-              </Pressable>
-              <Text style={styles.imageAddHint}>
-                {isEditMode && existingImages.length > 0 && pendingImages.length === 0
-                  ? "기존 이미지가 있습니다. 새 이미지를 추가하지 않아도 됩니다."
-                  : "등록 후 업로드됩니다"}
-              </Text>
-              {existingImages.length > 0 || pendingImages.length > 0 ? (
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={styles.imagePreviewRow}
-                  contentContainerStyle={{ paddingTop: 8 }}
-                >
-                  {existingImages.map((img) => (
-                    <View key={img.fileId} style={styles.imagePreviewItem}>
-                      <Image
-                        source={{ uri: img.imgUrl }}
-                        style={styles.imagePreviewThumb}
-                        resizeMode="cover"
-                      />
-                      <Pressable
-                        onPress={() => handleRemoveExistingImage(img.fileId)}
-                        style={styles.imagePreviewRemove}
-                        hitSlop={8}
-                      >
-                        <MaterialCommunityIcons
-                          name="close-circle"
-                          size={20}
-                          color={MAIN.DEFAULT}
-                        />
-                      </Pressable>
-                    </View>
-                  ))}
-                  {pendingImages.map((img, idx) => (
-                    <View
-                      key={`${img.uri}-${idx}`}
-                      style={styles.imagePreviewItem}
-                    >
-                      <Image
-                        source={{ uri: img.uri }}
-                        style={styles.imagePreviewThumb}
-                        resizeMode="cover"
-                      />
-                      <Pressable
-                        onPress={() =>
-                          setPendingImages((prev) =>
-                            prev.filter((_, i) => i !== idx),
-                          )
-                        }
-                        style={styles.imagePreviewRemove}
-                        hitSlop={8}
-                      >
-                        <MaterialCommunityIcons
-                          name="close-circle"
-                          size={20}
-                          color={MAIN.DEFAULT}
-                        />
-                      </Pressable>
-                    </View>
-                  ))}
-                </ScrollView>
-              ) : null}
-            </Form>
-          </View>
-        </View>
+                below={
+                  <>
+                    <FormImagePreviewList
+                      items={[
+                        ...existingImages.map((img) => ({
+                          key: img.fileId,
+                          uri: img.imgUrl,
+                          onRemove: () => handleRemoveExistingImage(img.fileId),
+                        })),
+                        ...pendingImages.map((img, idx) => ({
+                          key: `${img.uri}-${idx}`,
+                          uri: img.uri,
+                          onRemove: () =>
+                            setPendingImages((prev) =>
+                              prev.filter((_, i) => i !== idx),
+                            ),
+                        })),
+                      ]}
+                    />
+                    <FormRowHelper>
+                      {isEditMode && existingImages.length > 0 && pendingImages.length === 0
+                        ? "기존 이미지가 있습니다. 새 이미지를 추가하지 않아도 됩니다."
+                        : "등록 후 업로드됩니다"}
+                    </FormRowHelper>
+                  </>
+                }
+              />
+            </View>
+          </FormSection>
         </View>
       </ScrollView>
 

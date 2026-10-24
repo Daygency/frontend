@@ -8,7 +8,7 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { GRAY, WHITE } from "../../../color";
+import { GRAY, MAIN, WHITE } from "../../../color";
 import {
   searchJusoAddress,
   type JusoAddressItem,
@@ -34,6 +34,7 @@ export default function JusoAddressField({
 }: JusoAddressFieldProps) {
   const [searching, setSearching] = useState(false);
   const [results, setResults] = useState<JusoAddressItem[]>([]);
+  const [focused, setFocused] = useState(false);
 
   const handleChangeText = useCallback(
     (text: string) => {
@@ -72,7 +73,13 @@ export default function JusoAddressField({
 
   return (
     <View style={styles.wrap}>
-      <View style={[styles.fieldRow, hasError && styles.fieldError]}>
+      <View
+        style={[
+          styles.fieldRow,
+          focused && styles.fieldFocused,
+          hasError && styles.fieldError,
+        ]}
+      >
         <TextInput
           placeholder={placeholder}
           placeholderTextColor={GRAY.MEDIUM_100}
@@ -81,6 +88,10 @@ export default function JusoAddressField({
           onChangeText={handleChangeText}
           returnKeyType="search"
           onSubmitEditing={handleSearch}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
+          selectionColor={MAIN.DEFAULT}
+          cursorColor={MAIN.DEFAULT}
           multiline={false}
           numberOfLines={1}
           {...Platform.select({
